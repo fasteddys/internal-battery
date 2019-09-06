@@ -20,5 +20,7 @@ namespace UpDiddyApi.Models
 
         public int? PromoCodeId { get; set; }
         public virtual PromoCode PromoCode { get; set; }
+
+        public string AuthorizationInfo { get; set; }
     }
 }

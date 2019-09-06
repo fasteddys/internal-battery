@@ -85,6 +85,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             else if (promoCode.PromoTypeId == 2)
                 rVal = rVal - (rVal * promoCode.PromoValueFactor);
 
+            if (rVal < 0)
+                rVal = 0;
+
             return rVal;
         }
         public bool ValidateStartDate(PromoCode promoCode)

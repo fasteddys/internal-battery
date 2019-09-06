@@ -8,6 +8,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
 {
     interface IBraintreeService
     {
-         bool CapturePayment(BraintreePaymentDto braintreePaymentDto, ref int statusCode, ref string msg);
+         bool CapturePayment(BraintreePaymentDto braintreePaymentDto, ref string authInfo, ref int statusCode, ref string msg);
     }
 }

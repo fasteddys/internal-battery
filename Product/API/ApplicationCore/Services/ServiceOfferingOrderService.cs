@@ -72,6 +72,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             Subscriber subscriber = null;
             PromoCode promoCode = null;
             ServiceOffering serviceOffering = null;
+            string AuthInfo = string.Empty;
             // Validate basic aspects of the transaction such a valid service offering, valid promo etc. 
             if (ValidateTransaction(serviceOfferingOrderDto, ref serviceOffering, ref promoCode, ref statusCode, ref msg) == false)
                 return false;
@@ -88,7 +89,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 return false;
 
             // validate the payment with braintree
-            if (ValidatePayment(serviceOfferingTransactionDto, subscriberGuid, ref subscriber, ref statusCode, ref msg) == false)
+            if (ValidatePayment(serviceOfferingTransactionDto, subscriberGuid,ref AuthInfo, ref subscriber, ref statusCode, ref msg) == false)
                 return false;
 
        
@@ -104,7 +105,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 PricePaid = serviceOfferingOrderDto.PricePaid,
                 SubscriberId = subscriber.SubscriberId,
                 ServiceOfferingId = serviceOffering.ServiceOfferingId,
-                ServiceOfferingOrderGuid = Guid.NewGuid()
+                ServiceOfferingOrderGuid = Guid.NewGuid(),
+                AuthorizationInfo = AuthInfo
             };
 
 
@@ -167,7 +169,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return true;
         }
 
-            public bool ValidatePayment(ServiceOfferingTransactionDto serviceOfferingTransactionDto, Guid subscriberGuid, ref Subscriber subscriber, ref int statusCode, ref string msg)
+            public bool ValidatePayment(ServiceOfferingTransactionDto serviceOfferingTransactionDto, Guid subscriberGuid,ref string authInfo, ref Subscriber subscriber, ref int statusCode, ref string msg)
         {
             _syslog.LogInformation("ServiceOfferingService.ValidatePayment starting", serviceOfferingTransactionDto);
             ServiceOfferingOrderDto serviceOfferingOrderDto = serviceOfferingTransactionDto.ServiceOfferingOrderDto;
@@ -181,7 +183,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     return false;
                 }
                 // call braintree to capture payment 
-                if (_braintreeService.CapturePayment(serviceOfferingTransactionDto.BraintreePaymentDto, ref statusCode, ref msg) == false)
+                if (_braintreeService.CapturePayment(serviceOfferingTransactionDto.BraintreePaymentDto, ref authInfo, ref statusCode, ref msg) == false)
                 {
                     _syslog.LogInformation($"ServiceOfferingService.ValidatePayment returning false: {msg} ");
                     return false;

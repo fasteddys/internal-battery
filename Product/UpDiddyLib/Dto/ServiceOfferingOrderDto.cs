@@ -15,5 +15,7 @@ namespace UpDiddyLib.Dto
         public int PercentCommplete { get; set; }
 
         public PromoCodeDto PromoCode { get; set; }
+
+        public string AuthorizationInfo { get; set; }
     }
 }

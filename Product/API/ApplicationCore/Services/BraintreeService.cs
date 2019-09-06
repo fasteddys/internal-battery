@@ -60,7 +60,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
         }
 
-        public bool CapturePayment(BraintreePaymentDto braintreePaymentDto, ref int statusCode, ref string msg)
+        public bool CapturePayment(BraintreePaymentDto braintreePaymentDto, ref string authID, ref int statusCode, ref string msg)
         {
 
             _syslog.LogInformation("BraintreeService.CapturePayment starting", braintreePaymentDto);
@@ -109,7 +109,14 @@ namespace UpDiddyApi.ApplicationCore.Services
                 Result<Transaction> paymentResult = gateway.Transaction.Sale(TransactionRequest);
                 if (paymentResult.IsSuccess())
                 {
-                  ///  paymentResult.Transaction.NetworkTransactionId
+                    try
+                    {
+                        authID = "transactionId=" + paymentResult.Target.NetworkTransactionId + ";authorization=" + paymentResult.Target.AuthorizedTransactionId;
+                    }
+                    catch (Exception ex)
+                    {
+                        authID = "Error: " + ex.Message;
+                    }
                     return true;
                 }                    
                 else
