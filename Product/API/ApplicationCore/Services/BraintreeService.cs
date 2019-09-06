@@ -108,7 +108,10 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 Result<Transaction> paymentResult = gateway.Transaction.Sale(TransactionRequest);
                 if (paymentResult.IsSuccess())
+                {
+                  ///  paymentResult.Transaction.NetworkTransactionId
                     return true;
+                }                    
                 else
                 {
                     string braintreeErrors = string.Empty;                 
