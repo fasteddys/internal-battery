@@ -24,7 +24,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         public async Task<ServiceOfferingItem> GetByNameAsync(string name)
         {
             return await (from a in _dbContext.ServiceOfferingItem
-                          where a.Name == name
+                          where a.Name == name && a.IsDeleted == 0 
                           select a).FirstOrDefaultAsync();
         }
     }

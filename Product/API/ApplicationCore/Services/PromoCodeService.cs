@@ -52,12 +52,12 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
         /// <summary>
-        /// return the number of completed promos codes redemptions for the given user
+        ///  Check to see if the given subscriber can redeem the given promo
         /// </summary>
         /// <param name="promoCode"></param>
         /// <param name="subscriber"></param>
         /// <returns></returns>
-        public bool CheckSubscriberRedemptions(PromoCode promoCode, Subscriber subscriber)
+        public bool SubscriberHasAvailableRedemptions(PromoCode promoCode, Subscriber subscriber)
         {
 
             // return true to ignore this check if the promo code subscriber is not specified 

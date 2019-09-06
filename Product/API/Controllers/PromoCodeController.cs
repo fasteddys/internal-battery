@@ -367,7 +367,7 @@ namespace UpDiddyApi.Controllers
                     if ( subscriber == null ) // todo: improve ghetto grace period date logic
                         return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Sorry we cannot find your account.", FinalCost = serviceOffering.Price });
 
-                    if ( _promoCodeService.CheckSubscriberRedemptions(promoCode,subscriber) == false )
+                    if ( _promoCodeService.SubscriberHasAvailableRedemptions(promoCode,subscriber) == false )
                         return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Sorry you have already redeemed this offer.", FinalCost = serviceOffering.Price });
 
                 }

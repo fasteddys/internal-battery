@@ -12,7 +12,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     {
         decimal CalculatePrice(PromoCode promoCode, decimal BasePrice);
 
-        bool CheckSubscriberRedemptions(PromoCode promoCode, Subscriber subscriber);
+        bool SubscriberHasAvailableRedemptions(PromoCode promoCode, Subscriber subscriber);
 
         bool ValidateStartDate(PromoCode promoCode);
         bool ValidateEndDate(PromoCode promoCode);
