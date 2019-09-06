@@ -72,7 +72,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("api/[controller]/{assessmentId}")]
+        [Route("api/[controller]/{assessmentId:length(36)}")]
         public TraitifyDto GetByAssessmentId(string assessmentId)
         {
             try
@@ -99,7 +99,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("api/[controller]/complete/{assessmentId}")]
+        [Route("api/[controller]/complete/{assessmentId:length(36)}")]
         public async Task<bool> CompleteAssessment(string assessmentId)
         {
             try

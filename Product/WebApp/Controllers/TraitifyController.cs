@@ -67,7 +67,7 @@ namespace UpDiddy.Controllers
         }
 
         [HttpGet]
-        [Route("[controller]/{assessmentId?}")]
+        [Route("[controller]/{assessmentId:length(36)}")]
         public async Task<IActionResult> GetByAssessmentId(string assessmentId)
         {
             TraitifyViewModel model = new TraitifyViewModel();
@@ -89,7 +89,7 @@ namespace UpDiddy.Controllers
         }
 
         [HttpGet]
-        [Route("[controller]/complete/{assessmentId?}")]
+        [Route("[controller]/complete/{assessmentId:length(36)}")]
         public async Task<JsonResult> CompleteAssessment(string assessmentId)
         {
             var result = await _api.CompleteAssessment(assessmentId);
