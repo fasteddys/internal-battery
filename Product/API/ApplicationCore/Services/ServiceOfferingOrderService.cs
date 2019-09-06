@@ -323,8 +323,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 _db.Add(subscriber);
                 _db.SaveChanges();
 
-         
-
+        
                 // load the newly created subscriber 
                  existingSubscriber = _repositoryWrapper.SubscriberRepository.GetSubscriberByEmail(serviceOfferingTransactionDto.SignUpDto.email);
                 if (existingSubscriber == null)

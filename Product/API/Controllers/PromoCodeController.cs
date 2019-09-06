@@ -347,17 +347,17 @@ namespace UpDiddyApi.Controllers
                     .FirstOrDefault();
 
                 if (promoCode == null)
-                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code does not exist." });
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code does not exist.", FinalCost = serviceOffering.Price });
 
                 if (promoCode.IsDeleted == 1)
-                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code is no longer valid." });
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code is no longer valid.", FinalCost = serviceOffering.Price });
 
                 DateTime currentDateTime = DateTime.UtcNow;
                 if (promoCode.PromoStartDate > currentDateTime.AddHours(-4)) // todo: improve ghetto grace period date logic
-                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code is not yet active." });
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code is not yet active.", FinalCost = serviceOffering.Price });
 
                 if (promoCode.PromoEndDate < currentDateTime.AddHours(4)) // todo: improve ghetto grace period date logic
-                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code has expired." });
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code has expired.", FinalCost = serviceOffering.Price });
 
                 // Check to see if the user has exceeded max redempptions
                 Subscriber subscriber = null;
@@ -365,17 +365,17 @@ namespace UpDiddyApi.Controllers
                 {
                     subscriber = _repositoryWrapper.Subscriber.GetSubscriberByGuid(subscriberGuid);
                     if ( subscriber == null ) // todo: improve ghetto grace period date logic
-                        return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Sorry we cannot find your account." });
+                        return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Sorry we cannot find your account.", FinalCost = serviceOffering.Price });
 
                     if ( _promoCodeService.CheckSubscriberRedemptions(promoCode,subscriber) == false )
-                        return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Sorry you have already redeemed this offer." });
+                        return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Sorry you have already redeemed this offer.", FinalCost = serviceOffering.Price });
 
                 }
 
             
 
                 if ( _serviceOfferingPromoCodeRedemptionService.CheckAvailability(promoCode,serviceOffering) == false)
-                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code has exceeded its allowed number of redemptions." });
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code has exceeded its allowed number of redemptions.", FinalCost = serviceOffering.Price });
 
 
 
@@ -385,7 +385,7 @@ namespace UpDiddyApi.Controllers
                 List<ServiceOfferingPromoCode> serviceOfferingPromoCodes = _repositoryWrapper.ServiceOfferingPromoCodeRepository.GetByPromoCodesId(promoCode.PromoCodeId);
                 if (serviceOfferingPromoCodes.Count <= 0)
                 {
-                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Promo code not valid for the specifed service offering." });
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Promo code not valid for the specifed service offering.", FinalCost = serviceOffering.Price });
                 }
 
                 // Validate that the promo code is valid for the purchased service offering
@@ -401,7 +401,7 @@ namespace UpDiddyApi.Controllers
                 }
                 if ( isPromoValid == false )
                 {
-                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Promo code not valid for the specifed service offering." });
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Promo code not valid for the specifed service offering.", FinalCost = serviceOffering.Price });
                 }
 
                 #endregion
