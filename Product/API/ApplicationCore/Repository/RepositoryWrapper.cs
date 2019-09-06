@@ -54,6 +54,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ITagCourseRepository _tagCourseRepository;
         private IVendorRepository _vendorRepository;
         private IEnrollmentRepository _enrollmentRepository;
+        private IServiceOfferingRepository _serviceOfferingRepository;
+        private IServiceOfferingItemRepository _serviceOfferingItemRepository;
+        private IServiceOfferingOrderRepository _serviceOfferingOrderRepository;
+        private IServiceOfferingPromoCodeRedemptionRepository _serviceOfferingPromoCodeRedemptionRepository;
+        private IServiceOfferingPromoCodeRepository _serviceOfferingPromoCodeRepository;
+        private IPromoCodeRepository _promoCodeRepository;
         private ITraitifyRepository _traitifyRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
@@ -653,6 +659,80 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
+
+        public IServiceOfferingRepository ServiceOfferingRepository
+        {
+            get
+            {
+                if (_serviceOfferingRepository == null)
+                {
+                    _serviceOfferingRepository = new ServiceOfferingRepository(_dbContext);
+                }
+                return _serviceOfferingRepository;
+            }
+        }
+
+        public IServiceOfferingItemRepository ServiceOfferingItemRepository
+        {
+            get
+            {
+                if (_serviceOfferingItemRepository == null)
+                {
+                    _serviceOfferingItemRepository = new ServiceOfferingItemRepository(_dbContext);
+                }
+                return _serviceOfferingItemRepository;
+            }
+        }
+
+        public IServiceOfferingOrderRepository ServiceOfferingOrderRepository
+        {
+            get
+            {
+                if (_serviceOfferingOrderRepository == null)
+                {
+                    _serviceOfferingOrderRepository = new ServiceOfferingOrderRepository(_dbContext);
+                }
+                return _serviceOfferingOrderRepository;
+            }
+        }
+
+
+        public IServiceOfferingPromoCodeRedemptionRepository ServiceOfferingPromoCodeRedemptionRepository
+        {
+            get
+            {
+                if (_serviceOfferingPromoCodeRedemptionRepository == null)
+                {
+                    _serviceOfferingPromoCodeRedemptionRepository = new ServiceOfferingPromoCodeRedemptionRepository(_dbContext);
+                }
+                return _serviceOfferingPromoCodeRedemptionRepository;
+            }
+        }
+
+        public IServiceOfferingPromoCodeRepository ServiceOfferingPromoCodeRepository
+        {
+            get
+            {
+                if (_serviceOfferingPromoCodeRepository == null)
+                {
+                    _serviceOfferingPromoCodeRepository = new ServiceOfferingPromoCodeRepository(_dbContext);
+                }
+                return _serviceOfferingPromoCodeRepository;
+            }
+        }
+
+        public IPromoCodeRepository PromoCodeRepository
+        {
+            get
+            {
+                if (_promoCodeRepository == null)
+                {
+                    _promoCodeRepository = new PromoCodeRepository(_dbContext);
+                }
+                return _promoCodeRepository;
+            }
+        }
+
         public ITraitifyRepository TraitifyRepository
         {
             get
@@ -664,5 +744,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 return _traitifyRepository;
             }
         }
+
+
+
+
+
+
     }
 }

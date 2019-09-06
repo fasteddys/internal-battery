@@ -36,6 +36,7 @@ namespace UpDiddy.Api
         Task<SubscriberDto> SubscriberAsync(Guid subscriberGuid, bool hardRefresh);
         Task<PromoCodeDto> PromoCodeRedemptionValidationAsync(string promoCodeRedemptionGuid, string courseGuid);
         Task<PromoCodeDto> PromoCodeValidationAsync(string code, string courseVariantGuid);
+        Task<PromoCodeDto> ServiceOfferingPromoCodeValidationAsync(string code, string serviceOfferingGuid);
         Task<CourseLoginDto> CourseLoginAsync(Guid EnrollmentGuid);
         Task<BasicResponseDto> UpdateProfileInformationAsync(SubscriberDto Subscriber);
         Task<BasicResponseDto> UpdateOnboardingStatusAsync();
@@ -83,6 +84,8 @@ namespace UpDiddy.Api
         Task<CampaignDto> GetCampaignAsync(Guid campaignGuid);
         Task<CampaignPartnerContactDto> GetCampaignPartnerContactAsync(string tinyId);
         Task<IList<OfferDto>> GetOffersAsync();
+        Task<BasicResponseDto> SubmitServiceOfferingPayment(ServiceOfferingTransactionDto serviceOfferingTransactionDto);
+        Task<ServiceOfferingOrderDto> GetSubscriberOrder(Guid OrderGuid);
         Task<PagingDto<UpDiddyLib.Dto.User.JobDto>> GetUserJobsOfInterest(int? page);
         Task<PagingDto<JobPostingAlertDto>> GetUserJobAlerts(int? page, int? timeZoneOffset);
         Task<RedirectDto> GetSubscriberPartnerWebRedirect();

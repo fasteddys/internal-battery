@@ -1,0 +1,54 @@
+@using UpDiddy.ViewModels.ButterCMS
+@model UpDiddy.ViewModels.ButterCMS.ServicesPageViewModel
+
+<div class="services-container">
+    <div class="services-hero-container" style="background-image: url('https://cdn.buttercms.com/FIxxkTnERRyOu8RaAITt')">
+        <div class="container">
+            <div class="row container-align-center">
+                <div class="col-12 d-none d-lg-block hero-content-desktop">
+                    <h1>@Model.HeroTitle</h1>
+                    @Html.Raw(Model.HeroContent)
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="hero-content-mobile d-lg-none">
+        <div class="container">
+            <div class="row">
+                <h1>@Model.HeroTitle</h1>
+                @Html.Raw(Model.HeroContent)
+            </div>
+        </div>
+        
+    </div>
+    <div class="row pt-4 pb-4 mb-5 cc-cscheme-primary f-1_5rem">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 col-sm-6 container-align-center fw-100">
+                    <i class="fas fa-box-open pr-2"></i> @Model.Packages.Count Outstanding Packages
+                </div>
+                <div class="col-12 col-sm-6 container-align-center fw-100">
+                    <i class="fas fa-hands-helping pr-2"></i> Specialists On Hand
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="container services-listing-container">
+        <div class="row row-eq-height">
+            @{
+                foreach(PackageServiceViewModel packageService in Model.Packages){
+                    <div class="col-12 col-sm-6 col-md-4">
+                        <a href="/career-services/@packageService.Slug" class="shadow-2-hover">
+                            <img src="@packageService.TileImage" /> 
+                            <div class="p-3">
+                                <h4>@packageService.PackageName - $@packageService.Price</h4>
+                                @Html.Raw(packageService.QuickDescription)
+                            </div>
+                        </a>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
