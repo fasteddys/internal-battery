@@ -8,6 +8,7 @@
                 <h1>Congratulations!</h1>
                 <p>
                     You have succesfully purchased the @Model.PackageServiceViewModel.PackageName package! 
+                    You will receive an email receipt of your transaction sent to the email associated with your account.
                     One of our representatives will reach out to you soon with the next steps to take.
                 </p>
             </div>
@@ -15,6 +16,17 @@
         
     </div>
     <div class="container">
-        
+        <div class="row mb-5">
+            <div class="col-12 p-4 cc-cscheme-secondary">
+                <h3 class="mb-4">Order Summary - @Model.PackageServiceViewModel.PackageName</h3>
+                <h4>Price Paid: $@Model.ServiceOfferingOrderDto.PricePaid</h4>
+                <h4>Order ID: @Model.ServiceOfferingOrderDto.ServiceOfferingOrderGuid</h4>
+                <p>
+                    @Html.Raw(Model.PackageServiceViewModel.QuickDescription)
+                </p>
+            </div>
+            
+            
+        </div>
     </div>
 </div>

@@ -153,8 +153,8 @@ namespace WebApp.Controllers
             return View(serviceCheckoutViewModel);
         }
 
-        [HttpGet("career-services/{slug}/confirmation")]
-        public async Task<IActionResult> Confirmation(string slug){
+        [HttpGet("career-services/{slug}/confirmation/{orderGuid}")]
+        public async Task<IActionResult> Confirmation(string slug, Guid orderGuid){
             PageResponse<PackageServiceViewModel> packagePage = await _butterService.RetrievePageAsync<PackageServiceViewModel>("/career-services/" + slug);
 
             if(packagePage == null)
@@ -168,8 +168,18 @@ namespace WebApp.Controllers
                 FullDescriptionHeader = packagePage.Data.Fields.FullDescriptionHeader
             };
 
+            ServiceOfferingOrderDto serviceOfferingOrderDto = null;
+            try{
+                serviceOfferingOrderDto = await _api.GetSubscriberOrder(orderGuid);
+            }
+            catch(ApiException e){
+                return NotFound();
+            }
+                
+
             PackageConfirmationViewModel packageConfirmationViewModel = new PackageConfirmationViewModel{
-                PackageServiceViewModel = packageServiceViewModel
+                PackageServiceViewModel = packageServiceViewModel,
+                ServiceOfferingOrderDto = serviceOfferingOrderDto
             };
 
             return View(packageConfirmationViewModel);

@@ -585,6 +585,10 @@ namespace UpDiddy.Api
             return await PostAsync<BasicResponseDto>("serviceOfferingOrder", serviceOfferingTransactionDto);
         }
 
+        public async Task<ServiceOfferingOrderDto> GetSubscriberOrder(Guid OrderGuid){
+            return await GetAsync<ServiceOfferingOrderDto>("serviceOfferingOrder/subscriber-order/" + OrderGuid);
+        }
+
         public async Task<IList<OfferDto>> GetOffersAsync()
         {
             string cacheKey = $"Offers";

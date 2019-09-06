@@ -9,5 +9,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     public interface IServiceOfferingOrderService
     {
         bool ProcessOrder(ServiceOfferingTransactionDto serviceOfferingTransactionDto, Guid subscriberGuid,  ref int statusCode, ref string msg);
+        Task<ServiceOfferingOrderDto> GetSubscriberOrder(Guid ServiceOfferingOrderGuid);
     }
 }

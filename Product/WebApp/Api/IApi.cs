@@ -92,6 +92,7 @@ namespace UpDiddy.Api
         Task<CampaignPartnerContactDto> GetCampaignPartnerContactAsync(string tinyId);
         Task<IList<OfferDto>> GetOffersAsync();
         Task<BasicResponseDto> SubmitServiceOfferingPayment(ServiceOfferingTransactionDto serviceOfferingTransactionDto);
+        Task<ServiceOfferingOrderDto> GetSubscriberOrder(Guid OrderGuid);
         Task<PagingDto<UpDiddyLib.Dto.User.JobDto>> GetUserJobsOfInterest(int? page);
         Task<PagingDto<JobPostingAlertDto>> GetUserJobAlerts(int? page, int? timeZoneOffset);
         Task<RedirectDto> GetSubscriberPartnerWebRedirect();

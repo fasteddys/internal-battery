@@ -17,6 +17,7 @@ using Google.Apis.CloudTalentSolution.v3.Data;
 using UpDiddyLib.Shared.GoogleJobs;
 using Microsoft.AspNetCore.Http;
 using UpDiddyLib.Shared;
+using UpDiddyApi.ApplicationCore.Factory;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -160,6 +161,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _db.SaveChanges();
 
             _syslog.LogInformation("ServiceOfferingService.ProcessOrder finished returning true", serviceOfferingTransactionDto);
+            msg = order.ServiceOfferingOrderGuid.ToString();
             return true;
 
         }
@@ -498,6 +500,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             _syslog.LogInformation("ServiceOfferingService.ValidateTransaction finished returning true");
             return true;
         }
-
+        
+        public async Task<ServiceOfferingOrderDto> GetSubscriberOrder(Guid ServiceOfferingOrderGuid){
+            ServiceOfferingOrder serviceOfferingOrder = await _repositoryWrapper.ServiceOfferingOrderRepository.GetByGuidAsync(ServiceOfferingOrderGuid);
+            ServiceOfferingOrderDto serviceOfferingOrderDto = _mapper.Map<ServiceOfferingOrderDto>(serviceOfferingOrder);
+            return serviceOfferingOrderDto;
+        }
     }
 }
