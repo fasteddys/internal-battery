@@ -61,8 +61,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
         }
 
-        // TODO JAB validate experations dates in UTC
-        //
+   
 
         public bool ProcessOrder(ServiceOfferingTransactionDto serviceOfferingTransactionDto, Guid subscriberGuid, ref int statusCode, ref string msg)
         {
@@ -311,7 +310,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 // create subscriber for user
                 subscriber = new Subscriber();
-                subscriber.SubscriberGuid = Guid.NewGuid();
+                subscriber.SubscriberGuid = Guid.Parse(user.AdditionalData["objectId"].ToString());
                 subscriber.Email = serviceOfferingTransactionDto.SignUpDto.email;
                 subscriber.CreateDate = DateTime.UtcNow;
                 subscriber.ModifyDate = DateTime.UtcNow;
@@ -373,7 +372,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-            // TODO JAB check for max number of redemptions per subscriber 
+     
         public bool ValidateTransaction(ServiceOfferingOrderDto serviceOfferingOrderDto, ref ServiceOffering serviceOffering, ref PromoCode promoCode, ref int statusCode, ref string msg)
         {
             _syslog.LogInformation("ServiceOfferingService.ValidateTransaction starting", serviceOfferingOrderDto);
@@ -449,7 +448,6 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 // TODO move to PromoCodeService 
 
-                // TODO jab test
                 // check max number of redemptions 
                 if ( _serviceOfferingPromoCodeRedemptionService.CheckAvailability(promoCode, serviceOffering ) == false )
                 {

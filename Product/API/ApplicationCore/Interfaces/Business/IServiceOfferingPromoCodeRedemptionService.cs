@@ -11,5 +11,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         bool ReserveServiceOfferingPromoCode(PromoCode promoCode, ServiceOffering serviceOffering, Subscriber subscriber, decimal adjustedPrice);
         bool ClaimServiceOfferingPromoCode(PromoCode promoCode, ServiceOffering serviceOffering, Subscriber subscriber, decimal adjustedPrice);
         bool CheckAvailability(PromoCode promoCode, ServiceOffering serviceOffering );
+        bool PurgeExpiredPendingRedemptions(PromoCode promoCode, ServiceOffering serviceOffering);
     }
 }

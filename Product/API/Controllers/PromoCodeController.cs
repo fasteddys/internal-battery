@@ -43,6 +43,27 @@ namespace UpDiddyApi.Controllers
         }
 
 
+        
+
+        [HttpGet]
+        [Route("api/[controller]/hello")]
+        public IActionResult GetHello()
+        {
+
+            Guid subscriberGuid = Guid.Empty;
+
+            // check to see if the request is authenticated if so get the guid of the subscriber that is logged in
+            if (HttpContext.User.FindFirst(ClaimTypes.NameIdentifier) != null)
+                subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            if (subscriberGuid == Guid.Empty)
+                return Ok("Hello stranger!");
+            else
+                return Ok("Hello subscriber!");
+
+        }
+        
+
         [HttpGet]
         [Route("api/[controller]")]
         public IActionResult Get()
@@ -351,12 +372,9 @@ namespace UpDiddyApi.Controllers
 
                 }
 
-                var inProgressRedemptionsForThisCode = _db.PromoCodeRedemption
-                    .Include(pcr => pcr.RedemptionStatus)
-                    .Where(pcr => pcr.PromoCodeId == promoCode.PromoCodeId && pcr.IsDeleted == 0 && pcr.RedemptionStatus.Name == "In Process")
-                    .Count();
+            
 
-                if (promoCode.NumberOfRedemptions >= promoCode.MaxAllowedNumberOfRedemptions || promoCode.NumberOfRedemptions + inProgressRedemptionsForThisCode > promoCode.MaxAllowedNumberOfRedemptions)
+                if ( _serviceOfferingPromoCodeRedemptionService.CheckAvailability(promoCode,serviceOffering) == false)
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code has exceeded its allowed number of redemptions." });
 
 
@@ -409,7 +427,9 @@ namespace UpDiddyApi.Controllers
                 {
                     _serviceOfferingPromoCodeRedemptionService.ReserveServiceOfferingPromoCode(promoCode, serviceOffering, subscriber, adjustedPrice);
                 }
-             
+          
+
+
                 return Ok(validPromoCodeDto);
                 
                     

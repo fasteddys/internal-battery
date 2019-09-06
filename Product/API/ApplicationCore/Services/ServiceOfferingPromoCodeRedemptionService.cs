@@ -58,13 +58,35 @@ namespace UpDiddyApi.ApplicationCore.Services
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
         }
 
+        // promo code redemption status ids
+        // 1 = inprogress
+        // 2 = complete 
+       public bool PurgeExpiredPendingRedemptions(PromoCode promoCode, ServiceOffering serviceOffering)
+        {
+            int PromoCodeReservationTTLInMniutes = int.Parse(_configuration["CareerCircle:PromoCodeReservationTTLInMniutes"]);
+
+            List<ServiceOfferingPromoCodeRedemption> pendingPromos = _db.ServiceOfferingPromoCodeRedemption
+                .Where(s => s.IsDeleted == 0 && s.RedemptionStatusId == 1 && s.ServiceOfferingId == serviceOffering.ServiceOfferingId && s.CreateDate <= DateTime.UtcNow.AddMinutes(PromoCodeReservationTTLInMniutes) )
+                .ToList();
+
+            foreach (ServiceOfferingPromoCodeRedemption s in pendingPromos)
+                s.IsDeleted = 1;
+
+            _db.SaveChanges();
+
+            return true;
+
+        }
+
+
         public bool ReserveServiceOfferingPromoCode(PromoCode promoCode, ServiceOffering serviceOffering, Subscriber subscriber, decimal adjustedPrice)
         {
-            //TODO JAB - add code to purge orphaned remptions here orphaned reserved 
+            // do some housekeeping here to purge old inflight promos 
+            PurgeExpiredPendingRedemptions(promoCode, serviceOffering);
 
             // delete all existing in flight promos for the user 
             List<ServiceOfferingPromoCodeRedemption> existingPromos = _db.ServiceOfferingPromoCodeRedemption
-                    .Where(s => s.IsDeleted == 0 && s.RedemptionStatusId == 2 && s.ServiceOfferingId == serviceOffering.ServiceOfferingId && s.SubscriberId == subscriber.SubscriberId)
+                    .Where(s => s.IsDeleted == 0 && s.RedemptionStatusId == 1 && s.ServiceOfferingId == serviceOffering.ServiceOfferingId && s.SubscriberId == subscriber.SubscriberId)
                     .ToList();
 
             foreach (ServiceOfferingPromoCodeRedemption s in existingPromos)

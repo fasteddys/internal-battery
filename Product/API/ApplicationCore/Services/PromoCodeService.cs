@@ -51,10 +51,21 @@ namespace UpDiddyApi.ApplicationCore.Services
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
         }
 
+        /// <summary>
+        /// return the number of completed promos codes redemptions for the given user
+        /// </summary>
+        /// <param name="promoCode"></param>
+        /// <param name="subscriber"></param>
+        /// <returns></returns>
         public bool CheckSubscriberRedemptions(PromoCode promoCode, Subscriber subscriber)
         {
+
+            // return true to ignore this check if the promo code subscriber is not specified 
+            if (promoCode == null || subscriber == null)
+                return true;
+
             int numRedemptions = _db.ServiceOfferingPromoCodeRedemption
-                .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriber.SubscriberId && s.PromoCodeId == promoCode.PromoCodeId)
+                .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriber.SubscriberId && s.PromoCodeId == promoCode.PromoCodeId && s.RedemptionStatusId == 2)
                 .Count();
 
             if (numRedemptions >= promoCode.MaxNumberOfRedemptionsPerSubscriber)
@@ -78,14 +89,14 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
         public bool ValidateStartDate(PromoCode promoCode)
         {
-            if (promoCode.PromoStartDate != null && promoCode.PromoStartDate != DateTime.MinValue && promoCode.PromoStartDate > DateTime.Now)            
+            if (promoCode.PromoStartDate != null && promoCode.PromoStartDate != DateTime.MinValue && promoCode.PromoStartDate > DateTime.UtcNow)            
                 return false;            
             else
                 return true;
         }
         public bool ValidateEndDate(PromoCode promoCode)
         {
-            if (promoCode.PromoEndDate != null && promoCode.PromoEndDate != DateTime.MinValue && promoCode.PromoEndDate < DateTime.Now)
+            if (promoCode.PromoEndDate != null && promoCode.PromoEndDate != DateTime.MinValue && promoCode.PromoEndDate < DateTime.UtcNow)
                 return false;
             else
                 return true;
