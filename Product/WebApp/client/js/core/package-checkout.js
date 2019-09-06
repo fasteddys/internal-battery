@@ -76,6 +76,8 @@ var validatePromoCode = function(){
                 $("#ValidationMessageSuccess span").html(data.validationMessage);
             }
             else{
+                $("#PromoCodeTotal").html(0.00);
+                $("#PackageTotal").html($("#InitialPackagePrice").html());
                 $("#ValidationMessageError span").html(data.validationMessage);
             }
             if(data.finalCost === 0 && data.isValid){
