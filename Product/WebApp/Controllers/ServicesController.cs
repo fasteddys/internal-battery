@@ -82,7 +82,7 @@ namespace WebApp.Controllers
             return View(servicesPageViewModel);
         }
 
-        [HttpGet("career-services/{slug}")]
+        [HttpGet("career-services/{slug:length(0,100)}")]
         public async Task<IActionResult> Details(string slug){
             Dictionary<string, string> QueryParams = new Dictionary<string, string>();
             foreach (string s in HttpContext.Request.Query.Keys)
@@ -113,7 +113,7 @@ namespace WebApp.Controllers
             return View(packageServiceViewModel);
         }
 
-        [HttpGet("career-services/{slug}/checkout")]
+        [HttpGet("career-services/{slug:length(0,100)}/checkout")]
         public async Task<IActionResult> Checkout(string slug){
             PageResponse<PackageServiceViewModel> packagePage = await _butterService.RetrievePageAsync<PackageServiceViewModel>("/career-services/" + slug);
 
@@ -153,7 +153,7 @@ namespace WebApp.Controllers
             return View(serviceCheckoutViewModel);
         }
 
-        [HttpGet("career-services/{slug}/confirmation/{orderGuid}")]
+        [HttpGet("career-services/{slug:length(0,100)}/confirmation/{orderGuid}")]
         public async Task<IActionResult> Confirmation(string slug, Guid orderGuid){
             PageResponse<PackageServiceViewModel> packagePage = await _butterService.RetrievePageAsync<PackageServiceViewModel>("/career-services/" + slug);
 
@@ -207,6 +207,9 @@ namespace WebApp.Controllers
             }
 
             string Slug = serviceCheckoutViewModel.Slug;
+
+            if (Slug.Length > 100)
+                return new BasicResponseDto { StatusCode = 400, Description = "Unexpected page path specified." };
 
             PageResponse<PackageServiceViewModel> packagePage = await _butterService.RetrievePageAsync<PackageServiceViewModel>("/career-services/" + Slug);
 

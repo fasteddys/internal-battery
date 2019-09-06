@@ -60,6 +60,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IServiceOfferingPromoCodeRedemptionRepository _serviceOfferingPromoCodeRedemptionRepository;
         private IServiceOfferingPromoCodeRepository _serviceOfferingPromoCodeRepository;
         private IPromoCodeRepository _promoCodeRepository;
+        private ITraitifyRepository _traitifyRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
@@ -732,9 +733,21 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
+        public ITraitifyRepository TraitifyRepository
+        {
+            get
+            {
+                if (_traitifyRepository == null)
+                {
+                    _traitifyRepository = new TraitifyRepository(_dbContext);
+                }
+                return _traitifyRepository;
+            }
+        }
 
 
-        
+
+
 
 
     }

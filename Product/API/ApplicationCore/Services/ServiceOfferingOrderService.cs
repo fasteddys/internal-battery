@@ -158,7 +158,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public bool ValidateSubscriberConstraints(PromoCode promoCode, Subscriber subscriber, ref int statusCode, ref string msg)
         {
-            if (_promoCodeService.CheckSubscriberRedemptions(promoCode, subscriber) == false)
+            if (_promoCodeService.SubscriberHasAvailableRedemptions(promoCode, subscriber) == false)
             {
                 msg = "Sorry you have already redeemed this offer";
                 statusCode = 400;

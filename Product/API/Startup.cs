@@ -70,7 +70,7 @@ namespace UpDiddyApi
                 builder.AddUserSecrets<Startup>();
             }
 
-            // if environment is set to staging or production then add vault keys
+            // if environment is set to staging or production then add vault keysF
             var config = builder.Build();
             if (env.IsStaging() || env.IsProduction())
             {
@@ -250,13 +250,13 @@ namespace UpDiddyApi
             services.AddScoped<ITrackingService, TrackingService>();
             services.AddScoped<IJobPostingService, JobPostingService>();
             services.AddScoped<IJobApplicationService, JobApplicationService>();
+            services.AddScoped<ITraitifyService, TraitifyService>();      
             services.AddScoped<IServiceOfferingService, ServiceOfferingService>();
             services.AddScoped<IServiceOfferingOrderService, ServiceOfferingOrderService>();
             services.AddScoped<IPromoCodeService, PromoCodeService>();
             services.AddScoped<IBraintreeService, BraintreeService>();
 
             services.AddScoped<ICourseService, CourseService>();
-            
             services.AddScoped<ICompanyService, CompanyService>();
             services.AddScoped<IRecruiterService, RecruiterService>();
             services.AddScoped<ITaggingService, TaggingService>();
