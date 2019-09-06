@@ -32,8 +32,19 @@ namespace UpDiddy.Controllers
         {
             TraitifyViewModel model = new TraitifyViewModel();
             var butterPage = await GetButterLandingPage();
-            model = PopulateButterFields(model,butterPage);
-            model.SubscriberGuid = HttpContext.User.Identity.IsAuthenticated ? GetSubscriberGuid() : (Guid?)null;
+            model = PopulateButterFields(model, butterPage);
+            if (HttpContext.User.Identity.IsAuthenticated)
+            {
+                Guid? subscriberGuid = GetSubscriberGuid();
+             if (subscriberGuid != null)
+                {
+                    SubscriberDto subscriber = await _api.SubscriberAsync(subscriberGuid.Value, true);
+                    model.SubscriberGuid = subscriberGuid;
+                    model.FirstName = subscriber.FirstName = subscriber != null ? subscriber.FirstName : string.Empty;
+                    model.LastName = subscriber.LastName = subscriber.LastName != null ? subscriber.LastName : string.Empty;
+                    model.Email = subscriber.Email != null ? subscriber.Email : string.Empty;
+                }
+            }
             SetSEOTags(butterPage);
             return View(model);
         }

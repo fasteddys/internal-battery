@@ -35,7 +35,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             Traitify traitify = new Traitify()
             {
-                Subscriber = subscriber,
+                Subscriber = subscriber != null ? subscriber : null,
+                SubscriberId = subscriber != null ? subscriber.SubscriberId : (int?) null,
                 TraitifyGuid = Guid.NewGuid(),
                 CreateDate = DateTime.UtcNow,
                 AssessmentId = dto.AssessmentId,
