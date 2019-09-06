@@ -12,13 +12,11 @@ class TraitifyCC {
             this.traitify.setPublicKey(this.model.publicKey);
             var assessment = this.traitify.ui.component();
             assessment.on("SlideDeck.Finished", function () {
-                $.ajax({
-                    url: '/Traitify/complete',
+                var url = '/traitify/complete/' + assessmentId;
+                $("#traitifyInstructions").hide();
+                  $.ajax({
+                    url: url,
                     type: 'GET',
-                    dataType: 'json',
-                    data: {
-                        assessmentId: assessmentId
-                    },
                     error: function () {
                         ToastService.error('Oops! Something unexpected happened, and we are looking into it.')
                     },
