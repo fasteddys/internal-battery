@@ -323,7 +323,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 _db.Add(subscriber);
                 _db.SaveChanges();
 
-                //TODO JAB send welcome email.  
+         
 
                 // load the newly created subscriber 
                  existingSubscriber = _repositoryWrapper.SubscriberRepository.GetSubscriberByEmail(serviceOfferingTransactionDto.SignUpDto.email);
@@ -334,7 +334,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     return false;
                 }
-
+                //send validation welcome email.  
                 int tokenTtlMinutes = int.Parse(_configuration["EmailVerification:TokenExpirationInMinutes"]);
                 EmailVerification.SetSubscriberEmailVerification(existingSubscriber, tokenTtlMinutes);
 

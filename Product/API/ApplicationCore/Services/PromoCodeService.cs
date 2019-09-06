@@ -61,7 +61,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
 
             // return true to ignore this check if the promo code subscriber is not specified 
-            if (promoCode == null || subscriber == null)
+            if (promoCode == null || subscriber == null || promoCode.MaxNumberOfRedemptionsPerSubscriber == null)
                 return true;
 
             int numRedemptions = _db.ServiceOfferingPromoCodeRedemption
