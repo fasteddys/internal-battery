@@ -11,6 +11,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     public interface IPromoCodeService
     {
         decimal CalculatePrice(PromoCode promoCode, decimal BasePrice);
+
+        bool CheckSubscriberRedemptions(PromoCode promoCode, Subscriber subscriber);
+
         bool ValidateStartDate(PromoCode promoCode);
         bool ValidateEndDate(PromoCode promoCode);
         bool ValidateRedemptions(PromoCode promoCode);

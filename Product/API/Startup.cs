@@ -260,6 +260,9 @@ namespace UpDiddyApi
             services.AddScoped<ISubscriberNotificationService, SubscriberNotificationService>();
             services.AddScoped<IHangfireService, HangfireService>();
             services.AddScoped<IMemoryCacheService,MemoryCacheService>();
+            services.AddScoped<IServiceOfferingPromoCodeRedemptionService, ServiceOfferingPromoCodeRedemptionService>();
+
+            
             #endregion
 
             // Configure SnapshotCollector from application settings

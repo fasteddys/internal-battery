@@ -28,6 +28,7 @@ namespace UpDiddyApi.Controllers
         protected internal ILogger _syslog = null;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IPromoCodeService _promoCodeService;
+        private readonly IServiceOfferingPromoCodeRedemptionService _serviceOfferingPromoCodeRedemptionService;
 
         public PromoCodeController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ILogger<PromoCodeController> sysLog, IHttpClientFactory httpClientFactory, IServiceProvider services)
         {
@@ -37,6 +38,7 @@ namespace UpDiddyApi.Controllers
             _syslog = sysLog;
             _repositoryWrapper = services.GetService<IRepositoryWrapper>();
             _promoCodeService = services.GetService<IPromoCodeService>();
+            _serviceOfferingPromoCodeRedemptionService = services.GetService<IServiceOfferingPromoCodeRedemptionService>();
 
         }
 
@@ -117,8 +119,12 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/validate/{code}/course-variant/{courseVariantGuid}")]
         public IActionResult PromoCodeValidation(string code, string courseVariantGuid)
         {
+
+
+
             try
             {
+
                 PromoCodeDto validPromoCodeDto = null;
 
                 #region business logic to refactor
@@ -292,6 +298,12 @@ namespace UpDiddyApi.Controllers
         {
             try
             {
+                Guid subscriberGuid = Guid.Empty;
+              
+                // check to see if the request is authenticated if so get the guid of the subscriber that is logged in
+                if (HttpContext.User.FindFirst(ClaimTypes.NameIdentifier) != null)
+                    subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
                 PromoCodeDto validPromoCodeDto = null;
 
                 #region business logic to refactor
@@ -326,8 +338,18 @@ namespace UpDiddyApi.Controllers
                 if (promoCode.PromoEndDate < currentDateTime.AddHours(4)) // todo: improve ghetto grace period date logic
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code has expired." });
 
+                // Check to see if the user has exceeded max redempptions
+                Subscriber subscriber = null;
+                if (subscriberGuid != Guid.Empty)
+                {
+                    subscriber = _repositoryWrapper.Subscriber.GetSubscriberByGuid(subscriberGuid);
+                    if ( subscriber == null ) // todo: improve ghetto grace period date logic
+                        return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Sorry we cannot find your account." });
 
+                    if ( _promoCodeService.CheckSubscriberRedemptions(promoCode,subscriber) == false )
+                        return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Sorry you have already redeemed this offer." });
 
+                }
 
                 var inProgressRedemptionsForThisCode = _db.PromoCodeRedemption
                     .Include(pcr => pcr.RedemptionStatus)
@@ -369,7 +391,7 @@ namespace UpDiddyApi.Controllers
 
                 var adjustedPrice = _promoCodeService.CalculatePrice(promoCode, serviceOffering.Price);
                 var discount = serviceOffering.Price - adjustedPrice;
- 
+                 
                 validPromoCodeDto = new PromoCodeDto()
                 {
                     Discount = discount,
@@ -381,7 +403,13 @@ namespace UpDiddyApi.Controllers
                     PromoDescription = promoCode.PromoDescription,
                     PromoName = promoCode.PromoName
                 };
-
+    
+                // Reserve in flight promos for existing users
+                if ( subscriber!= null )
+                {
+                    _serviceOfferingPromoCodeRedemptionService.ReserveServiceOfferingPromoCode(promoCode, serviceOffering, subscriber, adjustedPrice);
+                }
+             
                 return Ok(validPromoCodeDto);
                 
                     

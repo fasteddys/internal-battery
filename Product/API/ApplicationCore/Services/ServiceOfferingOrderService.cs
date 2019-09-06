@@ -38,6 +38,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly ISubscriberService _subscriberService;
         private IB2CGraph _graphClient;
         private IBraintreeService _braintreeService;
+        private readonly IServiceOfferingPromoCodeRedemptionService _serviceOfferingPromoCodeRedemptionService;
 
         public ServiceOfferingOrderService(IServiceProvider services, IHangfireService hangfireService)
         {
@@ -56,10 +57,13 @@ namespace UpDiddyApi.ApplicationCore.Services
             _hangfireService = hangfireService;
             _graphClient = services.GetService<IB2CGraph>();
             _braintreeService = services.GetService<IBraintreeService>();
+            _serviceOfferingPromoCodeRedemptionService = services.GetService<IServiceOfferingPromoCodeRedemptionService>();
+
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
         }
 
-
+        // TODO JAB validate experations dates in UTC
+        //
 
         public bool ProcessOrder(ServiceOfferingTransactionDto serviceOfferingTransactionDto, Guid subscriberGuid, ref int statusCode, ref string msg)
         {
@@ -80,11 +84,15 @@ namespace UpDiddyApi.ApplicationCore.Services
             // At this point, subscriber should by hydrated with an existing or newly created subscriber.
             //
 
+            // Validate subscriber constraints such as max number of redemptions per subscriber
+            if (ValidateSubscriberConstraints(promoCode, subscriber, ref statusCode, ref msg) == false)
+                return false;
+
             // validate the payment with braintree
             if (ValidatePayment(serviceOfferingTransactionDto, subscriberGuid, ref subscriber, ref statusCode, ref msg) == false)
                 return false;
 
-
+       
             // create service offering order record 
             ServiceOfferingOrder order = new ServiceOfferingOrder()
             {
@@ -131,42 +139,36 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (promoCode != null)
             {
                 order.PromoCodeId = promoCode.PromoCodeId;
-
-                ServiceOfferingPromoCodeRedemption redemption = new ServiceOfferingPromoCodeRedemption()
-                {
-                    CreateDate = DateTime.Now,
-                    CreateGuid = subscriber.SubscriberGuid.Value,
-                    IsDeleted = 0,
-                    ModifyDate = DateTime.Now,
-                    ModifyGuid = subscriber.SubscriberGuid.Value,
-                    SubscriberId = subscriber.SubscriberId,
-                    PromoCodeId = promoCode.PromoCodeId,
-                    ServiceOfferingId = serviceOffering.ServiceOfferingId,
-                    RedemptionDate = DateTime.Now,
-                    ValueRedeemed = order.PricePaid,
-                    // todo make this an enum since having a foreign key to a table that only contains status information
-                    // is overly complicated
-                    RedemptionStatusId = 2
-                };
-                _db.ServiceOfferingPromoCodeRedemption.Add(redemption);
-
+                //create or convert in flight promo code redemption row
+                _serviceOfferingPromoCodeRedemptionService.ClaimServiceOfferingPromoCode(promoCode, serviceOffering, subscriber, order.PricePaid);                
                 // increment the number of redemptions of the coupon.
-                // todo jab makse sure ef catches this update
+                // todo jab makse sure ef catches this update                
+                promoCode.ModifyDate = DateTime.Now;
                 promoCode.NumberOfRedemptions += 1;
             }
             
             _db.ServiceOfferingOrder.Add(order);
-
-
             _db.SaveChanges();
-
             _syslog.LogInformation("ServiceOfferingService.ProcessOrder finished returning true", serviceOfferingTransactionDto);
             msg = order.ServiceOfferingOrderGuid.ToString();
             return true;
 
         }
 
-        public bool ValidatePayment(ServiceOfferingTransactionDto serviceOfferingTransactionDto, Guid subscriberGuid, ref Subscriber subscriber, ref int statusCode, ref string msg)
+        public bool ValidateSubscriberConstraints(PromoCode promoCode, Subscriber subscriber, ref int statusCode, ref string msg)
+        {
+            if (_promoCodeService.CheckSubscriberRedemptions(promoCode, subscriber) == false)
+            {
+                msg = "Sorry you have already redeemed this offer";
+                statusCode = 400;
+                _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriberConstraints returning false: {msg} ");
+                return false;
+            }
+                
+            return true;
+        }
+
+            public bool ValidatePayment(ServiceOfferingTransactionDto serviceOfferingTransactionDto, Guid subscriberGuid, ref Subscriber subscriber, ref int statusCode, ref string msg)
         {
             _syslog.LogInformation("ServiceOfferingService.ValidatePayment starting", serviceOfferingTransactionDto);
             ServiceOfferingOrderDto serviceOfferingOrderDto = serviceOfferingTransactionDto.ServiceOfferingOrderDto;
@@ -322,6 +324,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 _db.Add(subscriber);
                 _db.SaveChanges();
 
+                //TODO JAB send welcome email.  
+
                 // load the newly created subscriber 
                  existingSubscriber = _repositoryWrapper.SubscriberRepository.GetSubscriberByEmail(serviceOfferingTransactionDto.SignUpDto.email);
                 if (existingSubscriber == null)
@@ -369,6 +373,9 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <param name="msg"></param>
         /// <returns></returns>
 
+
+
+            // TODO JAB check for max number of redemptions per subscriber 
         public bool ValidateTransaction(ServiceOfferingOrderDto serviceOfferingOrderDto, ref ServiceOffering serviceOffering, ref PromoCode promoCode, ref int statusCode, ref string msg)
         {
             _syslog.LogInformation("ServiceOfferingService.ValidateTransaction starting", serviceOfferingOrderDto);
@@ -443,8 +450,10 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
                 // TODO move to PromoCodeService 
+
+                // TODO jab test
                 // check max number of redemptions 
-                if ( _promoCodeService.ValidateRedemptions(promoCode) == false )
+                if ( _serviceOfferingPromoCodeRedemptionService.CheckAvailability(promoCode, serviceOffering ) == false )
                 {
                     statusCode = 400;
                     msg = $"Promo code {serviceOfferingOrderDto.PromoCode.PromoName} has exceeded it's redemption limit";

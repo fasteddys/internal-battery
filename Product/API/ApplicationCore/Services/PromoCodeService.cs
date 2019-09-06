@@ -51,6 +51,20 @@ namespace UpDiddyApi.ApplicationCore.Services
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
         }
 
+        public bool CheckSubscriberRedemptions(PromoCode promoCode, Subscriber subscriber)
+        {
+            int numRedemptions = _db.ServiceOfferingPromoCodeRedemption
+                .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriber.SubscriberId && s.PromoCodeId == promoCode.PromoCodeId)
+                .Count();
+
+            if (numRedemptions >= promoCode.MaxNumberOfRedemptionsPerSubscriber)
+                return false;
+            else
+                return true;
+       
+        }
+
+
         public decimal CalculatePrice(PromoCode promoCode, decimal BasePrice)
         {
             decimal rVal = BasePrice;
