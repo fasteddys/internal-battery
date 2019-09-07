@@ -157,7 +157,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 .Where(s => s.IsDeleted == 0 && s.ServiceOfferingId == s.ServiceOfferingId && s.PromoCodeId == promoCode.PromoCodeId)
                 .Count();
 
-            if (NumRedemptions >= promoCode.NumberOfRedemptions)
+            if (NumRedemptions >= promoCode.MaxAllowedNumberOfRedemptions)
                 return false;
 
 
