@@ -138,7 +138,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                             braintreeErrors += ve.Message + ";";
                         msg = $"Braintree capture failed: Message {paymentResult.Message} Braintree errors: {braintreeErrors}";
                     }
-                    statusCode = 400;
+                    statusCode = 410;
                     _syslog.LogInformation($"BraintreeService.CapturePayment returning false: {msg} ");
                     return false;
                 }
