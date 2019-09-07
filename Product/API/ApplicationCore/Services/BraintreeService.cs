@@ -197,7 +197,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     StreetAddress = BraintreePaymentObject.Address,
                     Region = BraintreePaymentObject.Region,
                     Locality = BraintreePaymentObject.Locality,
-                    PostalCode = BraintreePaymentObject.ZipCode,
+                 //   PostalCode = BraintreePaymentObject.ZipCode,
                     CountryCodeAlpha2 = BraintreePaymentObject.CountryCode
                 },
                 Options = new TransactionOptionsRequest
