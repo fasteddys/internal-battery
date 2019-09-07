@@ -39,13 +39,11 @@ var submitPackagePayment = function(){
         data: $("#PackageCheckoutForm").serialize(),
         success: function (data) {
             $(".overlay").hide();
-            switch(data.statusCode){
-                case 200:
-                    document.location.href = "/career-services/" + pageSlug + "/confirmation/" + data.description;
-                    break;
-                case 400:
-                    ToastService.error(data.description);
-                    break;
+            if(data.statusCode == 200){
+                document.location.href = "/career-services/" + pageSlug + "/confirmation/" + data.description;
+            }
+            else{
+                ToastService.error(data.description);
             }
         },
         error: function (jqXHR, textStatus, errorThrown) {
