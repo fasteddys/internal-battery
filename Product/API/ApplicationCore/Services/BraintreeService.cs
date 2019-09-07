@@ -138,7 +138,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                             braintreeErrors += ve.Message + ";";
                         msg = $"Braintree capture failed: Message {paymentResult.Message} Braintree errors: {braintreeErrors}";
                     }
-                    statusCode = 400;
+                    statusCode = 410;
                     _syslog.LogInformation($"BraintreeService.CapturePayment returning false: {msg} ");
                     return false;
                 }
@@ -197,7 +197,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     StreetAddress = BraintreePaymentObject.Address,
                     Region = BraintreePaymentObject.Region,
                     Locality = BraintreePaymentObject.Locality,
-                    PostalCode = BraintreePaymentObject.ZipCode,
+                 //   PostalCode = BraintreePaymentObject.ZipCode,
                     CountryCodeAlpha2 = BraintreePaymentObject.CountryCode
                 },
                 Options = new TransactionOptionsRequest
