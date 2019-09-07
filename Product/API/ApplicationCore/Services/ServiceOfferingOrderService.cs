@@ -320,7 +320,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if ( existingSubscriber != null)
                 {
                     statusCode = 400;
-                    msg = $"'{serviceOfferingTransactionDto.SignUpDto.email}' is an existing subscriber";
+                    msg = $"'{serviceOfferingTransactionDto.SignUpDto.email}' is an existing member, please login to complete your purchase";
                     _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     return false;
                 }
@@ -340,7 +340,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     {
                         statusCode = 400;
                         msg = $"Error creating account: {ex.Message}";
-                        _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
+                        _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg}");
                         return false;
                     }
                 }

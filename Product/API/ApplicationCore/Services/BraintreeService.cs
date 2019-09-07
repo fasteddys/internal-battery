@@ -124,7 +124,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                     string braintreeErrors = string.Empty;
                     if (paymentResult.Message == "Gateway Rejected: avs")
                     {
-                        msg = $"Billing address is incorrect";
+                        msg = $"Billing address is incorrect, please confirm your street address and  postal code";
+                    }
+                    else if (paymentResult.Message == "Gateway Rejected: cvv")
+                    {
+                        msg = $"Your cvv code is incorrect";
                     }
                     else
                     {
