@@ -374,7 +374,7 @@ namespace UpDiddyApi.Controllers
 
             
 
-                if ( _serviceOfferingPromoCodeRedemptionService.CheckAvailability(promoCode,serviceOffering) == false)
+                if ( _serviceOfferingPromoCodeRedemptionService.PromoIsAvailable(promoCode,subscriber,serviceOffering) == false)
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code has exceeded its allowed number of redemptions.", FinalCost = serviceOffering.Price });
 
 
