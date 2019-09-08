@@ -36,8 +36,6 @@ namespace UpDiddy.ViewModels
         public Guid SelectedState { get; set; }
         [Required(ErrorMessage = "A country must be selected in billing information.")]
         public Guid SelectedCountry { get; set; }
-        [Required(ErrorMessage = "A zip code must be entered in billing information.")]
-        public string BillingZipCode { get; set; }
         //todo: implement this convenient functionality after profile info has been refactored
         public Boolean SameAsAboveCheckbox { get; set; }
 
