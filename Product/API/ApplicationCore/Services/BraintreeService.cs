@@ -122,24 +122,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                 else
                 {
                     string braintreeErrors = string.Empty;
-                    if (paymentResult.Message == "Gateway Rejected: avs")
-                    {
-                        msg = $"Billing address is incorrect, please confirm your street address and  postal code";
-                    }
-                    else if (paymentResult.Message == "Gateway Rejected: cvv")
-                    {
-                        msg = $"Your cvv code is incorrect";
-                    }
-                    else
-                    {
-                        List<ValidationError> theErrors = paymentResult.Errors.DeepAll();
-
-                        foreach (ValidationError ve in theErrors)
-                            braintreeErrors += ve.Message + ";";
-                        msg = $"Braintree capture failed: Message {paymentResult.Message} Braintree errors: {braintreeErrors}";
-                    }
+                    msg = $"There was an issue with the card information";                      
                     statusCode = 410;
-                    _syslog.LogInformation($"BraintreeService.CapturePayment returning false: {msg} ");
+                    _syslog.LogInformation($"BraintreeService.CapturePayment returning false: {msg}  Braintree Message : {paymentResult.Message}");
                     return false;
                 }
                        
