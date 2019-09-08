@@ -32,6 +32,7 @@ var calculatePackagePrice = function(){
 }
 
 var submitPackagePayment = function(){
+    $(".bt-drop-reset-instruction").hide();
     $(".overlay").show();
     $.ajax({
         type: 'POST',
@@ -44,6 +45,10 @@ var submitPackagePayment = function(){
             }
             else{
                 ToastService.error(data.description);
+            }
+
+            if(data.statusCode == 410){
+                $(".bt-drop-reset-instruction").show();
             }
         },
         error: function (jqXHR, textStatus, errorThrown) {
