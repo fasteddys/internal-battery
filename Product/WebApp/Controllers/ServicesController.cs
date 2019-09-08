@@ -317,7 +317,6 @@ namespace WebApp.Controllers
                 Email = IsNewSubscriberCheckout ? serviceCheckoutViewModel.NewSubscriberEmail : Subscriber.Email,
                 Address = serviceCheckoutViewModel.BillingAddress,
                 Locality = serviceCheckoutViewModel.BillingCity,
-                ZipCode = serviceCheckoutViewModel.BillingZipCode,
                 StateGuid = serviceCheckoutViewModel.SelectedState,
                 CountryGuid = serviceCheckoutViewModel.SelectedCountry,
                 MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("Braintree:MerchantAccountID")

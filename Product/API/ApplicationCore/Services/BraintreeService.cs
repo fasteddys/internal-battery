@@ -121,13 +121,10 @@ namespace UpDiddyApi.ApplicationCore.Services
                 }                    
                 else
                 {
-                    string braintreeErrors = string.Empty;                 
-                    List<ValidationError> theErrors = paymentResult.Errors.DeepAll();
-
-                    foreach (ValidationError ve in theErrors)
-                        braintreeErrors += ve.Message + ";";
-                    msg = $"Braintree capture failed: Message {paymentResult.Message} Braintree errors: {braintreeErrors}";
-                    _syslog.LogInformation($"BraintreeService.CapturePayment returning false: {msg} ");
+                    string braintreeErrors = string.Empty;
+                    msg = $"There was an issue with the card information";                      
+                    statusCode = 410;
+                    _syslog.LogInformation($"BraintreeService.CapturePayment returning false: {msg}  Braintree Message : {paymentResult.Message}");
                     return false;
                 }
                        
@@ -185,7 +182,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     StreetAddress = BraintreePaymentObject.Address,
                     Region = BraintreePaymentObject.Region,
                     Locality = BraintreePaymentObject.Locality,
-                    PostalCode = BraintreePaymentObject.ZipCode,
+                 //   PostalCode = BraintreePaymentObject.ZipCode,
                     CountryCodeAlpha2 = BraintreePaymentObject.CountryCode
                 },
                 Options = new TransactionOptionsRequest

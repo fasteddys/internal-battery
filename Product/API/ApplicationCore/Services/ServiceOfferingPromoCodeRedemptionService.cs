@@ -150,18 +150,40 @@ namespace UpDiddyApi.ApplicationCore.Services
             return true;
         }
 
-        public bool CheckAvailability(PromoCode promoCode, ServiceOffering serviceOffering)
+        public bool PromoIsAvailable(PromoCode promoCode, Subscriber subscriber, ServiceOffering serviceOffering)
         {
+
+            if (promoCode == null)
+                return true;
+
+            // do some housekeeping here to purge old inflight promos 
+            PurgeExpiredPendingRedemptions(promoCode, serviceOffering);
+
             // get the number of redemtions (either completed or inflight )
             int NumRedemptions = _db.ServiceOfferingPromoCodeRedemption
-                .Where(s => s.IsDeleted == 0 && s.ServiceOfferingId == s.ServiceOfferingId && s.PromoCodeId == promoCode.PromoCodeId)
+                .Where(s => s.IsDeleted == 0  && s.PromoCodeId == promoCode.PromoCodeId)
                 .Count();
 
-            if (NumRedemptions >= promoCode.MaxAllowedNumberOfRedemptions)
-                return false;
+            // simple case of redemptions available 
+            if (NumRedemptions < promoCode.MaxAllowedNumberOfRedemptions)
+            {
+                return true;
+            }
+             
+            // check to see if the subscriber has an inflight
+            if ( subscriber != null )
+            {
+                // check to see if the subscriber has any inflight redemptions 
+                NumRedemptions = _db.ServiceOfferingPromoCodeRedemption
+                .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriber.SubscriberId && s.PromoCodeId == promoCode.PromoCodeId  && s.PromoCodeId == promoCode.PromoCodeId)
+                .Count();
+
+                if (NumRedemptions > 0)
+                    return true;
+            }
 
 
-            return true;
+            return false;
         }
 
 

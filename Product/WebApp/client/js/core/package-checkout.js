@@ -32,6 +32,7 @@ var calculatePackagePrice = function(){
 }
 
 var submitPackagePayment = function(){
+    $(".bt-drop-reset-instruction").hide();
     $(".overlay").show();
     $.ajax({
         type: 'POST',
@@ -39,13 +40,15 @@ var submitPackagePayment = function(){
         data: $("#PackageCheckoutForm").serialize(),
         success: function (data) {
             $(".overlay").hide();
-            switch(data.statusCode){
-                case 200:
-                    document.location.href = "/career-services/" + pageSlug + "/confirmation/" + data.description;
-                    break;
-                case 400:
-                    ToastService.error(data.description);
-                    break;
+            if(data.statusCode == 200){
+                document.location.href = "/career-services/" + pageSlug + "/confirmation/" + data.description;
+            }
+            else{
+                ToastService.error(data.description);
+            }
+
+            if(data.statusCode == 410){
+                $(".bt-drop-reset-instruction").show();
             }
         },
         error: function (jqXHR, textStatus, errorThrown) {

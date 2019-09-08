@@ -73,6 +73,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             PromoCode promoCode = null;
             ServiceOffering serviceOffering = null;
             string AuthInfo = string.Empty;
+
+ 
             // Validate basic aspects of the transaction such a valid service offering, valid promo etc. 
             if (ValidateTransaction(serviceOfferingOrderDto, ref serviceOffering, ref promoCode, ref statusCode, ref msg) == false)
                 return false;
@@ -82,10 +84,11 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             //
             // At this point, subscriber should by hydrated with an existing or newly created subscriber.
+            // At this point serviceOffering should also be hydrated 
             //
 
             // Validate subscriber constraints such as max number of redemptions per subscriber
-            if (ValidateSubscriberConstraints(promoCode, subscriber, ref statusCode, ref msg) == false)
+            if (ValidateSubscriberConstraints(promoCode, subscriber, serviceOffering, ref statusCode, ref msg) == false)
                 return false;
 
             // validate the payment with braintree
@@ -174,8 +177,20 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         }
 
-        public bool ValidateSubscriberConstraints(PromoCode promoCode, Subscriber subscriber, ref int statusCode, ref string msg)
+        public bool ValidateSubscriberConstraints(PromoCode promoCode, Subscriber subscriber, ServiceOffering serviceOffering, ref int statusCode, ref string msg)
         {
+
+
+            // check max number of redemptions 
+            if (_serviceOfferingPromoCodeRedemptionService.PromoIsAvailable(promoCode, subscriber, serviceOffering) == false)
+            {
+                statusCode = 400;
+                msg = $"Promo code {promoCode.PromoName} has exceeded it's redemption limit";
+                _syslog.LogInformation($"ServiceOfferingService.ValidateTransaction returning false: {msg} ");
+                return false;
+            }
+
+
             if (_promoCodeService.SubscriberHasAvailableRedemptions(promoCode, subscriber) == false)
             {
                 msg = "Sorry you have already redeemed this offer";
@@ -305,7 +320,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if ( existingSubscriber != null)
                 {
                     statusCode = 400;
-                    msg = $"'{serviceOfferingTransactionDto.SignUpDto.email}' is an existing subscriber";
+                    msg = $"'{serviceOfferingTransactionDto.SignUpDto.email}' is an existing member, please login to complete your purchase";
                     _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     return false;
                 }
@@ -325,7 +340,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     {
                         statusCode = 400;
                         msg = $"Error creating account: {ex.Message}";
-                        _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
+                        _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg}");
                         return false;
                     }
                 }
@@ -469,14 +484,6 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 // TODO move to PromoCodeService 
 
-                // check max number of redemptions 
-                if ( _serviceOfferingPromoCodeRedemptionService.CheckAvailability(promoCode, serviceOffering ) == false )
-                {
-                    statusCode = 400;
-                    msg = $"Promo code {serviceOfferingOrderDto.PromoCode.PromoName} has exceeded it's redemption limit";
-                    _syslog.LogInformation($"ServiceOfferingService.ValidateTransaction returning false: {msg} ");
-                    return false;
-                }
 
 
                 // Find service offering promo code object 
