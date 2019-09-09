@@ -189,7 +189,6 @@ body {
                     border-radius: 1rem;
                     font-weight: bold;
                     font-size: 1.3rem;
-                    margin-left:-2rem;
                     a {
                         font-weight:bold;
                     }
@@ -359,6 +358,18 @@ body {
         }
     }
 
+}
+
+@media (max-width: 528px) {
+    body {
+        #HomeContainer {
+            .signup-top-container-footer {
+                a {
+                    margin-top: 1rem;
+                }
+            }
+        }
+    }
 }
 
 // Medium Styles
