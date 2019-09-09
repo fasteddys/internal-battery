@@ -11,7 +11,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IQueryable<Subscriber> GetAllSubscribersAsync();
 
         Task<Subscriber> GetSubscriberByGuidAsync(Guid subscriberGuid);
+        Subscriber GetSubscriberByGuid(Guid subscriberGuid);
         Task<Subscriber> GetSubscriberByEmailAsync(string email);
+        Subscriber GetSubscriberByEmail(string email);
 
         Task<Subscriber> GetSubscriberByIdAsync(int subscriberId);
 

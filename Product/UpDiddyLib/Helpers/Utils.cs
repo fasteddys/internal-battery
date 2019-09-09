@@ -14,11 +14,22 @@ using GoogleTypes = Google.Protobuf.WellKnownTypes;
 using System.Text;
 using System.Net;
 using HtmlAgilityPack;
+using System.Net.Mail;
 
 namespace UpDiddyLib.Helpers
 {
     static public class Utils
     {
+
+
+        // quick and dirty email validation class 
+        public static bool ValidateEmail(string emailaddress)
+        {
+            return  Regex.IsMatch(emailaddress, @"\A(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)\Z", RegexOptions.IgnoreCase);
+        }
+
+         
+
         public static bool validStartDate(DateTime? startDate, DateTime? endDate)
         {
             if (startDate == null || startDate.Value != DateTime.MinValue)
