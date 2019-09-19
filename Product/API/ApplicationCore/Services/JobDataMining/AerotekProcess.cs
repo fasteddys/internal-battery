@@ -213,7 +213,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             }), _jobSite.CrawlDelayInMilliseconds.Value)).Wait();
 
             if (discoveredJobPages.Count() != jobPageUrls.Count)
-                _syslog.Log(LogLevel.Information, $"***** AerotekProcess.DiscoverJobPages found {discoveredJobPages.Count()} jobs but TEKsystem's API indicates there should be {jobPageUrls.Count} jobs.");
+                _syslog.Log(LogLevel.Information, $"***** AerotekProcess.DiscoverJobPages found {discoveredJobPages.Count()} jobs but Aerotek's website indicates there should be {jobPageUrls.Count} jobs.");
 
             /* deal with duplicate job postings (or job postings that are similar enough to be considered duplicates). examples:
              * - two job listings that have the same url and id but in the raw data the "applications" property is different (id: J3Q20V76L8YK2XBR6S8)

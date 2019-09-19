@@ -19,9 +19,9 @@ using static UpDiddyApi.ApplicationCore.Services.JobDataMining.Helpers;
 
 namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 {
-    public class TEKsystemsProcess : BaseProcess, IJobDataMining
+    public class EASiProcess : BaseProcess, IJobDataMining
     {
-        public TEKsystemsProcess(JobSite jobSite, ILogger logger, Guid companyGuid, IConfiguration config) : base(jobSite, logger, companyGuid, config) { }
+        public EASiProcess(JobSite jobSite, ILogger logger, Guid companyGuid, IConfiguration config) : base(jobSite, logger, companyGuid, config) { }
 
         #region Private Members
 
@@ -43,13 +43,17 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                 string rawHtml;
                 JObject rawData;
 
+                // job urls have a host of 'www.easi.com' which will cause 404
+                UriBuilder uriBuilder = new UriBuilder(jobPageUri);
+                uriBuilder.Host = "easi.jobs.net";
+
                 bool isJobExists = true;
                 // retrieve the latest job page data
                 using (var client = new HttpClient(GetHttpClientHandler()))
                 {
                     var request = new HttpRequestMessage()
                     {
-                        RequestUri = jobPageUri,
+                        RequestUri = uriBuilder.Uri,
                         Method = HttpMethod.Get
                     };
                     var response = client.SendAsync(request).Result;
@@ -142,7 +146,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Information, $"***** TEKsystemProcess.CreateJobPageFromHttpRequest encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                _syslog.Log(LogLevel.Information, $"***** EASiProcess.CreateJobPageFromHttpRequest encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }
 
             return result;
@@ -199,17 +203,17 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     isSearchPageContainsJobs = false;
             } while (isSearchPageContainsJobs);
 
-            // crawl all of the job urls and create job pages for each
-            (jobPageUrls.ForEachWithDelay(jobPageUri => Task.Run(() =>
-            {
-                JobPage discoveredJobPage = null;
-                discoveredJobPage = CreateJobPageFromHttpRequest(jobPageUri, existingJobPages);
-                if (discoveredJobPage != null)
-                    discoveredJobPages.Add(discoveredJobPage);
-            }), _jobSite.CrawlDelayInMilliseconds.Value)).Wait();
+           // crawl all of the job urls and create job pages for each
+           (jobPageUrls.ForEachWithDelay(jobPageUri => Task.Run(() =>
+           {
+               JobPage discoveredJobPage = null;
+               discoveredJobPage = CreateJobPageFromHttpRequest(jobPageUri, existingJobPages);
+               if (discoveredJobPage != null)
+                   discoveredJobPages.Add(discoveredJobPage);
+           }), _jobSite.CrawlDelayInMilliseconds.Value)).Wait();
 
             if (discoveredJobPages.Count() != jobPageUrls.Count)
-                _syslog.Log(LogLevel.Information, $"***** TEKsystemsProcess.DiscoverJobPages found {discoveredJobPages.Count()} jobs but TEKsystem's website indicates there should be {jobPageUrls.Count} jobs.");
+                _syslog.Log(LogLevel.Information, $"***** EASiProcess.DiscoverJobPages found {discoveredJobPages.Count()} jobs but EASi's website indicates there should be {jobPageUrls.Count} jobs.");
 
             /* deal with duplicate job postings (or job postings that are similar enough to be considered duplicates). examples:
              * - two job listings that have the same url and id but in the raw data the "applications" property is different (id: J3Q20V76L8YK2XBR6S8)
@@ -307,7 +311,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Information, $"***** TEKsystemProcess.ProcessJobPage encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                _syslog.Log(LogLevel.Information, $"***** EASiProcess.ProcessJobPage encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                 return null;
             }
         }
