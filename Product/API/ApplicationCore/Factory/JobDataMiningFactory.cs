@@ -24,6 +24,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     return new TEKsystemsProcess(jobSite, logger, new Guid("2C2BC0D6-416B-4B62-A16A-87AC9B95D0B2"), config);
                 case "Allegis Group ICIMS":
                     return new AllegisGroupProcess(jobSite, logger, new Guid("92728544-FDFD-493F-A7D3-5547DEA7B9DD"), config);
+                case "EASi":
+                    return new EASiProcess(jobSite, logger, new Guid("E7984C36-FD1C-4578-9E66-59305470EF16"), config);
                 default:
                     throw new NotSupportedException($"Unrecognized and/or unsupported jobSite: {jobSite.Name}");
             }
