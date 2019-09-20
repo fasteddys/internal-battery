@@ -12,7 +12,7 @@ namespace UpDiddyApi.Migrations
 2019.08.26 - Bhupesh Vipparla - Created
 2019.09.20 - Bill Koenig - Added support for nullable date range, fixed issue that was preventing partners without associated 
 	subscribers from being displayed, start and end date range now references a floored Subscriber CreateDate rather than the	
-	SubscriberGroup CreateDate, flooresimplified overall logic, renamed stored procedure to match existing pattern (including 
+	SubscriberGroup CreateDate, simplified overall logic, renamed stored procedure to match existing pattern (including 
 	the model to which the result is being bound) , and added comment block to beginning of stored procedure.
 </remarks>
 <description>
