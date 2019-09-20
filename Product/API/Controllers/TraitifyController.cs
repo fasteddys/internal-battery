@@ -131,7 +131,7 @@ namespace UpDiddyApi.Controllers
         private async Task SendCompletionEmail(string sendTo, dynamic result)
         {
             bool? isEmailValid = _zeroBounceApi.ValidateEmail(sendTo);
-            if (isEmailValid != null && isEmailValid.Value)
+            if (isEmailValid != null && isEmailValid.Value == true)
             {
                 await _sysEmail.SendTemplatedEmailAsync(
                                  sendTo,
