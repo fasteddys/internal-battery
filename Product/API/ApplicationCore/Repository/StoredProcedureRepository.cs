@@ -49,13 +49,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return await _dbContext.SubscriberJobFavorites.FromSql<JobDto>("System_Get_SubscriberJobFavorites @SubscriberId", spParams).ToListAsync();
         }
 
-        public async Task<List<SubscriberSignUpCourseEnrollmentStatistics>> GetSubscriberSignUpCourseEnrollmentStatisticsAsync(DateTime startDate, DateTime endDate)
+        public async Task<List<SubscriberSignUpCourseEnrollmentStatistics>> GetSubscriberSignUpCourseEnrollmentStatisticsAsync(DateTime? startDate, DateTime? endDate)
         {
             var spParams = new object[] {
-                new SqlParameter("@StartDate", startDate),
-                new SqlParameter("@EndDate", endDate)
+                new SqlParameter("@StartDate", startDate.HasValue ? startDate.Value : (object)DBNull.Value),
+                new SqlParameter("@EndDate", endDate.HasValue ? endDate.Value : (object)DBNull.Value),
                 };
-            return await _dbContext.SubscriberSignUpCourseEnrollmentStatistics.FromSql<SubscriberSignUpCourseEnrollmentStatistics>("EXECUTE dbo.System_SubscriberSignUpAndCourseEnrollmentStatisticsByPartner @StartDate, @EndDate", spParams).ToListAsync();
+            return await _dbContext.SubscriberSignUpCourseEnrollmentStatistics.FromSql<SubscriberSignUpCourseEnrollmentStatistics>("EXECUTE dbo.System_Get_SubscriberSignUpCourseEnrollmentStatistics @StartDate, @EndDate", spParams).ToListAsync();
         }
 
         public async Task<int> AddOrUpdateCourseAsync(CourseParams courseParams)
