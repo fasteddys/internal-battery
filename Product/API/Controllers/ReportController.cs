@@ -105,7 +105,7 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet]
         [Route("/api/[controller]/partners")]
-        public async Task<IActionResult> SubscriberReportByPartner([FromQuery]DateTime startDate, [FromQuery]DateTime endDate)
+        public async Task<IActionResult> SubscriberReportByPartner([FromQuery]DateTime? startDate, [FromQuery]DateTime? endDate)
         {
             ActionResult response;
             try

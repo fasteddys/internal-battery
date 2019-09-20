@@ -143,7 +143,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return result;        
         }
 
-        public async Task<List<SubscriberSignUpCourseEnrollmentStatistics>> GetSubscriberSignUpCourseEnrollmentStatisticsAsync(DateTime startDate, DateTime endDate)
+        public async Task<List<SubscriberSignUpCourseEnrollmentStatistics>> GetSubscriberSignUpCourseEnrollmentStatisticsAsync(DateTime? startDate, DateTime? endDate)
         {
             var result = await _repositoryWrapper.StoredProcedureRepository.GetSubscriberSignUpCourseEnrollmentStatisticsAsync(startDate, endDate);
             return result;
