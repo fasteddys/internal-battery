@@ -421,7 +421,7 @@ namespace UpDiddy.Controllers
                 return StatusCode(500);
             }
 
-            if (this.subscriber.Files.Count == 0)
+            if (this.subscriber.Files.Count == 0 && JobApplicationViewModel.UploadedResume == null)
                 return BadRequest();
 
             JobPostingDto job = null;
@@ -454,7 +454,6 @@ namespace UpDiddy.Controllers
                 Subscriber = this.subscriber,
                 CoverLetter = JobApplicationViewModel.CoverLetter
             };
-
 
             BasicResponseDto Response = null;
 

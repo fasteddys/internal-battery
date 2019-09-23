@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Dto.Reporting;
+using Microsoft.AspNetCore.Http;
 
 namespace UpDiddy.Api
 {
@@ -57,7 +58,7 @@ namespace UpDiddy.Api
         Task<IList<CompensationTypeDto>> GetCompensationTypesAsync();
         Task<IList<EducationalDegreeTypeDto>> GetEducationalDegreeTypesAsync();
         Task<IList<SkillDto>> GetSkillsBySubscriberAsync(Guid subscriberGuid);
-        Task<BasicResponseDto> UploadResumeAsync(ResumeDto resumeDto);
+        Task<BasicResponseDto> UploadResumeAsync(ResumeDto resumedto);
         Task<SubscriberWorkHistoryDto> AddWorkHistoryAsync(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory);
         Task<SubscriberWorkHistoryDto> UpdateWorkHistoryAsync(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory);
         Task<SubscriberEducationHistoryDto> UpdateEducationHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto educationHistory);
