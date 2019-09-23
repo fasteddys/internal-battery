@@ -1,11 +1,9 @@
-using System.Net.Sockets;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using AutoMapper;
 using UpDiddyLib.Dto;
 using com.traitify.net.TraitifyLibrary;
-using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using System.Threading.Tasks;
@@ -15,9 +13,8 @@ using static UpDiddyLib.Helpers.Constants;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net;
-using Newtonsoft.Json;
 using System.Text;
+using UpDiddyApi.ApplicationCore.Services;
 
 namespace UpDiddyApi.Controllers
 {
@@ -33,8 +30,7 @@ namespace UpDiddyApi.Controllers
         private readonly string _resultUrl;
         private ILogger<TraitifyController> _logger;
         private readonly ISysEmail _sysEmail;
-
-
+        private readonly ZeroBounceApi _zeroBounceApi;
 
         public TraitifyController(ITraitifyService traitifyService,
          IRepositoryWrapper repositoryWrapper,
@@ -54,6 +50,7 @@ namespace UpDiddyApi.Controllers
             _mapper = mapper;
             _logger = logger;
             _sysEmail = sysEmail;
+            _zeroBounceApi = new ZeroBounceApi(config, repositoryWrapper, logger);
         }
 
 
@@ -133,13 +130,17 @@ namespace UpDiddyApi.Controllers
 
         private async Task SendCompletionEmail(string sendTo, dynamic result)
         {
-            await _sysEmail.SendTemplatedEmailAsync(
-                      sendTo,
-                      _config["SysEmail:Transactional:TemplateIds:PersonalityAssessment-ResultsSummary"],
-                      result,
-                      SendGridAccount.Transactional,
-                      null,
-                      null);
+            bool? isEmailValid = _zeroBounceApi.ValidateEmail(sendTo);
+            if (isEmailValid != null && isEmailValid.Value == true)
+            {
+                await _sysEmail.SendTemplatedEmailAsync(
+                                 sendTo,
+                                 _config["SysEmail:Transactional:TemplateIds:PersonalityAssessment-ResultsSummary"],
+                                 result,
+                                 SendGridAccount.Transactional,
+                                 null,
+                                 null);
+            }
         }
 
         private async Task<string> GetJsonResults(string assessmentId)
