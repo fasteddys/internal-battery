@@ -47,21 +47,23 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> Get()
         {
 
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var isAuth = await _authorizationService.AuthorizeAsync(User, "IsCareerCircleAdmin");
+            // TODO JAB CLEAN UP AFTER TESTING 
+            //var isAuth = await _authorizationService.AuthorizeAsync(User, "IsCareerCircleAdmin");
 
-            if (isAuth.Succeeded)
-            {
+          //  if (isAuth.Succeeded)
+           // {
                 List<Partner> partners = _db.Partner
                     .Where(s => s.IsDeleted == 0)
                     .ToList();
                 return Ok(partners);
-            }
-            else
-                return Unauthorized();
+           // }
+            //else
+              //  return Unauthorized();
         }
 
         [HttpGet("{PartnerGuid}")]

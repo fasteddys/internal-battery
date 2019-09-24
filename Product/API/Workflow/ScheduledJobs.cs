@@ -770,7 +770,7 @@ namespace UpDiddyApi.Workflow
         /// This is the entry point for all third party job data mining.
         /// </summary>
         /// <returns></returns>
-        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 60 * 24)]
         public async Task<bool> JobDataMining()
         {
             _syslog.Log(LogLevel.Information, $"***** JobDataMining started at: {DateTime.UtcNow.ToLongDateString()}");

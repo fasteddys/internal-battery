@@ -13,7 +13,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<JobCountPerProvince>> GetJobCountPerProvince();
         Task<List<JobDto>> GetSubscriberJobFavorites(int SubscriberId);
         Task<List<SubscriberSourceDto>> GetSubscriberSources(int SubscriberId);
-        Task<List<SubscriberSignUpCourseEnrollmentStatistics>> GetSubscriberSignUpCourseEnrollmentStatisticsAsync(DateTime startDate, DateTime endDate);
+        Task<List<SubscriberSignUpCourseEnrollmentStatistics>> GetSubscriberSignUpCourseEnrollmentStatisticsAsync(DateTime? startDate, DateTime? endDate);
         Task<int> AddOrUpdateCourseAsync(CourseParams courseParams);
     }
 }

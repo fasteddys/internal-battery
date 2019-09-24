@@ -44,20 +44,20 @@ class TotalUserBreakdownByPartner extends React.Component {
 
     validateDates() {
         const { date } = this.state;
-        if (date.ge == null) {
-            date.ge = new Date('2018-01-01');
+        var startDate = null;
+        var endDate = null;
+
+        if (date.ge != null) {
+            startDate = this.toLocalDate(date.ge);
         }
-        if (date.le == null) {
-            date.le = new Date();
+        if (date.le != null) {
+            endDate = this.toLocalDate(date.le);
         }
 
-
-        var startDate = this.toLocalDate(date.ge);
-        var endDate = this.toLocalDate(date.le);
-        if (Date.parse(startDate) <= Date.parse(endDate)) {
-            this.fetchData(startDate, endDate);
-        } else {
+        if (startDate != null && endDate != null && startDate > endDate) {
             ToastService.error("End date must be after Start date");
+        } else {
+            this.fetchData(startDate, endDate);
         }
     }
 
@@ -129,9 +129,6 @@ class TotalUserBreakdownByPartner extends React.Component {
                         data={this.state.data}
                         columns={this.state.columns}
                         loading={this.state.loading}
-                        style={{
-                            height: "200px"
-                        }}
                         columns={[
                             {
                                 Header: "Partner",
@@ -147,6 +144,12 @@ class TotalUserBreakdownByPartner extends React.Component {
                                 Header: "# Enrollments",
                                 accessor: "enrollmentCount",
                                 width: 150
+                            }
+                        ]}
+                        defaultSorted={[
+                            {
+                                id: "partnerName",
+                                desc: false,
                             }
                         ]}
                         showPagination={false}
