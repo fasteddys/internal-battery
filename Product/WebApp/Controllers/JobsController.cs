@@ -175,14 +175,59 @@ namespace UpDiddy.Controllers
         [Route("jobs/{industry}/{category}/{country}/{state}/{city}/{JobGuid}")]
         public IActionResult RedirectOldJobsUrl(Guid JobGuid)
         {
+
+            var path = Request.Path.Value;
             return RedirectToActionPermanent("JobAsync", "Jobs", new { JobGuid = JobGuid });
         }
 
+
         [HttpGet]
         [Route("job/{JobGuid}")]
+        public  async Task<bool> JobRedirect(Guid JobGuid)
+        {
+
+            string url = string.Empty;
+            JobPostingDto job = null;
+            try
+            {
+                job = await _api.GetJobAsync(JobGuid, GoogleCloudEventsTrackingDto.Build(HttpContext.Request.Query, UpDiddyLib.Shared.GoogleJobs.ClientEventType.View));
+                if (job != null)
+                {
+                    url = job.SemanticJobPath;
+                    string queryParams = Request.QueryString.ToString();
+                    if (!string.IsNullOrEmpty(queryParams))
+                        url +=  queryParams;
+                }
+                    
+                else
+                    return false;
+
+            }
+            catch (ApiException e)
+            {
+                return true;
+            }
+
+            //cookie the user with the source of the job detail Page view  
+            if (Request != null && Request.Query != null && string.IsNullOrEmpty(Request.Query["Source"].ToString()) == false)
+            {
+                SetCookie(JobGuid.ToString(), Request.Query["Source"].ToString(), 262800);
+            }
+
+
+            Response.StatusCode = 301;
+            Response.Redirect(url,true);
+
+            return false;
+        }
+
+
+
+        [HttpGet] 
         [Route("job/{industry}/{category}/{country}/{state}/{city}/{JobGuid}")]
         public async Task<IActionResult> JobAsync(Guid JobGuid)
         {
+            var path = Request.Path.Value;
             JobPostingDto job = null;
             try
             {
@@ -190,7 +235,7 @@ namespace UpDiddy.Controllers
 
                 if (job.JobStatus == (int)JobPostingStatus.Draft)
                 {
-                    BasicResponseDto ResponseDto = new BasicResponseDto() { StatusCode = 401, Description = "Draft jobs cannot be viewed" };
+                    BasicResponseDto ResponseDto = new BasicResponseDto() { StatusCode = 404, Description = "Jobposting not found!" };
                     throw new ApiException(new System.Net.Http.HttpResponseMessage(), ResponseDto);
                 }
             }
@@ -325,8 +370,15 @@ namespace UpDiddy.Controllers
                 Province = job.Province,
                 SimilarJobsFavorites = SimilarJobsFavorites,
                 Skills = job.JobPostingSkills != null ? job.JobPostingSkills.Select(x => x.SkillName).ToList() : null,
-                LogoUrl = job?.Company?.LogoUrl != null ? _configuration["CareerCircle:AssetBaseUrl"] + "Company/" + job.Company.LogoUrl : string.Empty
+                LogoUrl = job?.Company?.LogoUrl != null ? _configuration["CareerCircle:AssetBaseUrl"] + "Company/" + job.Company.LogoUrl : string.Empty,
+      
             };
+
+            jdvm.ApplyUrl = "/jobs/apply/" + jdvm.PostingId;
+            string queryParams = Request.QueryString.ToString();
+            if (!string.IsNullOrEmpty(queryParams))
+                jdvm.ApplyUrl += queryParams;
+
 
             // Display subscriber info if it exists
             if (job.Recruiter.Subscriber != null)
@@ -368,6 +420,9 @@ namespace UpDiddy.Controllers
 
             return View("JobDetails", jdvm);
         }
+
+
+
 
         [Authorize]
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
@@ -454,6 +509,21 @@ namespace UpDiddy.Controllers
                 Subscriber = this.subscriber,
                 CoverLetter = JobApplicationViewModel.CoverLetter
             };
+
+
+            var cookieKey = job.JobPostingGuid.ToString();
+            // Check to see if their is a parter source cookie for this job
+            if (Request != null && Request.Cookies != null && Request.Cookies[cookieKey] != null && string.IsNullOrEmpty(Request.Cookies[cookieKey].ToString()) == false)
+            {
+                string jobPartnerSource = Request.Cookies[job.JobPostingGuid.ToString()].ToString();
+                PartnerDto partner = await _api.GetPartnerByNameAsync(jobPartnerSource);
+                if (partner != null)
+                    jadto.Partner = partner;
+
+                // Consume the cookie, hehe that's funny
+                RemoveCookie(job.JobPostingGuid.ToString());
+            }
+
 
 
             BasicResponseDto Response = null;

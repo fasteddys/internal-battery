@@ -60,6 +60,8 @@
         IServiceOfferingPromoCodeRepository ServiceOfferingPromoCodeRepository { get;  }
         IPromoCodeRepository PromoCodeRepository { get; }
 
-        
+        IPartnerTypeRepository PartnerTypeRepository { get; }
+
+
     }
 }

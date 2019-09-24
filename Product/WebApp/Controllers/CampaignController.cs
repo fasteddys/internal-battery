@@ -235,7 +235,8 @@ namespace UpDiddy.Controllers
                 password = signUpViewModel.Password,
                 campaignGuid = signUpViewModel.CampaignGuid,
                 campaignPhase = WebUtility.UrlDecode(signUpViewModel.CampaignPhase),
-                partnerGuid = signUpViewModel.PartnerGuid
+                partnerGuid = signUpViewModel.PartnerGuid,
+                subscriberSource = Request.Cookies["source"] == null ? null : Request.Cookies["source"].ToString()
             };
 
             // Guard UX from any unforeseen server error.
@@ -326,6 +327,7 @@ namespace UpDiddy.Controllers
 
                 //check for any referrerCode 
                 referralCode = Request.Cookies["referrerCode"]==null ? null : Request.Cookies["referrerCode"].ToString(),
+                subscriberSource = Request.Cookies["source"] == null ? null : Request.Cookies["source"].ToString(),
                 partnerGuid = signUpViewModel.PartnerGuid
             };
 

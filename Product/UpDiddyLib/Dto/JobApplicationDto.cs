@@ -14,5 +14,9 @@ namespace UpDiddyLib.Dto
     
         public string CoverLetter { get; set; }
 
+        public PartnerDto Partner { get; set; }
+
+
+
     }
 }

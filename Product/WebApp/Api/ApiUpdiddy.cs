@@ -937,9 +937,9 @@ namespace UpDiddy.Api
             return await PutAsync<BasicResponseDto>("subscriber/onboard");
         }
 
-        public async Task<SubscriberDto> CreateSubscriberAsync(string referralCode = null)
+        public async Task<SubscriberDto> CreateSubscriberAsync( string source, string referralCode = null)
         {
-            return await PostAsync<SubscriberDto>("subscriber", new ReferralDto() { ReferralCode = referralCode });
+            return await PostAsync<SubscriberDto>("subscriber", new ReferralDto() { JobReferralCode = referralCode, SubscriberSource = source });
         }
         public async Task<bool> DeleteSubscriberAsync(Guid subscriberGuid)
         {
@@ -1310,7 +1310,9 @@ namespace UpDiddy.Api
                 {
                     //check if there is any referralCode
                     var referralCode = _contextAccessor.HttpContext.Request.Cookies["referrerCode"] == null ? null : _contextAccessor.HttpContext.Request.Cookies["referrerCode"].ToString();
-                    rval = await CreateSubscriberAsync(referralCode);
+                    string source = string.Empty;
+                    source = _contextAccessor.HttpContext.Request.Cookies["source"] == null ? null : _contextAccessor.HttpContext.Request.Cookies["source"].ToString();
+                    rval = await CreateSubscriberAsync(source, referralCode);
                 }
 
                 SetCachedValueAsync<SubscriberDto>(cacheKey, rval);
@@ -1445,6 +1447,21 @@ namespace UpDiddy.Api
             }
             return null;
         }
+
+        public async Task<PartnerDto> GetPartnerByNameAsync(string partnerName)
+        {
+            IList<PartnerDto> _partners = await GetPartnersAsync();
+            foreach (PartnerDto partner in _partners)
+            {
+                if (partner.Name == partnerName)
+                {
+                    return partner;
+                }
+            }
+            return null;
+        }
+
+
 
         private async Task<IList<PartnerDto>> _PartnersAsync()
         {

@@ -87,9 +87,9 @@ namespace UpDiddyApi.ApplicationCore.Factory
             string jobPostingUrl = config["Environment:BaseUrl"].TrimEnd('/') + Utils.CreateSemanticJobPath(
                  jobPostingDto.Industry == null ? string.Empty : jobPostingDto.Industry.Name,
                  jobPostingDto.JobCategory == null ? string.Empty : jobPostingDto.JobCategory.Name,
-                 jobPostingDto.Country,
-                 jobPostingDto.Province,
-                 jobPostingDto.City,
+                 jobPostingDto.Country == null ? string.Empty : jobPostingDto.Country,
+                 jobPostingDto.Province == null ? string.Empty : jobPostingDto.Province,
+                 jobPostingDto.City == null ? string.Empty : jobPostingDto.City,
                  jobPostingDto.JobPostingGuid.ToString()
                 );
             return jobPostingUrl;

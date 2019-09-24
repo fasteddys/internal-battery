@@ -41,7 +41,7 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> UpdateProfileInformationAsync(SubscriberDto Subscriber);
         Task<BasicResponseDto> UpdateOnboardingStatusAsync();
         Task<Guid> EnrollStudentAndObtainEnrollmentGUIDAsync(EnrollmentFlowDto enrollmentFlowDto);
-        Task<SubscriberDto> CreateSubscriberAsync(string referralCode);
+        Task<SubscriberDto> CreateSubscriberAsync(string source, string referralCode);
         Task<bool> DeleteSubscriberAsync(Guid subscriberGuid);
         Task<WozCourseProgressDto> UpdateStudentCourseProgressAsync(bool FutureSchedule);
         Task<BraintreeResponseDto> SubmitBraintreePaymentAsync(BraintreePaymentDto BraintreePaymentDto);
@@ -103,6 +103,7 @@ namespace UpDiddy.Api
         Task<IList<SkillDto>> GetEntitySkillsAsync(string entityType, Guid entityGuid);
         Task<IList<PartnerDto>> GetPartnersAsync();
         Task<PartnerDto> GetPartnerAsync(Guid partnerGuid);
+        Task<PartnerDto> GetPartnerByNameAsync(string partnerName);
         Task<PartnerDto> CreatePartnerAsync(PartnerDto partnerDto);
         Task<BasicResponseDto> UpdatePartnerAsync(PartnerDto partnerDto);
         Task<BasicResponseDto> DeletePartnerAsync(Guid PartnerGuid);

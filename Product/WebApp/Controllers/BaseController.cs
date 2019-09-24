@@ -32,6 +32,14 @@ namespace UpDiddy.Controllers
                     SetCookie("referrerCode", Request.Query["referrerCode"].ToString(), 262800);
                 }
             }
+
+            //cookie the user with the source             
+            if (Request != null && Request.Query != null && string.IsNullOrEmpty(Request.Query["Source"].ToString()) == false )
+            {              
+                    SetCookie("Source", Request.Query["Source"].ToString(), 262800);             
+            }
+
+
         }
 
         public Guid GetSubscriberGuid()
@@ -62,6 +70,13 @@ namespace UpDiddy.Controllers
 
             Response.Cookies.Append(key, value, option);
         }
+
+        public void RemoveCookie(string key)
+        {
+            Response.Cookies.Delete(key);
+        }
+
+
         #endregion
     }
 }

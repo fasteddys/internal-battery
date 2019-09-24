@@ -17,6 +17,7 @@ namespace UpDiddyLib.Dto.Marketing
         public string referralCode { get; set; }
         public Guid partnerGuid { get; set; }
         public bool IsWaitList { get; set; }
+        public string subscriberSource { get; set; }
     }
 }
  

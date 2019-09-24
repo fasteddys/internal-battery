@@ -183,7 +183,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPost("/api/[controller]")]
-        public IActionResult NewSubscriber([FromBody] ReferralDto dto)
+        public async Task<IActionResult> NewSubscriber([FromBody] ReferralDto dto)
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             Subscriber subscriber = _db.Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid).FirstOrDefault();
@@ -207,11 +207,17 @@ namespace UpDiddyApi.Controllers
             _db.SaveChanges();
 
             //updatejiobReferral if referral is not empty
-            if (!string.IsNullOrEmpty(dto.ReferralCode))
+            if (!string.IsNullOrEmpty(dto.JobReferralCode))
             {
-                _jobService.UpdateJobReferral(dto.ReferralCode, subscriber.SubscriberGuid.ToString());
+                _jobService.UpdateJobReferral(dto.JobReferralCode, subscriber.SubscriberGuid.ToString());
             }
 
+            // asscociate subscriber with a source if one was provided
+            if (!string.IsNullOrEmpty(dto.SubscriberSource))
+            {
+                // todo jab  _jobService.UpdateJobReferral(dto.JobReferralCode, subscriber.SubscriberGuid.ToString());
+                 await _taggingService.AssociateSourceToSubscriber(dto.SubscriberSource, subscriber.SubscriberId);
+            }
 
             // update google profile 
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
@@ -877,6 +883,12 @@ namespace UpDiddyApi.Controllers
                     _db.Add(subscriber);
                     await _db.SaveChangesAsync();
 
+                    // Per Brent, subscriber source should be associated with the new user before any land page 
+                    if (!string.IsNullOrEmpty(signUpDto.subscriberSource))
+                    {
+                         
+                        await _taggingService.AssociateSourceToSubscriber(signUpDto.subscriberSource, subscriber.SubscriberId);
+                    }
                     await _taggingService.CreateGroup(referer, signUpDto.partnerGuid, subscriber.SubscriberId);
                     await _taggingService.AddConvertedContactToGroupBasedOnPartnerAsync(subscriber.SubscriberId);
 
