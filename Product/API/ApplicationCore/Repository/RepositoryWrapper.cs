@@ -42,14 +42,30 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ISubscriberFileRepository _subscriberFileRepository;
         private ISkillRepository _skillRepository;
         private IStoredProcedureRepository _storedProcedureRepository;
-
+        private ICourseSiteRepository _courseSiteRepository;
+        private ICoursePageRepository _coursePageRepository;
+        private ICourseRepository _courseRepository;
+        private ICourseVariantRepository _courseVariantRepository;
+        private ICourseVariantTypeRepository _courseVariantTypeRepository;
+        private ICourseSkillRepository _courseSkillRepository;
+        private ITagRepository _tagRepository;
+        private ITopicRepository _topicRepository;
+        private ITagTopicRepository _tagTopicRepository;
+        private ITagCourseRepository _tagCourseRepository;
+        private IVendorRepository _vendorRepository;
+        private IEnrollmentRepository _enrollmentRepository;
+        private IServiceOfferingRepository _serviceOfferingRepository;
+        private IServiceOfferingItemRepository _serviceOfferingItemRepository;
+        private IServiceOfferingOrderRepository _serviceOfferingOrderRepository;
+        private IServiceOfferingPromoCodeRedemptionRepository _serviceOfferingPromoCodeRedemptionRepository;
+        private IServiceOfferingPromoCodeRepository _serviceOfferingPromoCodeRepository;
+        private IPromoCodeRepository _promoCodeRepository;
+        private ITraitifyRepository _traitifyRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
             _dbContext = dbContext;
         }
-
-  
 
         public ICountryRepository Country
         {
@@ -178,7 +194,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             {
                 if (_subscriberRepository == null)
                 {
-                    _subscriberRepository = new SubscriberRepository(_dbContext, SubscriberGroupRepository, GroupPartnerRepository,PartnerRepository);
+                    _subscriberRepository = new SubscriberRepository(_dbContext, SubscriberGroupRepository, GroupPartnerRepository, PartnerRepository);
                 }
                 return _subscriberRepository;
             }
@@ -227,7 +243,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             {
                 if (_subscriberRepository == null)
                 {
-                    _subscriberRepository = new SubscriberRepository(_dbContext, SubscriberGroupRepository, GroupPartnerRepository,PartnerRepository);
+                    _subscriberRepository = new SubscriberRepository(_dbContext, SubscriberGroupRepository, GroupPartnerRepository, PartnerRepository);
                 }
                 return _subscriberRepository;
             }
@@ -498,5 +514,241 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 return _storedProcedureRepository;
             }
         }
+
+        public ICourseSiteRepository CourseSite
+        {
+            get
+            {
+                if (_courseSiteRepository == null)
+                {
+                    _courseSiteRepository = new CourseSiteRepository(_dbContext);
+                }
+                return _courseSiteRepository;
+            }
+        }
+
+        public ICoursePageRepository CoursePage
+        {
+            get
+            {
+                if (_coursePageRepository == null)
+                {
+                    _coursePageRepository = new CoursePageRepository(_dbContext);
+                }
+                return _coursePageRepository;
+            }
+        }
+
+        public ICourseRepository Course
+        {
+            get
+            {
+                if (_courseRepository == null)
+                {
+                    _courseRepository = new CourseRepository(_dbContext);
+                }
+                return _courseRepository;
+            }
+        }
+
+        public ICourseVariantRepository CourseVariant
+        {
+            get
+            {
+                if (_courseVariantRepository == null)
+                {
+                    _courseVariantRepository = new CourseVariantRepository(_dbContext);
+                }
+                return _courseVariantRepository;
+            }
+        }
+
+        public ICourseVariantTypeRepository CourseVariantType
+        {
+            get
+            {
+                if (_courseVariantTypeRepository == null)
+                {
+                    _courseVariantTypeRepository = new CourseVariantTypeRepository(_dbContext);
+                }
+                return _courseVariantTypeRepository;
+            }
+        }
+
+        public ICourseSkillRepository CourseSkill
+        {
+            get
+            {
+                if (_courseSkillRepository == null)
+                {
+                    _courseSkillRepository = new CourseSkillRepository(_dbContext);
+                }
+                return _courseSkillRepository;
+            }
+        }
+
+        public ITagRepository Tag
+        {
+            get
+            {
+                if (_tagRepository == null)
+                {
+                    _tagRepository = new TagRepository(_dbContext);
+                }
+                return _tagRepository;
+            }
+        }
+
+        public ITopicRepository Topic
+        {
+            get
+            {
+                if (_topicRepository == null)
+                {
+                    _topicRepository = new TopicRepository(_dbContext);
+                }
+                return _topicRepository;
+            }
+        }
+
+        public ITagTopicRepository TagTopic
+        {
+            get
+            {
+                if (_tagTopicRepository == null)
+                {
+                    _tagTopicRepository = new TagTopicRepository(_dbContext);
+                }
+                return _tagTopicRepository;
+            }
+        }
+
+        public ITagCourseRepository TagCourse
+        {
+            get
+            {
+                if (_tagCourseRepository == null)
+                {
+                    _tagCourseRepository = new TagCourseRepository(_dbContext);
+                }
+                return _tagCourseRepository;
+            }
+        }
+
+        public IVendorRepository Vendor
+        {
+            get
+            {
+                if (_vendorRepository == null)
+                {
+                    _vendorRepository = new VendorRepository(_dbContext);
+                }
+                return _vendorRepository;
+            }
+        }
+
+        public IEnrollmentRepository EnrollmentRepository
+        {
+            get
+            {
+                if (_enrollmentRepository == null)
+                {
+                    _enrollmentRepository = new EnrollmentRepository(_dbContext);
+                }
+                return _enrollmentRepository;
+            }
+        }
+
+
+        public IServiceOfferingRepository ServiceOfferingRepository
+        {
+            get
+            {
+                if (_serviceOfferingRepository == null)
+                {
+                    _serviceOfferingRepository = new ServiceOfferingRepository(_dbContext);
+                }
+                return _serviceOfferingRepository;
+            }
+        }
+
+        public IServiceOfferingItemRepository ServiceOfferingItemRepository
+        {
+            get
+            {
+                if (_serviceOfferingItemRepository == null)
+                {
+                    _serviceOfferingItemRepository = new ServiceOfferingItemRepository(_dbContext);
+                }
+                return _serviceOfferingItemRepository;
+            }
+        }
+
+        public IServiceOfferingOrderRepository ServiceOfferingOrderRepository
+        {
+            get
+            {
+                if (_serviceOfferingOrderRepository == null)
+                {
+                    _serviceOfferingOrderRepository = new ServiceOfferingOrderRepository(_dbContext);
+                }
+                return _serviceOfferingOrderRepository;
+            }
+        }
+
+
+        public IServiceOfferingPromoCodeRedemptionRepository ServiceOfferingPromoCodeRedemptionRepository
+        {
+            get
+            {
+                if (_serviceOfferingPromoCodeRedemptionRepository == null)
+                {
+                    _serviceOfferingPromoCodeRedemptionRepository = new ServiceOfferingPromoCodeRedemptionRepository(_dbContext);
+                }
+                return _serviceOfferingPromoCodeRedemptionRepository;
+            }
+        }
+
+        public IServiceOfferingPromoCodeRepository ServiceOfferingPromoCodeRepository
+        {
+            get
+            {
+                if (_serviceOfferingPromoCodeRepository == null)
+                {
+                    _serviceOfferingPromoCodeRepository = new ServiceOfferingPromoCodeRepository(_dbContext);
+                }
+                return _serviceOfferingPromoCodeRepository;
+            }
+        }
+
+        public IPromoCodeRepository PromoCodeRepository
+        {
+            get
+            {
+                if (_promoCodeRepository == null)
+                {
+                    _promoCodeRepository = new PromoCodeRepository(_dbContext);
+                }
+                return _promoCodeRepository;
+            }
+        }
+
+        public ITraitifyRepository TraitifyRepository
+        {
+            get
+            {
+                if (_traitifyRepository == null)
+                {
+                    _traitifyRepository = new TraitifyRepository(_dbContext);
+                }
+                return _traitifyRepository;
+            }
+        }
+
+
+
+
+
+
     }
 }

@@ -18,11 +18,9 @@ namespace UpDiddy.Api
         Task<IList<CourseDto>> CoursesAsync();
         Task<IList<CountryDto>> GetCountriesAsync();
         Task<IList<StateDto>> GetStatesByCountryAsync(Guid? countryGuid);
-
         Task<ResumeParseDto> GetResumeParseForSubscriber(Guid subscriberGuid);
         Task<ResumeParseQuestionnaireDto> GetResumeParseQuestionnaireForSubscriber(Guid subscriberGuid);
         Task<BasicResponseDto> ResolveResumeParse(Guid resumeParseGuid, string mergeInfo);
-
         Task<IList<StateDto>> GetAllStatesAsync();
         Task<IList<IndustryDto>> GetIndustryAsync();
         Task<IList<JobCategoryDto>> GetJobCategoryAsync();
@@ -38,6 +36,7 @@ namespace UpDiddy.Api
         Task<SubscriberDto> SubscriberAsync(Guid subscriberGuid, bool hardRefresh);
         Task<PromoCodeDto> PromoCodeRedemptionValidationAsync(string promoCodeRedemptionGuid, string courseGuid);
         Task<PromoCodeDto> PromoCodeValidationAsync(string code, string courseVariantGuid);
+        Task<PromoCodeDto> ServiceOfferingPromoCodeValidationAsync(string code, string serviceOfferingGuid);
         Task<CourseLoginDto> CourseLoginAsync(Guid EnrollmentGuid);
         Task<BasicResponseDto> UpdateProfileInformationAsync(SubscriberDto Subscriber);
         Task<BasicResponseDto> UpdateOnboardingStatusAsync();
@@ -72,16 +71,11 @@ namespace UpDiddy.Api
         Task<SubscriberEducationHistoryDto> AddEducationalHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto workHistory);
         Task<BasicResponseDto> AddJobPostingAsync(JobPostingDto jobPosting);
         Task<BasicResponseDto> UpdateJobPostingAsync(JobPostingDto jobPosting);
-
         Task<List<JobPostingDto>> GetJobPostingsForSubscriber(Guid subscriberGuid);
         Task<JobPostingDto> GetJobPostingByGuid(Guid jobPostingGuid);
-
         Task<List<JobPostingCountDto>> GetJobCountPerProvinceAsync();
-
         Task<JobPostingDto> CopyJobPosting(Guid jobPostingGuid);
-
         Task<BasicResponseDto> DeleteJobPosting(Guid jobPostingGuid);
-
         Task<ContactDto> ContactAsync(Guid partnerContactGuid);
         Task<LinkedInProfileDto> GetLinkedInProfileAsync();
         Task<SubscriberADGroupsDto> MyGroupsAsync();
@@ -90,16 +84,17 @@ namespace UpDiddy.Api
         Task<CampaignDto> GetCampaignAsync(Guid campaignGuid);
         Task<CampaignPartnerContactDto> GetCampaignPartnerContactAsync(string tinyId);
         Task<IList<OfferDto>> GetOffersAsync();
+        Task<BasicResponseDto> SubmitServiceOfferingPayment(ServiceOfferingTransactionDto serviceOfferingTransactionDto);
+        Task<ServiceOfferingOrderDto> GetSubscriberOrder(Guid OrderGuid);
         Task<PagingDto<UpDiddyLib.Dto.User.JobDto>> GetUserJobsOfInterest(int? page);
         Task<PagingDto<JobPostingAlertDto>> GetUserJobAlerts(int? page, int? timeZoneOffset);
         Task<RedirectDto> GetSubscriberPartnerWebRedirect();
 
         #region TalentPortal
-        Task<ProfileSearchResultDto> SubscriberSearchAsync(string searchFilter, string searchQuery, string searchLocationQuery);
-        Task<IList<SubscriberSourceDto>> SubscriberSourcesAsync();
+        Task<ProfileSearchResultDto> SubscriberSearchAsync(string searchFilter, string searchQuery, string searchLocationQuery, string sortOrder);
+        Task<IList<SubscriberSourceStatisticDto>> SubscriberSourcesAsync();
         Task<BasicResponseDto> SaveNotes(SubscriberNotesDto subscriberNotesDto);
         Task<IList<SubscriberNotesDto>> SubscriberNotesSearch(string subscriberGuid, string searchQuery);
-
         Task<bool> DeleteNoteAsync(Guid subscriberNotesGuid);
         #endregion
 
@@ -134,7 +129,7 @@ namespace UpDiddy.Api
 
         #region Reporting
         Task<SubscriberReportDto> GetSubscriberReportAsync(List<DateTime> dates = null);
-        Task<SubscriberReportDto> GetSubscriberReportByPartnerAsync();
+        Task<List<SubscriberSignUpCourseEnrollmentStatisticsDto>> GetSubscriberReportByPartnerAsync();
         Task<List<RecruiterActionSummaryDto>> GetRecruiterActionSummaryAsync();
         Task<List<SubscriberActionSummaryDto>> GetSubscriberActionSummaryAsync();
         Task<List<OfferActionSummaryDto>> GetOfferActionSummaryAsync();
@@ -144,31 +139,29 @@ namespace UpDiddy.Api
         #endregion
 
         #region JobBoard
-
         Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid, GoogleCloudEventsTrackingDto dto = null);
         Task<JobPostingDto> GetExpiredJobAsync(Guid JobPostingGuid);
         Task<BasicResponseDto> ApplyToJobAsync(JobApplicationDto JobApplication);
         Task<Dictionary<Guid, Guid>> JobFavoritesByJobGuidAsync(List<Guid> jobGuids);
-
         Task<JobSearchResultDto> GetJobsUsingRoute(string country = null, string state = null, string city = null, string industry = null, string category = null, int page = 0);
         Task<IList<JobCategoryDto>> GetJobCategories();
         Task<JobSearchResultDto> GetJobsByLocation(string searchQueryParameterString);
-
         Task<GoogleCloudEventsTrackingDto> RecordClientEventAsync(Guid jobGuid, GoogleCloudEventsTrackingDto dto);
         Task ReferJobPosting(string jobPostingId, string referrerGuid, string refereeName, string refereeEmailId, string descriptionEmailBody);
-
         Task UpdateJobReferral(string referrerCode, Guid subscriberGuid);
-
         Task UpdateJobViewed(string referrerCode);
-
         #endregion
 
+        #region Traitify
+        Task<TraitifyDto> StartNewTraitifyAssessment(TraitifyDto dto);
+        Task<TraitifyDto> GetTraitifyByAssessmentId(string assessmentId);
+        Task<bool> CompleteAssessment(string assessmentId);
+        #endregion
 
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);
         Task RecordSubscriberApplyAction(Guid jobGuid, Guid subscriberGuid);
         Task RecordSubscriberJobViewAction(Guid jobGuid, Guid subscriberGuid);
-
-        IList<string> GetKeywordSearchList(string keyword);
-        IList<string> GetLocationSearchList(string location);
+        Task<IList<string>> GetKeywordSearchList(string keyword);
+        Task<IList<string>> GetLocationSearchList(string location);
     }
 }

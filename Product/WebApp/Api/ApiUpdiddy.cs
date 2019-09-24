@@ -21,6 +21,7 @@ using UpDiddyLib.Dto.Reporting;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Caching.Memory;
+using System.Net;
 
 namespace UpDiddy.Api
 {
@@ -580,6 +581,15 @@ namespace UpDiddy.Api
             return rval;
         }
 
+        
+        public async Task<BasicResponseDto> SubmitServiceOfferingPayment(ServiceOfferingTransactionDto serviceOfferingTransactionDto){
+            return await PostAsync<BasicResponseDto>("serviceOfferingOrder", serviceOfferingTransactionDto);
+        }
+
+        public async Task<ServiceOfferingOrderDto> GetSubscriberOrder(Guid OrderGuid){
+            return await GetAsync<ServiceOfferingOrderDto>("serviceOfferingOrder/subscriber-order/" + OrderGuid);
+        }
+
         public async Task<IList<OfferDto>> GetOffersAsync()
         {
             string cacheKey = $"Offers";
@@ -650,7 +660,7 @@ namespace UpDiddy.Api
         public async Task<JobSearchResultDto> GetJobsByLocation(string searchQueryParameterString)
         {
 
-            var searchFilter = $"all/all/all/all/all/all/0{searchQueryParameterString}page-size=100";
+            var searchFilter = $"all/all/all/all/all/all/0{(searchQueryParameterString.Equals("")? "?" :searchQueryParameterString+"&")}page-size=100";
             string cacheKey = $"job-{searchFilter}";
             JobSearchResultDto rval = GetCachedValueAsync<JobSearchResultDto>(cacheKey);
 
@@ -771,6 +781,11 @@ namespace UpDiddy.Api
         public async Task<PromoCodeDto> PromoCodeValidationAsync(string code, string courseVariantGuid)
         {
             return await GetAsync<PromoCodeDto>("promocode/validate/" + code + "/course-variant/" + courseVariantGuid);
+        }
+
+        public async Task<PromoCodeDto> ServiceOfferingPromoCodeValidationAsync(string code, string serviceOfferingGuid)
+        {
+            return await GetAsync<PromoCodeDto>("promocode/validate/" + code + "/service-offering/" + serviceOfferingGuid);
         }
         #endregion
 
@@ -1219,6 +1234,7 @@ namespace UpDiddy.Api
             return await GetAsync<IList<OfferDto>>("offers");
         }
 
+
         #endregion
 
         #region Private Cache Functions
@@ -1302,20 +1318,24 @@ namespace UpDiddy.Api
             return rval;
         }
 
-        public async Task<ProfileSearchResultDto> SubscriberSearchAsync(string searchFilter, string searchQuery, string searchLocationQuery)
+        public async Task<ProfileSearchResultDto> SubscriberSearchAsync(string searchFilter, string searchQuery, string searchLocationQuery, string sortOrder)
         {
             string endpoint = $"subscriber/search?searchFilter={searchFilter}";
             if (searchQuery != string.Empty)
                 endpoint += $"&searchQuery={searchQuery}";
             if (searchLocationQuery != string.Empty)
                 endpoint += $"&searchLocationQuery={searchLocationQuery}";
+            if (sortOrder != string.Empty)                
+                endpoint += $"&sortOrder={WebUtility.UrlEncode(sortOrder)}";
+           
+                
 
             return await GetAsync<ProfileSearchResultDto>(endpoint);
         }
 
-        public async Task<IList<SubscriberSourceDto>> SubscriberSourcesAsync()
+        public async Task<IList<SubscriberSourceStatisticDto>> SubscriberSourcesAsync()
         {
-            return await GetAsync<IList<SubscriberSourceDto>>("subscriber/sources");
+            return await GetAsync<IList<SubscriberSourceStatisticDto>>("subscriber/sources");
         }
 
         private async Task<SubscriberDto> _SubscriberAsync(Guid subscriberGuid)
@@ -1361,9 +1381,9 @@ namespace UpDiddy.Api
             return await GetAsync<SubscriberReportDto>($"report/subscribers{query}");
         }
 
-        public async Task<SubscriberReportDto> GetSubscriberReportByPartnerAsync()
+        public async Task<List<SubscriberSignUpCourseEnrollmentStatisticsDto>> GetSubscriberReportByPartnerAsync()
         {
-            return await GetAsync<SubscriberReportDto>($"report/partners");
+            return await GetAsync<List<SubscriberSignUpCourseEnrollmentStatisticsDto>>($"report/partners");
         }
 
         public async Task<List<JobApplicationCountDto>> GetJobApplicationCount(Guid? companyGuid = null)
@@ -1732,20 +1752,54 @@ namespace UpDiddy.Api
 
         #endregion
 
+
+        #region Traitify
+        
+        public async Task<TraitifyDto> StartNewTraitifyAssessment(TraitifyDto dto)
+        {
+            return await PostAsync<TraitifyDto>("traitify/new", dto);
+        }
+
+        public async Task<TraitifyDto> GetTraitifyByAssessmentId(string assessmentId) {
+            return await GetAsync<TraitifyDto>($"traitify/{assessmentId}");
+        }
+
+          public async Task<bool> CompleteAssessment(string assessmentId) {
+            return await GetAsync<bool>($"traitify/complete/{assessmentId}");
+        }
+
+
+        #endregion
+
         #region <<Keyword and Location Search List>>
-        public IList<string> GetKeywordSearchList(string keyword)
+        public async Task<IList<string>> GetKeywordSearchList(string keyword)
         {
             string cacheKey = "keywordSearchList";
             IList<string> rval = GetCachedValueAsync<IList<string>>(cacheKey);
+
+             //if rval is null get the value from Api Memory Cache
+            if(rval==null)
+            {
+                rval=await GetAsync<IList<string>>($"cache?cacheKey={cacheKey}");
+                SetCachedValueAsync<IList<string>>(cacheKey,rval);
+            }
+
             List<string> keywordListresult=rval?.Where(k=>k.Contains(keyword))?.ToList();
 
             return keywordListresult;
         }
 
-        public IList<string> GetLocationSearchList(string location)
+        public async Task<IList<string>> GetLocationSearchList(string location)
         {
             string cacheKey = "locationSearchList";
             IList<string> rval = GetCachedValueAsync<IList<string>>(cacheKey);
+
+            //if rval is null get the value from Api Memory Cache
+            if(rval==null)
+            {
+               rval=await GetAsync<IList<string>>($"cache?cacheKey={cacheKey}");
+               SetCachedValueAsync<IList<string>>(cacheKey,rval);
+            }
 
             List<string> locationListresult=rval?.Where(k=>k.Contains(location))?.ToList();
 

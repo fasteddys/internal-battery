@@ -18,68 +18,69 @@
 
 
                 <div class="jobs-list-wrapper row d-flex align-items-stretch">
-                        
-                        
-                        @if(ViewBag.Jobs.TotalItemCount <= 0)
+
+
+                    @if (ViewBag.Jobs.TotalItemCount <= 0)
+                    {
+                        <div class="col-md-12">
+                            <h3>You currently have no pending job applications or favorites.</h3>
+                            <p>Please visit our <a href="/jobs">Career Opportunities</a> section to find jobs you're interested in now!</p>
+                        </div>
+                    }
+                    else
+                    {
+                        foreach (var job in ViewBag.Jobs)
                         {
-                            <div class="col-md-12">
-                                <h3>You currently have no pending job applications or favorites.</h3>
-                                <p>Please visit our <a href="/jobs">Career Opportunities</a> section to find jobs you're interested in now!</p>
-                            </div>
-                        }
-                        else
-                        {
-                            foreach(var job in ViewBag.Jobs)
-                            {
-                                <div class="col-md-5 col-lg-4 col-sm-12 mb-3">
-                                    <div class="job card">
-                                        <div class="card-body">
-                                            <div class="card-title">
-                                                <h5><a href="/job/@job.JobPosting.JobPostingGuid">@job.JobPosting.Title</a></h5>
+                            <div class="col-md-5 col-lg-4 col-sm-12 mb-3">
+                                <div class="job card">
+                                    <div class="card-body">
+                                        <div class="job-title card-title">
+                                            <a href="/job/@job.JobPostingGuid">@job.Title</a>
+                                        </div>
+                                        <div class="card-text">
+                                            <h6>@job.CompanyName</h6>
+                                            <div class="location">
+                                                <i class="fas fa-map-marker-alt"></i> @job.CityProvince
                                             </div>
-                                            <div class="card-text">
-                                                <h6>@job.Company.CompanyName</h6>
-                                                <div class="location">
-                                                    <i class="fas fa-map-marker-alt"></i> @job.JobPosting.CityProvince
-                                                </div>
-                                                @{
-                                                    var date = Convert.ToDateTime(job.JobPosting.PostingExpirationDateUTC);
-                                                }
-                                                <p class="expiration">Expires: @date.ToString("MM/dd")</p>
-                                            </div>
-                                            <div class="actions-wrapper">
-                                                <div class="actions">
-                                                    <span class="float-left">
-                                                        @Html.React("Favorite", 
-                                                            new { 
-                                                                jobGuid = job.JobPosting.JobPostingGuid,
-                                                                jobPostingFavoriteGuid = job.JobPostingFavoriteGuid
-                                                            }
-                                                        )
-                                                    </span>
-                                                    
-                                                    <div class="float-right inline-block">
-                                                        @if(job.JobApplication == null)
-                                                        {
-                                                            <span>
-                                                                Not Applied
-                                                            </span>
+                                            @{
+                                                var date = Convert.ToDateTime(job.PostingExpirationDateUTC);
+                                            }
+                                            <p class="expiration">Expires: @date.ToString("MM/dd")</p>
+                                        </div>
+                                        <div class="actions-wrapper">
+                                            <div class="actions">
+                                                <span class="float-left">
+                                                    @Html.React("Favorite",
+                                                        new {
+                                                            jobGuid = job.JobPostingGuid,
+                                                            jobPostingFavoriteGuid = job.JobPostingFavoriteGuid
                                                         }
-                                                        else
-                                                        {
-                                                            <span>
-                                                                Applied
-                                                            </span>
-                                                        }
-                                                    </div>
+                                                    )
+                                                </span>
+
+                                                <div class="float-right inline-block">
+                                                    @if (job.JobApplicationId == null)
+                                                    {
+                                                        <span>
+                                                            Not Applied
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>
+                                                            Applied
+                                                        </span>
+                                                    }
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            }
-
-                            <div class="full-width text-center">
+                            </div>
+                        }
+                    }
+                </div>
+                            <div class="job-pagination full-width text-center">
                                 @Html.PagedListPager((IPagedList) ViewBag.jobs, page => Url.Action("jobs", new { page }),
                                     new X.PagedList.Mvc.Common.PagedListRenderOptionsBase() { Display=X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
                                         LiElementClasses = new string[] { "page-item" },
@@ -98,10 +99,6 @@
                                         UlElementClasses = new[] { "pagination" }
                                     })
                             </div>
-                        }
-                </div>
-
-
             </div>
         </div>
     </div>

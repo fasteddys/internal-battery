@@ -33,7 +33,7 @@ namespace UpDiddy.Controllers
             if (Request.Headers["CC-Webhook-Unauthenticated"].Count > 0 
                 && Request.Headers["CC-Webhook-Unauthenticated"].Equals(_configuration["ButterCMS:WebhookToken"]))
             {
-                bool IsCacheCleared = await _butterService.ClearCachedValueAsync<PublicSiteNavigationViewModel<PublicSiteNavigationMenuItemViewModel>>("CareerCirclePublicSiteNavigation");
+                bool IsCacheCleared = await _butterService.ClearCachedKeyAsync("CareerCirclePublicSiteNavigation");
                 if (IsCacheCleared)
                     return Ok(new BasicResponseDto { StatusCode = 200, Description = "ButterCMS Navigation successfully cleared from Redis." });
                 else

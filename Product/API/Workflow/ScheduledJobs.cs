@@ -30,7 +30,10 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using System.Data.SqlClient;
 using JobPosting = UpDiddyApi.Models.JobPosting;
 using UpDiddyApi.Helpers;
+using UpDiddyApi.ApplicationCore.Services.CourseCrawling.Common;
+using System.Collections.Concurrent;
 using HtmlAgilityPack;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace UpDiddyApi.Workflow
 {
@@ -45,6 +48,9 @@ namespace UpDiddyApi.Workflow
         private readonly CloudTalent _cloudTalent;
         private readonly IMimeMappingService _mimeMappingService;
         private readonly IHangfireService _hangfireService;
+        private readonly IMemoryCache _memoryCache;
+        private readonly ICourseService _courseService;
+
         public ScheduledJobs(
             UpDiddyDbContext context,
             IMapper mapper,
@@ -61,7 +67,9 @@ namespace UpDiddyApi.Workflow
             IJobPostingService jobPostingService,
             ITrackingService trackingService,
             IMimeMappingService mimeMappingService,
-            IHangfireService hangfireService
+            IHangfireService hangfireService,
+            ICourseService courseService,
+            IMemoryCache memoryCache 
            )
         {
             _db = context;
@@ -80,10 +88,11 @@ namespace UpDiddyApi.Workflow
             _repositoryWrapper = repositoryWrapper;
             _subscriberService = subscriberService;
             _jobPostingService = jobPostingService;
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
             _mimeMappingService = mimeMappingService;
             _hangfireService = hangfireService;
-
+            _memoryCache=memoryCache;
+            _courseService = courseService;
         }
 
         #region Marketing
@@ -97,7 +106,7 @@ namespace UpDiddyApi.Workflow
         ///   - 1 month
         /// </summary>
         /// <returns></returns>
-        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task SubscriberNotificationEmailReminder()
         {
             DateTime executionTime = DateTime.UtcNow;
@@ -156,7 +165,7 @@ namespace UpDiddyApi.Workflow
         ///     - evenly distributes emails over the delivery window (including seed emails)
         /// </summary>
         /// <returns></returns>
-        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task ExecuteLeadEmailDelivery()
         {
             DateTime executionTime = DateTime.UtcNow;
@@ -257,6 +266,7 @@ namespace UpDiddyApi.Workflow
         /// <param name="email">The email address to verify</param>
         /// <param name="verificationFailureLeadStatusId">The lead status to associate with the partner contact if email validation fails</param>
         /// <returns></returns>
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public async Task ValidateEmailAddress(Guid partnerContactGuid, string email, int verificationFailureLeadStatusId)
         {
             // retrieve the partner contact that will be associated with any lead statuses we store and the log of the zero bounce request
@@ -326,6 +336,7 @@ namespace UpDiddyApi.Workflow
 
         // batch job to call woz to get students course progress
         // todo consider some form of rate limiting once we have numerous enrollments
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public bool UpdateAllStudentsProgress()
         {
             try
@@ -363,7 +374,7 @@ namespace UpDiddyApi.Workflow
         }
 
 
-
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public bool UpdateStudentProgress(string SubscriberGuid, int ProgressUpdateAgeThresholdInHours)
         {
             try
@@ -416,7 +427,7 @@ namespace UpDiddyApi.Workflow
 
 
 
-
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public Boolean ReconcileFutureEnrollments()
         {
             bool result = false;
@@ -608,13 +619,160 @@ namespace UpDiddyApi.Workflow
 
         #endregion
 
+        #region External Courses
+
+        /// <summary>
+        /// This method is responsible for the out-of-band processing for the course site crawling operation.
+        /// </summary>
+        /// <returns></returns>
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 30)]
+        public async Task<bool> CrawlCourseSiteAsync(CourseSite courseSite)
+        {
+            _syslog.Log(LogLevel.Information, $"***** Crawling course site '{courseSite.Name}'. Started at: {DateTime.UtcNow.ToLongDateString()}");
+
+            var result = true;
+            try
+            {
+                // load the course process for the course site
+                ICourseProcess courseProcess = CourseCrawlingFactory.GetCourseProcess(courseSite, _configuration, _syslog, _sovrenApi);
+
+                // load all existing course pages - it is important to retrieve all of them regardless of their CoursePageStatus to avoid FK conflicts on insert and update operations
+                var coursePages = await _repositoryWrapper.CoursePage.GetAllCoursePagesForCourseSiteAsync(courseSite.CourseSiteGuid);
+
+                // retrieve all current course pages that are visible on the course site
+                List<CoursePage> coursePagesToProcess = await courseProcess.DiscoverCoursePagesAsync(coursePages.ToList());
+
+                // insert or update the course pages (each inserted or updated course page can have a status of: Create, Update, Delete) 
+                foreach (var coursePage in coursePagesToProcess)
+                {
+                    try
+                    {
+                        if (coursePage.CoursePageId == 0)
+                            _repositoryWrapper.CoursePage.Create(coursePage);
+                        else
+                            _repositoryWrapper.CoursePage.Update(coursePage);
+
+                        await _repositoryWrapper.CoursePage.SaveAsync();
+                    }catch(Exception e)
+                    {
+                        _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.CrawlCourseSiteAsync encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                    }
+                }                
+
+                // update the course site to indicate that the crawl operation is complete
+                courseSite.LastCrawl = DateTime.UtcNow;
+                courseSite.IsCrawling = false;
+                courseSite.ModifyDate = DateTime.UtcNow;
+                courseSite.ModifyGuid = Guid.Empty;
+                _repositoryWrapper.CourseSite.Update(courseSite);
+                await _repositoryWrapper.CourseSite.SaveAsync();
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.CrawlCourseSiteAsync encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                result = false;
+            }
+
+            _syslog.Log(LogLevel.Information, $"***** Crawling course site '{courseSite.Name}'. Completed at: {DateTime.UtcNow.ToLongDateString()}");
+            return result;
+        }
+
+        /// <summary>
+        /// This method is responsible for the out-of-band processing for the course site syncing operation.
+        /// </summary>
+        /// <returns></returns>
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 30)]
+        public async Task<bool> SyncCourseSiteAsync(CourseSite courseSite)
+        {
+            _syslog.Log(LogLevel.Information, $"***** Syncing course site '{courseSite.Name}'. Started at: {DateTime.UtcNow.ToLongDateString()}");
+
+            var result = true;
+            try
+            {
+                // load the course process for the course site
+                ICourseProcess courseProcess = CourseCrawlingFactory.GetCourseProcess(courseSite, _configuration, _syslog, _sovrenApi);
+
+                // load all pending course pages
+                var coursePages = (await _repositoryWrapper.CoursePage.GetPendingCoursePagesForCourseSiteAsync(courseSite.CourseSiteGuid)).ToList();
+
+                // transform course pages into courses which can be updated in the career circle schema
+                ConcurrentBag<Tuple<CoursePage, CourseDto>> coursePageAndTransformedCourses = new ConcurrentBag<Tuple<CoursePage, CourseDto>>();                
+                var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 10 };
+                int counter = 0;
+                Parallel.For(0, coursePages.Count(), maxdop, async (index) =>
+                {
+                    var courseDto = await courseProcess.ProcessCoursePageAsync(coursePages[index]);
+                    if (courseDto != null)
+                        coursePageAndTransformedCourses.Add(new Tuple<CoursePage, CourseDto>(coursePages[index], courseDto));
+                });
+
+                // make db changes to courses and course pages
+                foreach (var coursePageAndTransformedCourse in coursePageAndTransformedCourses)
+                {
+                    var coursePage = coursePageAndTransformedCourse.Item1;
+                    var courseDto = coursePageAndTransformedCourse.Item2;
+
+                    try
+                    {
+                        coursePage.CoursePageStatusId = 1; // synced                        
+                        switch (coursePage.CoursePageStatus.Name)
+                        {
+                            case "Create":
+                                coursePage.CourseId = await _courseService.AddCourseAsync(courseDto);
+                                break;
+                            case "Update":
+                                coursePage.CourseId = await _courseService.EditCourseAsync(courseDto);
+                                break;
+                            case "Delete":
+                                await _courseService.DeleteCourseAsync(courseDto.CourseGuid.Value);
+                                coursePage.CourseId = null;
+                                break;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        _syslog.Log(LogLevel.Error, $"***** ScheduledJobs.SyncCourseSiteAsync encountered an exception while performing a CRUD operation on a course; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                        coursePage.CoursePageStatusId = 5; // error
+                    }
+                    finally
+                    {
+                        coursePage.CoursePageStatus = null; // must do this if there is an existing status which conflicts with the value we are setting
+                        
+                        // save the related course page to reflect what occurred with the course operation
+                        coursePage.ModifyDate = DateTime.UtcNow;
+                        coursePage.ModifyGuid = Guid.Empty;
+                        _repositoryWrapper.CoursePage.Update(coursePage);
+                        await _repositoryWrapper.CoursePage.SaveAsync();
+                    }
+                }
+
+                // update the course site to indicate that the sync operation is complete
+                courseSite.LastSync = DateTime.UtcNow;
+                courseSite.IsSyncing = false;
+                courseSite.ModifyDate = DateTime.UtcNow;
+                courseSite.ModifyGuid = Guid.Empty;
+                _repositoryWrapper.CourseSite.Update(courseSite);
+                await _repositoryWrapper.CourseSite.SaveAsync();
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.SyncCourseSiteAsync encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                result = false;
+            }
+
+            _syslog.Log(LogLevel.Information, $"***** Syncing course site '{courseSite.Name}'. Completed at: {DateTime.UtcNow.ToLongDateString()}");
+            return result;
+        }
+
+        #endregion
+
         #region Third Party Jobs
 
         /// <summary>
         /// This is the entry point for all third party job data mining.
         /// </summary>
         /// <returns></returns>
-        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 60 * 24)]
         public async Task<bool> JobDataMining()
         {
             _syslog.Log(LogLevel.Information, $"***** JobDataMining started at: {DateTime.UtcNow.ToLongDateString()}");
@@ -885,6 +1043,7 @@ namespace UpDiddyApi.Workflow
         #endregion
 
         #region Resume Parsing 
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task<bool> ImportSubscriberProfileDataAsync(Subscriber subscriber, SubscriberFile resume)
         {
             try
@@ -955,12 +1114,13 @@ namespace UpDiddyApi.Workflow
 
         #region CareerCircle Jobs 
 
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public void ExecuteJobPostingAlert(Guid jobPostingAlertGuid)
         {
             try
             {
                 JobPostingAlert jobPostingAlert = _repositoryWrapper.JobPostingAlertRepository.GetJobPostingAlert(jobPostingAlertGuid).Result;
-                CloudTalent cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
+                CloudTalent cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
                 JobQueryDto jobQueryDto = JsonConvert.DeserializeObject<JobQueryDto>(jobPostingAlert.JobQueryDto.ToString());
                 switch (jobPostingAlert.Frequency)
                 {
@@ -1004,7 +1164,7 @@ namespace UpDiddyApi.Workflow
         }
 
 
-
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public Boolean DoPromoCodeRedemptionCleanup(int? lookbackPeriodInMinutes = 30)
         {
             bool result = false;
@@ -1044,6 +1204,7 @@ namespace UpDiddyApi.Workflow
             return result;
         }
 
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public Boolean DeactivateCampaignPartnerContacts()
         {
             bool result = false;
@@ -1076,6 +1237,7 @@ namespace UpDiddyApi.Workflow
             return result;
         }
 
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public void StoreTrackingInformation(string tinyId, Guid actionGuid, string campaignPhaseName, string headers)
         {
             var trackingInfoFromTinyId = _db.CampaignPartnerContact
@@ -1229,6 +1391,7 @@ namespace UpDiddyApi.Workflow
         /// Sends email to subscribers who clicked Apply on job posting and did not click submit 
         /// </summary>
         /// <returns></returns>
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task ExecuteJobAbandonmentEmailDelivery()
         {
             try
@@ -1362,22 +1525,25 @@ namespace UpDiddyApi.Workflow
 
         #region Cloud Talent Profiles 
 
+        [DisableConcurrentExecution(timeoutInSeconds: 30)]
         public bool CloudTalentAddOrUpdateProfile(Guid subscriberGuid)
         {
-            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
             return ct.AddOrUpdateProfileToCloudTalent(_db, subscriberGuid);
         }
 
+        [DisableConcurrentExecution(timeoutInSeconds: 30)]
         public bool CloudTalentDeleteProfile(Guid subscriberGuid)
         {
-            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
             ct.DeleteProfileFromCloudTalent(_db, subscriberGuid);
             return true;
         }
 
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task<bool> CloudTalentIndexNewProfiles(int numProfilesToProcess)
         {
-            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
             int indexVersion = int.Parse(_configuration["CloudTalent:ProfileIndexVersion"]);
             List<Subscriber> subscribers = await _subscriberService.GetSubscribersToIndexIntoGoogle(numProfilesToProcess, indexVersion);
             foreach (Subscriber s in subscribers)
@@ -1388,32 +1554,30 @@ namespace UpDiddyApi.Workflow
             return true;
         }
 
-
-
-
-
-
         #endregion
 
         #region Cloud Talent Jobs 
 
+        [DisableConcurrentExecution(timeoutInSeconds: 30)]
         public bool CloudTalentAddJob(Guid jobPostingGuid)
         {
-            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
             ct.AddJobToCloudTalent(_db, jobPostingGuid);
             return true;
         }
 
+        [DisableConcurrentExecution(timeoutInSeconds: 30)]
         public bool CloudTalentUpdateJob(Guid jobPostingGuid)
         {
-            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
             ct.UpdateJobToCloudTalent(_db, jobPostingGuid);
             return true;
         }
 
+        [DisableConcurrentExecution(timeoutInSeconds: 30)]
         public bool CloudTalentDeleteJob(Guid jobPostingGuid)
         {
-            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
             ct.DeleteJobFromCloudTalent(_db, jobPostingGuid);
             return true;
         }
@@ -1431,6 +1595,7 @@ namespace UpDiddyApi.Workflow
         /// </summary>
         /// <param name="Notification"></param>
         /// <param name="Subscribers"></param>
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task<bool> CreateSubscriberNotificationRecords(Notification Notification, int IsTargeted, IList<Subscriber> Subscribers = null)
         {
 
@@ -1469,6 +1634,7 @@ namespace UpDiddyApi.Workflow
         /// the Notification being passed in.
         /// </summary>
         /// <param name="Notification"></param>
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task<bool> DeleteSubscriberNotificationRecords(Notification Notification)
         {
             if (Notification == null)
@@ -1500,6 +1666,7 @@ namespace UpDiddyApi.Workflow
 
         #region Subscriber tracking 
 
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public async Task TrackSubscriberActionInformation(Guid subscriberGuid, Guid actionGuid, Guid entityTypeGuid, Guid entityGuid)
         {
 
@@ -1583,6 +1750,7 @@ namespace UpDiddyApi.Workflow
         /// Job to update MimeType for all valid Subscriber Files.
         /// </summary>
         /// <returns></returns>
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task UpdateSubscriberFilesMimeType()
         {
             //get all SubscriberFiles with Empty MimeType
@@ -1602,6 +1770,7 @@ namespace UpDiddyApi.Workflow
 
         #region Pull all JobTitles, Company, City, State and Postal Code for search intelligence
 
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 30)]
         public async Task CacheKeywordLocationSearchIntelligenceInfo()
         {
             List<string> keywordSearch = new List<string>();
@@ -1655,16 +1824,9 @@ namespace UpDiddyApi.Workflow
             string serializedKeyworkSearchList = JsonConvert.SerializeObject(keywordSearch.ConvertAll(k => k.ToLower()).Distinct());
             string serializedLocationSearchList = JsonConvert.SerializeObject(locationSearch.ConvertAll(l => l.ToLower()).Distinct());
 
-            //cache for 2 days unless the scheduled job runs.
-            //caching of keyword and location happens when the job data mining job runs
-            DistributedCacheEntryOptions options = new DistributedCacheEntryOptions()
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(Convert.ToDouble(_configuration["KeywordLocationSearchIntellisenseJob:TimeSpanToRun"]))
-            };
-
-            //cache the list to use for intelligence search
-            await _cache.SetStringAsync("keywordSearchList", serializedKeyworkSearchList, options);
-            await _cache.SetStringAsync("locationSearchList", serializedLocationSearchList, options);
+            //store in memory cache
+            _memoryCache.Set("keywordSearchList",serializedKeyworkSearchList,DateTimeOffset.Now.AddDays(Convert.ToDouble(_configuration["KeywordLocationSearchIntellisenseJob:TimeSpanToRun"])));
+            _memoryCache.Set("locationSearchList",serializedLocationSearchList,DateTimeOffset.Now.AddDays(Convert.ToDouble(_configuration["KeywordLocationSearchIntellisenseJob:TimeSpanToRun"])));
         }
         #endregion
 

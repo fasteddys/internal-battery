@@ -27,5 +27,7 @@ namespace UpDiddyLib.Dto
         public int TermsOfServiceDocumentId { get; set; }
         public string TermsOfServiceContent { get; set; }
         public List<SkillDto> Skills { get; set; }
+        public List<TagTopicDto> TagTopics { get; set; }
+        public bool IsExternal { get; set; }
     }
 }

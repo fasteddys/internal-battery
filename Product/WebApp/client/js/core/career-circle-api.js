@@ -171,6 +171,10 @@
         return _http.get('/report/job-abandonment-count/?startDate=' + startDate + '&endDate=' + endDate);
     }
 
+    var getTotalUserBreakdownByPartner = function (startDate, endDate) {
+        return _http.get('/report/partners/?startDate=' + startDate + '&endDate=' + endDate);
+    }
+
     var requestVerification = function (verifyUrl) {
         return _http.post('/subscriber/request-verification', JSON.stringify({
             verifyUrl: verifyUrl
@@ -257,7 +261,10 @@
         return await _http.post('/recruiter/delete/', JSON.stringify(recruiterObj));
     }
 
-
+    var getCourseSites = async function () {
+        return await _http.get('/course-sites');
+    }
+     
     return {
         getProfile: getProfile,
         uploadResume: uploadResume,
@@ -288,7 +295,9 @@
         editRecruiter: editRecruiter,
         deleteRecruiter: deleteRecruiter,
         getNotificationCountReport: getNotificationCountReport,
+        getCourseSites: getCourseSites,
         getJobAbandonmentCount: getJobAbandonmentCount,
+        getTotalUserBreakdownByPartner: getTotalUserBreakdownByPartner,
     };
 
 })(API_URL);

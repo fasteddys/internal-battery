@@ -1,0 +1,52 @@
+@import '_variables';
+
+
+.package-checkout-container{
+    .form-check-inline{
+        a{
+            color: $color-secondary;
+
+            &:hover{
+                color: $color-tertiary;
+            }
+        }
+    }
+    .package-checkout-hero{
+        background-color: $color-secondary;
+        color: $color-white;
+    }
+    .package-checkout-signup-container{
+        padding: 2rem;
+        border-radius: 1rem;
+        background-color: $color-secondary;
+
+        .form-check-label{
+            color: $color-white;
+        }
+
+        
+    }
+    .bt-drop-in-wrapper{
+        width: 100%;
+    }
+
+    .total-container{
+        > div{
+            padding: 0;
+        }
+
+        .total-row-item{
+            border-top: 1px solid $color-secondary;
+        }
+    }
+
+    #ValidationMessageError{
+        span{
+            color: $color-red;
+        }
+    }
+
+    .brand-button{
+        max-width: initial;
+    }
+}

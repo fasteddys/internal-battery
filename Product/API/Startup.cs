@@ -37,6 +37,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Repository;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore.StaticFiles;
+using UpDiddyApi.ApplicationCore.Services.CourseCrawling;
 
 namespace UpDiddyApi
 {
@@ -69,7 +70,7 @@ namespace UpDiddyApi
                 builder.AddUserSecrets<Startup>();
             }
 
-            // if environment is set to staging or production then add vault keys
+            // if environment is set to staging or production then add vault keysF
             var config = builder.Build();
             if (env.IsStaging() || env.IsProduction())
             {
@@ -195,7 +196,6 @@ namespace UpDiddyApi
                     // run the job crawl in production Monday through Friday once per day at 15:00 UTC
                     RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), "0 15 * * Mon,Tue,Wed,Thu,Fri");
                      //Keyword and Location Search Intellisense Job
-                    RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(),"0 11,13,15,17,19,21,23 * * Mon,Tue,Wed,Thu,Fri");
                 }
 
                 // run the process in staging once a week on the weekend (Sunday 4 UTC)
@@ -203,8 +203,9 @@ namespace UpDiddyApi
                 {
                     RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.Weekly(DayOfWeek.Sunday, 4));
                     //Keyword and Location Search Intellisense Job
-                    RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(),Cron.Weekly(DayOfWeek.Sunday, 4));
                 }
+
+                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(), Cron.Hourly(55));
 
                 // run job to look for un-indexed profiles and index them 
                 int profileIndexerBatchSize = int.Parse(Configuration["CloudTalent:ProfileIndexerBatchSize"]);
@@ -249,14 +250,23 @@ namespace UpDiddyApi
             services.AddScoped<ITrackingService, TrackingService>();
             services.AddScoped<IJobPostingService, JobPostingService>();
             services.AddScoped<IJobApplicationService, JobApplicationService>();
+            services.AddScoped<ITraitifyService, TraitifyService>();      
+            services.AddScoped<IServiceOfferingService, ServiceOfferingService>();
+            services.AddScoped<IServiceOfferingOrderService, ServiceOfferingOrderService>();
+            services.AddScoped<IPromoCodeService, PromoCodeService>();
+            services.AddScoped<IBraintreeService, BraintreeService>();
 
-
-            
+            services.AddScoped<ICourseService, CourseService>();
             services.AddScoped<ICompanyService, CompanyService>();
             services.AddScoped<IRecruiterService, RecruiterService>();
             services.AddScoped<ITaggingService, TaggingService>();
             services.AddScoped<ISubscriberNotificationService, SubscriberNotificationService>();
+            services.AddScoped<ICourseCrawlingService, CourseCrawlingService>();
             services.AddScoped<IHangfireService, HangfireService>();
+            services.AddScoped<IMemoryCacheService,MemoryCacheService>();
+            services.AddScoped<IServiceOfferingPromoCodeRedemptionService, ServiceOfferingPromoCodeRedemptionService>();
+
+            
             #endregion
 
             // Configure SnapshotCollector from application settings
