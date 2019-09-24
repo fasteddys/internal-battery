@@ -370,7 +370,7 @@ namespace UpDiddy.Controllers
         }
 
         [Authorize]
-        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
+        [LoadSubscriber(isHardRefresh: true, isSubscriberRequired: true)]
         [HttpGet("[controller]/apply/{JobGuid}")]
         public async Task<IActionResult> ApplyAsync(Guid JobGuid)
         {
