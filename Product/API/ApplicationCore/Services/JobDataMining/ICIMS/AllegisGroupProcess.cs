@@ -18,7 +18,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
     {
         public AllegisGroupProcess(JobSite jobSite, ILogger logger, Guid companyGuid, IConfiguration config) : base(jobSite, logger, companyGuid, config ) { }
         
-        public List<JobPage> DiscoverJobPages(List<JobPage> existingJobPages)
+        public async Task<List<JobPage>> DiscoverJobPages(List<JobPage> existingJobPages)
         {
             // init code for http client and allegis group icims parser/client
             var http = new HttpClient();
