@@ -34,11 +34,12 @@ $("#JobApplication button[type=submit]").on("click", function(e){
 
     if($("#HasResume").data("resume") === "False" && $("#UploadedResume")[0].files[0] !== undefined){
         CareerCircleAPI.uploadResume($("#UploadedResume")[0].files[0], true)
+            .then(function (result) {
+                $("#JobApplication").submit();
+            })
             .catch((err) => {
                 ToastService.error('Unable to submit application: error uploading your resume. Please try again.');
                 return;
             });
     }
-
-    $("#JobApplication").submit();
 });
