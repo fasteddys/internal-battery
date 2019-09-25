@@ -122,29 +122,49 @@ namespace UpDiddyApi.Controllers
         [HttpGet("{subscriberGuid}")]
         public async Task<IActionResult> Get(Guid subscriberGuid)
         {
-            // Validate guid for GetSubscriber call
-            if (Guid.Empty.Equals(subscriberGuid) || subscriberGuid == null)
-                return NotFound();
 
-            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var isAuth = await _authorizationService.AuthorizeAsync(User, "IsRecruiterPolicy");
+            // TODO JAB REmove try
+            int step = 0;
+            try
+            {
+                step = 1;
+                // Validate guid for GetSubscriber call
+                if (Guid.Empty.Equals(subscriberGuid) || subscriberGuid == null)
+                    return NotFound();
 
-            if (subscriberGuid == loggedInUserGuid || isAuth.Succeeded)
+                Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                step = 2;
+                var isAuth = await _authorizationService.AuthorizeAsync(User, "IsRecruiterPolicy");
+                step = 3;
+
+                if (subscriberGuid == loggedInUserGuid || isAuth.Succeeded)
+                {
+                    step = 4;
+                    SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
+
+                    if (subscriberDto == null)
+                        return Ok(subscriberDto);
+
+                    step = 5;
+                    // track the subscriber action if performed by someone other than the user who owns the file
+                    if (loggedInUserGuid != subscriberDto.SubscriberGuid.Value)
+                        new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);
+                    step = 6;
+                    return Ok(subscriberDto);
+                }
+                else
+                    return Unauthorized();
+
+            }
+            catch ( Exception ex )
             {
 
-                SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
-
-                if (subscriberDto == null)
-                    return Ok(subscriberDto);
-
-                // track the subscriber action if performed by someone other than the user who owns the file
-                if (loggedInUserGuid != subscriberDto.SubscriberGuid.Value)
-                    new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);
-
-                return Ok(subscriberDto);
+                var wtf = ex.Message;
+                int x = step;
+                return BadRequest();
             }
-            else
-                return Unauthorized();
+
+   
         }
 
         [Authorize(Policy = "IsCareerCircleAdmin")]
