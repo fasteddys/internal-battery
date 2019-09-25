@@ -27,8 +27,25 @@ var IsValidFileType = function (filename) {
 
 $("#JobApplication button[type=submit]").on("click", function(e){
     e.preventDefault();
+    
+
+    if($("#FirstName").val() === "" || $("#FirstName").val() === undefined){
+        ToastService.warning("Please enter your first name.");
+        return;
+    }
+
+    if($("#LastName").val() === "" || $("#LastName").val() === undefined){
+        ToastService.warning("Please enter your last name.");
+        return;
+    }
+
     if($("#HasResume").data("resume") === "False" && $("#UploadedResume")[0].files[0] === undefined){
-        ToastService.warning("Please attach your resume, and submit again.");
+        ToastService.warning("Please attach your resume.");
+        return;
+    }
+
+    if($("#CoverLetter").val() === "" || $("#CoverLetter").val() === undefined){
+        ToastService.warning("Please enter cover letter text.");
         return;
     }
 
