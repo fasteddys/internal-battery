@@ -42,4 +42,7 @@ $("#JobApplication button[type=submit]").on("click", function(e){
                 return;
             });
     }
+    else{
+        $("#JobApplication").submit();
+    }
 });
