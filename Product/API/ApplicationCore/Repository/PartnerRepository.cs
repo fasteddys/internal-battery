@@ -28,5 +28,32 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 .Where(p => p.IsDeleted == 0 && p.PartnerGuid == partnerGuid)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<Partner> GetOrCreatePartnerByName ( string partnerName, PartnerType partnerType)
+        {
+
+ 
+            Partner Partner = await GetPartnerByName(partnerName);
+            if (Partner == null)
+            {
+                Partner = new Partner()
+                {
+                    CreateDate = DateTime.UtcNow,
+                    ModifyDate = DateTime.UtcNow,
+                    CreateGuid = Guid.NewGuid(),
+                    ModifyGuid = Guid.NewGuid(),
+                    PartnerGuid = Guid.NewGuid(),
+                    IsDeleted = 0,
+                    Name = partnerName,
+                    PartnerTypeId = partnerType.PartnerTypeId,
+
+                };
+                await  Create(Partner);
+                await SaveAsync();
+            }
+
+            return Partner;
+        }
+
     }
 }

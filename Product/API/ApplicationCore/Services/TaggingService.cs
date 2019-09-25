@@ -54,27 +54,10 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (partnerType == null)
                     return false;
 
-
+ 
                 // Find or create  the source as a partner 
-                Partner Partner = await _repositoryWrapper.PartnerRepository.GetPartnerByName(Source);
-                if (Partner == null)
-                {
-                    Partner = new Partner()
-                    {
-                        CreateDate = DateTime.UtcNow,
-                        ModifyDate = DateTime.UtcNow,
-                        CreateGuid = Guid.NewGuid(),
-                        ModifyGuid = Guid.NewGuid(),
-                        PartnerGuid = Guid.NewGuid(),                         
-                        IsDeleted = 0,
-                        Name = Source,
-                        PartnerTypeId =    partnerType.PartnerTypeId,
-                         
-                    };
-                    await _repositoryWrapper.PartnerRepository.Create(Partner);
-                    await _repositoryWrapper.PartnerRepository.SaveAsync();
-                }
-
+                Partner Partner = await _repositoryWrapper.PartnerRepository.GetOrCreatePartnerByName(Source, partnerType);
+            
                 // Create/Find group and add user to it
                 await CreateGroup(Source, Partner.PartnerGuid.Value, SubscriberId);
             }

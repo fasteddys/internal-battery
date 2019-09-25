@@ -10,6 +10,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     {
         Task<Partner> GetPartnerByName(string PartnerName);
         Task<Partner> GetPartnerByGuid(Guid partnerGuid);
+        Task<Partner> GetOrCreatePartnerByName(string partnerName, PartnerType partnerType);
 
     }
 }

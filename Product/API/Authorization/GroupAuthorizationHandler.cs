@@ -85,7 +85,7 @@ namespace UpDiddyApi.Authorization
         private async Task<bool> CheckAuthAsync(string userId, GroupRequirement requirement)
         {
 
-            // Getting a weird error ocsasionally when logging.  The 
+            // Getting a weird error ocsasionally when logging.  See NOTE below 
             bool IsLogging = false; ;
             try
             {
@@ -101,6 +101,7 @@ namespace UpDiddyApi.Authorization
                 else
                 {
                     groups = new List<Microsoft.Graph.Group>();
+
                     try
                     {
                         groups = await _graphClient.GetUserGroupsByObjectId(userId);
@@ -111,7 +112,33 @@ namespace UpDiddyApi.Authorization
                     {
 
                         IsLogging = true;
-                        _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_GroupAuthorizationHandler.CheckAuthAsync Error getting user group info for user: {userId}  Exception: {ex.Message}", requirement);
+
+                        /*
+                         NOTE: Sometimes the graph call returns the following error:
+
+                            { System.Net.WebException: Error Calling the Graph API:
+                                {
+                                    "odata.error": {
+                                        "code": "Request_ResourceNotFound",
+                                        "message": {
+                                        "lang": "en",
+                                        "value": "Resource '11f36619-ea54-4c56-a365-8cec7bac5d65' does not exist or one of its queried reference-property objects are not present."
+                                        },
+                                        "requestId": "070e7516-b38f-48c0-8712-d1b0d1f4fa36",
+                                        "date": "2019-09-25T12:26:21"
+                                }
+                            }
+
+
+                            This error seems to be due to a time delay with a newly created subscriber not being found in graph.  This error was discovered during the development of the 
+                            viral recruitment enhancments for OWL  The flow that causes this error is:
+
+                            Click Viral Link -> View Job -> Click Apply for job -> Create new account -> View Job Application screen (which results in this error)
+
+                            When the graph call returns this error, the log exception below throws an "Invalid Format" exception.
+                            */
+
+                            _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_GroupAuthorizationHandler.CheckAuthAsync Error getting user group info for user: {userId}  Exception: {ex.Message}", requirement);
                         // if exception then stop here, don't assume they have access
                         return false;
                     }
@@ -141,12 +168,12 @@ namespace UpDiddyApi.Authorization
             catch (Exception ex)
             {
                 var info = ex.Message;
+                // Work around for intermitten syslog.Log exception.  See NOTE above
                 if (IsLogging)
                     return false;
                 else
                     throw ex;
             }
-
 
         }
 

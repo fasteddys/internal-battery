@@ -235,10 +235,10 @@ namespace UpDiddyApi.Controllers
                 // Map Partner 
                 if ( jobApplicationDto.Partner != null )
                 {
-                    Partner partner = await _repositoryWrapper.PartnerRepository.GetPartnerByGuid(jobApplicationDto.Partner.PartnerGuid.Value);
-                    if ( partner != null )
-                        jobApplication.PartnerId = partner.PartnerId;
-                  
+                    PartnerType partnerType = await _repositoryWrapper.PartnerTypeRepository.GetPartnerTypeByName("ExternalSource");
+                    // TODO JAB move to partner reposiotry 
+                    Partner partner = await _repositoryWrapper.PartnerRepository.GetOrCreatePartnerByName(jobApplicationDto.Partner.Name, partnerType);                    
+                    jobApplication.PartnerId = partner.PartnerId;                  
                 }
                     
                 _db.JobApplication.Add(jobApplication);

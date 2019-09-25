@@ -516,9 +516,14 @@ namespace UpDiddy.Controllers
             {
                 string jobPartnerSource = Request.Cookies[job.JobPostingGuid.ToString()].ToString();
                 PartnerDto partner = await _api.GetPartnerByNameAsync(jobPartnerSource);
-                if (partner != null)
-                    jadto.Partner = partner;
-
+                if (partner == null )
+                {
+                    partner = new PartnerDto()
+                    {
+                        Name = jobPartnerSource
+                    };
+                }
+                jadto.Partner = partner;
                 // Consume the cookie, hehe that's funny
                 RemoveCookie(job.JobPostingGuid.ToString());
             }

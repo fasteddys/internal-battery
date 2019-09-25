@@ -1461,6 +1461,20 @@ namespace UpDiddy.Api
             return null;
         }
 
+        public async Task<PartnerDto> GetOrAddPartnerByNameAsync(string partnerName)
+        {
+            IList<PartnerDto> _partners = await GetPartnersAsync();
+            foreach (PartnerDto partner in _partners)
+            {
+                if (partner.Name == partnerName)
+                {
+                    return partner;
+                }
+            }
+            return null;
+        }
+
+
 
 
         private async Task<IList<PartnerDto>> _PartnersAsync()
