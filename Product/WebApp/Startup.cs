@@ -25,19 +25,25 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using JavaScriptEngineSwitcher.ChakraCore;
 using JavaScriptEngineSwitcher.Extensions.MsDependencyInjection;
-using React.AspNet; 
+using React.AspNet;
 using DeviceDetectorNET;
 using UpDiddy.Services;
 using UpDiddy.Services.ButterCMS;
 using UpDiddy.ExceptionHandling;
+using System.Threading.Tasks;
 
 namespace UpDiddy
 {
     public class Startup
     {
         public IConfigurationRoot Configuration { get; }
+        public IHostingEnvironment HostingEnvironment { get; }
+
         public Startup(IHostingEnvironment env)
         {
+            // store this so that we can access it in ConfigureServices
+            HostingEnvironment = env;
+
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -68,11 +74,11 @@ namespace UpDiddy
         {
             services.AddHttpContextAccessor();
 
-			services.AddJsEngineSwitcher(options => options.DefaultEngineName = ChakraCoreJsEngine.EngineName)
-				.AddChakraCore();
+            services.AddJsEngineSwitcher(options => options.DefaultEngineName = ChakraCoreJsEngine.EngineName)
+                .AddChakraCore();
 
-			services.AddReact(); 
-            
+            services.AddReact();
+            /*
             if (!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
             {
                 services.AddAuthentication(sharedOptions =>
@@ -107,12 +113,81 @@ namespace UpDiddy
                     options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
                 });
             }
+            */
+
+            // Add Auth0 authentication services
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            })
+            .AddCookie()
+            .AddOpenIdConnect("Auth0", options =>
+            {
+                // Set the authority to your Auth0 domain
+                options.Authority = $"https://{Configuration["Auth0:Domain"]}";
+
+                // Configure the Auth0 Client ID and Client Secret
+                options.ClientId = Configuration["Auth0:ClientId"];
+                options.ClientSecret = Configuration["Auth0:ClientSecret"];
+
+                // Set response type to code
+                options.ResponseType = "code";
+
+                // Configure the scope
+                options.Scope.Clear();
+                options.Scope.Add("openid");
+                options.Scope.Add("profile");
+
+                // Set the callback path, so Auth0 will call back to http://localhost:5000/callback
+                // Also ensure that you have added the URL as an Allowed Callback URL in your Auth0 dashboard
+                options.CallbackPath = new PathString("/callback");
+
+                // Configure the Claims Issuer to be Auth0
+                options.ClaimsIssuer = "Auth0";
+
+                options.SaveTokens = true;
+
+                options.Events = new OpenIdConnectEvents
+                {
+                    OnRedirectToIdentityProvider = context =>
+                    {
+                        if (context.Properties.Items.ContainsKey("connection"))
+                            context.ProtocolMessage.SetParameter("connection", context.Properties.Items["connection"]);
+
+                        return Task.FromResult(0);
+                    },
+                    // handle the logout redirection
+                    OnRedirectToIdentityProviderForSignOut = (context) =>
+                    {
+                        var logoutUri = $"https://{Configuration["Auth0:Domain"]}/v2/logout?client_id={Configuration["Auth0:ClientId"]}";
+
+                        var postLogoutUri = context.Properties.RedirectUri;
+                        if (!string.IsNullOrEmpty(postLogoutUri))
+                        {
+                            if (postLogoutUri.StartsWith("/"))
+                            {
+                                // transform to absolute
+                                var request = context.Request;
+                                postLogoutUri = request.Scheme + "://" + request.Host + request.PathBase + postLogoutUri;
+                            }
+                            logoutUri += $"&returnTo={ Uri.EscapeDataString(postLogoutUri)}";
+                        }
+
+                        context.Response.Redirect(logoutUri);
+                        context.HandleResponse();
+
+                        return Task.CompletedTask;
+                    }
+                };
+            });
 
             services.Configure<CookiePolicyOptions>(options =>
             {
-                // This lambda determines whether user consent for non-essential cookies 
-                // is needed for a given request.
-                options.CheckConsentNeeded = context => true;
+                    // This lambda determines whether user consent for non-essential cookies 
+                    // is needed for a given request.
+                    options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = Microsoft.AspNetCore.Http.SameSiteMode.None;
             });
 
@@ -127,7 +202,8 @@ namespace UpDiddy
             }));
 
             services.AddMemoryCache();
-            services.AddMvc(config => {
+            services.AddMvc(config =>
+            {
                 config.Filters.Add(typeof(CCExceptionFilter));
             })
             .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
@@ -149,7 +225,7 @@ namespace UpDiddy
             services.AddHttpClient(Constants.HttpGetClientName);
             services.AddHttpClient(Constants.HttpPostClientName);
             services.AddHttpClient(Constants.HttpPutClientName);
-            services.AddHttpClient(Constants.HttpDeleteClientName);              
+            services.AddHttpClient(Constants.HttpDeleteClientName);
 
             // Configure supported cultures and localization options
             services.Configure<RequestLocalizationOptions>(options =>
@@ -172,7 +248,7 @@ namespace UpDiddy
                 options.SupportedUICultures = supportedCultures;
             });
 
-       
+
             services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromHours(1);
@@ -209,28 +285,28 @@ namespace UpDiddy
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
- 
+
             if (env.IsDevelopment() || env.IsStaging())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseBrowserLink();
             }
-            else if(!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
-            {  
+            else if (!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
+            {
                 app.UseExceptionHandler("/Home/Error");
                 app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
-            } 
- 
+            }
+
             // Initialise ReactJS.NET. Must be before static files.
             app.UseReact(config =>
             {
-				config
-					.SetReuseJavaScriptEngines(true)
-					.SetLoadBabel(false)
-					.SetLoadReact(false)
-					.AddScriptWithoutTransform("~/js/runtime.js")
-					.AddScriptWithoutTransform("~/js/vendor.js")
-					.AddScriptWithoutTransform("~/js/components.js");
+                config
+                    .SetReuseJavaScriptEngines(true)
+                    .SetLoadBabel(false)
+                    .SetLoadReact(false)
+                    .AddScriptWithoutTransform("~/js/runtime.js")
+                    .AddScriptWithoutTransform("~/js/vendor.js")
+                    .AddScriptWithoutTransform("~/js/components.js");
             });
 
             app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
@@ -267,7 +343,7 @@ namespace UpDiddy
                         "public,max-age=" + durationInSeconds;
                 }
             });
-
+            /*
             app.Use(async (ctx, next) =>
             {
                 if (ctx.Request.Path == "/signout-oidc" && !ctx.Request.Query["skip"].Any())
@@ -295,7 +371,7 @@ namespace UpDiddy
                     await ctx.Response.WriteAsync(html);
                 }
             });
-
+            */
 
             app.UseSession();
             app.UseAuthentication();
@@ -327,7 +403,7 @@ namespace UpDiddy
                     "NotFound",
                     "{*url}",
                     new { controller = "Home", action = "PageNotFound" });
-            });         
+            });
         }
     }
 }
