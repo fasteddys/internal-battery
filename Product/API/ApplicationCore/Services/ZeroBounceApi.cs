@@ -117,5 +117,77 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             return isValidEmail;
         }
+
+        public bool? ValidateEmail(string email)
+        {
+            bool? isValidEmail = null;
+            try
+            {
+                // check to see if we have validated this email already
+                bool? priorValidationCheck = _repositoryWrapper.ZeroBounceRepository.MostRecentResultInLast90Days(email).Result;
+
+                // do we have a ZeroBounce validation result within the last 90 days for this email address?
+                if (priorValidationCheck.HasValue)
+                {
+                    // if a prior request exists, set the result to match the prior validation check
+                    isValidEmail = priorValidationCheck.Value;
+                }
+                else                
+                {
+                    // if there are no prior requests, then we are going to call the service
+                    System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+                    long elapsedTimeInMilliseconds;
+                    // call api, get response
+                    string response;
+                    string httpStatus;
+                    using (var client = new HttpClient())
+                    {
+                        UriBuilder builder = new UriBuilder(_apiUrl);
+                        builder.Query += "api_key=" + _apiKey;
+                        builder.Query += "&email=" + email;
+                        builder.Query += "&ip_address=";
+                        var request = new HttpRequestMessage()
+                        {
+                            RequestUri = builder.Uri,
+                            Method = HttpMethod.Get
+                        };
+                        stopwatch.Start();
+                        var result = client.SendAsync(request).Result;
+                        stopwatch.Stop();
+                        elapsedTimeInMilliseconds = stopwatch.ElapsedMilliseconds;
+                        response = result.Content.ReadAsStringAsync().Result;
+                        httpStatus = ((int)result.StatusCode).ToString();
+                    }
+                    dynamic jsonResponse = JsonConvert.DeserializeObject<dynamic>(response);
+
+                    // interpret response
+                    isValidEmail = jsonResponse.status == "valid";
+
+                    // write the history of the zero bounce request to our db
+                    _repositoryWrapper.ZeroBounceRepository.Create(new ZeroBounce()
+                    {
+                        CreateDate = DateTime.UtcNow,
+                        CreateGuid = Guid.Empty,
+                        ElapsedTimeInMilliseconds = Convert.ToInt32(elapsedTimeInMilliseconds),
+                        HttpStatus = httpStatus,
+                        IsDeleted = 0,
+                        PartnerContactId = null,
+                        Response = jsonResponse,
+                        ZeroBounceGuid = Guid.NewGuid()
+                    });
+
+                    // save the changes - it is important to wait until this completes because the second save can cause an exception which prevents
+                    // the lead status from being stored (A second operation started on this context before a previous operation completed)
+                    _repositoryWrapper.ZeroBounceRepository.SaveAsync().Wait();
+                }
+
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Information, $"***** ZeroBounceApi.ValidateEmail encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+            }
+
+            return isValidEmail;
+        }
     }
 }

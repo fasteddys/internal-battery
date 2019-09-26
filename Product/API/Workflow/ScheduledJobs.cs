@@ -106,7 +106,7 @@ namespace UpDiddyApi.Workflow
         ///   - 1 month
         /// </summary>
         /// <returns></returns>
-        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task SubscriberNotificationEmailReminder()
         {
             DateTime executionTime = DateTime.UtcNow;
@@ -165,7 +165,7 @@ namespace UpDiddyApi.Workflow
         ///     - evenly distributes emails over the delivery window (including seed emails)
         /// </summary>
         /// <returns></returns>
-        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task ExecuteLeadEmailDelivery()
         {
             DateTime executionTime = DateTime.UtcNow;
@@ -266,6 +266,7 @@ namespace UpDiddyApi.Workflow
         /// <param name="email">The email address to verify</param>
         /// <param name="verificationFailureLeadStatusId">The lead status to associate with the partner contact if email validation fails</param>
         /// <returns></returns>
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public async Task ValidateEmailAddress(Guid partnerContactGuid, string email, int verificationFailureLeadStatusId)
         {
             // retrieve the partner contact that will be associated with any lead statuses we store and the log of the zero bounce request
@@ -335,6 +336,7 @@ namespace UpDiddyApi.Workflow
 
         // batch job to call woz to get students course progress
         // todo consider some form of rate limiting once we have numerous enrollments
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public bool UpdateAllStudentsProgress()
         {
             try
@@ -372,7 +374,7 @@ namespace UpDiddyApi.Workflow
         }
 
 
-
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public bool UpdateStudentProgress(string SubscriberGuid, int ProgressUpdateAgeThresholdInHours)
         {
             try
@@ -425,7 +427,7 @@ namespace UpDiddyApi.Workflow
 
 
 
-
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public Boolean ReconcileFutureEnrollments()
         {
             bool result = false;
@@ -623,7 +625,7 @@ namespace UpDiddyApi.Workflow
         /// This method is responsible for the out-of-band processing for the course site crawling operation.
         /// </summary>
         /// <returns></returns>
-        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 30)]
         public async Task<bool> CrawlCourseSiteAsync(CourseSite courseSite)
         {
             _syslog.Log(LogLevel.Information, $"***** Crawling course site '{courseSite.Name}'. Started at: {DateTime.UtcNow.ToLongDateString()}");
@@ -679,7 +681,7 @@ namespace UpDiddyApi.Workflow
         /// This method is responsible for the out-of-band processing for the course site syncing operation.
         /// </summary>
         /// <returns></returns>
-        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 30)]
         public async Task<bool> SyncCourseSiteAsync(CourseSite courseSite)
         {
             _syslog.Log(LogLevel.Information, $"***** Syncing course site '{courseSite.Name}'. Started at: {DateTime.UtcNow.ToLongDateString()}");
@@ -811,7 +813,7 @@ namespace UpDiddyApi.Workflow
                     int existingActiveJobPageCount = existingJobPages.Where(jp => jp.JobPageStatusId == 2).Count();
 
                     // retrieve all current job pages that are visible on the job site
-                    List<JobPage> jobPagesToProcess = jobDataMining.DiscoverJobPages(existingJobPages.ToList());
+                    List<JobPage> jobPagesToProcess = await jobDataMining.DiscoverJobPages(existingJobPages.ToList());
                     position = "DiscoverJobPagesCompleted";
 
                     // set the number of pending and active jobs discovered - this will be the future state if we continue processing this job site
@@ -1041,6 +1043,7 @@ namespace UpDiddyApi.Workflow
         #endregion
 
         #region Resume Parsing 
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task<bool> ImportSubscriberProfileDataAsync(Subscriber subscriber, SubscriberFile resume)
         {
             try
@@ -1111,6 +1114,7 @@ namespace UpDiddyApi.Workflow
 
         #region CareerCircle Jobs 
 
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public void ExecuteJobPostingAlert(Guid jobPostingAlertGuid)
         {
             try
@@ -1160,7 +1164,7 @@ namespace UpDiddyApi.Workflow
         }
 
 
-
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public Boolean DoPromoCodeRedemptionCleanup(int? lookbackPeriodInMinutes = 30)
         {
             bool result = false;
@@ -1200,6 +1204,7 @@ namespace UpDiddyApi.Workflow
             return result;
         }
 
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public Boolean DeactivateCampaignPartnerContacts()
         {
             bool result = false;
@@ -1232,6 +1237,7 @@ namespace UpDiddyApi.Workflow
             return result;
         }
 
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public void StoreTrackingInformation(string tinyId, Guid actionGuid, string campaignPhaseName, string headers)
         {
             var trackingInfoFromTinyId = _db.CampaignPartnerContact
@@ -1385,6 +1391,7 @@ namespace UpDiddyApi.Workflow
         /// Sends email to subscribers who clicked Apply on job posting and did not click submit 
         /// </summary>
         /// <returns></returns>
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task ExecuteJobAbandonmentEmailDelivery()
         {
             try
@@ -1518,12 +1525,14 @@ namespace UpDiddyApi.Workflow
 
         #region Cloud Talent Profiles 
 
+        [DisableConcurrentExecution(timeoutInSeconds: 30)]
         public bool CloudTalentAddOrUpdateProfile(Guid subscriberGuid)
         {
             CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
             return ct.AddOrUpdateProfileToCloudTalent(_db, subscriberGuid);
         }
 
+        [DisableConcurrentExecution(timeoutInSeconds: 30)]
         public bool CloudTalentDeleteProfile(Guid subscriberGuid)
         {
             CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
@@ -1531,6 +1540,7 @@ namespace UpDiddyApi.Workflow
             return true;
         }
 
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task<bool> CloudTalentIndexNewProfiles(int numProfilesToProcess)
         {
             CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
@@ -1544,15 +1554,11 @@ namespace UpDiddyApi.Workflow
             return true;
         }
 
-
-
-
-
-
         #endregion
 
         #region Cloud Talent Jobs 
 
+        [DisableConcurrentExecution(timeoutInSeconds: 30)]
         public bool CloudTalentAddJob(Guid jobPostingGuid)
         {
             CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
@@ -1560,6 +1566,7 @@ namespace UpDiddyApi.Workflow
             return true;
         }
 
+        [DisableConcurrentExecution(timeoutInSeconds: 30)]
         public bool CloudTalentUpdateJob(Guid jobPostingGuid)
         {
             CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
@@ -1567,6 +1574,7 @@ namespace UpDiddyApi.Workflow
             return true;
         }
 
+        [DisableConcurrentExecution(timeoutInSeconds: 30)]
         public bool CloudTalentDeleteJob(Guid jobPostingGuid)
         {
             CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
@@ -1587,6 +1595,7 @@ namespace UpDiddyApi.Workflow
         /// </summary>
         /// <param name="Notification"></param>
         /// <param name="Subscribers"></param>
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task<bool> CreateSubscriberNotificationRecords(Notification Notification, int IsTargeted, IList<Subscriber> Subscribers = null)
         {
 
@@ -1625,6 +1634,7 @@ namespace UpDiddyApi.Workflow
         /// the Notification being passed in.
         /// </summary>
         /// <param name="Notification"></param>
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task<bool> DeleteSubscriberNotificationRecords(Notification Notification)
         {
             if (Notification == null)
@@ -1656,6 +1666,7 @@ namespace UpDiddyApi.Workflow
 
         #region Subscriber tracking 
 
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public async Task TrackSubscriberActionInformation(Guid subscriberGuid, Guid actionGuid, Guid entityTypeGuid, Guid entityGuid)
         {
 
@@ -1739,6 +1750,7 @@ namespace UpDiddyApi.Workflow
         /// Job to update MimeType for all valid Subscriber Files.
         /// </summary>
         /// <returns></returns>
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task UpdateSubscriberFilesMimeType()
         {
             //get all SubscriberFiles with Empty MimeType
@@ -1758,6 +1770,7 @@ namespace UpDiddyApi.Workflow
 
         #region Pull all JobTitles, Company, City, State and Postal Code for search intelligence
 
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 30)]
         public async Task CacheKeywordLocationSearchIntelligenceInfo()
         {
             List<string> keywordSearch = new List<string>();
