@@ -236,7 +236,7 @@ namespace UpDiddyApi.Controllers
                 if ( jobApplicationDto.Partner != null )
                 {
                     PartnerType partnerType = await _repositoryWrapper.PartnerTypeRepository.GetPartnerTypeByName("ExternalSource");
-                    // TODO JAB move to partner reposiotry 
+                    // Get or create the referenced partner 
                     Partner partner = await _repositoryWrapper.PartnerRepository.GetOrCreatePartnerByName(jobApplicationDto.Partner.Name, partnerType);                    
                     jobApplication.PartnerId = partner.PartnerId;                  
                 }

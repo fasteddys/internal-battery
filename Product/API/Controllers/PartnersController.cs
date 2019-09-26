@@ -52,18 +52,11 @@ namespace UpDiddyApi.Controllers
         {
 
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            // TODO JAB CLEAN UP AFTER TESTING 
-            //var isAuth = await _authorizationService.AuthorizeAsync(User, "IsCareerCircleAdmin");
-
-          //  if (isAuth.Succeeded)
-           // {
-                List<Partner> partners = _db.Partner
-                    .Where(s => s.IsDeleted == 0)
-                    .ToList();
-                return Ok(partners);
-           // }
-            //else
-              //  return Unauthorized();
+  
+            List<Partner> partners = _db.Partner
+                .Where(s => s.IsDeleted == 0)
+                .ToList();
+            return Ok(partners);       
         }
 
         [HttpGet("{PartnerGuid}")]

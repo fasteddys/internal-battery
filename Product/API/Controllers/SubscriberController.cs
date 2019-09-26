@@ -122,49 +122,31 @@ namespace UpDiddyApi.Controllers
         [HttpGet("{subscriberGuid}")]
         public async Task<IActionResult> Get(Guid subscriberGuid)
         {
-
-            // TODO JAB REmove try
-            int step = 0;
-            try
-            {
-                step = 1;
+          
                 // Validate guid for GetSubscriber call
                 if (Guid.Empty.Equals(subscriberGuid) || subscriberGuid == null)
                     return NotFound();
 
                 Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                step = 2;
-                var isAuth = await _authorizationService.AuthorizeAsync(User, "IsRecruiterPolicy");
-                step = 3;
+                var isAuth = await _authorizationService.AuthorizeAsync(User, "IsRecruiterPolicy");                
 
                 if (subscriberGuid == loggedInUserGuid || isAuth.Succeeded)
                 {
-                    step = 4;
+                    
                     SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
 
                     if (subscriberDto == null)
                         return Ok(subscriberDto);
 
-                    step = 5;
                     // track the subscriber action if performed by someone other than the user who owns the file
                     if (loggedInUserGuid != subscriberDto.SubscriberGuid.Value)
                         new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);
-                    step = 6;
-                    return Ok(subscriberDto);
+
+                return Ok(subscriberDto);
                 }
                 else
                     return Unauthorized();
-
-            }
-            catch ( Exception ex )
-            {
-
-                var wtf = ex.Message;
-                int x = step;
-                return BadRequest();
-            }
-
-   
+                        
         }
 
         [Authorize(Policy = "IsCareerCircleAdmin")]
@@ -227,17 +209,13 @@ namespace UpDiddyApi.Controllers
             _db.SaveChanges();
 
             //updatejiobReferral if referral is not empty
-            if (!string.IsNullOrEmpty(dto.JobReferralCode))
-            {
-                _jobService.UpdateJobReferral(dto.JobReferralCode, subscriber.SubscriberGuid.ToString());
-            }
+            if (!string.IsNullOrEmpty(dto.JobReferralCode))            
+                _jobService.UpdateJobReferral(dto.JobReferralCode, subscriber.SubscriberGuid.ToString());            
 
             // asscociate subscriber with a source if one was provided
-            if (!string.IsNullOrEmpty(dto.SubscriberSource))
-            {
-                // todo jab  _jobService.UpdateJobReferral(dto.JobReferralCode, subscriber.SubscriberGuid.ToString());
+            if (!string.IsNullOrEmpty(dto.SubscriberSource))            
                  await _taggingService.AssociateSourceToSubscriber(dto.SubscriberSource, subscriber.SubscriberId);
-            }
+            
 
             // update google profile 
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));

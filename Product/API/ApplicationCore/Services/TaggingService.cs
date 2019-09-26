@@ -36,38 +36,28 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<bool> AssociateSourceToSubscriber(string Source, int SubscriberId)
         {
-            // TODO JAB remove try catch 
-            try
-            {
-                // short circuit if subscriber is already associated with the partner
-                IList<Partner> Partners = await _repositoryWrapper.PartnerContactRepository.GetPartnersAssociatedWithSubscriber(SubscriberId);
-                if (Partners != null)
-                {
-                    foreach (Partner p in Partners)
-                        if (p.Name == Source)
-                            return true;
-                }
+             
+             // short circuit if subscriber is already associated with the partner
+             IList<Partner> Partners = await _repositoryWrapper.PartnerContactRepository.GetPartnersAssociatedWithSubscriber(SubscriberId);
+             if (Partners != null)
+             {
+                 foreach (Partner p in Partners)
+                     if (p.Name == Source)
+                         return true;
+             }
 
+             PartnerType partnerType = await _repositoryWrapper.PartnerTypeRepository.GetPartnerTypeByName("ExternalSource");
 
-                PartnerType partnerType = await _repositoryWrapper.PartnerTypeRepository.GetPartnerTypeByName("ExternalSource");
-
-                if (partnerType == null)
-                    return false;
-
+             if (partnerType == null)
+                 return false;
  
-                // Find or create  the source as a partner 
-                Partner Partner = await _repositoryWrapper.PartnerRepository.GetOrCreatePartnerByName(Source, partnerType);
+             // Find or create  the source as a partner 
+             Partner Partner = await _repositoryWrapper.PartnerRepository.GetOrCreatePartnerByName(Source, partnerType);
             
-                // Create/Find group and add user to it
-                await CreateGroup(Source, Partner.PartnerGuid.Value, SubscriberId);
-            }
-            catch ( Exception ex )
-            {
-                var x = ex.Message;
-            }
+             // Create/Find group and add user to it
+             await CreateGroup(Source, Partner.PartnerGuid.Value, SubscriberId);
             
             return true;
-
         }
 
 
