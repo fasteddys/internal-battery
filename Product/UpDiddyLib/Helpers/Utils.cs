@@ -21,7 +21,11 @@ namespace UpDiddyLib.Helpers
     static public class Utils
     {
         public static string  AlphaNumeric(string input, int maxLen)
-        { 
+        {
+
+            if (input == null)
+                return string.Empty;
+
             Regex rgx = new Regex("[^a-zA-Z0-9]");
             string rVal  = rgx.Replace(input, "");
 
