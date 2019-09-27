@@ -1308,10 +1308,11 @@ namespace UpDiddy.Api
                 rval = await _SubscriberAsync(subscriberGuid);
                 if (rval == null)
                 {
+                    int MaxCookieLength = int.Parse(_configuration["CareerCircle:MaxCookieLength"]);
                     //check if there is any referralCode
-                    var referralCode = _contextAccessor.HttpContext.Request.Cookies["referrerCode"] == null ? null : _contextAccessor.HttpContext.Request.Cookies["referrerCode"].ToString();
+                    var referralCode = _contextAccessor.HttpContext.Request.Cookies["referrerCode"] == null ? null : Utils.AlphaNumeric(_contextAccessor.HttpContext.Request.Cookies["referrerCode"].ToString(), MaxCookieLength);
                     string source = string.Empty;
-                    source = _contextAccessor.HttpContext.Request.Cookies["source"] == null ? null : _contextAccessor.HttpContext.Request.Cookies["source"].ToString();
+                    source = _contextAccessor.HttpContext.Request.Cookies["source"] == null ? null : Utils.AlphaNumeric(_contextAccessor.HttpContext.Request.Cookies["source"].ToString(),MaxCookieLength);
                     rval = await CreateSubscriberAsync(source, referralCode);
                 }
 

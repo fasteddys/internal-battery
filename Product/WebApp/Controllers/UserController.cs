@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using UpDiddy.Api;
 using UpDiddyLib.Dto;
 using X.PagedList;
@@ -12,9 +13,11 @@ namespace UpDiddy.Controllers
     public class UserController : BaseController
     {
         private IApi _api;
-        public UserController(IApi api) : base(api)
+        private readonly int _maxCookieLength = 0;
+        public UserController(IApi api, IConfiguration configuration) : base(api, configuration)
         {
             _api = api;
+            _maxCookieLength = int.Parse(_configuration["CareerCircle:MaxCookieLength"]);
         }
 
         [HttpGet("jobs")]

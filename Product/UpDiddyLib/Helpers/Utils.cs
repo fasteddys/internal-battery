@@ -20,7 +20,16 @@ namespace UpDiddyLib.Helpers
 {
     static public class Utils
     {
+        public static string  AlphaNumeric(string input, int maxLen)
+        { 
+            Regex rgx = new Regex("[^a-zA-Z0-9]");
+            string rVal  = rgx.Replace(input, "");
 
+            if (rVal.Length > maxLen)
+                rVal = rVal.Substring(0, (maxLen - 1) );
+
+            return rVal;
+        }
 
         // quick and dirty email validation class 
         public static bool ValidateEmail(string emailaddress)

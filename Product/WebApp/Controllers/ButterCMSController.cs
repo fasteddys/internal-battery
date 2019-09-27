@@ -21,7 +21,7 @@ namespace UpDiddy.Controllers
         public ButterCMSController(IApi api,
             IButterCMSService butterService,
             IConfiguration configuration)
-            : base(api)
+            : base(api,configuration)
         {
             _butterService = butterService;
             _configuration = configuration;

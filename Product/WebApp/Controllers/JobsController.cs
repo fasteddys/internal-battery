@@ -17,6 +17,7 @@ using System.Text.RegularExpressions;
 using System.Security.Claims;
 using static UpDiddyLib.Helpers.Constants;
 using Action = UpDiddyLib.Helpers.Constants.Action;
+using UpDiddyLib.Helpers;
 
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -32,16 +33,18 @@ namespace UpDiddy.Controllers
         private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
         private readonly int _activeJobCount = 0;
+        private readonly int _maxCookieLength = 0;
 
         public JobsController(IApi api,
         IConfiguration configuration,
         IHostingEnvironment env)
-         : base(api)
+         : base(api,configuration)
         {
             _api = api;
             _env = env;
             _configuration = configuration;
             int.TryParse(_api.GetActiveJobCountAsync().Result.Description, out _activeJobCount);
+            _maxCookieLength = int.Parse(_configuration["CareerCircle:MaxCookieLength"]);
         }
 
         [HttpGet("[controller]")]
@@ -412,7 +415,7 @@ namespace UpDiddy.Controllers
 
             //update job as viewed if there is referrer code
             if (Request.Cookies["referrerCode"] != null)
-                await _Api.UpdateJobViewed(Request.Cookies["referrerCode"].ToString());
+                await _Api.UpdateJobViewed( Utils.AlphaNumeric(Request.Cookies["referrerCode"].ToString(),_maxCookieLength));
 
             return View("JobDetails", jdvm);
         }
@@ -511,7 +514,7 @@ namespace UpDiddy.Controllers
             // Check to see if their is a parter source cookie for this job
             if (Request != null && Request.Cookies != null && Request.Cookies[cookieKey] != null && string.IsNullOrEmpty(Request.Cookies[cookieKey].ToString()) == false)
             {
-                string jobPartnerSource = Request.Cookies[job.JobPostingGuid.ToString()].ToString();
+                string jobPartnerSource = Utils.AlphaNumeric(Request.Cookies[job.JobPostingGuid.ToString()].ToString(), _maxCookieLength);
                 PartnerDto partner = await _api.GetPartnerByNameAsync(jobPartnerSource);
                 if (partner == null )
                 {

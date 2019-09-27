@@ -19,7 +19,7 @@ namespace UpDiddy.Controllers
         private readonly IButterCMSService _butterService;
         public TraitifyController(IApi api,
          IButterCMSService butterService,
-         IConfiguration config) : base(api)
+         IConfiguration config) : base(api,config)
         {
             _api = api;
             _config = config;

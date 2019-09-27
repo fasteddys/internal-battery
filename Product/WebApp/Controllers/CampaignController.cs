@@ -21,14 +21,16 @@ namespace UpDiddy.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
+        private readonly int _maxCookieLength;
 
         public CampaignController(IApi api,
             IConfiguration configuration,
             IHostingEnvironment env)
-            : base(api)
+            : base(api,configuration)
         {
             _env = env;
             _configuration = configuration;
+            _maxCookieLength = int.Parse(_configuration["CareerCircle:MaxCookieLength"]);
         }
 
         [HttpGet("/Wozu")]
@@ -236,7 +238,7 @@ namespace UpDiddy.Controllers
                 campaignGuid = signUpViewModel.CampaignGuid,
                 campaignPhase = WebUtility.UrlDecode(signUpViewModel.CampaignPhase),
                 partnerGuid = signUpViewModel.PartnerGuid,
-                subscriberSource = Request.Cookies["source"] == null ? null : Request.Cookies["source"].ToString()
+                subscriberSource = Request.Cookies["source"] == null ? null : Utils.AlphaNumeric(Request.Cookies["source"].ToString(),_maxCookieLength)
             };
 
             // Guard UX from any unforeseen server error.
@@ -326,8 +328,8 @@ namespace UpDiddy.Controllers
                 verifyUrl = _configuration["Environment:BaseUrl"].TrimEnd('/') + "/email/confirm-verification/",
 
                 //check for any referrerCode 
-                referralCode = Request.Cookies["referrerCode"]==null ? null : Request.Cookies["referrerCode"].ToString(),
-                subscriberSource = Request.Cookies["source"] == null ? null : Request.Cookies["source"].ToString(),
+                referralCode = Request.Cookies["referrerCode"]==null ? null : Utils.AlphaNumeric(Request.Cookies["referrerCode"].ToString(), _maxCookieLength),
+                subscriberSource = Request.Cookies["source"] == null ? null : Utils.AlphaNumeric(Request.Cookies["source"].ToString(),_maxCookieLength),
                 partnerGuid = signUpViewModel.PartnerGuid
             };
 
