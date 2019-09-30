@@ -115,7 +115,6 @@ namespace UpDiddyApi
             {
                 options.AddPolicy("IsRecruiterPolicy", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Recruiter" },domain)));
                 options.AddPolicy("IsCareerCircleAdmin", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Career Circle Administrator" },domain)));
-                options.AddPolicy("IsUserAdmin", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Career Circle User Admin" },domain)));
                 options.AddPolicy("IsRecruiterOrAdmin", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Recruiter", "Career Circle Administrator" },domain)));          
             });
 
