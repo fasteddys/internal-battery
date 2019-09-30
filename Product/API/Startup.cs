@@ -43,6 +43,7 @@ namespace UpDiddyApi
 {
     public class Startup
     {
+        private bool _isHangfireProcessingServer;
         private readonly IHostingEnvironment _currentEnvironment;
         public static string ScopeRead;
         public static string ScopeWrite;
@@ -54,6 +55,9 @@ namespace UpDiddyApi
 
         public Startup(IHostingEnvironment env, IConfiguration configuration)
         {
+            // set the value indicating whether or not Hangfire will be processing jobs in this instance
+            Boolean.TryParse(Configuration["Hangfire:IsProcessingServer"], out _isHangfireProcessingServer);
+
             // set the current environment so that we can access it in ConfigureServices
             _currentEnvironment = env;
 
@@ -97,7 +101,6 @@ namespace UpDiddyApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
             services.AddSingleton<Serilog.ILogger>(Logger);
 
             services.AddAuthentication(options =>
@@ -165,73 +168,83 @@ namespace UpDiddyApi
             // Add AutoMapper 
             services.AddAutoMapper(typeof(UpDiddyApi.Helpers.AutoMapperConfiguration));
 
-            if (!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
+            // Configure Hangfire (for queueing and scheduling jobs)
+            var HangFireSqlConnection = Configuration["CareerCircleSqlConnection"];
+            JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);
+
+            // Configure Hangfire Server (for processing jobs)
+            if (_isHangfireProcessingServer)
             {
-                // Configure Hangfire 
-                var HangFireSqlConnection = Configuration["CareerCircleSqlConnection"];
-                services.AddHangfire(x => x.UseSqlServerStorage(HangFireSqlConnection));
-                // Have the workflow monitor run every minute 
-                JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);
-                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ReconcileFutureEnrollments(), Cron.Daily);
-                // Batch job for updating woz student course progress 
-                int CourseProgressSyncIntervalInHours = 12;
-                int.TryParse(Configuration["Woz:CourseProgressSyncIntervalInHours"].ToString(), out CourseProgressSyncIntervalInHours);
-                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.UpdateAllStudentsProgress(), Cron.HourInterval(CourseProgressSyncIntervalInHours));
-
-                // PromoCodeRedemption cleanup
-                int promoCodeRedemptionCleanupScheduleInMinutes = 5;
-                int promoCodeRedemptionLookbackInMinutes = 30;
-                int.TryParse(Configuration["PromoCodeRedemptionCleanupScheduleInMinutes"].ToString(), out promoCodeRedemptionCleanupScheduleInMinutes);
-                int.TryParse(Configuration["PromoCodeRedemptionLookbackInMinutes"].ToString(), out promoCodeRedemptionLookbackInMinutes);
-                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));
-
-                // remove TinyIds from old CampaignPartnerContact records
-                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DeactivateCampaignPartnerContacts(), Cron.Daily());
-
-                 // Run this job once to initially get the keyword and location search
-                 BackgroundJob.Enqueue<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo());
-
-                if (_currentEnvironment.IsProduction())
+                services.AddHangfire(options => options.UseSqlServerStorage(HangFireSqlConnection));
+                GlobalConfiguration.Configuration.UseSqlServerStorage(HangFireSqlConnection);
+                services.AddHangfireServer(options =>
                 {
-                    // run the job crawl in production Monday through Friday once per day at 15:00 UTC
-                    RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), "0 15 * * Mon,Tue,Wed,Thu,Fri");
-                     //Keyword and Location Search Intellisense Job
-                }
-
-                // run the process in staging once a week on the weekend (Sunday 4 UTC)
-                if (_currentEnvironment.IsStaging())
-                {
-                    RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.Weekly(DayOfWeek.Sunday, 4));
-                    //Keyword and Location Search Intellisense Job
-                }
-
-                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(), Cron.Hourly(55));
-
-                // run job to look for un-indexed profiles and index them 
-                int profileIndexerBatchSize = int.Parse(Configuration["CloudTalent:ProfileIndexerBatchSize"]);
-                int profileIndexerIntervalInMinutes = int.Parse(Configuration["CloudTalent:ProfileIndexerIntervalInMinutes"]);
-                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CloudTalentIndexNewProfiles(profileIndexerBatchSize), Cron.MinuteInterval(profileIndexerIntervalInMinutes));
-
-                // use for local testing only - DO NOT UNCOMMENT AND COMMIT THIS CODE!
-                // BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
-
-                // kick off the metered welcome email delivery process at five minutes past the hour every hour
-                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteLeadEmailDelivery(), Cron.Hourly());
-
-                // kick off the job abandonment email delivery process
-                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteJobAbandonmentEmailDelivery(), Cron.Daily());
-
-                // kick off the subscriber notification email reminder process every day at 12 UTC 
-                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.SubscriberNotificationEmailReminder(), Cron.Daily(12));
-
-                //Schedule this background job to check if the SubscriberFiles has MimeType. If not update SubscriberFiles with specific MimeType.
-                // BackgroundJob.Enqueue<ScheduledJobs>(x => x.UpdateSubscriberFilesMimeType());
+                    options.Queues = new[] { "default" }; // only using the default queue for now
+                });
             }
- 
+
+            #region Hangfire jobs
+
+            // Daily job for future enrollments 
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ReconcileFutureEnrollments(), Cron.Daily);
+
+            // Batch job for updating woz student course progress 
+            int CourseProgressSyncIntervalInHours = 12;
+            int.TryParse(Configuration["Woz:CourseProgressSyncIntervalInHours"].ToString(), out CourseProgressSyncIntervalInHours);
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.UpdateAllStudentsProgress(), Cron.HourInterval(CourseProgressSyncIntervalInHours));
+
+            // PromoCodeRedemption cleanup
+            int promoCodeRedemptionCleanupScheduleInMinutes = 5;
+            int promoCodeRedemptionLookbackInMinutes = 30;
+            int.TryParse(Configuration["PromoCodeRedemptionCleanupScheduleInMinutes"].ToString(), out promoCodeRedemptionCleanupScheduleInMinutes);
+            int.TryParse(Configuration["PromoCodeRedemptionLookbackInMinutes"].ToString(), out promoCodeRedemptionLookbackInMinutes);
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));
+
+            // remove TinyIds from old CampaignPartnerContact records
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DeactivateCampaignPartnerContacts(), Cron.Daily());
+
+            // Run this job once to initially get the keyword and location search
+            BackgroundJob.Enqueue<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo());
+
+            if (_currentEnvironment.IsProduction())
+            {
+                // run the job crawl in production Monday through Friday once per day at 15:00 UTC
+                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), "0 15 * * Mon,Tue,Wed,Thu,Fri");
+                //Keyword and Location Search Intellisense Job
+            }
+
+            // run the process in staging once a week on the weekend (Sunday 4 UTC)
+            if (_currentEnvironment.IsStaging())
+            {
+                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.Weekly(DayOfWeek.Sunday, 4));
+                //Keyword and Location Search Intellisense Job
+            }
+
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(), Cron.Hourly(55));
+
+            // LOCAL TESTING ONLY - DO NOT UNCOMMENT THIS CODE!
+            BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
+
+            // run job to look for un-indexed profiles and index them 
+            int profileIndexerBatchSize = int.Parse(Configuration["CloudTalent:ProfileIndexerBatchSize"]);
+            int profileIndexerIntervalInMinutes = int.Parse(Configuration["CloudTalent:ProfileIndexerIntervalInMinutes"]);
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CloudTalentIndexNewProfiles(profileIndexerBatchSize), Cron.MinuteInterval(profileIndexerIntervalInMinutes));
+
+            // kick off the metered welcome email delivery process at five minutes past the hour every hour
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteLeadEmailDelivery(), Cron.Hourly());
+
+            // kick off the job abandonment email delivery process
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteJobAbandonmentEmailDelivery(), Cron.Daily());
+
+            // kick off the subscriber notification email reminder process every day at 12 UTC 
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.SubscriberNotificationEmailReminder(), Cron.Daily(12));
+            
+            #endregion
+
             services.AddHttpClient(Constants.HttpGetClientName);
             services.AddHttpClient(Constants.HttpPostClientName);
             services.AddHttpClient(Constants.HttpPutClientName);
-            services.AddHttpClient(Constants.HttpDeleteClientName);              
+            services.AddHttpClient(Constants.HttpDeleteClientName);
 
             #region Add Custom Services
             services.AddTransient<ISovrenAPI, Sovren>();
@@ -250,7 +263,7 @@ namespace UpDiddyApi
             services.AddScoped<ITrackingService, TrackingService>();
             services.AddScoped<IJobPostingService, JobPostingService>();
             services.AddScoped<IJobApplicationService, JobApplicationService>();
-            services.AddScoped<ITraitifyService, TraitifyService>();      
+            services.AddScoped<ITraitifyService, TraitifyService>();
             services.AddScoped<IServiceOfferingService, ServiceOfferingService>();
             services.AddScoped<IServiceOfferingOrderService, ServiceOfferingOrderService>();
             services.AddScoped<IPromoCodeService, PromoCodeService>();
@@ -263,10 +276,10 @@ namespace UpDiddyApi
             services.AddScoped<ISubscriberNotificationService, SubscriberNotificationService>();
             services.AddScoped<ICourseCrawlingService, CourseCrawlingService>();
             services.AddScoped<IHangfireService, HangfireService>();
-            services.AddScoped<IMemoryCacheService,MemoryCacheService>();
+            services.AddScoped<IMemoryCacheService, MemoryCacheService>();
             services.AddScoped<IServiceOfferingPromoCodeRedemptionService, ServiceOfferingPromoCodeRedemptionService>();
 
-            
+
             #endregion
 
             // Configure SnapshotCollector from application settings
