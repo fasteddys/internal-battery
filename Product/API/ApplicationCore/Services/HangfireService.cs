@@ -66,7 +66,5 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             RecurringJob.RemoveIfExists(recurringJobId);
         }
-
-
     }
 }
