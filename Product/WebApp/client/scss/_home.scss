@@ -182,6 +182,17 @@ body {
                     font-weight: bold;
                     font-size: 1.3rem;
                 }
+
+                .signup-top-container-footer {
+                    padding: 1.5rem;
+                    color: white;
+                    border-radius: 1rem;
+                    font-weight: bold;
+                    font-size: 1.3rem;
+                    a {
+                        font-weight:bold;
+                    }
+                }
             }
 
             #HomeBottomContainer {
@@ -225,6 +236,7 @@ body {
                     margin-bottom: 1.5rem;
                     text-align: center;
                 }
+                
 
                 #SignUpComponentContainer {
                     #SignUpComponent {
@@ -348,6 +360,18 @@ body {
 
 }
 
+@media (max-width: 528px) {
+    body {
+        #HomeContainer {
+            .signup-top-container-footer {
+                a {
+                    margin-top: 1rem;
+                }
+            }
+        }
+    }
+}
+
 // Medium Styles
 @media (min-width: 768px) {
     body {
@@ -458,6 +482,10 @@ body {
 
                 .signup-top-container-header {
                     font-size: 1.3rem !important;
+                }
+
+                .signup-top-container-footer {
+                    margin-left:-2rem;
                 }
             }
 

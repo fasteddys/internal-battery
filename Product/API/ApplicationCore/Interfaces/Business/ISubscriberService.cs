@@ -111,6 +111,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         Task<List<Subscriber>> GetFailedSubscribersSummaryAsync();
 
+        Task<IList<SubscriberSourceDto>> GetSubscriberSources(int subscriberId);
+
+        Task<Subscriber> GetBySubscriberGuid(Guid subscriberGuid);
 
     }
 }

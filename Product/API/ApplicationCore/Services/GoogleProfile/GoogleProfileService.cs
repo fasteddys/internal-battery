@@ -9,6 +9,8 @@ using Microsoft.Extensions.Logging;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.Helpers.GoogleProfile;
 using System.Net;
+using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
 {
@@ -95,7 +97,12 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
             BasicResponseDto Rval = null;
             try
             {
-                string Json = Newtonsoft.Json.JsonConvert.SerializeObject(googleCloudProfile);
+                // use camel case serializers since the profile uses google wellknown type TimeStamp which has "Seconds" and "Nanos"
+                // for properties but google profiles is looking for "seconds" and "nanos"
+                string Json = Newtonsoft.Json.JsonConvert.SerializeObject(googleCloudProfile, new JsonSerializerSettings
+                {
+                    ContractResolver = new CamelCasePropertyNamesContractResolver()
+                });
                 string ResponseJson = string.Empty;
                 ExecuteProfileApiPost("profile", Json, ref ResponseJson);
                 Rval = Newtonsoft.Json.JsonConvert.DeserializeObject<BasicResponseDto>(ResponseJson);
@@ -116,8 +123,13 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
         {
             bool Rval = true;
             try
-            {             
-                string Json = Newtonsoft.Json.JsonConvert.SerializeObject(googleCloudProfile);
+            {
+                // use camel case serializers since the profile uses google wellknown type TimeStamp which has "Seconds" and "Nanos"
+                // for properties but google profiles is looking for "seconds" and "nanos"
+                string Json = Newtonsoft.Json.JsonConvert.SerializeObject(googleCloudProfile, new JsonSerializerSettings
+                {
+                    ContractResolver = new CamelCasePropertyNamesContractResolver()
+                });
                 string ResponseJson = string.Empty;
                 ExecuteProfileApiPut("profile", Json, ref ResponseJson);
                 var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<BasicResponseDto>(ResponseJson);                

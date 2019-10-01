@@ -121,6 +121,14 @@ a {
     border: 0;
 }
 
+.fw-100{
+    font-weight: 100;
+}
+
+.fw-200{
+    font-weight: 200;
+}
+
 .f-0_75rem {
 
     @media (min-width: 0px) {
@@ -170,6 +178,14 @@ a {
 
 .shadow-2 {
     box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+}
+
+.shadow-2-hover{
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    transition: box-shadow .1s ease-in-out;
+    &:hover{
+        box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+    }
 }
 
 .shadow-3 {
@@ -355,6 +371,10 @@ a{
 
         &:hover {
             background-color: $color-secondary;
+        }
+
+        &:disabled{
+            background-color: $color-tertiary-mid-gray;
         }
     }
 

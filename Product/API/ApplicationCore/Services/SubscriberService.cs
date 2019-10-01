@@ -67,6 +67,15 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await _repository.Subscriber.GetSubscriberByGuidAsync(subscriberGuid);
         }
 
+
+        public async Task<IList<SubscriberSourceDto>> GetSubscriberSources(int subscriberId)
+        {
+            return await _repository.StoredProcedureRepository.GetSubscriberSources(subscriberId);
+
+        }
+
+
+
         public async Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numSubscribers, int indexVersion)
         {
             var querableSubscribers = _repository.SubscriberRepository.GetAllSubscribersAsync();
@@ -74,7 +83,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             List<Subscriber> rVal = await querableSubscribers.Where(s => s.IsDeleted == 0 && (s.CloudTalentIndexVersion < indexVersion || s.CloudTalentIndexVersion == 0))
                                                             .Take(numSubscribers)
                                                             .ToListAsync();
-
 
             if (rVal.Count > 0)
             {
@@ -380,6 +388,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await query.Where(x => x.CloudTalentIndexStatus == 3 && x.IsDeleted == 0).ToListAsync();
         }
         
+        public async Task<Subscriber> GetBySubscriberGuid(Guid subscriberGuid)
+        {
+            return await _repository.Subscriber.GetSubscriberByGuidAsync(subscriberGuid);
+        }
         #region subscriber notes
         public async Task SaveSubscriberNotesAsync(SubscriberNotesDto subscriberNotesDto)
         {
@@ -490,6 +502,9 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             return subscriberNotesDtoList.OrderByDescending(sn => sn.CreateDate).ToList();
         }
+
+
+
 
         public async Task<bool> DeleteSubscriberNote(Guid subscriberNotesGuid)
         {

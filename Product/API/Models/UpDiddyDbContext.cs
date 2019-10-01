@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Models.Views;
+using UpDiddyLib.Dto;
+using UpDiddyLib.Dto.User;
 
 namespace UpDiddyApi.Models
 {
@@ -168,6 +170,22 @@ namespace UpDiddyApi.Models
         public DbSet<SubscriberGroup> SubscriberGroup { get; set; }
         public DbSet<GroupPartner> GroupPartner { get; set; }
         public DbSet<SalesForceSignUpList> SalesForceSignUpList { get; set; }
+        public DbSet<Traitify> Traitify { get; set; }
+
+        public DbSet<ServiceOffering> ServiceOffering { get; set; }
+        public DbSet<ServiceOfferingItem> ServiceOfferingItem { get; set; }
+    
+        public DbSet<ServiceOfferingOrder> ServiceOfferingOrder { get; set; }      
+        public DbSet<ServiceOfferingPromoCodeRedemption> ServiceOfferingPromoCodeRedemption { get; set; }
+
+        public DbSet<ServiceOfferingPromoCode> ServiceOfferingPromoCode { get; set; }
+        
+
+
+
+        public DbSet<CourseSite> CourseSite { get; set; }
+        public DbSet<CoursePage> CoursePage { get; set; }
+        public DbSet<CoursePageStatus> CoursePageStatus { get; set; }
 
         #region DBQueries
 
@@ -183,15 +201,38 @@ namespace UpDiddyApi.Models
         public DbQuery<v_NotificationReadCounts> NotificationReadCounts { get; set; }
         public DbQuery<JobAbandonmentStatistics> JobAbandonmentStatistics { get; set; }
         public DbQuery<JobCountPerProvince> JobCountPerProvince { get; set; }
+        public DbQuery<SubscriberSourceDto> SubscriberSourcesDetails { get; set; }
+
+
+
+        public DbQuery<JobDto> SubscriberJobFavorites { get; set; }
+        public DbQuery<SubscriberSignUpCourseEnrollmentStatistics> SubscriberSignUpCourseEnrollmentStatistics { get; set; }
 
         #endregion
-
-
+ 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder
-                .Query<v_NotificationReadCounts>()
-                .ToView("v_NotificationReadCounts");
+            modelBuilder.Entity<CourseSite>()
+                .HasIndex(c => c.Name)
+                .HasName("UIX_CourseSite_Name")
+                .IsUnique(true);
+
+            modelBuilder.Entity<CoursePage>()
+                .HasIndex(cp => new { cp.UniqueIdentifier, cp.CourseSiteId })
+                .HasName("UIX_CoursePage_CourseSite_UniqueIdentifier")
+                .IsUnique(true);
+
+            modelBuilder.Entity<CourseSite>()
+                .Property(cs => cs.Uri)
+                .HasConversion(
+                cs => cs.ToString(),
+                cs => new Uri(cs));
+
+            modelBuilder.Entity<CoursePage>()
+                .Property(cp => cp.Uri)
+                .HasConversion(
+                cp => cp.ToString(),
+                cp => new Uri(cp));
 
             modelBuilder.Entity<SubscriberNotification>()
                 .HasQueryFilter(sn => sn.IsDeleted == 0);

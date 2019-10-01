@@ -5,9 +5,9 @@
         <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12" style="height:200px:overflow:auto;">
                 <!-- New Subscriber Report Card-->
-                <div class="card shadow mb-3" >
-                    <div class="card-header">New Users - 3 Week Review</div>
-                    <div class="card-body p-0" style="max-height: 250px;overflow-y: auto;">
+                <div class="card shadow mb-3">
+                    <div class="card-header">New Users Week over Week</div>
+                    <div class="card-body p-0" style="max-height: 440px;overflow-y: auto;">
                         <table class="table table-striped mb-0">
                             <thead>
                                 <tr>
@@ -37,32 +37,21 @@
                     </div>
                 </div>
             </div>
+
+
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                 <div class="card shadow mb-3">
-                    <div class="card-header">Total User Breakdown By Partner</div>
-                    <div class="card-body p-0" style="max-height: 250px;overflow-y: auto;">
-                        <table class="table table-striped mb-0">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Partner</th>
-                                    <th class="text-right" scope="col"># Users Created</th>
-                                    <th class="text-right" scope="col"># Enrollments</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var r in ViewBag.partnerReport.Report)
-                                {
-                                    <tr>
-                                        <td>@r.PartnerName</td>
-                                        <td class="text-right">@r.SubscriberCount</td>
-                                        <td class="text-right">@r.EnrollmentCount</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+                    <div class="card-header">
+                        Total User Breakdown By Partner
+                    </div>
+                    <div class="card-body p-0" style="max-height: 440px;overflow-y: auto;">
+                        @Html.React("TotalUserBreakdownByPartner", new { partnerReport=ViewBag.partnerReport })
                     </div>
                 </div>
             </div>
+
+
+
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                 <div class="card shadow my-3">
                     <div class="card-header">
@@ -79,7 +68,7 @@
                         Job Applications by Company
                     </div>
                     <div class="card-body p-0">
-                        @Html.React("JobAppReportTable", new { show = false})
+                        @Html.React("JobAppReportTable", new { show = false })
                     </div>
                 </div>
             </div>
@@ -93,7 +82,7 @@
                     </div>
                 </div>
             </div>
-             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                 <div class="card shadow my-3">
                     <div class="card-header">
                         Job Abandonment Email Metric
@@ -102,7 +91,7 @@
                         @Html.React("JobAbandonmentCount", new { ViewBag.abandonmentCount })
                     </div>
                 </div>
-            </div>    
+            </div>
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                 <div class="card shadow my-3">
                     <div class="card-header">Offer Action Summary</div>
@@ -128,7 +117,7 @@
                         </table>
                     </div>
                 </div>
-            </div>    
+            </div>
         </div>
     </div>
 </section>

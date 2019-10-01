@@ -14,6 +14,7 @@ using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UpDiddy.Api;
+using UpDiddy.Services.ButterCMS;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Reporting;
@@ -27,12 +28,14 @@ namespace UpDiddy.Controllers
         private IApi _api;
         private IConfiguration _configuration;
         private IDistributedCache _cache;
+        private IButterCMSService _butterService;
 
-        public AdminController(IApi api, IConfiguration configuration, IDistributedCache cache)
+        public AdminController(IApi api, IConfiguration configuration, IDistributedCache cache, IButterCMSService butterService)
         {
             _api = api;
             _configuration = configuration;
             _cache = cache;
+            _butterService = butterService;
         }
 
  
@@ -83,7 +86,7 @@ namespace UpDiddy.Controllers
         public async Task<JsonResult> SubscriberLookup()
         {
   
-           ProfileSearchResultDto subs = await _api.SubscriberSearchAsync(string.Empty, string.Empty, string.Empty);
+           ProfileSearchResultDto subs = await _api.SubscriberSearchAsync(string.Empty, string.Empty, string.Empty, string.Empty);
 
             var list = subs.Profiles
                 .Select(subscriber => new
@@ -137,7 +140,7 @@ namespace UpDiddy.Controllers
             // get monday
             int delta = DayOfWeek.Monday - DateTime.Today.DayOfWeek;
             DateTime monday = DateTime.Today.AddDays(delta);
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 7; i++)
             {
                 dates.Add(monday);
                 monday = monday.AddDays(-7);
@@ -600,12 +603,43 @@ namespace UpDiddy.Controllers
             return BadRequest();
         }
 
+        [Authorize]
+        [HttpGet("/admin/clearcmscache")]
+        public IActionResult ClearCmsCache(){
+            ViewBag.Environment = _configuration["redis:name"];
+            return View();
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> ClearCmsCacheAsync([FromBody] CachedPageDto CachedPage)
+        {
+            if(!CachedPage.Slug.ToLower().Contains(_configuration["Environment:BaseUrl"].Substring(0, _configuration["Environment:BaseUrl"].Length - 1).ToLower()))
+                return NotFound();
+
+            bool ClearedCache = await _butterService.ClearCachedPageAsync(CachedPage.Slug);
+
+            if(ClearedCache)
+                return Ok();
+            else
+                return NotFound();
+        }
+
         #region Company
         [Authorize]
         [HttpGet("/[controller]/companies")]
         public IActionResult GetCompanies()
         {
             return View("Companies");
+        }
+        #endregion
+
+        #region Courses
+        [Authorize]
+        [HttpGet("/[controller]/coursesites")]
+        public IActionResult GetCourseSites()
+        {
+            return View("CourseSites");
         }
         #endregion
 

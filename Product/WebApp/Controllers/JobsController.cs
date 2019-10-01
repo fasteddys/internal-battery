@@ -55,21 +55,47 @@ namespace UpDiddy.Controllers
             JobSearchResultDto jobSearchResultDto = null;
             Dictionary<Guid, Guid> favoritesMap = new Dictionary<Guid, Guid>();
 
-            var queryParametersString = Request.QueryString.ToString();
-            // get Query String Parameters
-            if (string.IsNullOrEmpty(queryParametersString) || string.IsNullOrWhiteSpace(queryParametersString))
-            {
-                queryParametersString += "?";
-            }
-            else
-            {
-                queryParametersString += "&";
-            }
+            string Keywords, Location, Province, City;
+            Keywords = Location = Province = City = string.Empty;
 
-            string Keywords = Request.Query["keywords"];
-            string Location = Request.Query["location"];
-            string Province = Request.Query["province"];
-            string City = Request.Query["city"];
+            string queryParametersString = string.Empty;
+            var queryParameterList = Request.Query.ToArray();
+
+            foreach (var queryParameter in queryParameterList)
+            {
+                if ((queryParameter.Key == "datepublished" || queryParameter.Key == "employmenttype"
+                       || queryParameter.Key == "city" || queryParameter.Key == "jobcategory"
+                       || queryParameter.Key == "industry" || queryParameter.Key == "keywords"
+                       || queryParameter.Key == "location" || queryParameter.Key == "province"
+                       || queryParameter.Key == "companyname") && !string.IsNullOrEmpty(queryParameter.Value))
+                {
+                    //remove anchor brackets
+                    Regex removeBrackets = new Regex(@"[{}<>]");
+                    var filteredQueryParameterValue = removeBrackets.Replace(queryParameter.Value, string.Empty);
+
+                    //trim string to max of 100 characters
+                    filteredQueryParameterValue = filteredQueryParameterValue.Length > 100 ? filteredQueryParameterValue.Substring(0, 99)
+                                                                                    : filteredQueryParameterValue;
+
+                    if (string.IsNullOrEmpty(queryParametersString) || string.IsNullOrWhiteSpace(queryParametersString))
+                    {
+                        queryParametersString += $"?{queryParameter.Key}={filteredQueryParameterValue}";
+                    }
+                    else
+                    {
+                        queryParametersString += $"&{queryParameter.Key}={filteredQueryParameterValue}";
+                    }
+
+                    if (queryParameter.Key == "keywords")
+                        Keywords = filteredQueryParameterValue;
+                    else if (queryParameter.Key == "location")
+                        Location = filteredQueryParameterValue;
+                    else if (queryParameter.Key == "city")
+                        City = filteredQueryParameterValue;
+                    else if (queryParameter.Key == "province")
+                        Province = filteredQueryParameterValue;
+                }
+            }
 
             if (Keywords != null)
                 Keywords = Keywords.Trim();
@@ -122,8 +148,9 @@ namespace UpDiddy.Controllers
             // when applying a new a histogram the page should be reset to the first page
             Regex matchPagingQueryStringParameter = new Regex(@"page=.+?(?=\w)");
             queryParametersString = matchPagingQueryStringParameter.Replace(queryParametersString, string.Empty);
-            ViewBag.QueryUrl = Request.Path + queryParametersString;
-            
+
+            ViewBag.QueryUrl = queryParametersString;
+
             JobSearchViewModel jobSearchViewModel = new JobSearchViewModel()
             {
                 RequestId = jobSearchResultDto.RequestId,
@@ -1530,17 +1557,17 @@ namespace UpDiddy.Controllers
         #region Keyword and location Search
         [HttpGet]
         [Route("[controller]/SearchKeyword")]
-        public IActionResult KeywordSearch(string keyword)
+        public async Task<IActionResult> KeywordSearch(string keyword)
         {
-            var keywordSearchList = _api.GetKeywordSearchList(keyword);
+            var keywordSearchList = await _api.GetKeywordSearchList(keyword);
             return Ok(keywordSearchList);
         }
 
         [HttpGet]
         [Route("[controller]/LocationKeyword")]
-        public IActionResult LocationSearch(string location)
+        public async Task<IActionResult> LocationSearch(string location)
         {
-            var locationSearchList = _api.GetLocationSearchList(location);
+            var locationSearchList = await _api.GetLocationSearchList(location);
             return Ok(locationSearchList);
         }
         #endregion

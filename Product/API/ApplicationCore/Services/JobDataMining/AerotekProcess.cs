@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Authentication;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,43 +26,31 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 
         #region Private Members
 
-        private HttpClientHandler GetHttpClientHandler()
+        private HttpClient _client = new HttpClient(new HttpClientHandler()
         {
-            return new HttpClientHandler()
-            {
-                SslProtocols = System.Security.Authentication.SslProtocols.Tls12
-            };
-        }
+            SslProtocols = SslProtocols.Tls12
+        });
 
-        private JobPage CreateJobPageFromHttpRequest(Uri jobPageUri, List<JobPage> existingJobPages)
+        private async Task<JobPage> CreateJobPageFromHttpRequest(Uri jobPageUri, List<JobPage> existingJobPages)
         {
             JobPage result = null;
+            string rawHtml;
+            JObject rawData;
+            // weird hack because Aerotek URLs returned in the json search results are wrong
+            UriBuilder uriBuilder = new UriBuilder(jobPageUri);
+            uriBuilder.Path = "/jobs" + uriBuilder.Path;
+            HtmlDocument jobHtml = new HtmlDocument();
+            JobPage existingJobPage = null;
 
             try
             {
                 int jobPageStatusId = 1; // pending
-                string rawHtml;
-                JObject rawData;
-
-                // weird hack because Aerotek URLs returned in the json search results are wrong
-                UriBuilder uriBuilder = new UriBuilder(jobPageUri);
-                uriBuilder.Path = "/jobs" + uriBuilder.Path;
-
                 bool isJobExists = true;
                 // retrieve the latest job page data
-                using (var client = new HttpClient(GetHttpClientHandler()))
-                {
-                    var request = new HttpRequestMessage()
-                    {
-                        RequestUri = uriBuilder.Uri,
-                        Method = HttpMethod.Get
-                    };
-                    var response = client.SendAsync(request).Result;
-                    if (response.StatusCode != HttpStatusCode.OK)
-                        isJobExists = false;
-                    rawHtml = response.Content.ReadAsStringAsync().Result;
-                }
-                HtmlDocument jobHtml = new HtmlDocument();
+                var response = await _client.GetAsync(uriBuilder.Uri);
+                if (response.StatusCode != HttpStatusCode.OK)
+                    isJobExists = false;
+                rawHtml = await response.Content.ReadAsStringAsync();
                 jobHtml.LoadHtml(rawHtml);
 
                 // check for a message indicating that the job does not exist and continue only if we do not find one
@@ -72,7 +61,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 
                     // add formatted job description to job data
                     var jobSummaryH2 = jobHtml.DocumentNode.SelectSingleNode("//div[contains(@class, 'jdp-job-description-card')]/h2[contains(@class, 'content-card-header')]");
-                    if(jobSummaryH2 != null)
+                    if (jobSummaryH2 != null)
                         jobSummaryH2.Remove();
                     var descriptionFromHtml = jobHtml.DocumentNode.SelectSingleNode("//div[contains(@class, 'jdp-job-description-card')]");
                     if (descriptionFromHtml != null && descriptionFromHtml.InnerHtml != null)
@@ -111,7 +100,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                                 new JProperty("email", recruiterEmail.InnerText.Trim()))));
 
                     // check for an existing job page based on the RWS identifier
-                    var existingJobPage = existingJobPages.Where(jp => jp.UniqueIdentifier == rwsId.InnerText.Trim()).FirstOrDefault();
+                    existingJobPage = existingJobPages.Where(jp => jp.UniqueIdentifier == rwsId.InnerText.Trim()).FirstOrDefault();
                     if (existingJobPage != null)
                     {
                         // check to see if the page content has changed since we last ran this process
@@ -148,6 +137,15 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             {
                 _syslog.Log(LogLevel.Information, $"***** AerotekProcess.CreateJobPageFromHttpRequest encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }
+            finally
+            {
+                rawHtml = null;
+                rawData = null;
+                uriBuilder = null;
+                jobHtml = null;
+                existingJobPage = null;
+                GC.Collect(2, GCCollectionMode.Forced);
+            }
 
             return result;
         }
@@ -156,7 +154,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 
         #region Public Members
 
-        public List<JobPage> DiscoverJobPages(List<JobPage> existingJobPages)
+        public async Task<List<JobPage>> DiscoverJobPages(List<JobPage> existingJobPages)
         {
             // populate this collection with the results of the job discovery operation
             ConcurrentBag<JobPage> discoveredJobPages = new ConcurrentBag<JobPage>();
@@ -174,17 +172,8 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                 UriBuilder searchUriBuilder = new UriBuilder(_jobSite.Uri);
                 searchUriBuilder.Query = "?pagenumber=" + (pageIndex++).ToString();
 
-                string response;
-                using (var client = new HttpClient(GetHttpClientHandler()))
-                {
-                    var request = new HttpRequestMessage()
-                    {
-                        RequestUri = searchUriBuilder.Uri,
-                        Method = HttpMethod.Get
-                    };
-                    var result = client.SendAsync(request).Result;
-                    response = result.Content.ReadAsStringAsync().Result;
-                }
+                var result = await _client.GetAsync(searchUriBuilder.Uri);
+                string response = await result.Content.ReadAsStringAsync();
 
                 HtmlDocument searchResultPage = new HtmlDocument();
                 searchResultPage.LoadHtml(response);
@@ -201,19 +190,25 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                 }
                 else
                     isSearchPageContainsJobs = false;
+
+                rawJobListData = null;
+                jsonJobListData = null;
+                searchResultPage = null;
+                searchResultPageJobUrls = null;
+                GC.Collect(2, GCCollectionMode.Forced);
             } while (isSearchPageContainsJobs);
 
             // crawl all of the job urls and create job pages for each
-            (jobPageUrls.ForEachWithDelay(jobPageUri => Task.Run(() =>
+            (jobPageUrls.ForEachWithDelay(jobPageUri => Task.Run(async () =>
             {
                 JobPage discoveredJobPage = null;
-                discoveredJobPage = CreateJobPageFromHttpRequest(jobPageUri, existingJobPages);
+                discoveredJobPage = await CreateJobPageFromHttpRequest(jobPageUri, existingJobPages);
                 if (discoveredJobPage != null)
                     discoveredJobPages.Add(discoveredJobPage);
             }), _jobSite.CrawlDelayInMilliseconds.Value)).Wait();
 
             if (discoveredJobPages.Count() != jobPageUrls.Count)
-                _syslog.Log(LogLevel.Information, $"***** AerotekProcess.DiscoverJobPages found {discoveredJobPages.Count()} jobs but TEKsystem's API indicates there should be {jobPageUrls.Count} jobs.");
+                _syslog.Log(LogLevel.Information, $"***** AerotekProcess.DiscoverJobPages found {discoveredJobPages.Count()} jobs but Aerotek's website indicates there should be {jobPageUrls.Count} jobs.");
 
             /* deal with duplicate job postings (or job postings that are similar enough to be considered duplicates). examples:
              * - two job listings that have the same url and id but in the raw data the "applications" property is different (id: J3Q20V76L8YK2XBR6S8)

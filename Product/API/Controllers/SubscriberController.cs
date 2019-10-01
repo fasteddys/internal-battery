@@ -35,6 +35,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Workflow;
 using UpDiddyApi.ApplicationCore.Services;
 using System.Net.Http;
+using System.Net;
 
 namespace UpDiddyApi.Controllers
 {
@@ -58,6 +59,7 @@ namespace UpDiddyApi.Controllers
         private ITaggingService _taggingService;
         private readonly CloudTalent _cloudTalent = null;
         private readonly IHangfireService _hangfireService;
+        private readonly IJobPostingService _jobPostingService;
 
 
         public SubscriberController(UpDiddyDbContext db,
@@ -75,7 +77,8 @@ namespace UpDiddyApi.Controllers
             ISubscriberNotificationService subscriberNotificationService,
             IJobService jobService,
             IHttpClientFactory httpClientFactory,
-            IHangfireService hangfireService)
+            IHangfireService hangfireService,
+            IJobPostingService jobPostingService)
         {
             _db = db;
             _mapper = mapper;
@@ -91,8 +94,9 @@ namespace UpDiddyApi.Controllers
             _subscriberNotificationService = subscriberNotificationService;
             _jobService = jobService;
             _taggingService = taggingService;
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory,repositoryWrapper);
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory,repositoryWrapper, _subscriberService);
             _hangfireService = hangfireService;
+            _jobPostingService = jobPostingService;
         }
 
         #region Basic Subscriber Endpoints
@@ -1007,7 +1011,7 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet("/api/[controller]/search")]
         [Authorize(Policy = "IsRecruiterOrAdmin")]
-        public IActionResult Search(string searchFilter = "any", string searchQuery = null, string searchLocationQuery = null)
+        public IActionResult Search(string searchFilter = "any", string searchQuery = null, string searchLocationQuery = null, string sortOrder = null)
         {
 
             int MaxProfilePageSize = int.Parse(_configuration["CloudTalent:MaxProfilePageSize"]);
@@ -1020,6 +1024,8 @@ namespace UpDiddyApi.Controllers
                 PageSize = MaxProfilePageSize
 
             };
+            if (sortOrder != null)
+                profileQueryDto.OrderBy = WebUtility.UrlDecode(sortOrder);
             ProfileSearchResultDto result = _cloudTalent.ProfileSearch(profileQueryDto);   
 
             return Json(result);
@@ -1030,7 +1036,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult GetSubscriberSources()
         {
          
-            return Ok(_db.SubscriberSources.ProjectTo<SubscriberSourceDto>(_mapper.ConfigurationProvider).ToList());
+            return Ok(_db.SubscriberSources.ProjectTo<SubscriberSourceStatisticDto>(_mapper.ConfigurationProvider).ToList());
         }
 
         // todo: add security to check token to this route
@@ -1169,36 +1175,20 @@ namespace UpDiddyApi.Controllers
             Subscriber subscriber = _db.Subscriber.Where(s => s.SubscriberGuid.Equals(userGuid))
                 .First();
 
-            var favoriteQuery = _repositoryWrapper.JobPostingFavorite.GetAllJobPostingFavoritesAsync();
-            favoriteQuery = favoriteQuery.Where(fave => fave.IsDeleted == 0 && fave.SubscriberId == subscriber.SubscriberId);
-            var companyQuery = _repositoryWrapper.Company.GetAllCompanies();
-            var jobAppQuery = _repositoryWrapper.JobApplication.GetAllJobApplicationsAsync();
-            jobAppQuery = jobAppQuery.Where(app => app.SubscriberId == subscriber.SubscriberId);
-            var jobQuery = _repositoryWrapper.JobPosting.GetAllJobPostings();
-            jobQuery = jobQuery.Where(job => job.PostingExpirationDateUTC > DateTime.UtcNow.Date);
+            if ( subscriber == null )
+                return StatusCode(404, false);
 
-            var query = (from job in jobQuery
-                         join company in companyQuery on job.CompanyId equals company.CompanyId
-                         join favorite in favoriteQuery on job.JobPostingId equals favorite.JobPostingId into jobFavorite
-                         from subFavorite in jobFavorite.DefaultIfEmpty()
-                         join applied in jobAppQuery on job.JobPostingId equals applied.JobPostingId into jobApplied
-                         from subApplied in jobApplied.DefaultIfEmpty()
-                         where subFavorite.JobPostingFavoriteGuid != null || subApplied.JobApplicationGuid != null
-                         select new UpDiddyLib.Dto.User.JobDto
-                         {
-                             JobPosting = _mapper.Map<UpDiddyLib.Dto.JobPostingDto>(job),
-                             JobPostingFavoriteGuid = subFavorite.JobPostingFavoriteGuid,
-                             JobApplication = _mapper.Map<JobApplicationDto>(subApplied),
-                             Company = _mapper.Map<CompanyDto>(company)
-                         });
+            List<JobDto> favorites = await _jobPostingService.GetSubscriberJobFavorites(subscriber.SubscriberId);
 
             var result = new PagingDto<UpDiddyLib.Dto.User.JobDto>()
             {
                 Page = page.HasValue ? page.Value : 1,
                 PageSize = 10,
-                Count = query.Count()
+                Count = favorites.Count
             };
-            result.Results = await query.Skip((result.Page - 1) * result.PageSize).Take(result.PageSize).ToListAsync();
+    
+
+            result.Results = await favorites.Skip((result.Page - 1) * result.PageSize).Take(result.PageSize).ToListAsync();
 
             return Ok(result);
         }

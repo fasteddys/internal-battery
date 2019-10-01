@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using Microsoft.EntityFrameworkCore.Extensions;
+ 
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -35,7 +36,17 @@ namespace UpDiddyApi.ApplicationCore.Repository
                               .FirstOrDefaultAsync();
 
             return subscriberResult;
-        }  
+        }
+
+
+        public Subscriber GetSubscriberByEmail(string email)
+        {
+            var subscriberResult =  _dbContext.Subscriber
+                              .Where(s => s.IsDeleted == 0 && s.Email == email)
+                              .FirstOrDefault();
+
+            return subscriberResult;
+        }
 
         public async Task<Subscriber> GetSubscriberByGuidAsync(Guid subscriberGuid)
         {
@@ -55,6 +66,21 @@ namespace UpDiddyApi.ApplicationCore.Repository
               .Include( s => s.State)
               .FirstOrDefaultAsync(); 
         }
+
+
+        public Subscriber GetSubscriberByGuid(Guid subscriberGuid)
+        {
+
+
+            var subscriberResult =  _dbContext.Subscriber
+                              .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                              .FirstOrDefault();
+
+            return subscriberResult;
+        }
+
+
+
 
 
         public async Task<IList<Partner>> GetPartnersAssociatedWithSubscriber(int subscriberId)
@@ -89,6 +115,23 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 })
                 .ToListAsync<Partner>();
         
+        }
+
+        public async Task<int> GetSubscribersCountByStartEndDates(DateTime? startDate = null, DateTime? endDate = null)
+        {
+            //get queryable object for subscribers
+            var queryableSubscribers = GetAll();
+
+            if (startDate.HasValue)
+            {
+                queryableSubscribers = queryableSubscribers.Where(s => s.CreateDate >= startDate);
+            }
+            if (endDate.HasValue)
+            {
+                queryableSubscribers = queryableSubscribers.Where(s => s.CreateDate < endDate);
+            }
+
+            return await queryableSubscribers.Where(s => s.IsDeleted == 0).CountAsync();
         }
 
     }

@@ -37,7 +37,7 @@ namespace UpDiddy.Controllers
                 QueryParams.Add(s, HttpContext.Request.Query[s].ToString());
             }
             QueryParams.Add("levels", _configuration["ButterCMS:CareerCircleTopicsPage:Levels"]);
-            PageResponse<TopicsLandingPageViewModel> TopicsPage = await _butterService.RetrievePageAsync<TopicsLandingPageViewModel>("TopicsPage", "topics", QueryParams);
+            PageResponse<TopicsLandingPageViewModel> TopicsPage = await _butterService.RetrievePageAsync<TopicsLandingPageViewModel>("/topics", QueryParams);
 
             if (TopicsPage == null)
                 return StatusCode(StatusCodes.Status500InternalServerError);
