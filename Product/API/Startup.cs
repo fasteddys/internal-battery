@@ -64,9 +64,7 @@ namespace UpDiddyApi
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
-
-            Configuration = builder.Build();
-            
+                        
             // if environment is set to development then add user secrets
             if (env.IsDevelopment())
             {
@@ -81,7 +79,10 @@ namespace UpDiddyApi
                     Configuration["Vault:ClientSecret"],
                     new KeyVaultSecretManager());
             }
-            
+
+            // it is important that this occurs after changes to 'builder' have occurred
+            Configuration = builder.Build();
+
             // set the value indicating whether or not Hangfire will be processing jobs in this instance
             Boolean.TryParse(Configuration["Hangfire:IsProcessingServer"], out _isHangfireProcessingServer);
             
