@@ -167,7 +167,7 @@ namespace UpDiddyApi
             // Add AutoMapper 
             services.AddAutoMapper(typeof(UpDiddyApi.Helpers.AutoMapperConfiguration));
 
-            // Configure Hangfire (for queueing and scheduling jobs)
+            // Configure Hangfire as the client (note that queueing and scheduling is controlled with the existing 'IsPreliminary' flag in HangfireService.cs)
             var HangFireSqlConnection = Configuration["CareerCircleSqlConnection"];
             JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);
 
