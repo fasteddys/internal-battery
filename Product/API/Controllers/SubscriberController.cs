@@ -158,9 +158,13 @@ namespace UpDiddyApi.Controllers
                     return BadRequest(new { code = 400, message = "No subscriber identifier was provided" });
 
                 var subscriber = _db.Subscriber.Where(s => s.SubscriberGuid == subscriberGuid).FirstOrDefault();
-                if (subscriber == null)
-                    return BadRequest(new { code = 404, message = "No subscriber could be found with that identifier" });
+                
+                // delete subscriber from cloud talent 
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(subscriberGuid));
 
+                if (subscriber == null)
+                    return BadRequest(new { code = 404, message = "No subscriber could be found with that identifier. If the subscriber exists in Google, they will be removed." });
+                
                 // perform logical delete on the subscriber entity only (no modification to related tables)
                 subscriber.IsDeleted = 1;
                 subscriber.ModifyDate = DateTime.UtcNow;
@@ -169,9 +173,6 @@ namespace UpDiddyApi.Controllers
 
                 // disable the AD account associated with the subscriber
                 _graphClient.DisableUser(subscriberGuid);
-                // delete subscriber from cloud talent 
-                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(subscriber.SubscriberGuid.Value));
-
             }
             catch (Exception e)
             {

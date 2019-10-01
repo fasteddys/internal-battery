@@ -320,15 +320,12 @@ namespace UpDiddy.Controllers
                     AvatarUrl = string.IsNullOrEmpty(subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + subscriber.AvatarUrl + CacheBuster
                 };
             }
-            catch (ApiException ae)
+            catch (ApiException e)
             {
+                _sysLog.Log(LogLevel.Information, "An exception occurred in TalentController.SubscriberAsync(): {e.Message}", e);
                 // empty catch here to pass null to the view which will let the user know that the subscriber cannot be found.  This code
                 // path will most mostly likely be hit when there's a mistmatch between the google profile index and the sql server 
                 // database which should not be that often
-            }
-            catch(Exception e)
-            {
-
             }
 
 
