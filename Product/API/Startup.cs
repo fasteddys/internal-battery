@@ -48,9 +48,7 @@ namespace UpDiddyApi
         public static string ScopeRead;
         public static string ScopeWrite;
         public IConfigurationRoot Configuration { get; set; }
-
         public Serilog.ILogger Logger { get; }
-
         public ISysEmail SysEmail { get; }
 
         public Startup(IHostingEnvironment env, IConfiguration configuration)
@@ -64,28 +62,25 @@ namespace UpDiddyApi
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
-                        
+
             // if environment is set to development then add user secrets
             if (env.IsDevelopment())
             {
                 builder.AddUserSecrets<Startup>();
             }
 
-            // if environment is set to staging or production then add vault keys            
+            // if environment is set to staging or production then add vault keysF
+            var config = builder.Build();
             if (env.IsStaging() || env.IsProduction())
             {
-                builder.AddAzureKeyVault(Configuration["Vault:Url"],
-                    Configuration["Vault:ClientId"],
-                    Configuration["Vault:ClientSecret"],
+                builder.AddAzureKeyVault(config["Vault:Url"],
+                    config["Vault:ClientId"],
+                    config["Vault:ClientSecret"],
                     new KeyVaultSecretManager());
             }
 
-            // it is important that this occurs after changes to 'builder' have occurred
             Configuration = builder.Build();
 
-            // set the value indicating whether or not Hangfire will be processing jobs in this instance
-            Boolean.TryParse(Configuration["Hangfire:IsProcessingServer"], out _isHangfireProcessingServer);
-            
             SysEmail = new SysEmail(Configuration);
 
             // directly add Application Insights and SendGrid to access Key Vault Secrets
@@ -96,6 +91,9 @@ namespace UpDiddyApi
                     .SendGrid(LogEventLevel.Fatal, Configuration["SysEmail:Transactional:ApiKey"], Configuration["SysEmail:SystemErrorEmailAddress"])
                 .Enrich.FromLogContext()
                 .CreateLogger();
+
+            // set the value indicating whether or not Hangfire will be processing jobs in this instance
+            Boolean.TryParse(Configuration["Hangfire:IsProcessingServer"], out _isHangfireProcessingServer);
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
