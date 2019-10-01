@@ -55,9 +55,6 @@ namespace UpDiddyApi
 
         public Startup(IHostingEnvironment env, IConfiguration configuration)
         {
-            // set the value indicating whether or not Hangfire will be processing jobs in this instance
-            Boolean.TryParse(Configuration["Hangfire:IsProcessingServer"], out _isHangfireProcessingServer);
-
             // set the current environment so that we can access it in ConfigureServices
             _currentEnvironment = env;
 
@@ -68,24 +65,26 @@ namespace UpDiddyApi
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
 
+            Configuration = builder.Build();
+            
             // if environment is set to development then add user secrets
             if (env.IsDevelopment())
             {
                 builder.AddUserSecrets<Startup>();
             }
 
-            // if environment is set to staging or production then add vault keysF
-            var config = builder.Build();
+            // if environment is set to staging or production then add vault keys            
             if (env.IsStaging() || env.IsProduction())
             {
-                builder.AddAzureKeyVault(config["Vault:Url"],
-                    config["Vault:ClientId"],
-                    config["Vault:ClientSecret"],
+                builder.AddAzureKeyVault(Configuration["Vault:Url"],
+                    Configuration["Vault:ClientId"],
+                    Configuration["Vault:ClientSecret"],
                     new KeyVaultSecretManager());
             }
-
-            Configuration = builder.Build();
-
+            
+            // set the value indicating whether or not Hangfire will be processing jobs in this instance
+            Boolean.TryParse(Configuration["Hangfire:IsProcessingServer"], out _isHangfireProcessingServer);
+            
             SysEmail = new SysEmail(Configuration);
 
             // directly add Application Insights and SendGrid to access Key Vault Secrets
@@ -223,7 +222,7 @@ namespace UpDiddyApi
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(), Cron.Hourly(55));
 
             // LOCAL TESTING ONLY - DO NOT UNCOMMENT THIS CODE!
-            BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
+            // BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
 
             // run job to look for un-indexed profiles and index them 
             int profileIndexerBatchSize = int.Parse(Configuration["CloudTalent:ProfileIndexerBatchSize"]);
@@ -320,7 +319,8 @@ namespace UpDiddyApi
 
             app.UseCors("Cors");
 
-            if (!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
+            // Configure the Hangfire dashboard only on the instance which is used for job processing
+            if (_isHangfireProcessingServer)
             {
                 app.UseHangfireDashboard("/dashboard", new DashboardOptions
                 {
@@ -328,7 +328,6 @@ namespace UpDiddyApi
                 });
                 app.UseHangfireServer();
             }
-
 
             app.UseMvc(routes =>
             {
