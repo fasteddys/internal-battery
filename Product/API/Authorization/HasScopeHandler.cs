@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-
+using System;
 namespace UpDiddyApi.Authorization
 {
     public class HasScopeHandler : AuthorizationHandler<HasScopeRequirement>
@@ -15,7 +15,7 @@ namespace UpDiddyApi.Authorization
 
             var scopes = context.User.Claims.Where(c => c.Type == "permissions").ToList();
 
-            if (scopes.Any(x => requirement.Claims.Any(y => y.Value == x.Value)))
+            if (scopes.Any(x => requirement.Claims.Any(y => string.Equals(x.Value, y.Value, StringComparison.InvariantCultureIgnoreCase))))
                 context.Succeed(requirement);
             return Task.CompletedTask;
         }
@@ -33,7 +33,7 @@ namespace UpDiddyApi.Authorization
             Claims = new List<Claim>();
             foreach (string role in roles)
             {
-                Claims.Add(new Claim(role, role));
+                Claims.Add(new Claim("permissions", role, ClaimValueTypes.String, issuer));
             }
         }
     }

@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Authorization;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +15,10 @@ namespace UpDiddy.Authorization
                 return Task.CompletedTask;
 
             var scopes = context.User.Claims.Where(c => c.Type == ClaimTypes.Role).ToList();
-
-            if (scopes.Any(x => requirement.Claims.Any(y => y.Value == x.Value)))
+            
+            if (scopes.Any(x => requirement.Claims.Any(y => string.Equals(x.Value, y.Value, StringComparison.InvariantCultureIgnoreCase))))
                 context.Succeed(requirement);
+
             return Task.CompletedTask;
         }
     }
@@ -33,7 +35,7 @@ namespace UpDiddy.Authorization
             Claims = new List<Claim>();
             foreach (string role in roles)
             {
-                Claims.Add(new Claim(role, role));
+                Claims.Add(new Claim(ClaimTypes.Role, role, ClaimValueTypes.String, issuer));
             }
         }
     }
