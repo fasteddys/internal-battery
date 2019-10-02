@@ -37,7 +37,7 @@ namespace UpDiddy.Controllers
 
         [HttpGet]
         public IActionResult SignInAndEnroll()
-        {
+        {            
             SetAzureAdB2CCulture();
             var redirectUrl = Url.Action(nameof(HomeController.LoggingIn), "Home");
             return Challenge(
@@ -49,17 +49,18 @@ namespace UpDiddy.Controllers
         [HttpGet]
         public IActionResult SignIn([FromQuery] string redirectUri)
         {
-            SetAzureAdB2CCulture();
-            /** 
-             * Due to iOS issues, we need to introduce a landing page so that the call to
-             * our profile page is coming from the same HTTPcontext session as our site.
-             * */
-            if(string.IsNullOrEmpty(redirectUri))
-                redirectUri = Url.Action(nameof(HomeController.LoggingIn), "Home");
+            return RedirectToAction(nameof(AccountController.Login), "Account");
+            // SetAzureAdB2CCulture();
+            // /** 
+            //  * Due to iOS issues, we need to introduce a landing page so that the call to
+            //  * our profile page is coming from the same HTTPcontext session as our site.
+            //  * */
+            // if(string.IsNullOrEmpty(redirectUri))
+            //     redirectUri = Url.Action(nameof(HomeController.LoggingIn), "Home");
 
-            return Challenge(
-                new AuthenticationProperties { RedirectUri = redirectUri},
-                OpenIdConnectDefaults.AuthenticationScheme);
+            // return Challenge(
+            //     new AuthenticationProperties { RedirectUri = redirectUri},
+            //     OpenIdConnectDefaults.AuthenticationScheme);
         }
 
         [HttpGet]
@@ -85,11 +86,13 @@ namespace UpDiddy.Controllers
         [HttpGet]
         public IActionResult SignOut()
         {
-            HttpContext.Session.Clear();
-            SetAzureAdB2CCulture();
-            var callbackUrl = Url.Action(nameof(SignedOut), "Session", values: null, protocol: Request.Scheme);
-            return SignOut(new AuthenticationProperties { RedirectUri = callbackUrl },
-                CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
+              return RedirectToAction(nameof(AccountController.Logout), "Account");
+
+            // HttpContext.Session.Clear();
+            // SetAzureAdB2CCulture();
+            // var callbackUrl = Url.Action(nameof(SignedOut), "Session", values: null, protocol: Request.Scheme);
+            // return SignOut(new AuthenticationProperties { RedirectUri = callbackUrl },
+            //     CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
         }
 
 

@@ -14,7 +14,6 @@ using UpDiddyApi.Workflow;
 using Hangfire.SqlServer;
 using System;
 using UpDiddyLib.Helpers;
-using System.Net.Http;
 using UpDiddyLib.Shared;
 using Microsoft.ApplicationInsights.SnapshotCollector;
 using Microsoft.Extensions.Options;
@@ -138,7 +137,6 @@ namespace UpDiddyApi
                        .AllowAnyMethod()
                        .AllowAnyHeader();
             }));
-
             //configure MimeTypeService
             var provider = new FileExtensionContentTypeProvider();
             services.AddSingleton<IMimeMappingService>(new MimeMappingService(provider));

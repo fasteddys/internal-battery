@@ -22,7 +22,8 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Caching.Memory;
 using System.Net;
-
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
 namespace UpDiddy.Api
 {
     public class ApiUpdiddy : IApi
@@ -117,7 +118,7 @@ namespace UpDiddy.Api
                 .Build();
             
             new MSALSessionCache(signedInUserID,_cache,_memoryCache).EnablePersistence(app.UserTokenCache);
-
+            
             var accounts = await app.GetAccountsAsync();
             if ( accounts.Count() == 0 )
             {
@@ -148,8 +149,9 @@ namespace UpDiddy.Api
         {
             if (_contextAccessor.HttpContext.User.Identity.IsAuthenticated)
             {
-                AuthenticationResult authResult = await GetBearerTokenAsync();
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult != null ? authResult.AccessToken : string.Empty);
+                // AuthenticationResult authResult = await GetBearerTokenAsync();
+                string accessToken = _contextAccessor.HttpContext.User.FindFirst("access_token")?.Value;
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken != null ? accessToken : string.Empty);
             }
             return client;
         }

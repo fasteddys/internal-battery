@@ -24,7 +24,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Caching.Memory;
-
+using Microsoft.AspNetCore.Authentication;
 namespace UpDiddy.Controllers
 {
     public class HomeController : BaseController
@@ -60,7 +60,6 @@ namespace UpDiddy.Controllers
         {
             return Ok(Json(await _Api.GetStatesByCountryAsync(countryGuid)));
         }
-
         public async Task<IActionResult> Index()
         {
             try

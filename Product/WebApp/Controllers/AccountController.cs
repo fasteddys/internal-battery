@@ -1,18 +1,16 @@
-﻿using Auth0.AuthenticationApi;
+﻿using System.Linq;
+using Auth0.AuthenticationApi;
 using Auth0.AuthenticationApi.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using UpDiddy.ViewModels;
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Localization.Internal;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Extensions.Configuration;
-
+using System.Collections.Generic;
 namespace UpDiddy.Controllers
 {
     public class AccountController : Controller
@@ -40,7 +38,7 @@ namespace UpDiddy.Controllers
                 try
                 {
                     AuthenticationApiClient client = new AuthenticationApiClient(new Uri($"https://{_configuration["Auth0:Domain"]}/"));
-
+                    string domain =  $"https://{_configuration["Auth0:Domain"]}";
                     var result = await client.GetTokenAsync(new ResourceOwnerTokenRequest
                     {
                         ClientId = _configuration["Auth0:ClientId"],
@@ -48,23 +46,32 @@ namespace UpDiddy.Controllers
                         Scope = "openid profile",
                         Realm = "Username-Password-Authentication", // Specify the correct name of your DB connection
                         Username = vm.EmailAddress,
-                        Password = vm.Password
+                        Password = vm.Password,
+                        Audience = _configuration["Auth0:Audience"]
                     });
 
                     // Get user info from token
                     var user = await client.GetUserInfoAsync(result.AccessToken);
+                    var subscriberGuid = user.AdditionalClaims.Where(x => x.Key == ClaimTypes.NameIdentifier).FirstOrDefault().Value.ToString();
 
                     // Create claims principal
-                    var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
+                  
+                    List<Claim> claims = new List<Claim>();
+                    claims.Add(new Claim(ClaimTypes.NameIdentifier, subscriberGuid));
+                    claims.Add(new Claim(ClaimTypes.Name, user.FullName));
+                    claims.Add(new Claim("access_token", result.AccessToken));
+
+                    var permissionClaim = user.AdditionalClaims.Where(x => x.Key == ClaimTypes.Role).FirstOrDefault().Value.ToList();
+                    string permissions = string.Empty;
+
+                    foreach (var permission in permissionClaim)
                     {
-                        new Claim(ClaimTypes.NameIdentifier, user.UserId),
-                        new Claim(ClaimTypes.Name, user.FullName)
+                        claims.Add(new Claim(ClaimTypes.Role, permission.ToString(),ClaimValueTypes.String,domain));
+                    }
 
-                    }, CookieAuthenticationDefaults.AuthenticationScheme));
-
+                    var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
                     // Sign user into cookie middleware
                     await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
-
                     return RedirectToLocal(returnUrl);
                 }
                 catch (Exception e)
@@ -75,6 +82,9 @@ namespace UpDiddy.Controllers
 
             return View(vm);
         }
+
+
+
 
         [HttpGet]
         public async Task LoginExternal(string connection, string returnUrl = "/")
@@ -87,7 +97,6 @@ namespace UpDiddy.Controllers
             await HttpContext.ChallengeAsync("Auth0", properties);
         }
 
-        [Authorize]
         public async Task Logout()
         {
             await HttpContext.SignOutAsync("Auth0", new AuthenticationProperties

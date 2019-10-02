@@ -12,11 +12,8 @@ using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Rewrite;
 using UpDiddy.Helpers.RewriteRules;
-using System.Net.Http;
 using UpDiddyLib.Helpers;
 using Microsoft.Extensions.Caching.Distributed;
-using System.Collections;
-using UpDiddyLib.Dto;
 using UpDiddyLib.Shared;
 using Microsoft.Net.Http.Headers;
 using UpDiddy.Api;
@@ -114,6 +111,14 @@ namespace UpDiddy
                 });
             }
             */
+            string domain = $"https://{Configuration["Auth0:Domain"]}";
+
+            services.Configure<CookiePolicyOptions>(options =>
+           {
+                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
+                options.CheckConsentNeeded = context => true;
+               options.MinimumSameSitePolicy = Microsoft.AspNetCore.Http.SameSiteMode.None;
+           });
 
             // Add Auth0 authentication services
             services.AddAuthentication(options =>
@@ -140,14 +145,14 @@ namespace UpDiddy
                 options.Scope.Add("openid");
                 options.Scope.Add("profile");
 
+
                 // Set the callback path, so Auth0 will call back to http://localhost:5000/callback
                 // Also ensure that you have added the URL as an Allowed Callback URL in your Auth0 dashboard
                 options.CallbackPath = new PathString("/callback");
+                options.GetClaimsFromUserInfoEndpoint = true;
 
                 // Configure the Claims Issuer to be Auth0
                 options.ClaimsIssuer = "Auth0";
-
-                options.SaveTokens = true;
 
                 options.Events = new OpenIdConnectEvents
                 {
@@ -183,11 +188,13 @@ namespace UpDiddy
                 };
             });
 
+            services.AddMvc()
+                   .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.Configure<CookiePolicyOptions>(options =>
             {
-                    // This lambda determines whether user consent for non-essential cookies 
-                    // is needed for a given request.
-                    options.CheckConsentNeeded = context => true;
+                // This lambda determines whether user consent for non-essential cookies 
+                // is needed for a given request.
+                options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = Microsoft.AspNetCore.Http.SameSiteMode.None;
             });
 
@@ -211,12 +218,14 @@ namespace UpDiddy
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("IsRecruiterPolicy", policy => policy.AddRequirements(new GroupRequirement("Recruiter")));
-                options.AddPolicy("IsCareerCircleAdmin", policy => policy.AddRequirements(new GroupRequirement("Career Circle Administrator")));
-                options.AddPolicy("IsUserAdmin", policy => policy.AddRequirements(new GroupRequirement("Career Circle User Admin")));
+                options.AddPolicy("IsRecruiterPolicy", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Recruiter" }, domain)));
+                options.AddPolicy("IsCareerCircleAdmin", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Career Circle Administrator" }, domain)));
+                options.AddPolicy("IsRecruiterOrAdmin", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Recruiter", "Career Circle Administrator" }, domain)));
             });
 
-            services.AddSingleton<IAuthorizationHandler, ApiGroupAuthorizationHandler>();
+            //services.AddSingleton<IAuthorizationHandler, ApiGroupAuthorizationHandler>();
+            services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
+
             #endregion
 
             // Add Dependency Injection for the configuration object
@@ -374,7 +383,6 @@ namespace UpDiddy
             */
 
             app.UseSession();
-            app.UseAuthentication();
             app.UseCors("UnifiedCors");
 
             // custom middleware for device detection
@@ -387,7 +395,9 @@ namespace UpDiddy
                 return next();
             });
 
+            app.UseStaticFiles();
             app.UseCookiePolicy();
+            app.UseAuthentication();
 
             // TODO - Change template action below to index upon site launch.
             app.UseMvc(routes =>
