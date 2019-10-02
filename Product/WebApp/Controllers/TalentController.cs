@@ -285,8 +285,8 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("/Talent/Subscriber/{subscriberGuid}")]
-        public async Task<IActionResult> SubscriberAsync(Guid subscriberGuid)
+        [Route("/Talent/Subscriber/{subscriberGuid}/{cloudIdentifier?}")]
+        public async Task<IActionResult> SubscriberAsync(Guid subscriberGuid, Guid? cloudIdentifier = null)
         {
             SubscriberDto subscriber = null;
             SubscriberViewModel subscriberViewModel = null;
@@ -294,33 +294,41 @@ namespace UpDiddy.Controllers
             {
    
                 subscriber =  await _api.SubscriberAsync(subscriberGuid, false);
-                string AssestBaseUrl = _configuration["CareerCircle:AssetBaseUrl"];
-                string CacheBuster = "?" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
-                subscriberViewModel = new SubscriberViewModel()
+                if (subscriber != null)
                 {
-                    FirstName = subscriber.FirstName,
-                    LastName = subscriber.LastName,
-                    Email = subscriber.Email,
-                    PhoneNumber = subscriber.PhoneNumber,
-                    Address = subscriber.Address,
-                    City = subscriber.City,
-                    State = subscriber.State?.Code,
-                    Country = subscriber.State?.Country?.Code3,
-                    GithubUrl = subscriber.GithubUrl,
-                    LinkedInUrl = subscriber.LinkedInUrl,
-                    StackOverflowUrl = subscriber.StackOverflowUrl,
-                    TwitterUrl = subscriber.TwitterUrl,
-                    WorkHistory = subscriber.WorkHistory,
-                    EducationHistory = subscriber.EducationHistory,
-                    Skills = subscriber.Skills,
-                    Enrollments = subscriber.Enrollments,
-                    ResumeFileGuid = subscriber.Files?.FirstOrDefault()?.SubscriberFileGuid,
-                    ResumeFileName = subscriber.Files?.FirstOrDefault()?.SimpleName,
-                    SubscriberGuid = subscriber.SubscriberGuid.Value,
-                    AvatarUrl = string.IsNullOrEmpty(subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + subscriber.AvatarUrl + CacheBuster
-                };
+                    string AssestBaseUrl = _configuration["CareerCircle:AssetBaseUrl"];
+                    string CacheBuster = "?" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+                    subscriberViewModel = new SubscriberViewModel()
+                    {
+                        FirstName = subscriber.FirstName,
+                        LastName = subscriber.LastName,
+                        Email = subscriber.Email,
+                        PhoneNumber = subscriber.PhoneNumber,
+                        Address = subscriber.Address,
+                        City = subscriber.City,
+                        State = subscriber.State?.Code,
+                        Country = subscriber.State?.Country?.Code3,
+                        GithubUrl = subscriber.GithubUrl,
+                        LinkedInUrl = subscriber.LinkedInUrl,
+                        StackOverflowUrl = subscriber.StackOverflowUrl,
+                        TwitterUrl = subscriber.TwitterUrl,
+                        WorkHistory = subscriber.WorkHistory,
+                        EducationHistory = subscriber.EducationHistory,
+                        Skills = subscriber.Skills,
+                        Enrollments = subscriber.Enrollments,
+                        ResumeFileGuid = subscriber.Files?.FirstOrDefault()?.SubscriberFileGuid,
+                        ResumeFileName = subscriber.Files?.FirstOrDefault()?.SimpleName,
+                        SubscriberGuid = subscriber.SubscriberGuid.Value,
+                        AvatarUrl = string.IsNullOrEmpty(subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + subscriber.AvatarUrl + CacheBuster
+                    };
+                }
+                else
+                {
+                    // if we get here, it means that we have an orphaned record in Google that should be deleted
+                    var deleteSubscriberResult = await _api.DeleteSubscriberAsync(subscriberGuid);
+                }
             }
-            catch (ApiException e)
+            catch (Exception e)
             {
                 _sysLog.Log(LogLevel.Information, "An exception occurred in TalentController.SubscriberAsync(): {e.Message}", e);
                 // empty catch here to pass null to the view which will let the user know that the subscriber cannot be found.  This code
@@ -328,8 +336,6 @@ namespace UpDiddy.Controllers
                 // database which should not be that often
             }
 
-
-        
             return View("Subscriber", subscriberViewModel);
         }
         
@@ -346,8 +352,8 @@ namespace UpDiddy.Controllers
 
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [HttpDelete]
-        [Route("/Talent/Subscriber/{subscriberGuid}")]
-        public async Task<IActionResult> DeleteSubscriberAsync(Guid subscriberGuid)
+        [Route("/Talent/Subscriber/{subscriberGuid}/{cloudIdentifier?}")]
+        public async Task<IActionResult> DeleteSubscriberAsync(Guid subscriberGuid, Guid? cloudIdentifier = null)
         {
             var isSubscriberDeleted = await _api.DeleteSubscriberAsync(subscriberGuid);
             return new JsonResult(isSubscriberDeleted);

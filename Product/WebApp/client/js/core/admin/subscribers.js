@@ -1,4 +1,4 @@
-﻿function deleteSubscriber(subscriberGuid) {
+﻿function deleteSubscriber(subscriberGuid, cloudIdentifier) {
     bootbox.confirm({
         message: "Are you sure you want to delete this subscriber?",
         buttons: {
@@ -14,7 +14,7 @@
         callback: function (result) {
             if (result) {
                 $.ajax({
-                    url: url + "/" + subscriberGuid,
+                    url: url + "/" + subscriberGuid + "/" + cloudIdentifier,
                     method: "DELETE",
                     success: function (data, textStatus, jqXHR) {
                         if (textStatus === "success") {

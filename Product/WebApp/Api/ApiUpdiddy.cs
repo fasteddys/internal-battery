@@ -945,6 +945,10 @@ namespace UpDiddy.Api
         {
             return await DeleteAsync<bool>($"subscriber/{subscriberGuid}");
         }
+        public async Task<bool> DeleteOrphanSubscriberAsync(Guid cloudIdentifier)
+        {
+            return await DeleteAsync<bool>($"subscriber/orphan/{cloudIdentifier}");
+        }
         public async Task<SubscriberWorkHistoryDto> AddWorkHistoryAsync(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory)
         {
             return await PostAsync<SubscriberWorkHistoryDto>(string.Format("subscriber/{0}/work-history", subscriberGuid.ToString()), workHistory);

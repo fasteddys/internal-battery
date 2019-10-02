@@ -43,6 +43,7 @@ namespace UpDiddy.Api
         Task<Guid> EnrollStudentAndObtainEnrollmentGUIDAsync(EnrollmentFlowDto enrollmentFlowDto);
         Task<SubscriberDto> CreateSubscriberAsync(string referralCode);
         Task<bool> DeleteSubscriberAsync(Guid subscriberGuid);
+        Task<bool> DeleteOrphanSubscriberAsync(Guid cloudIdentifier);
         Task<WozCourseProgressDto> UpdateStudentCourseProgressAsync(bool FutureSchedule);
         Task<BraintreeResponseDto> SubmitBraintreePaymentAsync(BraintreePaymentDto BraintreePaymentDto);
         Task<IList<CountryDto>> _GetCountriesAsync();

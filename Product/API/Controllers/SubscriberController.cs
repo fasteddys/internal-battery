@@ -94,7 +94,7 @@ namespace UpDiddyApi.Controllers
             _subscriberNotificationService = subscriberNotificationService;
             _jobService = jobService;
             _taggingService = taggingService;
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory,repositoryWrapper, _subscriberService);
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory, repositoryWrapper, _subscriberService);
             _hangfireService = hangfireService;
             _jobPostingService = jobPostingService;
         }
@@ -148,6 +148,27 @@ namespace UpDiddyApi.Controllers
         }
 
         [Authorize(Policy = "IsCareerCircleAdmin")]
+        [HttpDelete("/api/[controller]/{cloudIdentifier}")]
+        public IActionResult DeleteOrphanedSubscriber(Guid cloudIdentifier)
+        {
+            try
+            {
+                if (cloudIdentifier == null)
+                    return BadRequest(new { code = 400, message = "No cloud identifier was provided" });
+
+                // delete subscriber from cloud talent 
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(cloudIdentifier));
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Error, $"SubscriberController.DeleteOrphanedSubscriber:: An error occured while attempting to delete the subscriber. Message: {e.Message}", e);
+                return StatusCode(500, false);
+            }
+
+            return Ok(true);
+        }
+
+        [Authorize(Policy = "IsCareerCircleAdmin")]
         [HttpDelete("{subscriberGuid}")]
         public IActionResult DeleteSubscriber(Guid subscriberGuid)
         {
@@ -158,13 +179,13 @@ namespace UpDiddyApi.Controllers
                     return BadRequest(new { code = 400, message = "No subscriber identifier was provided" });
 
                 var subscriber = _db.Subscriber.Where(s => s.SubscriberGuid == subscriberGuid).FirstOrDefault();
-                
+
                 // delete subscriber from cloud talent 
                 _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(subscriberGuid));
 
                 if (subscriber == null)
                     return BadRequest(new { code = 404, message = "No subscriber could be found with that identifier. If the subscriber exists in Google, they will be removed." });
-                
+
                 // perform logical delete on the subscriber entity only (no modification to related tables)
                 subscriber.IsDeleted = 1;
                 subscriber.ModifyDate = DateTime.UtcNow;
@@ -228,13 +249,13 @@ namespace UpDiddyApi.Controllers
                 return Unauthorized();
 
             var subscriberGuid = new SqlParameter("@SubscriberGuid", Subscriber.SubscriberGuid);
-            var firstName = new SqlParameter("@FirstName", (object) Subscriber.FirstName ??  DBNull.Value);
-            var lastName = new SqlParameter("@LastName", (object) Subscriber.LastName ?? DBNull.Value);
+            var firstName = new SqlParameter("@FirstName", (object)Subscriber.FirstName ?? DBNull.Value);
+            var lastName = new SqlParameter("@LastName", (object)Subscriber.LastName ?? DBNull.Value);
             var address = new SqlParameter("@Address", (object)Subscriber.Address ?? DBNull.Value);
-            var city = new SqlParameter("@City", (object) Subscriber.City ??  DBNull.Value);
-            var postalCode = new SqlParameter("@PostalCode", (object) Subscriber.PostalCode ?? (object) DBNull.Value);
-            var stateGuid = new SqlParameter("@StateGuid", (Subscriber?.State?.StateGuid != null ? (object)Subscriber.State.StateGuid :  DBNull.Value));
-            var phoneNumber = new SqlParameter("@PhoneNumber", (object) Subscriber.PhoneNumber ?? (object) DBNull.Value);
+            var city = new SqlParameter("@City", (object)Subscriber.City ?? DBNull.Value);
+            var postalCode = new SqlParameter("@PostalCode", (object)Subscriber.PostalCode ?? (object)DBNull.Value);
+            var stateGuid = new SqlParameter("@StateGuid", (Subscriber?.State?.StateGuid != null ? (object)Subscriber.State.StateGuid : DBNull.Value));
+            var phoneNumber = new SqlParameter("@PhoneNumber", (object)Subscriber.PhoneNumber ?? (object)DBNull.Value);
             var facebookUrl = new SqlParameter("@FacebookUrl", (object)Subscriber.FacebookUrl ?? DBNull.Value);
             var twitterUrl = new SqlParameter("@TwitterUrl", (object)Subscriber.TwitterUrl ?? DBNull.Value);
             var linkedInUrl = new SqlParameter("@LinkedInUrl", (object)Subscriber.LinkedInUrl ?? DBNull.Value);
@@ -867,8 +888,8 @@ namespace UpDiddyApi.Controllers
 
             var referer = !String.IsNullOrEmpty(signUpDto.referer) ? signUpDto.referer : Request.Headers["Referer"].ToString();
 
-            
-            
+
+
 
             // use transaction to verify that both changes 
             using (var transaction = _db.Database.BeginTransaction())
@@ -978,7 +999,7 @@ namespace UpDiddyApi.Controllers
             };
             if (sortOrder != null)
                 profileQueryDto.OrderBy = WebUtility.UrlDecode(sortOrder);
-            ProfileSearchResultDto result = _cloudTalent.ProfileSearch(profileQueryDto);   
+            ProfileSearchResultDto result = _cloudTalent.ProfileSearch(profileQueryDto);
 
             return Json(result);
         }
@@ -987,7 +1008,7 @@ namespace UpDiddyApi.Controllers
         [HttpGet("/api/[controller]/sources")]
         public IActionResult GetSubscriberSources()
         {
-         
+
             return Ok(_db.SubscriberSources.ProjectTo<SubscriberSourceStatisticDto>(_mapper.ConfigurationProvider).ToList());
         }
 
@@ -1127,7 +1148,7 @@ namespace UpDiddyApi.Controllers
             Subscriber subscriber = _db.Subscriber.Where(s => s.SubscriberGuid.Equals(userGuid))
                 .First();
 
-            if ( subscriber == null )
+            if (subscriber == null)
                 return StatusCode(404, false);
 
             List<JobDto> favorites = await _jobPostingService.GetSubscriberJobFavorites(subscriber.SubscriberId);
@@ -1138,7 +1159,7 @@ namespace UpDiddyApi.Controllers
                 PageSize = 10,
                 Count = favorites.Count
             };
-    
+
 
             result.Results = await favorites.Skip((result.Page - 1) * result.PageSize).Take(result.PageSize).ToListAsync();
 
