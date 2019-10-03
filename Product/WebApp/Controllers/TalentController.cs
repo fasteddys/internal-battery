@@ -19,7 +19,7 @@ using UpDiddy.Api;
 using UpDiddy.Authentication;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
- 
+
 
 namespace UpDiddy.Controllers
 {
@@ -55,8 +55,8 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> EditJobPosting(Guid jobPostingGuid)
         {
 
-            CreateJobPostingViewModel model = await CreateJobPostingViewModel(jobPostingGuid);            
-            return View("CreateJobPosting",model);
+            CreateJobPostingViewModel model = await CreateJobPostingViewModel(jobPostingGuid);
+            return View("CreateJobPosting", model);
         }
 
 
@@ -66,7 +66,7 @@ namespace UpDiddy.Controllers
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
         [HttpDelete]
-        [Route("[controller]/jobPosting/{jobPostingGuid}/delete")]   
+        [Route("[controller]/jobPosting/{jobPostingGuid}/delete")]
         public async Task<IActionResult> DeleteJobPosting(Guid jobPostingGuid)
         {
             try
@@ -74,10 +74,10 @@ namespace UpDiddy.Controllers
                 await _api.DeleteJobPosting(jobPostingGuid);
                 return Ok();
             }
-            catch ( ApiException ex )
+            catch (ApiException ex)
             {
-                return BadRequest(new JsonResult(ex.ResponseDto )) ;
-              
+                return BadRequest(new JsonResult(ex.ResponseDto));
+
             }
 
         }
@@ -105,7 +105,7 @@ namespace UpDiddy.Controllers
             {
                 jobPostings = await _api.GetJobPostingsForSubscriber(this.subscriber.SubscriberGuid.Value)
             };
-          
+
             return View(model.jobPostings);
 
         }
@@ -114,18 +114,18 @@ namespace UpDiddy.Controllers
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> CreateJobPosting()
-        {           
+        {
             CreateJobPostingViewModel model = await CreateJobPostingViewModel();
             return View(model);
         }
- 
+
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> CreateJobPosting(CreateJobPostingViewModel model )
+        public async Task<IActionResult> CreateJobPosting(CreateJobPostingViewModel model)
         {
             BasicResponseDto rVal = null;
-            if ( ModelState.IsValid )
+            if (ModelState.IsValid)
             {
                 // create job posting dto and initailize all required fields 
                 JobPostingDto job = new JobPostingDto()
@@ -148,9 +148,9 @@ namespace UpDiddy.Controllers
                             SubscriberGuid = this.subscriber.SubscriberGuid
                         },
 
-                    },                   
+                    },
                     Province = model.SelectedState,
-                    ThirdPartyApply = false                    
+                    ThirdPartyApply = false
                 };
 
                 job.ApplicationDeadlineUTC = model.ApplicationDeadline;
@@ -178,11 +178,11 @@ namespace UpDiddy.Controllers
                     job.ExperienceLevel = new ExperienceLevelDto() { ExperienceLevelGuid = model.SelectedExperienceLevel.Value };
                 if (model.SelectedEducationLevel != null)
                     job.EducationLevel = new EducationLevelDto() { EducationLevelGuid = model.SelectedEducationLevel.Value };
-                if ( string.IsNullOrEmpty(model.SelectedSkills) == false )
+                if (string.IsNullOrEmpty(model.SelectedSkills) == false)
                 {
                     string[] skillGuids = model.SelectedSkills.Trim().Split(',');
                     job.JobPostingSkills = new List<SkillDto>();
-                    foreach ( string guid in skillGuids )
+                    foreach (string guid in skillGuids)
                     {
                         SkillDto skill = new SkillDto() { SkillGuid = Guid.Parse(guid) };
                         job.JobPostingSkills.Add(skill);
@@ -191,22 +191,22 @@ namespace UpDiddy.Controllers
 
                 try
                 {
-                    if ( model.IsEdit )
+                    if (model.IsEdit)
                     {
-                        job.JobPostingGuid = model.EditGuid;         
-                        rVal = await _api.UpdateJobPostingAsync(job);                        
-                    }                    
-                    else                                           
-                      rVal = await _api.AddJobPostingAsync(job);
-                      
+                        job.JobPostingGuid = model.EditGuid;
+                        rVal = await _api.UpdateJobPostingAsync(job);
+                    }
+                    else
+                        rVal = await _api.AddJobPostingAsync(job);
+
                 }
                 catch (ApiException ex)
                 {
                     return Redirect(model.RequestPath + "?ErrorMsg=" + WebUtility.UrlEncode(ex.ResponseDto.Description));
                 }
-  
+
             }
- 
+
             return RedirectToAction("JobPostings");
 
         }
@@ -219,7 +219,7 @@ namespace UpDiddy.Controllers
         {
             IList<SubscriberSourceStatisticDto> subscriberSourcesDto = await _api.SubscriberSourcesAsync();
             IList<SelectListItem> orderByListItems = new List<SelectListItem>();
-            orderByListItems.Add(new SelectListItem() {Value = "relevance desc", Text = "Relevancy", Selected = true });
+            orderByListItems.Add(new SelectListItem() { Value = "relevance desc", Text = "Relevancy", Selected = true });
             orderByListItems.Add(new SelectListItem() { Value = "update_date desc", Text = "Date Modified \u2193" });
             orderByListItems.Add(new SelectListItem() { Value = "create_date desc", Text = "Join Date \u2193" });
             orderByListItems.Add(new SelectListItem() { Value = "first_name desc", Text = "First Name \u2193" });
@@ -249,8 +249,8 @@ namespace UpDiddy.Controllers
         [Route("[controller]/subscriberData")]
         public async Task<ProfileSearchResultDto> SubscriberData(string searchFilter, string searchQuery = "", string searchLocationQuery = "", string sortOrder = "")
         {
-       
- 
+
+
             ProfileSearchResultDto subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery, searchLocationQuery, sortOrder);
             return subscribers;
         }
@@ -292,8 +292,8 @@ namespace UpDiddy.Controllers
             SubscriberViewModel subscriberViewModel = null;
             try
             {
-   
-                subscriber =  await _api.SubscriberAsync(subscriberGuid, false);
+
+                subscriber = await _api.SubscriberAsync(subscriberGuid, false);
                 if (subscriber != null)
                 {
                     string AssestBaseUrl = _configuration["CareerCircle:AssetBaseUrl"];
@@ -325,7 +325,8 @@ namespace UpDiddy.Controllers
                 else
                 {
                     // if we get here, it means that we have an orphaned record in Google that should be deleted
-                    var deleteSubscriberResult = await _api.DeleteSubscriberAsync(subscriberGuid);
+                    if (cloudIdentifier.HasValue)
+                        await _api.DeleteSubscriberAsync(cloudIdentifier.Value);
                 }
             }
             catch (Exception e)
@@ -338,7 +339,7 @@ namespace UpDiddy.Controllers
 
             return View("Subscriber", subscriberViewModel);
         }
-        
+
         [HttpGet]
         [Authorize]
         [Route("/Talent/Subscriber/{subscriberGuid}/File/{fileGuid}")]
@@ -364,14 +365,14 @@ namespace UpDiddy.Controllers
         [Route("Talent/Subscriber/Notes")]
         public async Task<IActionResult> SaveNotes([FromBody]SubscriberNotesDto subscriberNotes)
         {
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
                 try
                 {
-                    var response=await _Api.SaveNotes(subscriberNotes);
+                    var response = await _Api.SaveNotes(subscriberNotes);
                     return Ok(response);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _sysLog.Log(LogLevel.Error, $"WebApp TalentController.SaveNotes : Error occured when saving notes for data: {JsonConvert.SerializeObject(subscriberNotes)} with message={ex.Message}", ex);
                     return StatusCode(500, new BasicResponseDto { StatusCode = 400, Description = "Internal Server Error." });
@@ -389,7 +390,7 @@ namespace UpDiddy.Controllers
         public async Task<PartialViewResult> SubscriberNotesGrid(string subscriberGuid, string searchQuery)
         {
             IList<SubscriberNotesDto> response;
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
                 response = await _Api.SubscriberNotesSearch(subscriberGuid, searchQuery);
                 return PartialView("_SubscriberNotesGrid", response);
@@ -424,15 +425,15 @@ namespace UpDiddy.Controllers
         }
 
         #region private helper functions
-        private async Task<CreateJobPostingViewModel> CreateJobPostingViewModel(Guid? jobPostingGuid = null )
+        private async Task<CreateJobPostingViewModel> CreateJobPostingViewModel(Guid? jobPostingGuid = null)
         {
-         
+
             JobPostingDto jobPostingDto = null;
-            if ( jobPostingGuid != null )
+            if (jobPostingGuid != null)
             {
-                    jobPostingDto = await _api.GetJobPostingByGuid(jobPostingGuid.Value);
+                jobPostingDto = await _api.GetJobPostingByGuid(jobPostingGuid.Value);
             }
-     
+
             Guid USCountryGuid = Guid.Parse(_configuration["CareerCircle:USCountryGuid"]);
 
             var states = await _Api.GetStatesByCountryAsync(USCountryGuid);
@@ -464,7 +465,7 @@ namespace UpDiddy.Controllers
                 JobCategories = jobCategories.Select(s => new SelectListItem()
                 {
                     Text = s.Name,
-                    Value = s.JobCategoryGuid.ToString(),                   
+                    Value = s.JobCategoryGuid.ToString(),
                     Selected = jobPostingDto?.JobCategory?.JobCategoryGuid != null && jobPostingDto?.JobCategory?.JobCategoryGuid == s.JobCategoryGuid
                 }),
                 ExperienceLevels = experienceLevels.Select(s => new SelectListItem()
@@ -505,15 +506,15 @@ namespace UpDiddy.Controllers
                 }),
 
                 PostingExpirationDate = jobPostingDto == null ? DateTime.Now.AddDays(PostingExpirationInDays) : jobPostingDto.PostingExpirationDateUTC,
-                ApplicationDeadline =  jobPostingDto == null  ? DateTime.Now.AddDays(PostingExpirationInDays) : jobPostingDto.ApplicationDeadlineUTC
+                ApplicationDeadline = jobPostingDto == null ? DateTime.Now.AddDays(PostingExpirationInDays) : jobPostingDto.ApplicationDeadlineUTC
             };
 
             model.Title = jobPostingDto == null ? string.Empty : jobPostingDto.Title;
             model.Description = jobPostingDto == null ? string.Empty : jobPostingDto.Description;
-            model.City =  jobPostingDto == null ? string.Empty : jobPostingDto.City;
+            model.City = jobPostingDto == null ? string.Empty : jobPostingDto.City;
             model.StreetAddress = jobPostingDto == null ? string.Empty : jobPostingDto.StreetAddress;
-            model.PostalCode = jobPostingDto == null ? string.Empty : jobPostingDto.PostalCode; 
-            model.IsDraft = jobPostingDto == null ? true : jobPostingDto.JobStatus == (int) JobPostingStatus.Draft;
+            model.PostalCode = jobPostingDto == null ? string.Empty : jobPostingDto.PostalCode;
+            model.IsDraft = jobPostingDto == null ? true : jobPostingDto.JobStatus == (int)JobPostingStatus.Draft;
             model.IsPrivate = jobPostingDto == null ? false : jobPostingDto.IsPrivate == 1 ? true : false;
             model.IsAgency = jobPostingDto == null ? true : jobPostingDto.IsAgencyJobPosting;
 
@@ -523,7 +524,7 @@ namespace UpDiddy.Controllers
                 model.Telecommute = jobPostingDto.TelecommutePercentage;
 
             // Initialize skills             
-            if ( jobPostingDto!= null && jobPostingDto.JobPostingSkills != null )           
+            if (jobPostingDto != null && jobPostingDto.JobPostingSkills != null)
                 model.Skills = jobPostingDto.JobPostingSkills;
 
             if (jobPostingDto != null)
