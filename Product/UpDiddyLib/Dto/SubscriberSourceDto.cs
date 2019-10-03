@@ -20,10 +20,4 @@ namespace UpDiddyLib.Dto
         public Guid? GroupGuid { get; set; }
     }
 
-
-
-                           
-
-
-
 }

@@ -50,16 +50,15 @@ namespace UpDiddy.Controllers
                         Audience = _configuration["Auth0:Audience"]
                     });
 
-                    // Get user info from token
                     var user = await client.GetUserInfoAsync(result.AccessToken);
                     var subscriberGuid = user.AdditionalClaims.Where(x => x.Key == ClaimTypes.NameIdentifier).FirstOrDefault().Value.ToString();
-
-                    // Create claims principal
-                  
+                    var expiresOn = DateTime.UtcNow.AddSeconds(result.ExpiresIn);
+                    
                     List<Claim> claims = new List<Claim>();
                     claims.Add(new Claim(ClaimTypes.NameIdentifier, subscriberGuid));
                     claims.Add(new Claim(ClaimTypes.Name, user.FullName));
                     claims.Add(new Claim("access_token", result.AccessToken));
+                    claims.Add(new Claim(ClaimTypes.Expiration, expiresOn.ToString()));
 
                     var permissionClaim = user.AdditionalClaims.Where(x => x.Key == ClaimTypes.Role).FirstOrDefault().Value.ToList();
                     string permissions = string.Empty;
@@ -69,8 +68,7 @@ namespace UpDiddy.Controllers
                         claims.Add(new Claim(ClaimTypes.Role, permission.ToString(),ClaimValueTypes.String,domain));
                     }
 
-                    var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
-                    // Sign user into cookie middleware
+                    var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));                 
                     await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
                     return RedirectToLocal(returnUrl);
                 }

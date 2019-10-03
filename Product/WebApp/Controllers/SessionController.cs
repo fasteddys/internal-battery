@@ -146,46 +146,48 @@ namespace UpDiddy.Controllers
         [HttpGet]
         [Authorize]
         [Route("[controller]/token")]
-        public async Task<IActionResult> TokenAsync()
+        public IActionResult TokenAsync()
         {
+
+             var subscriberGuid = HttpContext.User.Claims.Where(x => x.Type == ClaimTypes.NameIdentifier).FirstOrDefault().Value.ToString();
+             var accessToken = HttpContext.User.Claims.Where(x => x.Type == "access_token").FirstOrDefault().Value.ToString();
+             var expiresOn = HttpContext.User.Claims.Where(x => x.Type == ClaimTypes.Expiration).FirstOrDefault().Value.ToString();
             // Retrieve the token with the specified scopes
             // Retrieve the token with the specified scopes
-            var scope = AzureAdB2COptions.ApiScopes.Split(' ');
-            string signedInUserID = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            IConfidentialClientApplication app = ConfidentialClientApplicationBuilder
-                .Create(AzureAdB2COptions.ClientId)
-                .WithB2CAuthority(AzureAdB2COptions.Authority)
-                .WithRedirectUri(AzureAdB2COptions.RedirectUri)
-                .WithClientSecret(AzureAdB2COptions.ClientSecret)
-                .Build();
+            // var scope = AzureAdB2COptions.ApiScopes.Split(' ');
+            // string signedInUserID = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            // IConfidentialClientApplication app = ConfidentialClientApplicationBuilder
+            //     .Create(AzureAdB2COptions.ClientId)
+            //     .WithB2CAuthority(AzureAdB2COptions.Authority)
+            //     .WithRedirectUri(AzureAdB2COptions.RedirectUri)
+            //     .WithClientSecret(AzureAdB2COptions.ClientSecret)
+            //     .Build();
      
-            new MSALSessionCache(signedInUserID,_cache,_memoryCache).EnablePersistence(app.UserTokenCache);
+            // new MSALSessionCache(signedInUserID,_cache,_memoryCache).EnablePersistence(app.UserTokenCache);
     
-            var accounts = await app.GetAccountsAsync();
-            if (accounts.Count() == 0)
-            {
-                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, "MSAL_SessionController.TokenAsync unable to locate account");
-            }
+            // var accounts = await app.GetAccountsAsync();
+            // if (accounts.Count() == 0)
+            // {
+            //     _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, "MSAL_SessionController.TokenAsync unable to locate account");
+            // }
 
-            AuthenticationResult result = await app.AcquireTokenSilent(scope, accounts.FirstOrDefault()).ExecuteAsync();
+            // AuthenticationResult result = await app.AcquireTokenSilent(scope, accounts.FirstOrDefault()).ExecuteAsync();
 
-            // temp code to log jwt info, specifically expiration dates 
-            try
-            {
-                string scopes = string.Empty;
-                foreach (string s in result.Scopes)
-                    scopes += s + ";";
-                string LogInfo = $"MSAL_SessionController.TokenAsync Token ExpiresOn: {result.ExpiresOn} Token ExtendedExpiresOn: {result.ExtendedExpiresOn} Access Token Length: {result.AccessToken.Length}  Scopes: {scopes}  User: {result.UniqueId} )";
-                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, LogInfo);
-            }
-            catch (Exception ex)
-            {
-                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_SessionController.TokenAsync Error logging info {ex.Message}");
-            }
+            // // temp code to log jwt info, specifically expiration dates 
+            // try
+            // {
+            //     string scopes = string.Empty;
+            //     foreach (string s in result.Scopes)
+            //         scopes += s + ";";
+            //     string LogInfo = $"MSAL_SessionController.TokenAsync Token ExpiresOn: {result.ExpiresOn} Token ExtendedExpiresOn: {result.ExtendedExpiresOn} Access Token Length: {result.AccessToken.Length}  Scopes: {scopes}  User: {result.UniqueId} )";
+            //     _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, LogInfo);
+            // }
+            // catch (Exception ex)
+            // {
+            //     _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_SessionController.TokenAsync Error logging info {ex.Message}");
+            // }
 
-
-
-            return Ok(new { accessToken = result.AccessToken, expiresOn = result.ExpiresOn, uniqueId = result.UniqueId });
+            return Ok(new { accessToken = accessToken, expiresOn = expiresOn, uniqueId = subscriberGuid });
         }
     }
 }
