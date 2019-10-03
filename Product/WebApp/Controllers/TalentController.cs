@@ -285,14 +285,13 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("/Talent/Subscriber/{subscriberGuid}/{cloudIdentifier?}")]
-        public async Task<IActionResult> SubscriberAsync(Guid subscriberGuid, Guid? cloudIdentifier = null)
+        [Route("/Talent/Subscriber/{subscriberGuid}/{cloudIdentifier}")]
+        public async Task<IActionResult> SubscriberAsync(Guid subscriberGuid, Guid cloudIdentifier)
         {
             SubscriberDto subscriber = null;
             SubscriberViewModel subscriberViewModel = null;
             try
             {
-
                 subscriber = await _api.SubscriberAsync(subscriberGuid, false);
                 if (subscriber != null)
                 {
@@ -325,8 +324,7 @@ namespace UpDiddy.Controllers
                 else
                 {
                     // if we get here, it means that we have an orphaned record in Google that should be deleted
-                    if (cloudIdentifier.HasValue)
-                        await _api.DeleteSubscriberAsync(cloudIdentifier.Value);
+                    await _api.DeleteSubscriberAsync(subscriberGuid, cloudIdentifier);
                 }
             }
             catch (Exception e)
@@ -353,10 +351,10 @@ namespace UpDiddy.Controllers
 
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [HttpDelete]
-        [Route("/Talent/Subscriber/{subscriberGuid}/{cloudIdentifier?}")]
-        public async Task<IActionResult> DeleteSubscriberAsync(Guid subscriberGuid, Guid? cloudIdentifier = null)
+        [Route("/Talent/Subscriber/{subscriberGuid}/{cloudIdentifier}")]
+        public async Task<IActionResult> DeleteSubscriberAsync(Guid subscriberGuid, Guid cloudIdentifier)
         {
-            var isSubscriberDeleted = await _api.DeleteSubscriberAsync(subscriberGuid);
+            var isSubscriberDeleted = await _api.DeleteSubscriberAsync(subscriberGuid, cloudIdentifier);
             return new JsonResult(isSubscriberDeleted);
         }
 

@@ -18,7 +18,7 @@
                     method: "DELETE",
                     success: function (data, textStatus, jqXHR) {
                         if (textStatus === "success") {
-                            ToastService.success("The grid is being refreshed...", "Subscriber deleted");
+                            ToastService.success("The subscriber may still appear in search results for a few minutes after the deletion.", "Subscriber deleted");
                             doSearch(false);
                         } else {
                             ToastService.warning("The subscriber was not deleted successfully", "Something went wrong");

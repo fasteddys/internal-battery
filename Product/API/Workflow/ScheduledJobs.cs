@@ -1533,10 +1533,10 @@ namespace UpDiddyApi.Workflow
         }
 
         [DisableConcurrentExecution(timeoutInSeconds: 30)]
-        public bool CloudTalentDeleteProfile(Guid subscriberGuid)
+        public bool CloudTalentDeleteProfile(Guid subscriberGuid, Guid? cloudIdentifier)
         {
             CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
-            ct.DeleteProfileFromCloudTalent(_db, subscriberGuid);
+            ct.DeleteProfileFromCloudTalent(_db, subscriberGuid, cloudIdentifier);
             return true;
         }
 

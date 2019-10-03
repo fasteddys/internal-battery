@@ -941,13 +941,9 @@ namespace UpDiddy.Api
         {
             return await PostAsync<SubscriberDto>("subscriber", new ReferralDto() { ReferralCode = referralCode });
         }
-        public async Task<bool> DeleteSubscriberAsync(Guid subscriberGuid)
+        public async Task<bool> DeleteSubscriberAsync(Guid subscriberGuid, Guid cloudIdentifier)
         {
-            return await DeleteAsync<bool>($"subscriber/{subscriberGuid}");
-        }
-        public async Task<bool> DeleteOrphanSubscriberAsync(Guid cloudIdentifier)
-        {
-            return await DeleteAsync<bool>($"subscriber/orphan/{cloudIdentifier}");
+            return await DeleteAsync<bool>($"subscriber/{subscriberGuid}/{cloudIdentifier}");
         }
         public async Task<SubscriberWorkHistoryDto> AddWorkHistoryAsync(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory)
         {

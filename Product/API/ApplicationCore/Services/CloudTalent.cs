@@ -121,45 +121,55 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
-        public void DeleteMissingSubscriberProfileFromIndex(Guid cloudIdentifier)
+        private bool DeleteMissingSubscriberProfileFromIndex(Guid cloudIdentifier)
         {
+            bool isRemoved = false;
             try
             {
                 string errorMsg = string.Empty;
                 BasicResponseDto deleteStatus = null;
                 string cloudTalentUri = _configuration["CloudTalent:ProfileTenant"].ToString() + "/profiles/" + cloudIdentifier.ToString();
                 deleteStatus = _profileApi.DeleteProfile(cloudTalentUri, ref errorMsg);
-                _syslog.LogInformation("CloudTalent.RemoveMissingSubscriberProfileFromIndex removed cloudIdentifier: {cloudIdentifier}", cloudIdentifier);
+                if (deleteStatus.StatusCode == 200)
+                {
+                    isRemoved = true;
+                    _syslog.LogInformation("CloudTalent.RemoveMissingSubscriberProfileFromIndex removed cloudIdentifier: {cloudIdentifier}", cloudIdentifier);
+                }
             }
             catch (Exception e)
             {
                 _syslog.LogError(e, "CloudTalent.RemoveMissingSubscriberProfileFromIndex Error", e);
                 throw e;
             }
+            return isRemoved;
         }
 
-        public bool DeleteProfileFromCloudTalent(UpDiddyDbContext db, Guid subscriberGuid)
+        public bool DeleteProfileFromCloudTalent(UpDiddyDbContext db, Guid subscriberGuid, Guid? cloudIdentifier)
         {
+            bool isRemoved = false;
             try
             {
                 Subscriber subscriber = SubscriberFactory.GetDeletedSubscriberProfileByGuid(db, subscriberGuid);
-                // validate we have good data 
-                if (subscriber == null)
+                
+                if (subscriber != null)
                 {
-                    // if a subscriber does not exist, attempt to delete the profile from Google anyway
-                    this.DeleteMissingSubscriberProfileFromIndex(subscriberGuid);
-                    return false;
+                    // attempt to remove the profile and update the associated subscriber
+                    isRemoved = RemoveProfileFromIndex(subscriber);
                 }
-                // index the job to google 
-                return RemoveProfileFromIndex(subscriber);
+
+                if (!isRemoved)
+                {
+                    // attempt to remove the profile from Google without the subscriber
+                    isRemoved = DeleteMissingSubscriberProfileFromIndex(cloudIdentifier.Value);
+                }
             }
-            catch
+            catch (Exception e)
             {
-                return false;
+                _syslog.LogError(e, $"CloudTalent.DeleteProfileFromCloudTalent Error: {e.Message} ");
             }
+            return isRemoved;
         }
-
-
+        
         public bool AddOrUpdateProfileToCloudTalent(UpDiddyDbContext db, Guid subscriberGuid)
         {
             try
@@ -183,7 +193,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                 return false;
             }
         }
-
 
         public bool IndexProfile(Subscriber subscriber, IList<SubscriberSkill> skills)
         {
@@ -255,38 +264,30 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
-
-
-
-
         public bool RemoveProfileFromIndex(Subscriber subscriber)
         {
+            bool isRemoved = false;
             try
             {
-                bool isIndexed = false;
                 string errorMsg = string.Empty;
                 BasicResponseDto deleteStatus = null;
                 if (subscriber.CloudTalentUri != null && string.IsNullOrEmpty(subscriber.CloudTalentUri.Trim()) == false)
                 {
-                    isIndexed = true;
                     deleteStatus = _profileApi.DeleteProfile(subscriber.CloudTalentUri.Trim(), ref errorMsg);
-                }
 
-                // Update job posting with index error
-                if (deleteStatus.StatusCode == 200)
-                {
-                    if (isIndexed)
+                    // Update job posting with index error
+                    if (deleteStatus.StatusCode == 200)
+                    {
                         subscriber.CloudTalentIndexInfo = "Deleted on " + Utils.ISO8601DateString(DateTime.Now);
+                        isRemoved = true;
+                    }
                     else
-                        subscriber.CloudTalentIndexInfo = "Deleted on " + Utils.ISO8601DateString(DateTime.Now) + " (not google indexed)";
-                }
-                else
-                    subscriber.CloudTalentIndexInfo = "Error: " + errorMsg + " deleting profile on " + Utils.ISO8601DateString(DateTime.Now);
+                        subscriber.CloudTalentIndexInfo = "Error: " + errorMsg + " deleting profile on " + Utils.ISO8601DateString(DateTime.Now);
 
-                subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.DeletedFromIndex;
-                subscriber.ModifyDate = DateTime.UtcNow;
-                _db.SaveChanges();
-                return true;
+                    subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.DeletedFromIndex;
+                    subscriber.ModifyDate = DateTime.UtcNow;
+                    _db.SaveChanges();
+                }
             }
             catch (Exception e)
             {
@@ -299,6 +300,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 _syslog.LogError(e, "CloudTalent.RemoveProfileFromIndex Error", e, subscriber);
                 throw e;
             }
+            return isRemoved;
         }
 
         #endregion

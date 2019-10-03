@@ -146,45 +146,24 @@ namespace UpDiddyApi.Controllers
             else
                 return Unauthorized();
         }
-
+        
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        [HttpDelete("/api/[controller]/{cloudIdentifier}")]
-        public IActionResult DeleteOrphanedSubscriber(Guid cloudIdentifier)
+        [HttpDelete("{subscriberGuid}/{cloudIdentifier}")]
+        public IActionResult DeleteSubscriber(Guid subscriberGuid, Guid cloudIdentifier)
         {
             try
             {
-                if (cloudIdentifier == null)
-                    return BadRequest(new { code = 400, message = "No cloud identifier was provided" });
-
-                // delete subscriber from cloud talent 
-                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(cloudIdentifier));
-            }
-            catch (Exception e)
-            {
-                _syslog.Log(LogLevel.Error, $"SubscriberController.DeleteOrphanedSubscriber:: An error occured while attempting to delete the subscriber. Message: {e.Message}", e);
-                return StatusCode(500, false);
-            }
-
-            return Ok(true);
-        }
-
-        [Authorize(Policy = "IsCareerCircleAdmin")]
-        [HttpDelete("{subscriberGuid}")]
-        public IActionResult DeleteSubscriber(Guid subscriberGuid)
-        {
-            try
-            {
-
                 if (subscriberGuid == null)
                     return BadRequest(new { code = 400, message = "No subscriber identifier was provided" });
 
                 var subscriber = _db.Subscriber.Where(s => s.SubscriberGuid == subscriberGuid).FirstOrDefault();
 
                 // delete subscriber from cloud talent 
-                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(subscriberGuid));
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(subscriberGuid, cloudIdentifier));
 
+                // return false to indicate that the subscriber cannot be deleted. changing this from a 400 response which throws an api exception in apiupdiddy
                 if (subscriber == null)
-                    return BadRequest(new { code = 404, message = "No subscriber could be found with that identifier. If the subscriber exists in Google, they will be removed." });
+                    return Ok(false);
 
                 // perform logical delete on the subscriber entity only (no modification to related tables)
                 subscriber.IsDeleted = 1;
