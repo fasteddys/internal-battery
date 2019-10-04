@@ -125,9 +125,17 @@ namespace UpDiddy.Controllers
                 jobSearchResultDto = await _api.GetJobsByLocation(
                                       queryParametersString);
 
+                // quick fix to increase search radius when search results are limited (only when a keyword and/or location search is executed).
+                // don't need to be concerned with checking if this param already exists because it would have been filtered out by the above logic.
+                // a better solution would be to consolidate the query string logic into a helper method and reuse it here.
+                if (jobSearchResultDto.JobCount < 10 & (!string.IsNullOrWhiteSpace(queryParametersString) || queryParametersString.Contains("?")))
+                {
+                    queryParametersString += "&search-radius=50";
+                    jobSearchResultDto = await _api.GetJobsByLocation(queryParametersString);
+                }
+
                 if (User.Identity.IsAuthenticated)
                     favoritesMap = await _api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount).Select(job => job.JobPostingGuid).ToList());
-
             }
             catch (ApiException e)
             {
