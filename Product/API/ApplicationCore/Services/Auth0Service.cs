@@ -12,7 +12,7 @@ using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Shared;
 namespace UpDiddyApi.ApplicationCore.Services
 {
-    public class Auth0Service : IAuth0Service
+    internal class Auth0Service : IAuth0Service
     {
         private string token;
         private readonly IConfiguration _config;
@@ -20,7 +20,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly string _url;
         private readonly IMemoryCache _memoryCache;
         private readonly ManagementApiClient _managementApiClient;
-        public Auth0Service(IConfiguration config, IMemoryCache memoryCache)
+        internal Auth0Service(IConfiguration config, IMemoryCache memoryCache)
         {
             _config = config;
             _parameters = new Dictionary<string, string> {
@@ -36,7 +36,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         ///  Requests a new token for the Auth0 Management API
         /// </summary>
         /// <returns></returns>
-        public async Task<string> RequestNewToken()
+        private async Task<string> RequestNewToken()
         {
             string token = string.Empty;
             try

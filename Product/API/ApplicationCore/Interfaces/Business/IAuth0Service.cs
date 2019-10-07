@@ -5,7 +5,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface IAuth0Service
     {
-            Task<string> RequestNewToken();
             Task<User> CreateUser(SignUpDto signUpDto);
 
     }
