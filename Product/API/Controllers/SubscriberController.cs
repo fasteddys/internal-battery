@@ -36,11 +36,11 @@ using UpDiddyApi.Workflow;
 using UpDiddyApi.ApplicationCore.Services;
 using System.Net.Http;
 using System.Net;
+using Auth0.ManagementApi;
+using Auth0.ManagementApi.Models;
+using Newtonsoft.Json.Linq;
 
-namespace UpDiddyApi.Controllers
-{
     [Route("api/[controller]")]
-    [Authorize]
     public class SubscriberController : Controller
     {
         private readonly UpDiddyDbContext _db = null;
@@ -60,6 +60,9 @@ namespace UpDiddyApi.Controllers
         private readonly CloudTalent _cloudTalent = null;
         private readonly IHangfireService _hangfireService;
         private readonly IJobPostingService _jobPostingService;
+        private readonly ManagementApiClient _managementApiClient;
+
+        private readonly IAuth0Service _auth0Service;
 
 
         public SubscriberController(UpDiddyDbContext db,
@@ -78,7 +81,8 @@ namespace UpDiddyApi.Controllers
             IJobService jobService,
             IHttpClientFactory httpClientFactory,
             IHangfireService hangfireService,
-            IJobPostingService jobPostingService)
+            IJobPostingService jobPostingService,
+            IAuth0Service auth0Service)
         {
             _db = db;
             _mapper = mapper;
@@ -94,9 +98,12 @@ namespace UpDiddyApi.Controllers
             _subscriberNotificationService = subscriberNotificationService;
             _jobService = jobService;
             _taggingService = taggingService;
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory,repositoryWrapper, _subscriberService);
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory, repositoryWrapper, _subscriberService);
             _hangfireService = hangfireService;
             _jobPostingService = jobPostingService;
+            _auth0Service = auth0Service;
+            //TODO - Remove the initialization of the management API here since it will be in the Auth0Service class
+            _managementApiClient = new ManagementApiClient("eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ik1rVXhOekpDUTBVMFJFRkNRalEwT1RaRk4wWkdSakJGT1VVek1VWTJOVE00TWpKRk5UWTRNdyJ9.eyJpc3MiOiJodHRwczovL3N0YWdpbmdjYXJlZXJjaXJjbGUuYXV0aDAuY29tLyIsInN1YiI6IlFWUjZFNzJRZlp6OWdDSGtjM0lnNGJEeTRuM3VmaW5kQGNsaWVudHMiLCJhdWQiOiJodHRwczovL3N0YWdpbmdjYXJlZXJjaXJjbGUuYXV0aDAuY29tL2FwaS92Mi8iLCJpYXQiOjE1NzAyMzA5NDIsImV4cCI6MTU3MDMxNzM0MiwiYXpwIjoiUVZSNkU3MlFmWno5Z0NIa2MzSWc0YkR5NG4zdWZpbmQiLCJzY29wZSI6InJlYWQ6Y2xpZW50X2dyYW50cyBjcmVhdGU6Y2xpZW50X2dyYW50cyBkZWxldGU6Y2xpZW50X2dyYW50cyB1cGRhdGU6Y2xpZW50X2dyYW50cyByZWFkOnVzZXJzIHVwZGF0ZTp1c2VycyBkZWxldGU6dXNlcnMgY3JlYXRlOnVzZXJzIHJlYWQ6dXNlcnNfYXBwX21ldGFkYXRhIHVwZGF0ZTp1c2Vyc19hcHBfbWV0YWRhdGEgZGVsZXRlOnVzZXJzX2FwcF9tZXRhZGF0YSBjcmVhdGU6dXNlcnNfYXBwX21ldGFkYXRhIGNyZWF0ZTp1c2VyX3RpY2tldHMgcmVhZDpjbGllbnRzIHVwZGF0ZTpjbGllbnRzIGRlbGV0ZTpjbGllbnRzIGNyZWF0ZTpjbGllbnRzIHJlYWQ6Y2xpZW50X2tleXMgdXBkYXRlOmNsaWVudF9rZXlzIGRlbGV0ZTpjbGllbnRfa2V5cyBjcmVhdGU6Y2xpZW50X2tleXMgcmVhZDpjb25uZWN0aW9ucyB1cGRhdGU6Y29ubmVjdGlvbnMgZGVsZXRlOmNvbm5lY3Rpb25zIGNyZWF0ZTpjb25uZWN0aW9ucyByZWFkOnJlc291cmNlX3NlcnZlcnMgdXBkYXRlOnJlc291cmNlX3NlcnZlcnMgZGVsZXRlOnJlc291cmNlX3NlcnZlcnMgY3JlYXRlOnJlc291cmNlX3NlcnZlcnMgcmVhZDpkZXZpY2VfY3JlZGVudGlhbHMgdXBkYXRlOmRldmljZV9jcmVkZW50aWFscyBkZWxldGU6ZGV2aWNlX2NyZWRlbnRpYWxzIGNyZWF0ZTpkZXZpY2VfY3JlZGVudGlhbHMgcmVhZDpydWxlcyB1cGRhdGU6cnVsZXMgZGVsZXRlOnJ1bGVzIGNyZWF0ZTpydWxlcyByZWFkOnJ1bGVzX2NvbmZpZ3MgdXBkYXRlOnJ1bGVzX2NvbmZpZ3MgZGVsZXRlOnJ1bGVzX2NvbmZpZ3MgcmVhZDplbWFpbF9wcm92aWRlciB1cGRhdGU6ZW1haWxfcHJvdmlkZXIgZGVsZXRlOmVtYWlsX3Byb3ZpZGVyIGNyZWF0ZTplbWFpbF9wcm92aWRlciBibGFja2xpc3Q6dG9rZW5zIHJlYWQ6c3RhdHMgcmVhZDp0ZW5hbnRfc2V0dGluZ3MgdXBkYXRlOnRlbmFudF9zZXR0aW5ncyByZWFkOmxvZ3MgcmVhZDpzaGllbGRzIGNyZWF0ZTpzaGllbGRzIGRlbGV0ZTpzaGllbGRzIHJlYWQ6YW5vbWFseV9ibG9ja3MgZGVsZXRlOmFub21hbHlfYmxvY2tzIHVwZGF0ZTp0cmlnZ2VycyByZWFkOnRyaWdnZXJzIHJlYWQ6Z3JhbnRzIGRlbGV0ZTpncmFudHMgcmVhZDpndWFyZGlhbl9mYWN0b3JzIHVwZGF0ZTpndWFyZGlhbl9mYWN0b3JzIHJlYWQ6Z3VhcmRpYW5fZW5yb2xsbWVudHMgZGVsZXRlOmd1YXJkaWFuX2Vucm9sbG1lbnRzIGNyZWF0ZTpndWFyZGlhbl9lbnJvbGxtZW50X3RpY2tldHMgcmVhZDp1c2VyX2lkcF90b2tlbnMgY3JlYXRlOnBhc3N3b3Jkc19jaGVja2luZ19qb2IgZGVsZXRlOnBhc3N3b3Jkc19jaGVja2luZ19qb2IgcmVhZDpjdXN0b21fZG9tYWlucyBkZWxldGU6Y3VzdG9tX2RvbWFpbnMgY3JlYXRlOmN1c3RvbV9kb21haW5zIHJlYWQ6ZW1haWxfdGVtcGxhdGVzIGNyZWF0ZTplbWFpbF90ZW1wbGF0ZXMgdXBkYXRlOmVtYWlsX3RlbXBsYXRlcyByZWFkOm1mYV9wb2xpY2llcyB1cGRhdGU6bWZhX3BvbGljaWVzIHJlYWQ6cm9sZXMgY3JlYXRlOnJvbGVzIGRlbGV0ZTpyb2xlcyB1cGRhdGU6cm9sZXMgcmVhZDpwcm9tcHRzIHVwZGF0ZTpwcm9tcHRzIHJlYWQ6YnJhbmRpbmcgdXBkYXRlOmJyYW5kaW5nIiwiZ3R5IjoiY2xpZW50LWNyZWRlbnRpYWxzIn0.RKI_s050D7lLCfoyzMOIZdYKfAnjNu7kTpVMstmqb2jmjOHJS-sd31XXIz2I894C3arLx8YhDji-I2Lp0TRvoV0bHOB_rAO5tLRollItxTkIm64etXUD1h6vGa15JEZHeYFkd2SFoAcRNhhGNcjWsPcxCLZwMwImY4wu5AIa1yV0BjLfvAZ7OhHy7ynSEL_dl75jjvh5J5YnZtS8055527_vtyViGE9lNtiOzDSYOiEUDGKpFW-C1fULmG5wUGOmY7QqZlRRaxUPoSBGqbrAkMDedqRGy9T27Ys9q3woxZSFkIdZcd_6-slYzCK3pn9AgBRk1mlNvkhjwv7Gr6ScOA", "stagingcareercircle.auth0.com");
         }
 
         #region Basic Subscriber Endpoints
@@ -227,13 +234,13 @@ namespace UpDiddyApi.Controllers
                 return Unauthorized();
 
             var subscriberGuid = new SqlParameter("@SubscriberGuid", Subscriber.SubscriberGuid);
-            var firstName = new SqlParameter("@FirstName", (object) Subscriber.FirstName ??  DBNull.Value);
-            var lastName = new SqlParameter("@LastName", (object) Subscriber.LastName ?? DBNull.Value);
+            var firstName = new SqlParameter("@FirstName", (object)Subscriber.FirstName ?? DBNull.Value);
+            var lastName = new SqlParameter("@LastName", (object)Subscriber.LastName ?? DBNull.Value);
             var address = new SqlParameter("@Address", (object)Subscriber.Address ?? DBNull.Value);
-            var city = new SqlParameter("@City", (object) Subscriber.City ??  DBNull.Value);
-            var postalCode = new SqlParameter("@PostalCode", (object) Subscriber.PostalCode ?? (object) DBNull.Value);
-            var stateGuid = new SqlParameter("@StateGuid", (Subscriber?.State?.StateGuid != null ? (object)Subscriber.State.StateGuid :  DBNull.Value));
-            var phoneNumber = new SqlParameter("@PhoneNumber", (object) Subscriber.PhoneNumber ?? (object) DBNull.Value);
+            var city = new SqlParameter("@City", (object)Subscriber.City ?? DBNull.Value);
+            var postalCode = new SqlParameter("@PostalCode", (object)Subscriber.PostalCode ?? (object)DBNull.Value);
+            var stateGuid = new SqlParameter("@StateGuid", (Subscriber?.State?.StateGuid != null ? (object)Subscriber.State.StateGuid : DBNull.Value));
+            var phoneNumber = new SqlParameter("@PhoneNumber", (object)Subscriber.PhoneNumber ?? (object)DBNull.Value);
             var facebookUrl = new SqlParameter("@FacebookUrl", (object)Subscriber.FacebookUrl ?? DBNull.Value);
             var twitterUrl = new SqlParameter("@TwitterUrl", (object)Subscriber.TwitterUrl ?? DBNull.Value);
             var linkedInUrl = new SqlParameter("@LinkedInUrl", (object)Subscriber.LinkedInUrl ?? DBNull.Value);
@@ -836,23 +843,38 @@ namespace UpDiddyApi.Controllers
             }
 
             // check if user exits in AD if the user does then we skip this step
-            Microsoft.Graph.User user = await _graphClient.GetUserBySignInEmail(signUpDto.email);
+            //Microsoft.Graph.User user = await _graphClient.GetUserBySignInEmail(signUpDto.email);
+            var users = await _managementApiClient.Users.GetUsersByEmailAsync(signUpDto.email);
+            var user = users.FirstOrDefault();
             if (user == null)
             {
                 try
                 {
-                    user = await _graphClient.CreateUser(signUpDto.email, signUpDto.email, Crypto.Decrypt(_configuration["Crypto:Key"], signUpDto.password));
+                    //user = await _graphClient.CreateUser(signUpDto.email, signUpDto.email, Crypto.Decrypt(_configuration["Crypto:Key"], signUpDto.password));
+                   
+                    //TODO - Replace this implementation with the new Auth0Service class
+                    UserCreateRequest request = new UserCreateRequest()
+                    {
+                        Email = signUpDto.email,
+                        Connection = "Username-Password-Authentication",
+                        Password = Crypto.Decrypt(_configuration["Crypto:Key"], signUpDto.password),
+                        VerifyEmail = false,
+                        AppMetadata = new JObject()
+
+                    };
+                    request.AppMetadata.subscriberGuid =  Guid.NewGuid();
+                    user = await _managementApiClient.Users.CreateAsync(request);
                 }
                 catch (Exception ex)
                 {
-                    _syslog.Log(LogLevel.Error, "SubscriberController.ExpressSignUp:: Error occured while attempting to create a user in Azure Active Directory. Exception: {@Exception}", ex);
+                    _syslog.Log(LogLevel.Error, "SubscriberController.ExpressSignUp:: Error occured while attempting to create a user in Auth0. Exception: {@Exception}", ex);
                     return StatusCode(500, new BasicResponseDto() { StatusCode = 500, Description = "An error occured while attempting to create an account for you." });
                 }
             }
 
             // create subscriber for user
             subscriber = new Subscriber();
-            subscriber.SubscriberGuid = Guid.Parse(user.AdditionalData["objectId"].ToString());
+            subscriber.SubscriberGuid = Guid.Parse(user.AppMetadata.subscriberGuid.ToString());
             subscriber.Email = signUpDto.email;
             subscriber.FirstName = signUpDto.firstName;
             subscriber.LastName = signUpDto.lastName;
@@ -866,8 +888,8 @@ namespace UpDiddyApi.Controllers
 
             var referer = !String.IsNullOrEmpty(signUpDto.referer) ? signUpDto.referer : Request.Headers["Referer"].ToString();
 
-            
-            
+
+
 
             // use transaction to verify that both changes 
             using (var transaction = _db.Database.BeginTransaction())
@@ -977,7 +999,7 @@ namespace UpDiddyApi.Controllers
             };
             if (sortOrder != null)
                 profileQueryDto.OrderBy = WebUtility.UrlDecode(sortOrder);
-            ProfileSearchResultDto result = _cloudTalent.ProfileSearch(profileQueryDto);   
+            ProfileSearchResultDto result = _cloudTalent.ProfileSearch(profileQueryDto);
 
             return Json(result);
         }
@@ -986,7 +1008,7 @@ namespace UpDiddyApi.Controllers
         [HttpGet("/api/[controller]/sources")]
         public IActionResult GetSubscriberSources()
         {
-         
+
             return Ok(_db.SubscriberSources.ProjectTo<SubscriberSourceStatisticDto>(_mapper.ConfigurationProvider).ToList());
         }
 
@@ -1126,7 +1148,7 @@ namespace UpDiddyApi.Controllers
             Subscriber subscriber = _db.Subscriber.Where(s => s.SubscriberGuid.Equals(userGuid))
                 .First();
 
-            if ( subscriber == null )
+            if (subscriber == null)
                 return StatusCode(404, false);
 
             List<JobDto> favorites = await _jobPostingService.GetSubscriberJobFavorites(subscriber.SubscriberId);
@@ -1137,7 +1159,7 @@ namespace UpDiddyApi.Controllers
                 PageSize = 10,
                 Count = favorites.Count
             };
-    
+
 
             result.Results = await favorites.Skip((result.Page - 1) * result.PageSize).Take(result.PageSize).ToListAsync();
 
@@ -1317,5 +1339,21 @@ namespace UpDiddyApi.Controllers
                 return StatusCode(500);
             }
         }
+
+         [HttpGet]
+        [Route("/api/[controller]/management")]
+        public async Task<IActionResult> testmanagement()
+        {
+            try
+            {
+               var users = await _managementApiClient.Users.GetUsersByEmailAsync("jyotiguin1@gmail.com");
+            var user = users.FirstOrDefault();
+              return View();
+            }
+            catch (Exception ex)
+            {
+                _syslog.Log(LogLevel.Error, $"SubscriberController.GetFailedSubscribersSummaryAsync : Error occured when retrieving recruiter with message={ex.Message}", ex);
+                return StatusCode(500);
+            }
+        }
     }
-}
