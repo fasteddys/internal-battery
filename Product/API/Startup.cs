@@ -37,6 +37,8 @@ using UpDiddyApi.ApplicationCore.Repository;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore.StaticFiles;
 using UpDiddyApi.ApplicationCore.Services.CourseCrawling;
+using UpDiddyApi.ApplicationCore.Services.Auth0.Interfaces;
+using UpDiddyApi.ApplicationCore.Services.Auth0;
 
 namespace UpDiddyApi
 {
@@ -249,7 +251,8 @@ namespace UpDiddyApi
             services.AddScoped<IServiceOfferingOrderService, ServiceOfferingOrderService>();
             services.AddScoped<IPromoCodeService, PromoCodeService>();
             services.AddScoped<IBraintreeService, BraintreeService>();
-            services.AddScoped<IAuth0Service, Auth0Service>();
+            //services.AddScoped<IAuth0Service, Auth0Service>();
+            services.AddScoped<IUserService, UserService>();
 
             services.AddScoped<ICourseService, CourseService>();
             services.AddScoped<ICompanyService, CompanyService>();
