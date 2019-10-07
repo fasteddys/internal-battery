@@ -25,6 +25,10 @@
         @Html.HiddenFor(x => Model.FirstName)
         @Html.HiddenFor(x => Model.LastName)
         @Html.HiddenFor(x => Model.PhoneNumber)
+        @Html.HiddenFor(x => Model.IsWaitList)
+        @Html.HiddenFor(x => Model.IsLoggedIn)
+        @Html.HiddenFor(x => Model.IsGatedDownload)
+        @Html.HiddenFor(x => Model.GatedDownloadFileUrl)
     </form>
     <div class="modal signup-modal text-cc-secondary" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">

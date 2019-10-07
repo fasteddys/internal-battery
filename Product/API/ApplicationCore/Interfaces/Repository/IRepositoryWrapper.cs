@@ -56,9 +56,9 @@
         IServiceOfferingItemRepository ServiceOfferingItemRepository { get; }
         IServiceOfferingOrderRepository ServiceOfferingOrderRepository { get; }
         IServiceOfferingPromoCodeRedemptionRepository ServiceOfferingPromoCodeRedemptionRepository { get; }
-
         IServiceOfferingPromoCodeRepository ServiceOfferingPromoCodeRepository { get;  }
         IPromoCodeRepository PromoCodeRepository { get; }
+        IFileDownloadTrackerRepository FileDownloadTrackerRepository {get;}
 
         
     }

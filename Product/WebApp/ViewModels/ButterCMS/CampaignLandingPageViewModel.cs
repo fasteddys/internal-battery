@@ -17,19 +17,21 @@ namespace UpDiddy.ViewModels.ButterCMS
         public string content_band_header { get; set; }
         public string content_band_text { get; set; }
         public bool iswaitlist { get; set; }
-        public bool isLoggedIn {get;set;}
+        public bool isLoggedIn { get; set; }
         public PartnerViewModel partner { get; set; }
         public string signup_form_header { get; set; }
-        public string signup_form_text {get;set;}
+        public string signup_form_text { get; set; }
         public string signup_form_submit_button_text { get; set; }
         public string success_header { get; set; }
         public string success_text { get; set; }
-        public string existing_user_button_text {get;set; }
+        public string existing_user_button_text { get; set; }
         public string existing_user_form_header { get; set; }
         public string existing_user_form_text { get; set; }
-        public string existing_user_form_submit_button_text {get;set;}
+        public string existing_user_form_submit_button_text { get; set; }
         public string existing_user_success_header { get; set; }
-        public string existing_user_success_text {get;set;}
+        public string existing_user_success_text { get; set; }
+        public bool isgateddownload { get; set; }
+        public string gated_file_download_file { get; set; }
         public SignUpViewModel signUpViewModel { get; set; }
     }
 }

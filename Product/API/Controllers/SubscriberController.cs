@@ -60,6 +60,7 @@ namespace UpDiddyApi.Controllers
         private readonly CloudTalent _cloudTalent = null;
         private readonly IHangfireService _hangfireService;
         private readonly IJobPostingService _jobPostingService;
+        private readonly IFileDownloadTrackerService _fileDownloadTrackerService;
 
 
         public SubscriberController(UpDiddyDbContext db,
@@ -78,7 +79,8 @@ namespace UpDiddyApi.Controllers
             IJobService jobService,
             IHttpClientFactory httpClientFactory,
             IHangfireService hangfireService,
-            IJobPostingService jobPostingService)
+            IJobPostingService jobPostingService,
+            IFileDownloadTrackerService fileDownloadTrackerService)
         {
             _db = db;
             _mapper = mapper;
@@ -97,6 +99,7 @@ namespace UpDiddyApi.Controllers
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory,repositoryWrapper, _subscriberService);
             _hangfireService = hangfireService;
             _jobPostingService = jobPostingService;
+            _fileDownloadTrackerService = fileDownloadTrackerService;
         }
 
         #region Basic Subscriber Endpoints
@@ -963,8 +966,26 @@ namespace UpDiddyApi.Controllers
                 await _jobService.UpdateJobReferral(signUpDto.referralCode, subscriber.SubscriberGuid.ToString());
             }
 
+
+            if(signUpDto.isGatedDownload)
+            {
+                var downloadUrl = await HandleGatedFileDownload(subscriber.Email, signUpDto.gatedDownloadFileUrl, subscriber.SubscriberGuid.Value);
+            }
+
+            //Sendgrid 
+            
             SendVerificationEmail(subscriber.Email, signUpDto.verifyUrl + subscriber.EmailVerification.Token);
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Contact has been converted to subscriber." });
+        }
+
+        private async Task<string> HandleGatedFileDownload(string email, string fileUrl, Guid subscriberGuid)
+        {
+            FileDownloadTrackerDto fileDownloadTrackerDto = new FileDownloadTrackerDto {
+                SourceFileCDNUrl = fileUrl,
+                SubscriberGuid = subscriberGuid
+            };
+            string downloadUrl = await _fileDownloadTrackerService.CreateFileDownloadUrl(fileDownloadTrackerDto);
+            return downloadUrl;
         }
 
         [HttpGet("/api/[controller]/me/partner-web-redirect")]

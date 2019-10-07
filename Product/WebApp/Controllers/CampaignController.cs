@@ -276,7 +276,7 @@ namespace UpDiddy.Controllers
         {
             try
             {
-             
+                BasicResponseDto subscriberResponse;
                 bool modelHasAllFields = !string.IsNullOrEmpty(signUpViewModel.FirstName) && !string.IsNullOrEmpty(signUpViewModel.LastName);
                 if (!modelHasAllFields)
                 {
@@ -300,7 +300,7 @@ namespace UpDiddy.Controllers
 
                 if (!HttpContext.User.Identity.IsAuthenticated)
                 {
-                     BasicResponseDto subscriberResponse = await _Api.ExistingUserGroupSignup(sudto);
+                     subscriberResponse = await _Api.ExistingUserGroupSignup(sudto);
                     return BadRequest(new BasicResponseDto
                     {
                         StatusCode = 401,
@@ -308,7 +308,7 @@ namespace UpDiddy.Controllers
                     });
                 }
 
-                BasicResponseDto subscriberResponse = await _Api.ExistingUserGroupSignup(sudto);
+                subscriberResponse = await _Api.ExistingUserGroupSignup(sudto);
                 switch (subscriberResponse.StatusCode)
                 {
 
@@ -393,7 +393,8 @@ namespace UpDiddy.Controllers
                 phoneNumber  = signUpViewModel.IsWaitList ? signUpViewModel.PhoneNumber : null,
                 referer = Request.Headers["Referer"].ToString(),
                 verifyUrl = _configuration["Environment:BaseUrl"].TrimEnd('/') + "/email/confirm-verification/",
-
+                isGatedDownload = signUpViewModel.IsGatedDownload,
+                gatedDownloadFileUrl = signUpViewModel.IsGatedDownload ? signUpViewModel.GatedDownloadFileUrl : null,
                 //check for any referrerCode 
                 referralCode = Request.Cookies["referrerCode"]==null ? null : Request.Cookies["referrerCode"].ToString(),
                 partnerGuid = signUpViewModel.PartnerGuid
@@ -479,7 +480,9 @@ namespace UpDiddy.Controllers
                 ExistingUserSubmitButtonText = LandingPage.Data.Fields.existing_user_form_submit_button_text,
                 ExistingUserSuccessHeader = LandingPage.Data.Fields.existing_user_success_header,
                 ExistingUserSuccessText = LandingPage.Data.Fields.existing_user_success_text,
-                IsWaitList = LandingPage.Data.Fields.iswaitlist
+                IsWaitList = LandingPage.Data.Fields.iswaitlist,
+                IsGatedDownload = LandingPage.Data.Fields.isgateddownload,
+                GatedDownloadFileUrl = LandingPage.Data.Fields.gated_file_download_file
             };
 
             var CampaignLandingPageViewModel = new CampaignLandingPageViewModel
@@ -497,6 +500,8 @@ namespace UpDiddy.Controllers
                 existing_user_form_text = LandingPage.Data.Fields.existing_user_form_text,
                 isLoggedIn = HttpContext.User.Identity.IsAuthenticated,
                 iswaitlist = LandingPage.Data.Fields.iswaitlist,
+                isgateddownload = LandingPage.Data.Fields.isgateddownload,
+                gated_file_download_file = LandingPage.Data.Fields.gated_file_download_file,
                 signUpViewModel = signUpViewModel
             };
             return View("CampaignLandingPage", CampaignLandingPageViewModel);

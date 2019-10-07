@@ -30,6 +30,8 @@ namespace UpDiddy.ViewModels
         public string PhoneNumber { get; set; }
         public string CampaignSlug {get;set;}
         public bool IsWaitList {get;set;}
+        public bool IsGatedDownload {get;set;}
+        public string GatedDownloadFileUrl {get;set;}
         public bool IsLoggedIn {get;set;}
         public string FormSubmitButtonText{get;set;}
         public string SuccessHeader{get;set;}

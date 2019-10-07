@@ -760,6 +760,20 @@ namespace UpDiddy.Api
             }
         }
 
+         public async Task<FileDto> GetFile(Guid fileDownloadTrackerGuid)
+         {
+          try
+            {
+                FileDto retVal = await GetAsync<FileDto>($"file/gated/{fileDownloadTrackerGuid}");
+                return retVal;
+            }
+            catch (Exception e)
+            {
+                string temp = e.Message;
+                return null;
+            }
+         }
+
 
         #endregion
 

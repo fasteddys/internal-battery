@@ -22,8 +22,7 @@
             }
         }
         <div class="row">
-                @if (Model.IsWaitList)
-                {
+
                     <div class="d-flex justify-content-center pb-4" style="width:100%">
                         <a asp-action="signin"
                         asp-controller="session"
@@ -31,7 +30,7 @@
                         class="btn btn-sm btn-light-blue mb-0 mr-2"
                         asp-route-redirectUri="campaign/@Model.CampaignSlug">@Model.ExistingUserButtonText</a>
                     </div>
-                }
+                
             @if (Model.IsWaitList)
             {
                 <div id="SignUpFirstName" class="col-12 sign-up-input no-padding">
@@ -77,6 +76,9 @@
         </div>
         @Html.HiddenFor(x => Model.IsWaitList)
         @Html.HiddenFor(x => Model.IsLoggedIn)
+        @Html.HiddenFor(x => Model.CampaignSlug)
+        @Html.HiddenFor(x => Model.IsGatedDownload)
+        @Html.HiddenFor(x => Model.GatedDownloadFileUrl)
         @Html.HiddenFor(x => Model.CampaignSlug)
     </form>
     <div class="modal signup-modal text-cc-secondary" tabindex="-1" role="dialog">
