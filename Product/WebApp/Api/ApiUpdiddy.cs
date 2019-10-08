@@ -1318,6 +1318,19 @@ namespace UpDiddy.Api
             return rval;
         }
 
+
+        public async Task<string> NewSubscribersCSVAsync()
+        {
+            string endpoint = $"report/new-subscriber-csv";
+
+
+            BasicResponseDto info =  await GetAsync<BasicResponseDto>(endpoint);
+            return info.Data;
+            
+
+        }
+
+
         public async Task<ProfileSearchResultDto> SubscriberSearchAsync(string searchFilter, string searchQuery, string searchLocationQuery, string sortOrder)
         {
             string endpoint = $"subscriber/search?searchFilter={searchFilter}";

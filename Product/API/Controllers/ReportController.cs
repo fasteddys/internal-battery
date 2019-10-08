@@ -11,6 +11,7 @@ using UpDiddyLib.Dto.Reporting;
 using Microsoft.AspNet.OData.Query;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.Controllers
 {
@@ -26,6 +27,23 @@ namespace UpDiddyApi.Controllers
             _reportingService = reportingService;
             _syslog = sysLog;
         }
+
+
+        [HttpGet]
+        [Route("/api/[controller]/new-subscriber-csv")]
+        public async Task<IActionResult> NewSubscriberCSV()
+        {
+
+            BasicResponseDto rval = new BasicResponseDto()
+            {
+                Data = "1,2,3"
+            };
+
+            return Ok(rval);
+        }
+
+
+
 
         [HttpGet]
         [Route("/api/[controller]/offer-action-summary")]

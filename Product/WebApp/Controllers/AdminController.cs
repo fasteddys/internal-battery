@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UpDiddy.Api;
@@ -38,7 +39,19 @@ namespace UpDiddy.Controllers
             _butterService = butterService;
         }
 
- 
+        [Authorize]
+        [HttpGet]
+        [Route("/admin/new-subscriber-csv")]
+        public  async Task<FileResult> NewSubscriberCSV()
+        {
+            string data = await _api.NewSubscribersCSVAsync();
+            byte[] fileBytes = Encoding.ASCII.GetBytes(data);
+            string fileName = "DownloadSUbscribers.csv";
+            return File(fileBytes, "text/csv", fileName);  
+        }
+
+
+
         [Authorize]
         [HttpGet]
         [Route("/admin/jobscrapestats")]
