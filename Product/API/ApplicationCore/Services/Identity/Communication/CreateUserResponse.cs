@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace UpDiddyApi.ApplicationCore.Services.Auth0.Communication
+namespace UpDiddyApi.ApplicationCore.Services.Identity.Communication
 {
     public class CreateUserResponse : BaseResponse
     {

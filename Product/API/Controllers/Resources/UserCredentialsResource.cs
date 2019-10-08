@@ -9,12 +9,14 @@ namespace UpDiddyApi.Controllers.Resources
     public class UserCredentialsResource
     {
         [Required]
-        [DataType(DataType.EmailAddress)]
+        [EmailAddress]
         [StringLength(255)]
         public string Email { get; set; }
 
         [Required]
         [StringLength(32)]
         public string Password { get; set; }
+
+        public Guid Group { get; set; }
     }
 }

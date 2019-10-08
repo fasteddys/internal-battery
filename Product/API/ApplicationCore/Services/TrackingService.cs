@@ -46,7 +46,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 foreach (int sub in subscribers)
                 {
                     List<SubscriberAction> actions = todaysActions.Where(x => x.SubscriberId == sub).ToList();
-                    Subscriber subscriber = await _repositoryWrapper.Subscriber.GetSubscriberByIdAsync(sub);
+                    Subscriber subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByIdAsync(sub);
                     List<JobPosting> jobPostingList = new List<JobPosting>();
                     foreach (SubscriberAction action in actions)
                     {
@@ -79,7 +79,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             JobPosting jobPosting = await _repositoryWrapper.JobPosting.GetJobPostingByGuid(jobGuid);
             Models.Action action = await _repositoryWrapper.ActionRepository.GetByNameAsync(UpDiddyLib.Helpers.Constants.Action.ApplyJob);
             EntityType entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync(EntityTypeConst.JobPosting);
-            Subscriber subscriber = await _repositoryWrapper.Subscriber.GetSubscriberByGuidAsync(subscriberGuid);
+            Subscriber subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
             SubscriberAction subAction = new SubscriberAction()
             {
                 IsDeleted = 0,

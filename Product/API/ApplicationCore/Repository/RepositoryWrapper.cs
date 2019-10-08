@@ -188,18 +188,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
-        public ISubscriberRepository Subscriber
-        {
-            get
-            {
-                if (_subscriberRepository == null)
-                {
-                    _subscriberRepository = new SubscriberRepository(_dbContext, SubscriberGroupRepository, GroupPartnerRepository, PartnerRepository);
-                }
-                return _subscriberRepository;
-            }
-        }
-
         public IZeroBounceRepository ZeroBounceRepository
         {
             get

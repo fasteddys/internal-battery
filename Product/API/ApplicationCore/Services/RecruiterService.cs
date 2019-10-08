@@ -43,7 +43,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (recruiterDto.SubscriberGuid != null && recruiterDto.SubscriberGuid != Guid.Empty)
             {
                 //get subscriber using subscriber Guid
-                var subscriber = await _repositoryWrapper.Subscriber.GetSubscriberByGuidAsync(recruiterDto.SubscriberGuid);
+                var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(recruiterDto.SubscriberGuid);
 
                 //check if recruiter exist
                 var queryableRecruiter =  _repositoryWrapper.RecruiterRepository.GetAllRecruiters();

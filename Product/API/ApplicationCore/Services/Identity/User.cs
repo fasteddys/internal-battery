@@ -5,16 +5,18 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace UpDiddyApi.ApplicationCore.Services.Auth0
+namespace UpDiddyApi.ApplicationCore.Services.Identity
 {
     public class User
     {
+        public string UserId { get; set; }
+
         public Guid SubscriberGuid { get; set; }
 
         [Required]
         [DataType(DataType.EmailAddress)]
         [StringLength(255)]
-        public string EmailAddress { get; set; }
+        public string Email { get; set; }
 
         [Required]
         [DataType(DataType.Password)]

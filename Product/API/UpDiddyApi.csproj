@@ -93,12 +93,14 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Auth0.AuthenticationApi" Version="6.5.3" />
+	<PackageReference Include="Auth0.ManagementApi" Version="6.5.3" />
     <PackageReference Include="AutoMapper" Version="7.0.1" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="5.0.1" />
     <PackageReference Include="Braintree" Version="4.7.0" />
     <PackageReference Include="Google.Apis.CloudTalentSolution.v3" Version="1.38.0.1525" />
     <PackageReference Include="Google.Protobuf" Version="3.7.0" />
-    <PackageReference Include="Hangfire" Version="1.6.21" />
+    <PackageReference Include="Hangfire" Version="1.7.6" />
+    <PackageReference Include="Hangfire.SqlServer" Version="1.7.6" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.4" />
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.8.1" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.5.1" />
@@ -142,7 +144,6 @@
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.2" />
     <PackageReference Include="X.PagedList.Mvc.Core" Version="7.6.0" />
     <PackageReference Include="TraitifyLibrary" Version="1.0.0" />
-    <PackageReference Include="Auth0.ManagementApi" Version="6.5.3" />
   </ItemGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="1.0.1" />

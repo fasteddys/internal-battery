@@ -13,7 +13,6 @@
         IJobApplicationRepository JobApplication { get; }
         ICompanyRepository Company { get; }
         IRecruiterActionRepository RecruiterActionRepository { get; }
-        ISubscriberRepository Subscriber { get; }
         IZeroBounceRepository ZeroBounceRepository { get; }
         IPartnerContactLeadStatusRepository PartnerContactLeadStatusRepository { get; }
         ISubscriberRepository SubscriberRepository { get; }

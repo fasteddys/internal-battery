@@ -13,7 +13,7 @@ using UpDiddyLib.Helpers;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using UpDiddyApi.Controllers.Resources;
-using UpDiddyApi.ApplicationCore.Services.Auth0;
+using UpDiddyApi.ApplicationCore.Services.Identity;
 namespace UpDiddyApi.Helpers
 {
     public class AutoMapperConfiguration
@@ -31,7 +31,9 @@ namespace UpDiddyApi.Helpers
     {
         public ApiProfile()
         {
-            CreateMap<UserCredentialsResource, User>();
+            CreateMap<User, UserCredentialsResource>()
+                .ForMember(ucr => ucr.Group, u => u.Ignore())
+                .ReverseMap();
 
             CreateMap<Topic, TopicDto>().ReverseMap();
             CreateMap<Vendor, VendorDto>().ReverseMap();

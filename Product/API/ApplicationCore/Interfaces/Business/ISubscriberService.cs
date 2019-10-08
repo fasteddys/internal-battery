@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
+using UpDiddyApi.ApplicationCore.Services.Identity;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
@@ -43,6 +44,15 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// <returns>Subscriber</returns>
         Task<Subscriber> CreateSubscriberAsync(Guid partnerContactGuid, SignUpDto signUpDto);
 
+        /// <summary>
+        /// Creates subscriber in the CareerCircle database using the subscriber guid provided. The group guid is optional. If specified, this will be
+        /// used to write to dbo.SubscriberGroup for tracking purposes.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="groupGuid"></param>
+        /// <returns></returns>
+        Task<bool> CreateSubscriberAsync(User user, Guid? groupGuid);
+        
         /// <summary>
         /// Creates a background job to scan resume of subscriber if they have a resume on file.
         /// </summary>
