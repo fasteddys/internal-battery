@@ -1319,7 +1319,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsDeleted");
 
-                    b.Property<int>("MaxFileDownloadAttemptsPermitted");
+                    b.Property<int?>("MaxFileDownloadAttemptsPermitted");
 
                     b.Property<DateTime?>("ModifyDate");
 

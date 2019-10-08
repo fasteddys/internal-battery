@@ -17,7 +17,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async  Task<FileDownloadTracker> GetFileDownloadTrackerByGuidAync(Guid fileDownloadTrackerGuid)
         {
-            return await _dbContext.FileDownloadTracker.Where(x => x.FileDownloadTrackerGuid == fileDownloadTrackerGuid).FirstOrDefaultAsync();
+            return await _dbContext.FileDownloadTracker.Where(x => x.FileDownloadTrackerGuid == fileDownloadTrackerGuid).AsNoTracking().FirstOrDefaultAsync();
         }
     }
 }

@@ -9,5 +9,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     {
         Task<string> CreateFileDownloadUrl(FileDownloadTrackerDto fileDownloadTrackerDto);
         Task<FileDownloadTrackerDto> GetByFileDownloadTrackerGuid(Guid fileDownloadTrackerGuid);
+        Task Update(FileDownloadTrackerDto fileDownloadTrackerDto);
     }
 }

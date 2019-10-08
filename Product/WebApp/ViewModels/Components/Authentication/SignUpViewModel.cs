@@ -21,26 +21,27 @@ namespace UpDiddy.ViewModels
         public bool IsExpressSignUp { get; set; }
         public string ObfuscatedEmail { get; set; }
         public Guid PartnerGuid { get; set; }
-        public string SignUpButtonText{get;set;}
+        public string SignUpButtonText { get; set; }
         public Guid? CourseGuid { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-    
+
         [RegularExpression(@"^(?:(?:\+?1\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?|^$", ErrorMessage = "Not a valid phone number")]
         public string PhoneNumber { get; set; }
-        public string CampaignSlug {get;set;}
-        public bool IsWaitList {get;set;}
-        public bool IsGatedDownload {get;set;}
-        public string GatedDownloadFileUrl {get;set;}
-        public bool IsLoggedIn {get;set;}
-        public string FormSubmitButtonText{get;set;}
-        public string SuccessHeader{get;set;}
-        public string SuccessText {get;set;}
-        public string ExistingUserButtonText {get;set;}
-        public string ExistingUserSubmitButtonText {get;set;}
-        public string ExistingUserSuccessHeader {get;set;}
-        public string ExistingUserSuccessText{get;set;}
-                public Guid? subscriberGuid {get;set;}
+        public string CampaignSlug { get; set; }
+        public bool IsWaitList { get; set; }
+        public bool IsGatedDownload { get; set; }
+        public string GatedDownloadFileUrl { get; set; }
+        public int? GatedDownloadMaxAttemptsAllowed { get; set; }
+        public bool IsLoggedIn { get; set; }
+        public string FormSubmitButtonText { get; set; }
+        public string SuccessHeader { get; set; }
+        public string SuccessText { get; set; }
+        public string ExistingUserButtonText { get; set; }
+        public string ExistingUserSubmitButtonText { get; set; }
+        public string ExistingUserSuccessHeader { get; set; }
+        public string ExistingUserSuccessText { get; set; }
+        public Guid? SubscriberGuid { get; set; }
 
     }
 }

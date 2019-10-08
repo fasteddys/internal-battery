@@ -32,6 +32,7 @@ namespace UpDiddy.ViewModels.ButterCMS
         public string existing_user_success_text { get; set; }
         public bool isgateddownload { get; set; }
         public string gated_file_download_file { get; set; }
+        public string gated_file_download_max_attempts_allowed {get;set;}
         public SignUpViewModel signUpViewModel { get; set; }
     }
 }

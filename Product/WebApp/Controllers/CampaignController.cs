@@ -277,15 +277,21 @@ namespace UpDiddy.Controllers
             try
             {
                 BasicResponseDto subscriberResponse;
-                bool modelHasAllFields = !string.IsNullOrEmpty(signUpViewModel.FirstName) && !string.IsNullOrEmpty(signUpViewModel.LastName);
-                if (!modelHasAllFields)
+                
+                //Ensure first and last name fields are not empty if form is a waitlist 
+                if (signUpViewModel.IsWaitList)
                 {
-                    return BadRequest(new BasicResponseDto
+                    bool modelHasAllFields = !string.IsNullOrEmpty(signUpViewModel.FirstName) && !string.IsNullOrEmpty(signUpViewModel.LastName);
+                    if (!modelHasAllFields)
                     {
-                        StatusCode = 400,
-                        Description = "Please enter all sign-up fields and try again."
-                    });
+                        return BadRequest(new BasicResponseDto
+                        {
+                            StatusCode = 400,
+                            Description = "Please enter all sign-up fields and try again."
+                        });
+                    }
                 }
+
                 SignUpDto sudto = new SignUpDto
                 {
                     campaignGuid = signUpViewModel.CampaignGuid,
@@ -295,18 +301,22 @@ namespace UpDiddy.Controllers
                     partnerGuid = signUpViewModel.PartnerGuid,
                     campaignSlug = signUpViewModel.CampaignSlug,
                     referer = Request.Headers["Referer"].ToString(),
-                    subscriberGuid = signUpViewModel.subscriberGuid
+                    subscriberGuid = signUpViewModel.SubscriberGuid,
+                    referralCode = Request.Cookies["referrerCode"] == null ? null : Request.Cookies["referrerCode"].ToString(),
+                    isGatedDownload = signUpViewModel.IsGatedDownload,
+                    gatedDownloadFileUrl = signUpViewModel.GatedDownloadFileUrl,
+                    gatedDownloadMaxAttemptsAllowed = signUpViewModel.GatedDownloadMaxAttemptsAllowed,
                 };
 
-                if (!HttpContext.User.Identity.IsAuthenticated)
-                {
-                     subscriberResponse = await _Api.ExistingUserGroupSignup(sudto);
-                    return BadRequest(new BasicResponseDto
-                    {
-                        StatusCode = 401,
-                        Description = "User is not signed in. Redirecting you to login page..."
-                    });
-                }
+                // if (!HttpContext.User.Identity.IsAuthenticated)
+                // {
+                //      subscriberResponse = await _Api.ExistingUserGroupSignup(sudto);
+                //     return BadRequest(new BasicResponseDto
+                //     {
+                //         StatusCode = 401,
+                //         Description = "User is not signed in. Redirecting you to login page..."
+                //     });
+                // }
 
                 subscriberResponse = await _Api.ExistingUserGroupSignup(sudto);
                 switch (subscriberResponse.StatusCode)
@@ -336,15 +346,15 @@ namespace UpDiddy.Controllers
         [HttpPost]
         [Route("/[controller]/express-sign-up")]
         public async Task<IActionResult> ExpressSignUpAsync(SignUpViewModel signUpViewModel)
-        {    
+        {
             bool modelHasAllFields = !string.IsNullOrEmpty(signUpViewModel.Email) &&
                 !string.IsNullOrEmpty(signUpViewModel.Password) &&
                 !string.IsNullOrEmpty(signUpViewModel.ReenterPassword);
-            
+
             //Check the fields if it is a waitlist
-            if(signUpViewModel.IsWaitList)
+            if (signUpViewModel.IsWaitList)
             {
-                modelHasAllFields = !string.IsNullOrEmpty(signUpViewModel.FirstName) && 
+                modelHasAllFields = !string.IsNullOrEmpty(signUpViewModel.FirstName) &&
                 !string.IsNullOrEmpty(signUpViewModel.LastName);
             }
 
@@ -361,9 +371,9 @@ namespace UpDiddy.Controllers
             // This is basically the same check as above, but to be safe...
             if (!ModelState.IsValid)
             {
-                  string desc = string.Join("; ", ModelState.Values
-                                        .SelectMany(x => x.Errors)
-                                        .Select(x => x.ErrorMessage));
+                string desc = string.Join("; ", ModelState.Values
+                                      .SelectMany(x => x.Errors)
+                                      .Select(x => x.ErrorMessage));
                 return BadRequest(new BasicResponseDto
                 {
                     StatusCode = 400,
@@ -388,15 +398,16 @@ namespace UpDiddy.Controllers
                 email = signUpViewModel.Email,
                 password = signUpViewModel.Password,
                 campaignGuid = signUpViewModel.CampaignGuid,
-                firstName  = signUpViewModel.IsWaitList ? signUpViewModel.FirstName : null,
-                lastName  = signUpViewModel.IsWaitList ? signUpViewModel.LastName : null,
-                phoneNumber  = signUpViewModel.IsWaitList ? signUpViewModel.PhoneNumber : null,
+                firstName = signUpViewModel.IsWaitList ? signUpViewModel.FirstName : null,
+                lastName = signUpViewModel.IsWaitList ? signUpViewModel.LastName : null,
+                phoneNumber = signUpViewModel.IsWaitList ? signUpViewModel.PhoneNumber : null,
                 referer = Request.Headers["Referer"].ToString(),
                 verifyUrl = _configuration["Environment:BaseUrl"].TrimEnd('/') + "/email/confirm-verification/",
                 isGatedDownload = signUpViewModel.IsGatedDownload,
-                gatedDownloadFileUrl = signUpViewModel.IsGatedDownload ? signUpViewModel.GatedDownloadFileUrl : null,
+                gatedDownloadFileUrl = signUpViewModel.GatedDownloadFileUrl,
+                gatedDownloadMaxAttemptsAllowed = signUpViewModel.GatedDownloadMaxAttemptsAllowed,
                 //check for any referrerCode 
-                referralCode = Request.Cookies["referrerCode"]==null ? null : Request.Cookies["referrerCode"].ToString(),
+                referralCode = Request.Cookies["referrerCode"] == null ? null : Request.Cookies["referrerCode"].ToString(),
                 partnerGuid = signUpViewModel.PartnerGuid
             };
 
@@ -454,10 +465,10 @@ namespace UpDiddy.Controllers
             PageResponse<CampaignLandingPageViewModel> LandingPage = butterClient.RetrievePage<CampaignLandingPageViewModel>("*", LandingPageSlug, QueryParams);
 
             SubscriberDto subscriber = null;
-            if(HttpContext.User.Identity.IsAuthenticated)
+            if (HttpContext.User.Identity.IsAuthenticated)
             {
-                   Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                   subscriber = await _Api.GetSubscriberByGuid(loggedInUserGuid);
+                Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                subscriber = await _Api.GetSubscriberByGuid(loggedInUserGuid);
             }
 
             // Return 404 if no page data is returned from Butter.
@@ -465,13 +476,14 @@ namespace UpDiddy.Controllers
                 return NotFound();
 
             // Assemble ViewModel from results returned in Butter GET call.
-            SignUpViewModel signUpViewModel= new SignUpViewModel(){
+            SignUpViewModel signUpViewModel = new SignUpViewModel()
+            {
                 CampaignSlug = LandingPageSlug,
                 IsExpressSignUp = true,
                 FirstName = subscriber != null ? subscriber.FirstName : null,
                 LastName = subscriber != null ? subscriber.LastName : null,
                 PhoneNumber = subscriber != null ? subscriber.PhoneNumber : null,
-                subscriberGuid = subscriber != null ? subscriber.SubscriberGuid : null,
+                SubscriberGuid = subscriber != null ? subscriber.SubscriberGuid : null,
                 PartnerGuid = LandingPage.Data.Fields.partner.PartnerGuid != null ? LandingPage.Data.Fields.partner.PartnerGuid : Guid.Empty,
                 FormSubmitButtonText = LandingPage.Data.Fields.signup_form_submit_button_text,
                 SuccessHeader = LandingPage.Data.Fields.success_header,
@@ -482,7 +494,8 @@ namespace UpDiddy.Controllers
                 ExistingUserSuccessText = LandingPage.Data.Fields.existing_user_success_text,
                 IsWaitList = LandingPage.Data.Fields.iswaitlist,
                 IsGatedDownload = LandingPage.Data.Fields.isgateddownload,
-                GatedDownloadFileUrl = LandingPage.Data.Fields.gated_file_download_file
+                GatedDownloadFileUrl = LandingPage.Data.Fields.gated_file_download_file,
+                GatedDownloadMaxAttemptsAllowed = !string.IsNullOrEmpty(LandingPage.Data.Fields.gated_file_download_max_attempts_allowed) ? int.Parse(LandingPage.Data.Fields.gated_file_download_max_attempts_allowed) : (int?)null
             };
 
             var CampaignLandingPageViewModel = new CampaignLandingPageViewModel
@@ -500,8 +513,6 @@ namespace UpDiddy.Controllers
                 existing_user_form_text = LandingPage.Data.Fields.existing_user_form_text,
                 isLoggedIn = HttpContext.User.Identity.IsAuthenticated,
                 iswaitlist = LandingPage.Data.Fields.iswaitlist,
-                isgateddownload = LandingPage.Data.Fields.isgateddownload,
-                gated_file_download_file = LandingPage.Data.Fields.gated_file_download_file,
                 signUpViewModel = signUpViewModel
             };
             return View("CampaignLandingPage", CampaignLandingPageViewModel);

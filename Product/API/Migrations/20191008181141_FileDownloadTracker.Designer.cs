@@ -10,7 +10,7 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    [Migration("20191007164532_FileDownloadTracker")]
+    [Migration("20191008181141_FileDownloadTracker")]
     partial class FileDownloadTracker
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1321,7 +1321,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsDeleted");
 
-                    b.Property<int>("MaxFileDownloadAttemptsPermitted");
+                    b.Property<int?>("MaxFileDownloadAttemptsPermitted");
 
                     b.Property<DateTime?>("ModifyDate");
 

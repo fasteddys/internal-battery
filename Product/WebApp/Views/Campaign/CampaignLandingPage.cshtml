@@ -42,41 +42,56 @@
                                     <img src="@Model.hero_sub_image" />
                                 </div>
                                 <div class="col-12 no-padding sub-header font-bold">
-                                    @if(Model.iswaitlist)
-                                    {
                                         @if (Model.isLoggedIn)
                                         {
-                                            @Html.Raw(Model.existing_user_form_header);
+                                            if(string.IsNullOrEmpty(Model.existing_user_form_header))
+                                            {
+                                                @Html.Raw("Sign Up Today!");
+                                            }
+                                            else
+                                            {
+                                                @Html.Raw(Model.existing_user_form_header);
+                                            }
+                                            
                                         }
                                         else
                                         {
-                                            @Html.Raw(Model.signup_form_header);
-                                        }
-                                    }
-                                    else
-                                    {
-                                         @Html.Raw("Sign Up Today!");
-                                    }
+                                            if(string.IsNullOrEmpty(Model.signup_form_header))
+                                            {
+                                                @Html.Raw("Sign Up Today!");
+                                            } 
+                                            else
+                                            {
+                                                @Html.Raw(Model.signup_form_header);
+                                            }
+                                        }   
                                 </div>
-                                <div class="col-12 no-padding mini-header">
-                                    @if(Model.iswaitlist)
-                                    {                      
-                                        if (Model.isLoggedIn)
+                                <div class="col-12 no-padding mini-header">                                                   
+                                        @if (Model.isLoggedIn)
                                         {
-                                            @Html.Raw(Model.existing_user_form_text);
+                                            if(string.IsNullOrEmpty(Model.existing_user_form_text))
+                                            {
+                                                @Html.Raw("Create an account to get started");
+                                            } 
+                                            else
+                                            {
+                                                @Html.Raw(Model.existing_user_form_text);
+                                            }
                                         }
                                         else
                                         {
-                                            @Html.Raw(Model.signup_form_text);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        @Html.Raw("Create an account to get started");
-                                    }
+                                            if(string.IsNullOrEmpty(Model.signup_form_text))
+                                            {
+                                                @Html.Raw("Create an account to get started");
+                                            } 
+                                            else
+                                            {
+                                                @Html.Raw(Model.signup_form_text);
+                                            }
+                                        }                                                        
                                 </div>
                                 <div class="col-12 no-padding">
-                                    @if (Model.isLoggedIn && Model.iswaitlist)
+                                    @if (Model.isLoggedIn)
                                     {
                                         @Html.Partial("Components/Authentication/_SignUpExistingUser", Model.signUpViewModel)
                                     }

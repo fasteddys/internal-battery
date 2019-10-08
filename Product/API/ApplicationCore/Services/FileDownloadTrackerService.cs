@@ -1,8 +1,5 @@
 ﻿using System;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using AutoMapper;
-
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
@@ -15,7 +12,7 @@ namespace UpDiddyApi.ApplicationCore.Services
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IConfiguration _config;
-                private readonly IMapper _mapper;
+        private readonly IMapper _mapper;
 
 
         public FileDownloadTrackerService(IRepositoryWrapper repositoryWrapper, IConfiguration config, IMapper mapper)
@@ -27,43 +24,43 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<string> CreateFileDownloadUrl(FileDownloadTrackerDto fileDownloadTrackerDto)
         {
-                FileDownloadTracker fileDownloadTracker = new FileDownloadTracker{
-                    SubscriberGuid = fileDownloadTrackerDto.SubscriberGuid,
-                    FileDownloadTrackerGuid = Guid.NewGuid(),
-                    MaxFileDownloadAttemptsPermitted = 5,
-                    FileDownloadAttemptCount = 0,
-                    SourceFileCDNUrl = fileDownloadTrackerDto.SourceFileCDNUrl
-                    
-                };
-                await _repositoryWrapper.FileDownloadTrackerRepository.Create(fileDownloadTracker);
-                await _repositoryWrapper.FileDownloadTrackerRepository.SaveAsync();
+            FileDownloadTracker fileDownloadTracker = new FileDownloadTracker
+            {
+                SubscriberGuid = fileDownloadTrackerDto.SubscriberGuid,
+                FileDownloadTrackerGuid = Guid.NewGuid(),
+                MaxFileDownloadAttemptsPermitted = fileDownloadTrackerDto.MaxFileDownloadAttemptsPermitted,
+                FileDownloadAttemptCount = 0,
+                SourceFileCDNUrl = fileDownloadTrackerDto.SourceFileCDNUrl,
+                CreateDate = DateTime.UtcNow
 
-                string url = _config["Environment:Base"] + "/filedownload/" + fileDownloadTracker.FileDownloadTrackerGuid;
-                return url;
+            };
+            await _repositoryWrapper.FileDownloadTrackerRepository.Create(fileDownloadTracker);
+            await _repositoryWrapper.FileDownloadTrackerRepository.SaveAsync();
+
+            string url = _config["Environment:Base"] + "/filedownload/" + fileDownloadTracker.FileDownloadTrackerGuid;
+            return url;
         }
-        
+
 
         public async Task<FileDownloadTrackerDto> GetByFileDownloadTrackerGuid(Guid fileDownloadTrackerGuid)
         {
             var result = await _repositoryWrapper.FileDownloadTrackerRepository.GetFileDownloadTrackerByGuidAync(fileDownloadTrackerGuid);
-            if(result != null)
+            if (result != null)
             {
-                return _mapper.Map<FileDownloadTracker,FileDownloadTrackerDto>(result);
+                return _mapper.Map<FileDownloadTracker, FileDownloadTrackerDto>(result);
             }
             else
             {
                 return null;
-            }            
+            }
         }
 
-        public void DownloadFile(Guid fileGuid)
+        public async Task Update(FileDownloadTrackerDto fileDownloadTrackerDto)
         {
-            //Grab the file from CDN and return to webapp
-            //Track the action by user
-            //Increment the download count on FileDownloadTracker table
+            FileDownloadTracker tracker = _mapper.Map<FileDownloadTrackerDto, FileDownloadTracker>(fileDownloadTrackerDto);
+            tracker.ModifyDate = DateTime.UtcNow;
+            _repositoryWrapper.FileDownloadTrackerRepository.Update(tracker);
+            await _repositoryWrapper.FileDownloadTrackerRepository.SaveAsync();
         }
-
-        
- 
     }
 }

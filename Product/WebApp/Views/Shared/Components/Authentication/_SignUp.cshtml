@@ -5,6 +5,11 @@
 @{
     string _form = Model.IsExpressSignUp ? "ExpressSignUpForm" : "SignUpForm";
     string _aspAction = Model.IsExpressSignUp ? "express-sign-up" : "sign-up";
+    var redirectUrl = "/";
+    if(!String.IsNullOrEmpty(Model.CampaignSlug))
+    {
+        redirectUrl = "campaign/" + Model.CampaignSlug;
+    }
 }
 
 <div id="SignUpComponent">
@@ -28,7 +33,16 @@
                         asp-controller="session"
                         style="width:100%"
                         class="btn btn-sm btn-light-blue mb-0 mr-2"
-                        asp-route-redirectUri="campaign/@Model.CampaignSlug">@Model.ExistingUserButtonText</a>
+                        asp-route-redirectUri="@redirectUrl">
+                        @if(String.IsNullOrEmpty(@Model.ExistingUserButtonText))
+                        {
+                            @Html.Raw("Existing User? Click here to log in")
+                        }
+                        else
+                        {
+                            @Model.ExistingUserButtonText
+                        }                                               
+                        </a>
                     </div>
                 
             @if (Model.IsWaitList)
@@ -60,7 +74,7 @@
             </div>
             <div id="SignUpAction" class="col-12 no-padding">
                 @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
-                    Text = @Model.IsWaitList ? @Model.FormSubmitButtonText : Model.SignUpButtonText == null ? "Sign Up Now" : Model.SignUpButtonText,
+                    Text = Model.SignUpButtonText == null ? "Sign Up Now" : Model.SignUpButtonText,
                     SkewDirection = "skew-left-to-right",
                     ChosenColorScheme = "cc-cscheme-darkred",
                     Form = _form,
@@ -80,6 +94,8 @@
         @Html.HiddenFor(x => Model.IsGatedDownload)
         @Html.HiddenFor(x => Model.GatedDownloadFileUrl)
         @Html.HiddenFor(x => Model.CampaignSlug)
+        @Html.HiddenFor(x => Model.SubscriberGuid)
+        @Html.HiddenFor(x => Model.GatedDownloadMaxAttemptsAllowed)
     </form>
     <div class="modal signup-modal text-cc-secondary" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">

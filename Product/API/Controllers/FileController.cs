@@ -14,21 +14,23 @@ namespace UpDiddy.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly IFileDownloadTrackerService _fileDownloadTrackerService;
+        private readonly ITrackingService _trackingService;
 
-        public FileController(IConfiguration configuration, IFileDownloadTrackerService fileDownloadTrackerService)
+        public FileController(IConfiguration configuration, IFileDownloadTrackerService fileDownloadTrackerService, ITrackingService trackingService)
         {
             _configuration = configuration;
             _fileDownloadTrackerService = fileDownloadTrackerService;
+            _trackingService = trackingService;
         }
         [HttpGet]
         [Route("gated/{fileDownloadTrackerGuid}")]
-        public async Task<IActionResult> GetFile(Guid fileDownloadTrackerGuid)
+        public async Task<IActionResult> GetGatedFile(Guid fileDownloadTrackerGuid)
         {
             FileDto fileDto = new FileDto();
             try
             {
                 FileDownloadTrackerDto trackerDto = await _fileDownloadTrackerService.GetByFileDownloadTrackerGuid(fileDownloadTrackerGuid);
-                if (trackerDto.FileDownloadAttemptCount <= trackerDto.MaxFileDownloadAttemptsPermitted)
+                if ((trackerDto.MaxFileDownloadAttemptsPermitted != null && trackerDto.FileDownloadAttemptCount <= trackerDto.MaxFileDownloadAttemptsPermitted) || trackerDto.MaxFileDownloadAttemptsPermitted == null)
                 {
                     using (var client = new HttpClient())
                     {
@@ -36,13 +38,14 @@ namespace UpDiddy.Controllers
                         {
                             if (result.IsSuccessStatusCode)
                             {
-
                                 byte[] payload = await result.Content.ReadAsByteArrayAsync();
                                 if (payload != null && payload.Length > 0)
                                 {
-                                    fileDto.FileName = result.Content.Headers.ContentDisposition.FileName.Replace("\"",string.Empty);
+                                    fileDto.FileName = result.Content.Headers.ContentDisposition.FileName.Replace("\"", string.Empty);
                                     fileDto.MimeType = result.Content.Headers.ContentType.MediaType;
                                     fileDto.Payload = payload;
+                                    trackerDto.FileDownloadAttemptCount++;
+                                    trackerDto.MostrecentfiledownloadAttemptinUtc = DateTime.UtcNow;
                                 }
                                 else
                                 {
@@ -53,7 +56,6 @@ namespace UpDiddy.Controllers
                             {
                                 return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Failed to retrieve file from remote source." });
                             }
-
                         }
                     }
                 }
@@ -61,13 +63,13 @@ namespace UpDiddy.Controllers
                 {
                     return BadRequest(new BasicResponseDto() { StatusCode = 403, Description = "Maximum file download attempt has been exceeded." });
                 }
+                await _trackingService.TrackingSubscriberFileDownloadAction(trackerDto.SubscriberGuid.Value, trackerDto.FileDownloadTrackerGuid.Value);
+                await _fileDownloadTrackerService.Update(trackerDto);
             }
             catch (Exception e)
             {
-                    return BadRequest(new BasicResponseDto() { StatusCode = 500, Description = "Ops something went wrong" });
-
+                return BadRequest(new BasicResponseDto() { StatusCode = 500, Description = "Ops something went wrong" });
             }
-
             return Ok(fileDto);
         }
     }
