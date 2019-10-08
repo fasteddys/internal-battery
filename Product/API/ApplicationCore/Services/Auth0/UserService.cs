@@ -9,6 +9,7 @@ using Auth0.ManagementApi.Models;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
+using UpDiddyApi.ApplicationCore.Services.Auth0.Communication;
 using UpDiddyApi.ApplicationCore.Services.Auth0.Interfaces;
 using UpDiddyLib.Shared;
 
@@ -62,7 +63,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Auth0
             return Crypto.Decrypt(_cryptoKey, encryptedToken);
         }
 
-        public async Task<AccessTokenResponse> CreateUserAsync(User user, params Role[] userRoles)
+        public async Task<CreateUserResponse> CreateUserAsync(User user, params Role[] userRoles)
         {
             var managementApiClient = new ManagementApiClient(await GetApiTokenAsync(), _domain);
             UserCreateRequest userCreationRequest = new UserCreateRequest()

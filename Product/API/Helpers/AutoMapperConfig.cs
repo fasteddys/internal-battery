@@ -12,7 +12,8 @@ using CloudTalentSolution = Google.Apis.CloudTalentSolution.v3.Data;
 using UpDiddyLib.Helpers;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.DependencyInjection;
-
+using UpDiddyApi.Controllers.Resources;
+using UpDiddyApi.ApplicationCore.Services.Auth0;
 namespace UpDiddyApi.Helpers
 {
     public class AutoMapperConfiguration
@@ -30,6 +31,8 @@ namespace UpDiddyApi.Helpers
     {
         public ApiProfile()
         {
+            CreateMap<UserCredentialsResource, User>();
+
             CreateMap<Topic, TopicDto>().ReverseMap();
             CreateMap<Vendor, VendorDto>().ReverseMap();
             CreateMap<Enrollment, EnrollmentDto>().ReverseMap();
