@@ -1,4 +1,5 @@
 # Build dotnet core project using Azure Pipelines
+
 # This pipeline is designed for API
 
 # build name format
@@ -6,7 +7,7 @@ name: api.$(date:yyyyMMdd)$(rev:.r)
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#pool
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'ubuntu-16.04'
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#variables
 variables:
@@ -32,12 +33,12 @@ pr: none
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#steps
 steps:
 
-# dotnet core 2.1.x
+# dotnet core 2.2.x
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
-    version: '2.1.x'
-
+    version: '2.2.x'
+  displayName: Specify dotnet core 2.2.x sdk
 
 # get/install dependencies using NugGet
 - script: |
@@ -74,20 +75,10 @@ steps:
     searchFolder: '$(Agent.TempDirectory)'
 
 # package up all dlls and compiled code
-- task: ArchiveFiles@2
-  inputs:
-    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
-    includeRootFolder: true
-    archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/api.zip'
-    replaceExistingArchive: true
-    verbose: true
-
-# package up all dlls and compiled code
-#- script: |
-#    cd $(Build.ArtifactStagingDirectory)
-#    zip -rm api.zip *
-#  displayName: Packaging
+- script: |
+    cd $(Build.ArtifactStagingDirectory)
+    zip -rm api.zip *
+  displayName: Packaging
 
 # get secret for connection string to staging db
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-key-vault?view=azure-devops#yaml-snippet
