@@ -68,10 +68,20 @@ steps:
     searchFolder: '$(Agent.TempDirectory)'
 
 # package up all dlls and compiled code
-- script: |
-    cd $(Build.ArtifactStagingDirectory)
-    zip -rm api.zip *
-  displayName: Packaging
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
+    includeRootFolder: true
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/api.zip'
+    replaceExistingArchive: true
+    verbose: true
+
+# package up all dlls and compiled code
+#- script: |
+#    cd $(Build.ArtifactStagingDirectory)
+#    zip -rm api.zip *
+#  displayName: Packaging
 
 # get secret for connection string to staging db
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-key-vault?view=azure-devops#yaml-snippet
