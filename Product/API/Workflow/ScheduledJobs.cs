@@ -1163,6 +1163,40 @@ namespace UpDiddyApi.Workflow
             }
         }
 
+        /// <summary>
+        /// In the event that our Hangfire instance(s) get out of sync with the target environment's database, we need to ensure that all scheduled job alerts exist and will fire on the schedule 
+        /// defined in the dbo.JobPostingAlert table.
+        /// </summary>
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
+        public void SyncJobPostingAlertsBetweenDbAndHangfire()
+        {
+            try
+            {
+                var jobPostingAlerts = _repositoryWrapper.JobPostingAlertRepository.GetByConditionAsync(jpa => jpa.IsDeleted == 0).Result;
+                foreach(JobPostingAlert jobPostingAlert in jobPostingAlerts)
+                {
+                    // construct the Cron schedule for job alert
+                    string cronSchedule = null;
+
+                    switch (jobPostingAlert.Frequency)
+                    {
+                        case Frequency.Daily:
+                            cronSchedule = Cron.Daily(jobPostingAlert.ExecutionHour, jobPostingAlert.ExecutionMinute);
+                            break;
+                        case Frequency.Weekly:
+                            cronSchedule = Cron.Weekly(jobPostingAlert.ExecutionDayOfWeek.Value, jobPostingAlert.ExecutionHour, jobPostingAlert.ExecutionMinute);
+                            break;
+                        default:
+                            throw new NotSupportedException($"Unrecognized value for 'Frequency' parameter: {jobPostingAlert.Frequency.ToString()}");
+                    }
+                    _hangfireService.AddOrUpdate<ScheduledJobs>($"jobPostingAlert:{jobPostingAlert.JobPostingAlertGuid}", sj => sj.ExecuteJobPostingAlert(jobPostingAlert.JobPostingAlertGuid), cronSchedule);
+                }
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.SyncHangfireJobAlerts encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+            }
+        }
 
         [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public Boolean DoPromoCodeRedemptionCleanup(int? lookbackPeriodInMinutes = 30)
