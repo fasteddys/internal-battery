@@ -5,23 +5,33 @@ using UpDiddyLib.Dto;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using System.Net.Http;
+using UpDiddyLib.Helpers;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using Microsoft.Extensions.Logging;
 
 namespace UpDiddy.Controllers
 {
-
     [Route("api/[controller]")]
-    public class FileController : Controller
+    public class FileController : ControllerBase
     {
         private readonly IConfiguration _configuration;
         private readonly IFileDownloadTrackerService _fileDownloadTrackerService;
         private readonly ITrackingService _trackingService;
+        private readonly ILogger<FileController> _logger;
 
-        public FileController(IConfiguration configuration, IFileDownloadTrackerService fileDownloadTrackerService, ITrackingService trackingService)
+        public FileController(IConfiguration configuration,
+        ILogger<FileController> logger,
+        ISysEmail sysEmail,
+        IFileDownloadTrackerService fileDownloadTrackerService,
+        ITrackingService trackingService,
+        IRepositoryWrapper repositoryWrapper)
         {
             _configuration = configuration;
             _fileDownloadTrackerService = fileDownloadTrackerService;
             _trackingService = trackingService;
+            _logger = logger;
         }
+
         [HttpGet]
         [Route("gated/{fileDownloadTrackerGuid}")]
         public async Task<IActionResult> GetGatedFile(Guid fileDownloadTrackerGuid)
@@ -29,7 +39,11 @@ namespace UpDiddy.Controllers
             FileDto fileDto = new FileDto();
             try
             {
-                FileDownloadTrackerDto trackerDto = await _fileDownloadTrackerService.GetByFileDownloadTrackerGuid(fileDownloadTrackerGuid);
+                FileDownloadTrackerDto trackerDto = await _fileDownloadTrackerService.GetByFileDownloadTrackerGuid(fileDownloadTrackerGuid);             
+                if (trackerDto == null)
+                {
+                    fileDto.ErrorMessage = "The requested file is invalid.";
+                }
                 if ((trackerDto.MaxFileDownloadAttemptsPermitted != null && trackerDto.FileDownloadAttemptCount <= trackerDto.MaxFileDownloadAttemptsPermitted) || trackerDto.MaxFileDownloadAttemptsPermitted == null)
                 {
                     using (var client = new HttpClient())
@@ -49,28 +63,33 @@ namespace UpDiddy.Controllers
                                 }
                                 else
                                 {
-                                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "The requested file is invalid" });
+                                    fileDto.ErrorMessage = "The requested file is invalid. (Source Invalid)";
                                 }
                             }
                             else
                             {
-                                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Failed to retrieve file from remote source." });
+                                fileDto.ErrorMessage = "Failed to retrieve the file from remote source.";
                             }
                         }
                     }
                 }
                 else
                 {
-                    return BadRequest(new BasicResponseDto() { StatusCode = 403, Description = "Maximum file download attempt has been exceeded." });
+                    fileDto.ErrorMessage = "The file has been downloaded maximum amount of times or the link has expired.";
                 }
-                await _trackingService.TrackingSubscriberFileDownloadAction(trackerDto.SubscriberGuid.Value, trackerDto.FileDownloadTrackerGuid.Value);
-                await _fileDownloadTrackerService.Update(trackerDto);
+                if (string.IsNullOrEmpty(fileDto.ErrorMessage))
+                {
+                    await _trackingService.TrackingSubscriberFileDownloadAction(trackerDto.SubscriberGuid.Value, trackerDto.FileDownloadTrackerGuid.Value);
+                    await _fileDownloadTrackerService.Update(trackerDto);
+                }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return BadRequest(new BasicResponseDto() { StatusCode = 500, Description = "Ops something went wrong" });
+                _logger.Log(LogLevel.Error, $"FileController.GetGatedFile : Error occured when updating company with message={ex.Message}", ex);
+                return StatusCode(500);
             }
             return Ok(fileDto);
+
         }
     }
 }

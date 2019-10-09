@@ -21,30 +21,8 @@
                 <input type="hidden" asp-for="CampaignGuid" name="CampaignGuid" value="@Model.CampaignGuid" form="SignUpForm" />
                 <input type="hidden" asp-for="CampaignPhase" name="CampaignPhase" value="@WebUtility.UrlEncode(Model.CampaignPhase)" form="SignUpForm" />
             }
-            if (Model.PartnerGuid != Guid.Empty && Model.PartnerGuid != null)
-            {
-                <input type="hidden" asp-for="PartnerGuid" name="PartnerGuid" value="@Model.PartnerGuid" form="@_form" />
-            }
         }
-        <div class="row">
-
-                    <div class="d-flex justify-content-center pb-4" style="width:100%">
-                        <a asp-action="signin"
-                        asp-controller="session"
-                        style="width:100%"
-                        class="btn btn-sm btn-light-blue mb-0 mr-2"
-                        asp-route-redirectUri="@redirectUrl">
-                        @if(String.IsNullOrEmpty(@Model.ExistingUserButtonText))
-                        {
-                            @Html.Raw("Existing User? Click here to log in")
-                        }
-                        else
-                        {
-                            @Model.ExistingUserButtonText
-                        }                                               
-                        </a>
-                    </div>
-                
+        <div class="row">                                                  
             @if (Model.IsWaitList)
             {
                 <div id="SignUpFirstName" class="col-12 sign-up-input no-padding">
@@ -74,13 +52,20 @@
             </div>
             <div id="SignUpAction" class="col-12 no-padding">
                 @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
-                    Text = Model.SignUpButtonText == null ? "Sign Up Now" : Model.SignUpButtonText,
+                    Text = string.IsNullOrEmpty(Model.SignUpButtonText) ? "Sign Up Now" : Model.SignUpButtonText,
                     SkewDirection = "skew-left-to-right",
                     ChosenColorScheme = "cc-cscheme-darkred",
                     Form = _form,
                     ButtonAction = ActionButtonViewModel.Action.SUBMIT
                 })
             </div>
+            @if(!string.IsNullOrEmpty(Model.CampaignSlug))
+            {
+                   <div class="col-12 pt-4">
+                     <p>Existing User? Click here to <a href="@redirectUrl">log in</a></p>
+                   </div>
+            }
+         
             @if (!string.IsNullOrWhiteSpace(Model.ObfuscatedEmail))
             {
                 <div class="col-12 no-padding notification">
@@ -88,21 +73,15 @@
                 </div>
             } 
         </div>
-        @Html.HiddenFor(x => Model.IsWaitList)
-        @Html.HiddenFor(x => Model.IsLoggedIn)
-        @Html.HiddenFor(x => Model.CampaignSlug)
-        @Html.HiddenFor(x => Model.IsGatedDownload)
-        @Html.HiddenFor(x => Model.GatedDownloadFileUrl)
         @Html.HiddenFor(x => Model.CampaignSlug)
         @Html.HiddenFor(x => Model.SubscriberGuid)
-        @Html.HiddenFor(x => Model.GatedDownloadMaxAttemptsAllowed)
     </form>
     <div class="modal signup-modal text-cc-secondary" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        @if(Model.IsWaitList)
+                        @if(!string.IsNullOrEmpty(Model.SuccessHeader))
                         {
                             @Html.Raw(Model.SuccessHeader);
                         }else
@@ -112,7 +91,7 @@
                     </h5>
                 </div>
                 <div class="modal-body">
-                    @if(Model.IsWaitList)
+                    @if(!string.IsNullOrEmpty(Model.SuccessText))
                     {
                         @Html.Raw(Model.SuccessText);
                     }

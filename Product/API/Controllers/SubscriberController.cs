@@ -879,6 +879,7 @@ namespace UpDiddyApi.Controllers
             if (signUpDto.isGatedDownload)
             {
                 var downloadUrl = await HandleGatedFileDownload(subscriber.Email, signUpDto.gatedDownloadFileUrl, signUpDto.gatedDownloadMaxAttemptsAllowed, subscriber.SubscriberGuid.Value);
+                SendGatedDownloadLink(subscriber.Email, downloadUrl);
             }
 
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Subscriber has been added to the group" });
@@ -979,9 +980,8 @@ namespace UpDiddyApi.Controllers
             if (signUpDto.isGatedDownload)
             {
                 var downloadUrl = await HandleGatedFileDownload(subscriber.Email, signUpDto.gatedDownloadFileUrl, signUpDto.gatedDownloadMaxAttemptsAllowed, subscriber.SubscriberGuid.Value);
+                SendGatedDownloadLink(subscriber.Email, downloadUrl);
             }
-
-            //Sendgrid 
 
             SendVerificationEmail(subscriber.Email, signUpDto.verifyUrl + subscriber.EmailVerification.Token);
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Contact has been converted to subscriber." });
@@ -995,8 +995,7 @@ namespace UpDiddyApi.Controllers
                 MaxFileDownloadAttemptsPermitted = maxAttemptsAllowed,
                 SubscriberGuid = subscriberGuid
             };
-            string downloadUrl = await _fileDownloadTrackerService.CreateFileDownloadUrl(fileDownloadTrackerDto);
-            return downloadUrl;
+            return await _fileDownloadTrackerService.CreateFileDownloadLink(fileDownloadTrackerDto);
         }
 
         [HttpGet("/api/[controller]/me/partner-web-redirect")]
@@ -1243,6 +1242,25 @@ namespace UpDiddyApi.Controllers
                     null
                 ));
         }
+
+        private void SendGatedDownloadLink(string email, string link)
+        {
+            _hangfireService.Enqueue(() =>
+             _sysEmail.SendTemplatedEmailAsync(
+                 email,
+                 _configuration["SysEmail:Transactional:TemplateIds:GatedDownload-LinkEmail"],
+                 new
+                 {
+                     fileDownloadLinkUrl = link
+                 },
+                 Constants.SendGridAccount.Transactional,
+                 null,
+                 null,
+                 null,
+                 null
+             ));
+        }
+
 
         #region SubscriberNotes
         /// <summary>

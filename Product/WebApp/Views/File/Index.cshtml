@@ -1,0 +1,13 @@
+<script type="text/javascript">
+    setTimeout(function(){
+            window.location.href = "download?f=" + "@ViewBag.f";
+         }, 5000);
+
+</script>
+<div class="file-container">
+    <div class="d-flex justify-content-center">
+        <div class="p-5">
+             <p>The requested file will begin downloading automatically in 3 seconds. If your download does not start, please click <a rel="nofollow" href="download?f=@ViewBag.f">here</a>.</p>
+        </div>
+    </div>
+</div>

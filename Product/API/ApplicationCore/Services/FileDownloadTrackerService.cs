@@ -22,7 +22,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _mapper = mapper;
         }
 
-        public async Task<string> CreateFileDownloadUrl(FileDownloadTrackerDto fileDownloadTrackerDto)
+        public async Task<string> CreateFileDownloadLink(FileDownloadTrackerDto fileDownloadTrackerDto)
         {
             FileDownloadTracker fileDownloadTracker = new FileDownloadTracker
             {
@@ -36,9 +36,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             };
             await _repositoryWrapper.FileDownloadTrackerRepository.Create(fileDownloadTracker);
             await _repositoryWrapper.FileDownloadTrackerRepository.SaveAsync();
-
-            string url = _config["Environment:Base"] + "/filedownload/" + fileDownloadTracker.FileDownloadTrackerGuid;
-            return url;
+            return _config["Environment:BaseUrl"] + "GetFile?f=" + fileDownloadTracker.FileDownloadTrackerGuid;
         }
 
 

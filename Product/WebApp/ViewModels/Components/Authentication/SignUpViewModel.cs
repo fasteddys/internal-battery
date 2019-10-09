@@ -20,7 +20,6 @@ namespace UpDiddy.ViewModels
         public string CampaignPhase { get; set; }
         public bool IsExpressSignUp { get; set; }
         public string ObfuscatedEmail { get; set; }
-        public Guid PartnerGuid { get; set; }
         public string SignUpButtonText { get; set; }
         public Guid? CourseGuid { get; set; }
         public string FirstName { get; set; }
@@ -30,9 +29,6 @@ namespace UpDiddy.ViewModels
         public string PhoneNumber { get; set; }
         public string CampaignSlug { get; set; }
         public bool IsWaitList { get; set; }
-        public bool IsGatedDownload { get; set; }
-        public string GatedDownloadFileUrl { get; set; }
-        public int? GatedDownloadMaxAttemptsAllowed { get; set; }
         public bool IsLoggedIn { get; set; }
         public string FormSubmitButtonText { get; set; }
         public string SuccessHeader { get; set; }

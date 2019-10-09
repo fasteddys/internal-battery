@@ -2,7 +2,7 @@
 @using System.Net
 @model SignUpViewModel
 <div id="ExistingUserComponent">
-    <form id="ExistingUserForm" asp-controller="Campaign" asp-action="existing-user-sign-up" data-action="existing-user-sign-up">
+    <form id="ExistingUserForm" asp-controller="Campaign" asp-action="existing-user-sign-up" data-action="existing-user-sign-up">        
         <div id="SignUpFirstName" class="col-12 sign-up-input no-padding">
             <input class="wide-input" placeholder="Your first name" name="FirstName" asp-for="FirstName" required />
         </div>
@@ -22,16 +22,7 @@
             })
         </div>
         @Html.HiddenFor(x => Model.CampaignSlug)
-        @Html.HiddenFor(x => Model.FirstName)
-        @Html.HiddenFor(x => Model.LastName)
-        @Html.HiddenFor(x => Model.PhoneNumber)
-        @Html.HiddenFor(x => Model.IsWaitList)
-        @Html.HiddenFor(x => Model.IsLoggedIn)
-        @Html.HiddenFor(x => Model.IsGatedDownload)
-        @Html.HiddenFor(x => Model.GatedDownloadFileUrl)
-        @Html.HiddenFor(x => Model.GatedDownloadMaxAttemptsAllowed)
         @Html.HiddenFor(x => Model.SubscriberGuid)
-
     </form>
     <div class="modal signup-modal text-cc-secondary" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">

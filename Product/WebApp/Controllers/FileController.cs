@@ -31,14 +31,39 @@ namespace UpDiddy.Controllers
             _configuration = configuration;
 
         }
+
         [HttpGet]
         [Route("/GetFile/")]
-        public async Task<ActionResult> GetFile(Guid f)
+        public ActionResult Index(Guid f)
         {
-            FileDto file = await _Api.GetFile(f);
-            return File( file.Payload, file.MimeType, file.FileName);
+            if (f == Guid.Empty)
+            {
+                return BadRequest();
+            }
+            ViewBag.f = f.ToString();
+            return View();
         }
 
+        [HttpGet]
+        [Route("/Download/")]
+        public async Task<ActionResult> GetFile(Guid f)
+        {
+            try
+            {
+                FileDto file = await _Api.GetFile(f);
+                if (!string.IsNullOrEmpty(file.ErrorMessage))
+                {
+                    ViewBag.Error = file.ErrorMessage;
+                    return View("Error");
+                }
+                return File(file.Payload, file.MimeType, file.FileName);
+            }
+            catch( Exception ex)
+            {
+                   ViewBag.Error = ex.InnerException;
+                   return View("Error");
+            }            
+        }
     }
 }
 

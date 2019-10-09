@@ -7,7 +7,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface IFileDownloadTrackerService
     {
-        Task<string> CreateFileDownloadUrl(FileDownloadTrackerDto fileDownloadTrackerDto);
+        Task<string> CreateFileDownloadLink(FileDownloadTrackerDto fileDownloadTrackerDto);
         Task<FileDownloadTrackerDto> GetByFileDownloadTrackerGuid(Guid fileDownloadTrackerGuid);
         Task Update(FileDownloadTrackerDto fileDownloadTrackerDto);
     }
