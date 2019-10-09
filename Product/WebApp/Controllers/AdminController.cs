@@ -17,7 +17,6 @@ using System.Threading.Tasks;
 using UpDiddy.Api;
 using UpDiddy.Services.ButterCMS;
 using UpDiddy.ViewModels;
-using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Reporting;
 using UpDiddyLib.Helpers;
