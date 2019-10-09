@@ -35,20 +35,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
       
         public async Task<List<SubscriberInitialSourceDto>> GetNewSubscribers()
         {
-
-            List<SubscriberInitialSourceDto> rval = null;
-            try
-            {
-
-                 rval = await _dbContext.SubscriberInitialSource.FromSql<SubscriberInitialSourceDto>("System_Get_New_Subscribers").ToListAsync();
-            }
-            catch ( Exception ex )
-            {
-                // todo jab remove catch 
-                var info = ex.Message;
-
-            }
-
+            List<SubscriberInitialSourceDto> rval = null;     
+            rval = await _dbContext.SubscriberInitialSource.FromSql<SubscriberInitialSourceDto>("System_Get_New_Subscribers").ToListAsync();     
             return rval;
         }
      

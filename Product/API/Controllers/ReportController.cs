@@ -40,14 +40,7 @@ namespace UpDiddyApi.Controllers
         [Route("/api/[controller]/new-subscriber-csv")]
         public async Task<IActionResult> NewSubscriberCSV()
         {
-
-
-            //   return await _repository.StoredProcedureRepository.GetSubscriberSources(subscriberId);
-
-            var data = await _repositoryWrapper.StoredProcedureRepository.GetNewSubscribers();
-
- 
-
+            var data = await _repositoryWrapper.StoredProcedureRepository.GetNewSubscribers();           
             return Ok(data);
         }
  

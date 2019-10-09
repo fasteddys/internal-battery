@@ -101,7 +101,6 @@ namespace UpDiddy.Api
         #region AdminPortal
 
         Task<List<SubscriberInitialSourceDto>> NewSubscribersCSVAsync();
-
         Task<BasicResponseDto> UpdateEntitySkillsAsync(EntitySkillDto entitySkillDto);
         Task<IList<SkillDto>> GetEntitySkillsAsync(string entityType, Guid entityGuid);
         Task<IList<PartnerDto>> GetPartnersAsync();

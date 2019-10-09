@@ -1322,11 +1322,7 @@ namespace UpDiddy.Api
         public async Task<List<SubscriberInitialSourceDto>> NewSubscribersCSVAsync()
         {
             string endpoint = $"report/new-subscriber-csv";
-
-
-            return await GetAsync<List<SubscriberInitialSourceDto>>(endpoint);
-   
-
+            return await GetAsync<List<SubscriberInitialSourceDto>>(endpoint);  
         }
       
 
