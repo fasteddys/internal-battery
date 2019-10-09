@@ -32,6 +32,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return await _dbContext.JobCountPerProvince.FromSql<JobCountPerProvince>("System_JobCountPerProvince").ToListAsync();
         }
 
+        public async Task<List<NewSubscriberCSVDto>> GetNewSubscribers()
+        {             
+            return await _dbContext.NewSubscribers.FromSql<NewSubscriberCSVDto>("System_Get_New Subscribers").ToListAsync();
+        }
+
+
 
         public async Task<List<SubscriberSourceDto>> GetSubscriberSources(int SubscriberId)
         {

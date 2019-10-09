@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using UpDiddy.Api;
 using UpDiddy.Services.ButterCMS;
 using UpDiddy.ViewModels;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Reporting;
 using UpDiddyLib.Helpers;
@@ -31,12 +32,14 @@ namespace UpDiddy.Controllers
         private IDistributedCache _cache;
         private IButterCMSService _butterService;
 
+
         public AdminController(IApi api, IConfiguration configuration, IDistributedCache cache, IButterCMSService butterService)
         {
             _api = api;
             _configuration = configuration;
             _cache = cache;
             _butterService = butterService;
+
         }
 
         [Authorize]
