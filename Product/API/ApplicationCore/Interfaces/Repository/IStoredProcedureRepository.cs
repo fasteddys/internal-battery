@@ -16,6 +16,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<SubscriberSignUpCourseEnrollmentStatistics>> GetSubscriberSignUpCourseEnrollmentStatisticsAsync(DateTime? startDate, DateTime? endDate);
         Task<int> AddOrUpdateCourseAsync(CourseParams courseParams);
 
-        Task<List<NewSubscriberCSVDto>> GetNewSubscribers();
+        Task<List<SubscriberInitialSourceDto>> GetNewSubscribers();
     }
 }

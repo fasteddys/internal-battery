@@ -202,8 +202,8 @@ namespace UpDiddyApi.Models
         public DbQuery<JobAbandonmentStatistics> JobAbandonmentStatistics { get; set; }
         public DbQuery<JobCountPerProvince> JobCountPerProvince { get; set; }
         public DbQuery<SubscriberSourceDto> SubscriberSourcesDetails { get; set; }
-        // todo jab renames the dto and dbquery
-        public DbQuery<NewSubscriberCSVDto> NewSubscribers { get; set; }
+ 
+         public DbQuery<SubscriberInitialSourceDto> SubscriberInitialSource { get; set; }
 
 
 

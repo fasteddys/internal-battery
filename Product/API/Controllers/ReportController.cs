@@ -14,6 +14,9 @@ using Newtonsoft.Json;
 using UpDiddyLib.Dto;
 using UpDiddyApi.ApplicationCore.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using System.Reflection;
+using Newtonsoft.Json.Linq;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.Controllers
 {
@@ -32,7 +35,7 @@ namespace UpDiddyApi.Controllers
             _repositoryWrapper = respositoryWrapper;
         }
 
-
+ 
         [HttpGet]
         [Route("/api/[controller]/new-subscriber-csv")]
         public async Task<IActionResult> NewSubscriberCSV()
@@ -41,18 +44,13 @@ namespace UpDiddyApi.Controllers
 
             //   return await _repository.StoredProcedureRepository.GetSubscriberSources(subscriberId);
 
-            var Ddata = await _repositoryWrapper.StoredProcedureRepository.GetNewSubscribers();
+            var data = await _repositoryWrapper.StoredProcedureRepository.GetNewSubscribers();
 
-          
+ 
 
-            BasicResponseDto rval = new BasicResponseDto()
-            {
-                Data = "1,2,3"
-            };
-
-            return Ok(rval);
+            return Ok(data);
         }
-
+ 
 
 
 

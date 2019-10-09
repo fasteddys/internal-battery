@@ -124,7 +124,6 @@
     <Content Remove="wwwroot\images\clouds.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\API\UpDiddyApi.csproj" />
     <ProjectReference Include="..\UpDiddyLib\UpDiddyLib.csproj" />
   </ItemGroup>
   <ItemGroup>

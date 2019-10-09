@@ -7,6 +7,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -41,18 +42,28 @@ namespace UpDiddy.Controllers
 
         }
 
+
+ 
         [Authorize]
         [HttpGet]
         [Route("/admin/new-subscriber-csv")]
         public  async Task<FileResult> NewSubscriberCSV()
         {
-            string data = await _api.NewSubscribersCSVAsync();
-            byte[] fileBytes = Encoding.ASCII.GetBytes(data);
-            string fileName = "DownloadSUbscribers.csv";
+            List<SubscriberInitialSourceDto> data = await _api.NewSubscribersCSVAsync();
+
+            StringWriter csvString = new StringWriter();
+            using (var csv = new CsvWriter(csvString))
+            {
+                csv.WriteRecords<SubscriberInitialSourceDto>(data);
+            }
+
+            string csvData = csvString.ToString();
+            byte[] fileBytes = Encoding.ASCII.GetBytes(csvData);
+            string fileName = "Subscribers_" + DateTime.UtcNow.ToString("yyyy -MM-dd-HH-mm-ss", CultureInfo.InvariantCulture) + ".csv";
             return File(fileBytes, "text/csv", fileName);  
         }
 
-
+ 
 
         [Authorize]
         [HttpGet]
