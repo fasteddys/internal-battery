@@ -163,8 +163,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 order.PromoCodeId = promoCode.PromoCodeId;
                 //create or convert in flight promo code redemption row
                 _serviceOfferingPromoCodeRedemptionService.ClaimServiceOfferingPromoCode(promoCode, serviceOffering, subscriber, order.PricePaid);                
-                // increment the number of redemptions of the coupon.
-                // todo jab makse sure ef catches this update                
+                // increment the number of redemptions of the coupon.                               
                 promoCode.ModifyDate = DateTime.Now;
                 promoCode.NumberOfRedemptions += 1;
             }

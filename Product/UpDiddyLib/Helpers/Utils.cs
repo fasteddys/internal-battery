@@ -22,6 +22,8 @@ namespace UpDiddyLib.Helpers
     {
 
 
+ 
+
         // quick and dirty email validation class 
         public static bool ValidateEmail(string emailaddress)
         {
