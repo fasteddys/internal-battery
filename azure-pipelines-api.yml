@@ -1,9 +1,4 @@
 # Build dotnet core project using Azure Pipelines
-- task: UseDotNet@2
-  inputs:
-    packageType: 'sdk'
-    version: '3.x'
-    includePreviewVersions: true
 
 # This pipeline is designed for API
 
@@ -37,6 +32,13 @@ pr: none
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#steps
 steps:
+
+# dotnet core 2.2.x
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '2.2.x'
+  displayName: Specify dotnet core 2.2.x sdk
 
 # get/install dependencies using NugGet
 - script: |
