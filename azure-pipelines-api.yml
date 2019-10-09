@@ -1,4 +1,8 @@
 # Build dotnet core project using Azure Pipelines
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '2.1.x'
 
 # This pipeline is designed for API
 
