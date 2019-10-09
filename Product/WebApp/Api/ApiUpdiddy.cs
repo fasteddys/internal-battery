@@ -941,9 +941,9 @@ namespace UpDiddy.Api
         {
             return await PostAsync<SubscriberDto>("subscriber", new ReferralDto() { ReferralCode = referralCode });
         }
-        public async Task<bool> DeleteSubscriberAsync(Guid subscriberGuid)
+        public async Task<bool> DeleteSubscriberAsync(Guid subscriberGuid, Guid cloudIdentifier)
         {
-            return await DeleteAsync<bool>($"subscriber/{subscriberGuid}");
+            return await DeleteAsync<bool>($"subscriber/{subscriberGuid}/{cloudIdentifier}");
         }
         public async Task<SubscriberWorkHistoryDto> AddWorkHistoryAsync(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory)
         {
@@ -1308,9 +1308,14 @@ namespace UpDiddy.Api
                 rval = await _SubscriberAsync(subscriberGuid);
                 if (rval == null)
                 {
-                    //check if there is any referralCode
+                    // check if there is any referralCode 
                     var referralCode = _contextAccessor.HttpContext.Request.Cookies["referrerCode"] == null ? null : _contextAccessor.HttpContext.Request.Cookies["referrerCode"].ToString();
-                    rval = await CreateSubscriberAsync(referralCode);
+                    // not thrilled with the fact that a GET endpoint is capable of invoking a POST endpoint but not worth refactoring right now. 
+                    // just adding an additional guard to ensure we don't call this except when we have a referralCode (which should be very rare)
+                    if (!string.IsNullOrWhiteSpace(referralCode))
+                    {
+                        rval = await CreateSubscriberAsync(referralCode);
+                    }                    
                 }
 
                 SetCachedValueAsync<SubscriberDto>(cacheKey, rval);

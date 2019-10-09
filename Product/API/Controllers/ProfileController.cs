@@ -226,7 +226,7 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/{SubscriberGuid}")]
         public IActionResult ProfileDelete(Guid SubscriberGuid)
         {
-            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(SubscriberGuid));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(SubscriberGuid, null));
             return Ok();
         }
 
