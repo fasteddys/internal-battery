@@ -165,7 +165,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 await _repository.SubscriberRepository.SaveAsync();
                 _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(user.SubscriberGuid));
 
-                if (groupGuid != null && groupGuid.HasValue)
+                if (groupGuid != null && groupGuid.HasValue && groupGuid.Value != Guid.Empty)
                 {
                     var groupQuery = await _repository.GroupRepository.GetByConditionAsync(g => g.GroupGuid == groupGuid.Value);
                     var group = groupQuery.FirstOrDefault();

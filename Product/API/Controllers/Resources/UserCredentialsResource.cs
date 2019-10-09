@@ -17,6 +17,6 @@ namespace UpDiddyApi.Controllers.Resources
         [StringLength(32)]
         public string Password { get; set; }
 
-        public Guid Group { get; set; }
+        public Guid? Group { get; set; }
     }
 }

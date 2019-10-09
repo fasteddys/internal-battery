@@ -43,7 +43,7 @@ namespace UpDiddy.Controllers
                     {
                         ClientId = _configuration["Auth0:ClientId"],
                         ClientSecret = _configuration["Auth0:ClientSecret"],
-                        Scope = "openid profile",
+                        Scope = "openid profile email",
                         Realm = "Username-Password-Authentication", // Specify the correct name of your DB connection
                         Username = vm.EmailAddress,
                         Password = vm.Password,
