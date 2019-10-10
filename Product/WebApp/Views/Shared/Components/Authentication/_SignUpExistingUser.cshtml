@@ -3,15 +3,35 @@
 @model SignUpViewModel
 <div id="ExistingUserComponent">
     <form id="ExistingUserForm" asp-controller="Campaign" asp-action="existing-user-sign-up" data-action="existing-user-sign-up">        
-        <div id="SignUpFirstName" class="col-12 sign-up-input no-padding">
-            <input class="wide-input" placeholder="Your first name" name="FirstName" asp-for="FirstName" required />
-        </div>
-        <div id="SignUpLastName" class="col-12 sign-up-input no-padding">
-            <input class="wide-input" placeholder="Your last name" name="LastName" asp-for="LastName" required />
-        </div>
-        <div id="SignUpPhone" class="col-12 sign-up-input no-padding">
-            <input class="wide-input" placeholder="Your phone number (optional)" type="text" maxlength="16" name="PhoneNumber" asp-for="PhoneNumber" />
-        </div>
+            @if (Model.IsWaitList)
+            {
+            <div id="SignUpFirstName" class="col-12 sign-up-input no-padding">
+                <input class="wide-input" placeholder="Your first name" name="FirstName" asp-for="FirstName" required />
+            </div>
+            <div id="SignUpLastName" class="col-12 sign-up-input no-padding">
+                <input class="wide-input" placeholder="Your last name" name="LastName" asp-for="LastName" required />
+            </div>
+            <div id="SignUpPhone" class="col-12 sign-up-input no-padding">
+                <input class="wide-input" placeholder="Your phone number (optional)" type="text" maxlength="16" name="PhoneNumber" asp-for="PhoneNumber" />
+            </div>
+            }
+            else
+            {
+                if(!string.IsNullOrEmpty(Model.FirstName) && !string.IsNullOrEmpty(Model.LastName))
+                {
+                      <div id="SignUpFirstName" class="col-12 sign-up-input no-padding">
+                            <input class="wide-input" placeholder="Your first name" name="FirstName" asp-for="FirstName" disabled />
+                      </div>
+                      <div id="SignUpLastName" class="col-12 sign-up-input no-padding">
+                            <input class="wide-input" placeholder="Your last name" name="LastName" asp-for="LastName" disabled />
+                      </div>  
+                }
+                <div id="SignUpEmail" class="col-12 sign-up-input no-padding">
+                       <input class="wide-input"  type="text" maxlength="16" name="Email" asp-for="Email" disabled />
+                </div>
+            }
+
+            
         <div id="SignUpAction" class="col-12 no-padding">
             @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
                 Text = @String.IsNullOrEmpty(Model.ExistingUserSubmitButtonText) ? "Sign Up Now" : Model.ExistingUserSubmitButtonText,

@@ -109,16 +109,27 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
-        public async Task TrackingSubscriberFileDownloadAction(Guid subscriberGuid, Guid fileDownloadTrackerGuid)
+        public async Task TrackingSubscriberFileDownloadAction(Guid subscriberGuid, int fileDownloadTrackerId)
         {
             Models.Action action = await _repositoryWrapper.ActionRepository.GetByNameAsync(UpDiddyLib.Helpers.Constants.Action.DownloadGatedFile);
             EntityType entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync(EntityTypeConst.FileDownloadTracker);
-
-            if (subscriberGuid != Guid.Empty && fileDownloadTrackerGuid != Guid.Empty)
+            Subscriber subscriber = await _repositoryWrapper.Subscriber.GetSubscriberByGuidAsync(subscriberGuid);
+            SubscriberAction subAction = new SubscriberAction()
             {
-                // invoke the Hangfire job to store the tracking information
-                _hangfireService.Enqueue<ScheduledJobs>(j => j.TrackSubscriberActionInformation(subscriberGuid, action.ActionGuid, entityType.EntityTypeGuid, fileDownloadTrackerGuid));
-            }
+                IsDeleted = 0,
+                CreateDate = DateTime.UtcNow,
+                ModifyDate = null,
+                Action = action,
+                CreateGuid = Guid.Empty,
+                Subscriber = subscriber,
+                SubscriberActionGuid = Guid.NewGuid(),
+                EntityType = entityType,
+                EntityId = fileDownloadTrackerId,
+                ModifyGuid = null,
+                OccurredDate = DateTime.UtcNow
+            };
+            await _repositoryWrapper.SubscriberActionRepository.Create(subAction);
+            await _repositoryWrapper.SubscriberActionRepository.SaveAsync();
         }
     }
 }

@@ -304,6 +304,7 @@ namespace UpDiddy.Controllers
                     firstName = landingPage.Data.Fields.iswaitlist ? signUpViewModel.FirstName : null,
                     lastName = landingPage.Data.Fields.iswaitlist ? signUpViewModel.LastName : null,
                     phoneNumber = landingPage.Data.Fields.iswaitlist ? signUpViewModel.PhoneNumber : null,
+                    subscriberGuid = signUpViewModel.SubscriberGuid,
                     referer = Request.Headers["Referer"].ToString(),
                     verifyUrl = _configuration["Environment:BaseUrl"].TrimEnd('/') + "/email/confirm-verification/",
                     isGatedDownload = landingPage.Data.Fields.isgateddownload && !string.IsNullOrEmpty(landingPage.Data.Fields.gated_file_download_file),
@@ -463,6 +464,7 @@ namespace UpDiddy.Controllers
             {
                 CampaignSlug = LandingPageSlug,
                 IsExpressSignUp = true,
+                Email = subscriber != null ? subscriber.Email : null,
                 FirstName = subscriber != null ? subscriber.FirstName : null,
                 LastName = subscriber != null ? subscriber.LastName : null,
                 PhoneNumber = subscriber != null ? subscriber.PhoneNumber : null,

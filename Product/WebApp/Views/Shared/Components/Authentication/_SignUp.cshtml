@@ -62,7 +62,7 @@
             @if(!string.IsNullOrEmpty(Model.CampaignSlug))
             {
                    <div class="col-12 pt-4">
-                     <p>Existing User? Click here to <a href="@redirectUrl">log in</a></p>
+                     <p>Existing User? Click here to @Html.ActionLink("log in", "signin","session", new { redirectUri = @redirectUrl, rel = "nofollow"  })</p>
                    </div>
             }
          

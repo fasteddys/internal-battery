@@ -62,9 +62,9 @@
             }).done(res => {
                 $('.signup-modal a').attr('href', res.description);
                 $('.signup-modal').modal();
-                setTimeout(function () {
+                $('.signup-modal').on('hidden.bs.modal', function (e) {
                     window.location.href = res.description;
-                }, 3000);
+                });
             }).fail(res => {
                 var errorText = "Unfortunately, there was an error with your submission. Please try again later.";
                 if (res.responseJSON.description != null)
@@ -90,21 +90,14 @@ $("#ExistingUserComponent form").submit(function (e) {
     }).done(res => {
         $('.signup-modal a').attr('href', res.description);
         $('.signup-modal').modal();
-        setTimeout(function () {
+        $('.signup-modal').on('hidden.bs.modal', function (e) {
             window.location.href = res.description;
-        }, 7000);
+        });
     }).fail(res => {
-  
         var errorText = "Unfortunately, there was an error with your submission. Please try again later.";
         if (res.responseJSON.description != null)
             errorText = res.responseJSON.description;
         ToastService.error(errorText, 'Whoops...');
-        if (res.responseJSON.statusCode == "401") {
-            var campaignSlug = $("#CampaignSlug").val();
-            setTimeout(function () {
-                window.location.href = "/session/signin?redirectUri=campaign/" + campaignSlug;
-            }, 5000);
-        }
     }).always(() => {
         $("#SignUpOverlay").remove();
     });

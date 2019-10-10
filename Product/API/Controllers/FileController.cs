@@ -79,7 +79,7 @@ namespace UpDiddy.Controllers
                 }
                 if (string.IsNullOrEmpty(fileDto.ErrorMessage))
                 {
-                    await _trackingService.TrackingSubscriberFileDownloadAction(trackerDto.SubscriberGuid.Value, trackerDto.FileDownloadTrackerGuid.Value);
+                    await _trackingService.TrackingSubscriberFileDownloadAction(trackerDto.SubscriberGuid.Value, trackerDto.FileDownloadTrackerId);
                     await _fileDownloadTrackerService.Update(trackerDto);
                 }
             }

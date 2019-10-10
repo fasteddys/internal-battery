@@ -1,0 +1,12 @@
+﻿@import '_variables';
+
+.file-container {
+    background-color: $color-tertiary-mid-gray;
+
+    .file-info {
+        background-color: $color-white;
+        a {
+            color: inherit;
+        }
+    }
+}

@@ -10,6 +10,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task RecordSubscriberApplyActionAsync(Guid jobGuid, Guid subscriberGuid);
         Task<Dictionary<Subscriber, List<JobPosting>>> GetSubscriberAbandonedJobPostingHistoryByDateAsync(DateTime datetime);
         Task TrackingSubscriberJobViewAction(Guid jobGuid, Guid subscriberGuid);
-        Task TrackingSubscriberFileDownloadAction(Guid subscriberGuid, Guid fileDownloadTrackerGuid);
+        Task TrackingSubscriberFileDownloadAction(Guid subscriberGuid, int fileDownloadTrackerId);
     }
 }
