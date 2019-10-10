@@ -1052,6 +1052,10 @@ namespace UpDiddy.Api
             return await GetAsync<RedirectDto>("subscriber/me/partner-web-redirect");
         }
 
+        public async Task UpdateEmailVerificationStatusAsync(Guid subscriberGuid, bool isEmailVerified)
+        {
+            await PostAsync<Task>($"subscriber/{subscriberGuid}/verification/{isEmailVerified}");
+        }
 
         #endregion
 

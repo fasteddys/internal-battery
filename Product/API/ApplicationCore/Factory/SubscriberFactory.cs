@@ -24,6 +24,20 @@ namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class SubscriberFactory
     {
+        public static void UpdateEmailVerificationStatus(UpDiddyDbContext db, Guid subscriberGuid, bool isEmailVerified)
+        {
+            var subscriber = db.Subscriber
+                            .Where(s => s.SubscriberGuid.Value == subscriberGuid)
+                            .FirstOrDefault();
+
+            if(subscriber != null && subscriber.IsVerified != isEmailVerified)
+            {
+                subscriber.IsVerified = isEmailVerified;
+                subscriber.ModifyDate = DateTime.UtcNow;
+                subscriber.ModifyGuid = Guid.Empty;
+                db.SaveChangesAsync();
+            }
+        }
 
         // Can we get rid of this function given the one below it?
         // JAB - It is being used by the resume parse methods.  Refactor rquired for removal
@@ -118,15 +132,15 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static Subscriber GetSubscriberProfileByGuid(UpDiddyDbContext db, Guid subscriberGuid)
         {
-            Subscriber subscriber  = db.Subscriber
+            Subscriber subscriber = db.Subscriber
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
-                .Include( s => s.SubscriberWorkHistory).ThenInclude ( e => e.Company )
-                .Include( s => s.SubscriberEducationHistory).ThenInclude (i => i.EducationalInstitution)
+                .Include(s => s.SubscriberWorkHistory).ThenInclude(e => e.Company)
+                .Include(s => s.SubscriberEducationHistory).ThenInclude(i => i.EducationalInstitution)
                 .Include(s => s.SubscriberEducationHistory).ThenInclude(i => i.EducationalDegree)
                 .Include(s => s.SubscriberEducationHistory).ThenInclude(i => i.EducationalDegreeType)
-                .Include( s => s.State)
+                .Include(s => s.State)
                 .FirstOrDefault();
- 
+
 
             return subscriber;
         }
@@ -155,7 +169,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         }
 
 
-        public static bool RemoveAvatar(UpDiddyDbContext db, IConfiguration config,  Guid subscriberGuid, ref string msg)
+        public static bool RemoveAvatar(UpDiddyDbContext db, IConfiguration config, Guid subscriberGuid, ref string msg)
         {
 
             int MaxAvatarFileSize = int.Parse(config["CareerCircle:MaxAvatarFileSize"]);
@@ -177,7 +191,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static bool UpdateAvatar(UpDiddyDbContext db, IConfiguration config, IFormFile avatarFile, Guid subscriberGuid, ref string msg)
         {
- 
+
             int MaxAvatarFileSize = int.Parse(config["CareerCircle:MaxAvatarFileSize"]);
             Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(db, subscriberGuid);
             if (subscriber == null)
@@ -192,12 +206,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 avatarFile.CopyTo(ms);
                 imageBytes = ms.ToArray();
             }
-               
+
             AzureBlobStorage abs = new AzureBlobStorage(config);
             string blobFilePath = subscriberGuid + config["CareerCircle:AvatarName"];
             abs.UploadBlobAsync(blobFilePath, imageBytes);
             subscriber.AvatarUrl = blobFilePath;
-            subscriber.ModifyDate = DateTime.Now;            
+            subscriber.ModifyDate = DateTime.Now;
             db.SaveChanges();
 
             return true;
@@ -205,7 +219,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
 
 
-        public static bool ImportLinkedInAvatar(UpDiddyDbContext db, IConfiguration config,  string responseJSon, Guid subscriberGuid, ref string msg)
+        public static bool ImportLinkedInAvatar(UpDiddyDbContext db, IConfiguration config, string responseJSon, Guid subscriberGuid, ref string msg)
         {
             JObject o = JObject.Parse(responseJSon);
             JToken imageUrlToken = o.SelectToken("$.profilePicture.displayImage~.elements[0].identifiers[0].identifier");
@@ -218,9 +232,9 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 msg = $"SubscriberFactory.ImportLinkedInImage: {subscriberGuid} is not a valid subscriber";
                 return false;
             }
-                
+
             byte[] imageBytes = new byte[MaxAvatarFileSize];
-            if ( Utils.GetImageAsBlob(imageUrl, MaxAvatarFileSize, ref imageBytes) )
+            if (Utils.GetImageAsBlob(imageUrl, MaxAvatarFileSize, ref imageBytes))
             {
                 AzureBlobStorage abs = new AzureBlobStorage(config);
                 string blobFilePath = subscriberGuid + config["CareerCircle:LinkedInAvatarName"];
@@ -233,7 +247,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             else
                 msg = $"SubscriberFactory.ImportLinkedInImage: subsscriber {subscriberGuid} has an avatar that is too large";
 
-            subscriber.LinkedInSyncDate = DateTime.Now;  
+            subscriber.LinkedInSyncDate = DateTime.Now;
             db.SaveChanges();
 
             return true;
@@ -271,7 +285,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         }
 
-   
+
         public static ProfileDataStatus ImportSovren(UpDiddyDbContext db, SubscriberProfileStagingStore info, ref string msg, ILogger syslog)
         {
             try
@@ -316,7 +330,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
             return _db.SubscriberSkill
                 .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
-                .Include( s => s.Skill)
+                .Include(s => s.Skill)
                 .ToList();
         }
 
@@ -343,7 +357,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
                 .Include(s => s.EducationalInstitution)
                 .Include(s => s.EducationalDegree)
-                .Include(s=>s.EducationalDegreeType)
+                .Include(s => s.EducationalDegreeType)
                 .ToList();
         }
 
@@ -493,15 +507,15 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
             foreach (SubscriberEducationHistoryDto eh in educationHistoryList)
             {
-                EducationalInstitution educationalInstitution =   EducationalInstitutionFactory.GetOrAdd(db, eh.EducationalInstitution).Result;
-                EducationalDegree educationalDegree =   EducationalDegreeFactory.GetOrAdd(db, eh.EducationalDegree).Result;
-                EducationalDegreeType educationalDegreeType =   EducationalDegreeTypeFactory.GetOrAdd(db, eh.EducationalDegreeType).Result;
+                EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(db, eh.EducationalInstitution).Result;
+                EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(db, eh.EducationalDegree).Result;
+                EducationalDegreeType educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(db, eh.EducationalDegreeType).Result;
 
                 SubscriberEducationHistory educationHistory = SubscriberEducationHistoryFactory.GetEducationHistoryForSubscriber(db, subscriber, educationalInstitution, educationalDegree, eh.StartDate, eh.EndDate, eh.DegreeDate);
                 if (educationHistory == null)
                     await SubscriberEducationHistoryFactory.AddEducationHistoryForSubscriber(db, subscriber, eh, educationalInstitution, educationalDegree, educationalDegreeType);
             }
-         
+
         }
 
         #endregion

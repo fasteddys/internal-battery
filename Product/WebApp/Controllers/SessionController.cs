@@ -12,135 +12,137 @@ using System.Linq;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using System; 
+using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using UpDiddy.ViewModels;
+using Auth0.AuthenticationApi;
+using Microsoft.Extensions.Configuration;
+using Auth0.AuthenticationApi.Models;
+using System.Collections.Generic;
+using UpDiddy.Api;
 
 namespace UpDiddy.Controllers
 {
     public class SessionController : Controller
-    { 
+    {
         private ILogger _syslog = null;
-        IDistributedCache _cache = null;
-        IMemoryCache _memoryCache = null;
-        public SessionController(IOptions<AzureAdB2COptions> b2cOptions, ILogger<SessionController> sysLog, IDistributedCache distributedCache, IMemoryCache memoryCache)
-        {
-            AzureAdB2COptions = b2cOptions.Value;
+        private IDistributedCache _cache = null;
+        private IMemoryCache _memoryCache = null;
+        private IConfiguration _configuration = null;
+        private IApi _api = null;
+
+        public SessionController(ILogger<SessionController> sysLog, IDistributedCache distributedCache, IMemoryCache memoryCache, IConfiguration configuration, IApi api)
+        {         
             _syslog = sysLog;
             _cache = distributedCache;
             _memoryCache = memoryCache;
+            _configuration = configuration;
+            _api = api;
         }
 
-        public AzureAdB2COptions AzureAdB2COptions { get; set; }
-
-
         [HttpGet]
-        public IActionResult SignInAndEnroll()
-        {            
-            SetAzureAdB2CCulture();
-            var redirectUrl = Url.Action(nameof(HomeController.LoggingIn), "Home");
-            return Challenge(
-                new AuthenticationProperties { RedirectUri = redirectUrl },
-                OpenIdConnectDefaults.AuthenticationScheme);
-        }
-
-
-        [HttpGet]
-        public IActionResult SignIn([FromQuery] string redirectUri)
+        public IActionResult SignUp(string returnUrl = "/")
         {
-            return RedirectToAction(nameof(AccountController.Login), "Account");
-            // SetAzureAdB2CCulture();
-            // /** 
-            //  * Due to iOS issues, we need to introduce a landing page so that the call to
-            //  * our profile page is coming from the same HTTPcontext session as our site.
-            //  * */
-            // if(string.IsNullOrEmpty(redirectUri))
-            //     redirectUri = Url.Action(nameof(HomeController.LoggingIn), "Home");
+            return View(new SignUpViewModel()
+            {
+                IsExpressSignUp = true
+            });
+        }
 
-            // return Challenge(
-            //     new AuthenticationProperties { RedirectUri = redirectUri},
-            //     OpenIdConnectDefaults.AuthenticationScheme);
+        [HttpGet]
+        public IActionResult SignIn(string returnUrl = "/")
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SignIn(SignInViewModel vm, string returnUrl = null)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    AuthenticationApiClient client = new AuthenticationApiClient(new Uri($"https://{_configuration["Auth0:Domain"]}/"));
+                    string domain = $"https://{_configuration["Auth0:Domain"]}";
+                    var result = await client.GetTokenAsync(new ResourceOwnerTokenRequest
+                    {
+                        ClientId = _configuration["Auth0:ClientId"],
+                        ClientSecret = _configuration["Auth0:ClientSecret"],
+                        Scope = "openid profile email",
+                        Realm = "Username-Password-Authentication", // Specify the correct name of your DB connection
+                        Username = vm.EmailAddress,
+                        Password = vm.Password,
+                        Audience = _configuration["Auth0:Audience"]
+                    });
+
+                    var user = await client.GetUserInfoAsync(result.AccessToken);
+                    var firstClaimValue = user.AdditionalClaims.Where(x => x.Key == ClaimTypes.NameIdentifier).FirstOrDefault();
+                    Guid subscriberGuid;
+                    if (firstClaimValue.Value != null && Guid.TryParse(firstClaimValue.Value.ToString(), out subscriberGuid))
+                    {
+                        var expiresOn = DateTime.UtcNow.AddSeconds(result.ExpiresIn);
+
+                        List<Claim> claims = new List<Claim>();
+                        claims.Add(new Claim(ClaimTypes.NameIdentifier, subscriberGuid.ToString()));
+                        claims.Add(new Claim(ClaimTypes.Name, user.FullName));
+                        claims.Add(new Claim("access_token", result.AccessToken));
+                        claims.Add(new Claim(ClaimTypes.Expiration, expiresOn.ToString()));
+
+                        var permissionClaim = user.AdditionalClaims.Where(x => x.Key == ClaimTypes.Role).FirstOrDefault().Value.ToList();
+                        string permissions = string.Empty;
+
+                        foreach (var permission in permissionClaim)
+                        {
+                            claims.Add(new Claim(ClaimTypes.Role, permission.ToString(), ClaimValueTypes.String, domain));
+                        }
+
+                        var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
+                        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
+
+                        // sync Auth0's email verification status with ours. it would be better if this behavior could be triggered outside of the front-end code,
+                        // but having difficulty finding a way to trigger that when the data changes (not just when a login occurs): https://community.auth0.com/t/unable-to-send-context-accesstoken/32098
+                        if (user.EmailVerified.HasValue)
+                            await _api.UpdateEmailVerificationStatusAsync(subscriberGuid, user.EmailVerified.Value);
+
+                        return RedirectToLocal(returnUrl);
+                    }
+                    else
+                    {
+                        throw new ApplicationException("Unable to identify the subscriber.");
+                    }
+                }
+                catch (Exception e)
+                {
+                    ModelState.AddModelError("", e.Message);
+                }
+            }
+
+            return View(vm);
         }
 
         [HttpGet]
         public IActionResult ResetPassword()
         {
-            SetAzureAdB2CCulture();
-            var redirectUrl = Url.Action(nameof(SessionController.SignOut), "Session");
-            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
-            properties.Items[AzureAdB2COptions.PolicyAuthenticationProperty] = AzureAdB2COptions.ResetPasswordPolicyId;
-            return Challenge(properties, OpenIdConnectDefaults.AuthenticationScheme);
-        }
-
-        [HttpGet]
-        public IActionResult EditProfile()
-        {
-            SetAzureAdB2CCulture();
-            var redirectUrl = Url.Action(nameof(HomeController.Index), "Home");
-            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
-            properties.Items[AzureAdB2COptions.PolicyAuthenticationProperty] = AzureAdB2COptions.EditProfilePolicyId;
-            return Challenge(properties, OpenIdConnectDefaults.AuthenticationScheme);
-        }
-
-        [HttpGet]
-        public IActionResult SignOut()
-        {
-              return RedirectToAction(nameof(AccountController.Logout), "Account");
-
-            // HttpContext.Session.Clear();
-            // SetAzureAdB2CCulture();
-            // var callbackUrl = Url.Action(nameof(SignedOut), "Session", values: null, protocol: Request.Scheme);
-            // return SignOut(new AuthenticationProperties { RedirectUri = callbackUrl },
-            //     CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
+            throw new NotImplementedException();
         }
 
 
-
         [HttpGet]
-        public IActionResult SignedOut()
+        public async Task SignOut()
         {
-            if (User.Identity.IsAuthenticated)
+            await HttpContext.SignOutAsync("Auth0", new AuthenticationProperties
             {
-                // Redirect to home page if the user is authenticated.
-                return RedirectToAction(nameof(HomeController.Index), "Home");
-            }
+                RedirectUri = Url.Action("Index", "Home")
+            });
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        }
 
+        public IActionResult AccessDenied()
+        {
             return View();
-        }
-
-
-
-        [HttpGet]
-        public IActionResult AuthRequired()
-        {
-            HttpContext.Session.Clear();
-            SetAzureAdB2CCulture();
-            var callbackUrl = Url.Action(nameof(AuthenticationRequired), "Session", values: null, protocol: Request.Scheme);
-            return SignOut(new AuthenticationProperties { RedirectUri = callbackUrl },
-                CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
-        }
-
-
-
-        [HttpGet]
-        public IActionResult AuthenticationRequired()
-        {
-            if (User.Identity.IsAuthenticated)
-            {
-                // Redirect to home page if the user is authenticated.
-               // return RedirectToAction(nameof(HomeController.Index), "Home");
-            }
-
-            return View();
-        }
-
-
-        private void  SetAzureAdB2CCulture()
-        {
-            // Get the current culture and assign it to Azure options so identity screens will be localized
-            var requestCulture = HttpContext.Features.Get<IRequestCultureFeature>();
-            AzureAdB2COptions.UiLocales = requestCulture.RequestCulture.Culture.Name;
         }
 
         [HttpGet]
@@ -148,46 +150,26 @@ namespace UpDiddy.Controllers
         [Route("[controller]/token")]
         public IActionResult TokenAsync()
         {
-
-             var subscriberGuid = HttpContext.User.Claims.Where(x => x.Type == ClaimTypes.NameIdentifier).FirstOrDefault().Value.ToString();
-             var accessToken = HttpContext.User.Claims.Where(x => x.Type == "access_token").FirstOrDefault().Value.ToString();
-             var expiresOn = HttpContext.User.Claims.Where(x => x.Type == ClaimTypes.Expiration).FirstOrDefault().Value.ToString();
-            // Retrieve the token with the specified scopes
-            // Retrieve the token with the specified scopes
-            // var scope = AzureAdB2COptions.ApiScopes.Split(' ');
-            // string signedInUserID = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            // IConfidentialClientApplication app = ConfidentialClientApplicationBuilder
-            //     .Create(AzureAdB2COptions.ClientId)
-            //     .WithB2CAuthority(AzureAdB2COptions.Authority)
-            //     .WithRedirectUri(AzureAdB2COptions.RedirectUri)
-            //     .WithClientSecret(AzureAdB2COptions.ClientSecret)
-            //     .Build();
-     
-            // new MSALSessionCache(signedInUserID,_cache,_memoryCache).EnablePersistence(app.UserTokenCache);
-    
-            // var accounts = await app.GetAccountsAsync();
-            // if (accounts.Count() == 0)
-            // {
-            //     _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, "MSAL_SessionController.TokenAsync unable to locate account");
-            // }
-
-            // AuthenticationResult result = await app.AcquireTokenSilent(scope, accounts.FirstOrDefault()).ExecuteAsync();
-
-            // // temp code to log jwt info, specifically expiration dates 
-            // try
-            // {
-            //     string scopes = string.Empty;
-            //     foreach (string s in result.Scopes)
-            //         scopes += s + ";";
-            //     string LogInfo = $"MSAL_SessionController.TokenAsync Token ExpiresOn: {result.ExpiresOn} Token ExtendedExpiresOn: {result.ExtendedExpiresOn} Access Token Length: {result.AccessToken.Length}  Scopes: {scopes}  User: {result.UniqueId} )";
-            //     _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, LogInfo);
-            // }
-            // catch (Exception ex)
-            // {
-            //     _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_SessionController.TokenAsync Error logging info {ex.Message}");
-            // }
-
+            var subscriberGuid = HttpContext.User.Claims.Where(x => x.Type == ClaimTypes.NameIdentifier).FirstOrDefault().Value.ToString();
+            var accessToken = HttpContext.User.Claims.Where(x => x.Type == "access_token").FirstOrDefault().Value.ToString();
+            var expiresOn = HttpContext.User.Claims.Where(x => x.Type == ClaimTypes.Expiration).FirstOrDefault().Value.ToString();
             return Ok(new { accessToken = accessToken, expiresOn = expiresOn, uniqueId = subscriberGuid });
         }
+
+        #region Helpers
+
+        private IActionResult RedirectToLocal(string returnUrl)
+        {
+            if (Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+            else
+            {
+                return RedirectToAction(nameof(HomeController.Index), "Home");
+            }
+        }
+
+        #endregion
     }
 }

@@ -2,7 +2,7 @@
 
 namespace UpDiddy.ViewModels
 {
-    public class LoginViewModel
+    public class SignInViewModel
     {
         [Required]
         [EmailAddress]

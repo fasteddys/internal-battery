@@ -110,8 +110,8 @@ namespace UpDiddyApi
             })
             .AddJwtBearer(options =>
             {
-              options.Authority = domain;
-              options.Audience = Configuration["Auth0:ApiIdentifier"];
+                options.Authority = domain;
+                options.Audience = Configuration["Auth0:ApiIdentifier"];
             })
             .AddAPIGatewayAuth(options => { });
             services.AddAuthorization(options =>
