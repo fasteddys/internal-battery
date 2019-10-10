@@ -200,6 +200,8 @@ namespace UpDiddyApi.Models
         public DbQuery<JobAbandonmentStatistics> JobAbandonmentStatistics { get; set; }
         public DbQuery<JobCountPerProvince> JobCountPerProvince { get; set; }
         public DbQuery<SubscriberSourceDto> SubscriberSourcesDetails { get; set; }
+ 
+         public DbQuery<SubscriberInitialSourceDto> SubscriberInitialSource { get; set; }
 
 
 

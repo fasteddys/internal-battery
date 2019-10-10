@@ -149,20 +149,24 @@ namespace UpDiddyApi.Controllers
             else
                 return Unauthorized();
         }
-
+        
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        [HttpDelete("{subscriberGuid}")]
-        public IActionResult DeleteSubscriber(Guid subscriberGuid)
+        [HttpDelete("{subscriberGuid}/{cloudIdentifier}")]
+        public IActionResult DeleteSubscriber(Guid subscriberGuid, Guid cloudIdentifier)
         {
             try
             {
-
                 if (subscriberGuid == null)
                     return BadRequest(new { code = 400, message = "No subscriber identifier was provided" });
 
                 var subscriber = _db.Subscriber.Where(s => s.SubscriberGuid == subscriberGuid).FirstOrDefault();
+
+                // delete subscriber from cloud talent 
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(subscriberGuid, cloudIdentifier));
+
+                // return false to indicate that the subscriber cannot be deleted. changing this from a 400 response which throws an api exception in apiupdiddy
                 if (subscriber == null)
-                    return BadRequest(new { code = 404, message = "No subscriber could be found with that identifier" });
+                    return Ok(false);
 
                 // perform logical delete on the subscriber entity only (no modification to related tables)
                 subscriber.IsDeleted = 1;
@@ -172,9 +176,6 @@ namespace UpDiddyApi.Controllers
 
                 // disable the AD account associated with the subscriber
                 _graphClient.DisableUser(subscriberGuid);
-                // delete subscriber from cloud talent 
-                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(subscriber.SubscriberGuid.Value));
-
             }
             catch (Exception e)
             {
@@ -941,6 +942,9 @@ namespace UpDiddyApi.Controllers
             subscriber.IsVerified = false;
 
             var referer = !String.IsNullOrEmpty(signUpDto.referer) ? signUpDto.referer : Request.Headers["Referer"].ToString();
+
+
+
 
             // use transaction to verify that both changes 
             using (var transaction = _db.Database.BeginTransaction())
