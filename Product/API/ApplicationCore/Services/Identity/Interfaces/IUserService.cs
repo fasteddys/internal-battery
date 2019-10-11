@@ -11,5 +11,6 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity.Interfaces
     {
         Task<CreateUserResponse> CreateUserAsync(User user, bool requireEmailVerification, params Role[] userRoles);
         Task DeleteUserAsync(string userId);
+        Task<GetUserResponse> GetUserByEmailAsync(string email);
     }
 }

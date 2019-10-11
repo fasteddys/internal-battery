@@ -83,6 +83,69 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             return Crypto.Decrypt(_auth0CryptoKey, encryptedToken);
         }
 
+        public async Task<GetUserResponse> GetUserByEmailAsync(string email)
+        {
+            User user = null;
+            var apiToken = await GetApiTokenAsync();
+            var managementApiClient = new ManagementApiClient(apiToken, _domain);
+            IList<Auth0.ManagementApi.Models.User> users = null;
+            try
+            {
+                users = await managementApiClient.Users.GetUsersByEmailAsync(email);
+            }
+            catch (ApiException ae)
+            {
+                if (ae.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    _logger.LogWarning($"An unauthorized Auth0 ApiException occurred in UserService.GetUserByEmailAsync (will refresh token and retry one time): {ae.Message}", ae);
+
+                    try
+                    {
+                        // clear the token, get a new one, and try one more time
+                        await ClearApiTokenAsync();
+                        apiToken = await GetApiTokenAsync();
+                        managementApiClient = new ManagementApiClient(apiToken, _domain);
+                        users = await managementApiClient.Users.GetUsersByEmailAsync(email);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError($"An unexpected exception occurred in UserService.GetUserByEmailAsync (will not be retried): {e.Message}", e);
+                        return new GetUserResponse(false, "An unexpected error has occured.", null);
+                    }
+                }
+                else
+                {
+                    return new GetUserResponse(false, ae.Message, null);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"An unexpected exception occurred in UserService.GetUserByEmailAsync (will not be retried): {e.Message}", e);
+                return new GetUserResponse(false, "An unexpected error has occured.", null);
+            }
+
+            try
+            {
+                if (users != null)
+                {
+                    var auth0User = users.FirstOrDefault();
+                    user = new User()
+                    {
+                        Email = auth0User.Email,
+                        SubscriberGuid = auth0User.AppMetadata.subscriberGuid,
+                        UserId = auth0User.UserId
+                    };
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"An error occurred while retrieving the user in UserService.GetUserByEmailAsync (will not be retried): {e.Message}", e);
+                return new GetUserResponse(false, "An error occurred while retrieving the user", null);
+            }
+
+            return new GetUserResponse(true, "User was retrieved successfully.", user);
+        }
+
         public async Task<CreateUserResponse> CreateUserAsync(User user, bool requireEmailVerification, params Role[] userRoles)
         {
             Auth0.ManagementApi.Models.User userCreationResponse = null;

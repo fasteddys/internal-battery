@@ -17,7 +17,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
 using UpDiddyLib.Dto;
-using UpDiddyLib.Dto.Marketing;
+using UpDiddyLib.Dto.User;
 using UpDiddyLib.Shared;
 using UpDiddyLib.Helpers;
 using System.Text.RegularExpressions;
@@ -61,17 +61,13 @@ namespace UpDiddyApi.ApplicationCore.Services
             _taggingService = taggingService;
             _hangfireService = hangfireService;
         }
-
-
-
+        
         public async Task<IList<SubscriberSourceDto>> GetSubscriberSources(int subscriberId)
         {
             return await _repository.StoredProcedureRepository.GetSubscriberSources(subscriberId);
 
         }
-
-
-
+        
         public async Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numSubscribers, int indexVersion)
         {
             var querableSubscribers = _repository.SubscriberRepository.GetAllSubscribersAsync();
@@ -99,7 +95,6 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             return rVal;
         }
-
 
         public async Task<bool> ToggleSubscriberNotificationEmail(Guid subscriberGuid, bool isNotificationEmailsEnabled)
         {
@@ -148,42 +143,33 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         }
 
-        public async Task<bool> CreateSubscriberAsync(UpDiddyApi.ApplicationCore.Services.Identity.User user, Guid? groupGuid = null)
+        public async Task<bool> CreateSubscriberAsync(CreateUserDto createUserDto)
         {
             bool isSubscriberCreatedSuccessfully = false;
 
             try
             {
+                // create the user in the CareerCircle database
                 _repository.SubscriberRepository.Create(new Subscriber()
                 {
-                    SubscriberGuid = user.SubscriberGuid,
-                    Email = user.Email,
+                    SubscriberGuid = createUserDto.SubscriberGuid,
+                    Email = createUserDto.Email,
+                    FirstName = !string.IsNullOrWhiteSpace(createUserDto.FirstName) ? createUserDto.FirstName : null,
+                    LastName = !string.IsNullOrWhiteSpace(createUserDto.LastName) ? createUserDto.LastName : null,
+                    PhoneNumber = !string.IsNullOrWhiteSpace(createUserDto.PhoneNumber) ? createUserDto.PhoneNumber : null,
                     CreateDate = DateTime.UtcNow,
                     CreateGuid = Guid.Empty,
                     IsDeleted = 0
                 });
                 await _repository.SubscriberRepository.SaveAsync();
-                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(user.SubscriberGuid));
+                var subscriber = _repository.SubscriberRepository.GetSubscriberByGuid(createUserDto.SubscriberGuid);
 
-                if (groupGuid != null && groupGuid.HasValue && groupGuid.Value != Guid.Empty)
-                {
-                    var groupQuery = await _repository.GroupRepository.GetByConditionAsync(g => g.GroupGuid == groupGuid.Value);
-                    var group = groupQuery.FirstOrDefault();
-                    if (group != null)
-                    {
-                        var subscriberId = _repository.SubscriberRepository.GetSubscriberByGuid(user.SubscriberGuid).SubscriberId;
-                        _repository.SubscriberGroupRepository.Create(new SubscriberGroup()
-                        {
-                            SubscriberGroupGuid = Guid.NewGuid(),
-                            CreateDate = DateTime.UtcNow,
-                            CreateGuid = Guid.Empty,
-                            GroupId = group.GroupId,
-                            IsDeleted = 0,
-                            SubscriberId = subscriberId
-                        });
-                        await _repository.SubscriberGroupRepository.SaveAsync();
-                    }
-                }
+                // add the user to the Google Talent Cloud
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(createUserDto.SubscriberGuid));
+
+                // Use the new tagging service for attribution
+                await _taggingService.CreateGroup(createUserDto.ReferrerUrl, createUserDto.PartnerGuid, subscriber.SubscriberId);
+                
                 isSubscriberCreatedSuccessfully = true;
             }
             catch (Exception e)
@@ -192,144 +178,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
             return isSubscriberCreatedSuccessfully;
-        }
-
-        public async Task<Subscriber> CreateSubscriberAsync(Guid partnerContactGuid, SignUpDto signUpDto)
-        {
-            var partnerContact = await _db.PartnerContact
-                .Include(pc => pc.Contact)
-                .Where(pc => pc.PartnerContactGuid == partnerContactGuid && pc.IsDeleted == 0 && pc.Contact.IsDeleted == 0)
-                .FirstOrDefaultAsync();
-
-            Campaign campaign = await _db.Campaign
-                .Where(camp => camp.CampaignGuid.Equals(signUpDto.campaignGuid)
-                    && camp.IsDeleted == 0
-                    && camp.StartDate <= DateTime.UtcNow
-                    && (!camp.EndDate.HasValue || camp.EndDate.Value >= DateTime.UtcNow))
-                .FirstOrDefaultAsync();
-
-            #region Verify and Check Data
-            if (partnerContact == null)
-                throw new ArgumentException("Invalid PartnerContact guid.");
-
-            if (campaign == null)
-                throw new ArgumentException("Signing up through this campaign is not available at this time.");
-
-            // check email
-            if (partnerContact.Contact.Email != signUpDto.email)
-                throw new ArgumentException("This offer is only good for the recepient of this email campaign.");
-
-            // check if subscriber is in database
-            Subscriber subscriber = await _db.Subscriber.Where(s => s.Email == partnerContact.Contact.Email).FirstOrDefaultAsync();
-            if (subscriber != null)
-                throw new ArgumentException("Subscriber already exists, please login to continue.");
-            #endregion
-
-            User b2cUser = await _CreateB2CUser(signUpDto.email, signUpDto.password);
-
-            using (var transaction = _db.Database.BeginTransaction())
-            {
-                try
-                {
-                    Guid subscriberGuid = Guid.Parse(b2cUser.AdditionalData["objectId"].ToString());
-                    Subscriber newSubscriber = new Subscriber()
-                    {
-                        SubscriberGuid = subscriberGuid,
-                        ModifyGuid = subscriberGuid,
-                        CreateGuid = subscriberGuid,
-                        CreateDate = DateTime.UtcNow,
-                        ModifyDate = DateTime.UtcNow,
-                        IsDeleted = 0,
-                        IsVerified = true,
-                        FirstName = partnerContact.Metadata["FirstName"].ToString(),
-                        LastName = partnerContact.Metadata["LastName"].ToString(),
-                        Email = partnerContact.Contact.Email,
-                        PhoneNumber = partnerContact.Metadata["MobilePhone"].ToString(),
-                        Address = string.Join(' ', partnerContact.Metadata["Address1"].ToString(), partnerContact.Metadata["Address2"].ToString()),
-                        City = partnerContact.Metadata["City"].ToString(),
-                        PostalCode = partnerContact.Metadata["PostalCode"].ToString(),
-                        State = _db.State.Where(s => s.Name == partnerContact.Metadata["State"].ToString()).FirstOrDefault()
-                    };
-                    _db.Subscriber.Add(newSubscriber);
-                    await _db.SaveChangesAsync();
-
-                    partnerContact.Contact.SubscriberId = newSubscriber.SubscriberId;
-                    await _db.SaveChangesAsync();
-
-                    await _taggingService.AddConvertedContactToGroupBasedOnPartnerAsync(newSubscriber.SubscriberId);
-
-                    CampaignPhase campaignPhase = CampaignPhaseFactory.GetCampaignPhaseByNameOrInitial(_db, campaign.CampaignId, signUpDto.campaignPhase);
-                    _db.PartnerContactAction.Add(new PartnerContactAction()
-                    {
-                        ActionId = 3, // todo: use constants or enum or something
-                        CampaignId = campaign.CampaignId,
-                        PartnerContactId = partnerContact.PartnerContactId,
-                        PartnerContactActionGuid = Guid.NewGuid(),
-                        CreateDate = DateTime.UtcNow,
-                        CreateGuid = Guid.Empty,
-                        IsDeleted = 0,
-                        ModifyDate = DateTime.UtcNow,
-                        ModifyGuid = Guid.Empty,
-                        OccurredDate = DateTime.UtcNow,
-                        CampaignPhaseId = campaignPhase.CampaignPhaseId
-                    });
-
-                    var file = await _db.PartnerContactFile.Where(e => e.PartnerContactId == partnerContact.PartnerContactId)
-                        .OrderByDescending(e => e.CreateDate)
-                        .FirstOrDefaultAsync();
-
-                    if (file != null)
-                    {
-                        var bytes = Convert.FromBase64String(file.Base64EncodedData);
-                        var contents = new MemoryStream(bytes);
-                        await _AddResumeAsync(newSubscriber, file.Name, contents, file.MimeType);
-                    }
-
-                    // associate the contact with the subscriber
-                    var contact = _db.Contact.Where(c => c.ContactId == partnerContact.ContactId).FirstOrDefault();
-                    contact.SubscriberId = partnerContact.Contact.SubscriberId;
-
-                    // assign subscriber source for campaigns
-                    SubscriberProfileStagingStore attribution = new SubscriberProfileStagingStore()
-                    {
-                        CreateDate = DateTime.UtcNow,
-                        ModifyDate = DateTime.UtcNow,
-                        ModifyGuid = Guid.Empty,
-                        CreateGuid = Guid.Empty,
-                        SubscriberId = partnerContact.Contact.SubscriberId.Value,
-                        ProfileSource = UpDiddyLib.Helpers.Constants.DataSource.CareerCircle,
-                        IsDeleted = 0,
-                        ProfileFormat = UpDiddyLib.Helpers.Constants.DataFormat.Json,
-                        ProfileData = JsonConvert.SerializeObject(new { source = "campaign-sign-up", referer = campaign.Name })
-                    };
-                    _db.SubscriberProfileStagingStore.Add(attribution);
-
-                    await _db.SaveChangesAsync();
-                    transaction.Commit();
-                }
-                catch (Exception ex)
-                {
-                    transaction.Rollback();
-                    throw ex;
-                }
-
-                return subscriber;
-            }
-        }
-
-        /// <summary>
-        /// Creates B2C User if one doesn't exist already.
-        /// </summary>
-        /// <param name="email"></param>
-        /// <param name="password"></param>
-        /// <returns></returns>
-        private async Task<User> _CreateB2CUser(string email, string password)
-        {
-            Microsoft.Graph.User user = await _graphClient.GetUserBySignInEmail(email);
-            if (user == null)
-                user = await _graphClient.CreateUser(email, email, password);
-
-            return user;
         }
 
         /// <summary>

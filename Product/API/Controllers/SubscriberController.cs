@@ -39,7 +39,6 @@ using System.Net;
 using Auth0.ManagementApi;
 using Auth0.ManagementApi.Models;
 using Newtonsoft.Json.Linq;
-using UpDiddyApi.Controllers.Resources;
 
 [Route("api/[controller]")]
 public class SubscriberController : Controller
@@ -725,9 +724,7 @@ public class SubscriberController : Controller
         else
             return Ok(new BasicResponseDto() { StatusCode = 400, Description = errorMsg });
     }
-
-
-
+    
     [HttpPut("/api/[controller]/onboard")]
     public IActionResult Onboard()
     {
@@ -744,102 +741,7 @@ public class SubscriberController : Controller
 
         return Ok();
     }
-
-    [HttpPost("/api/[controller]/request-verification")]
-    [Obsolete("No longer necessary with migration to Auth0.", true)]
-    public async Task<IActionResult> RequestVerificationAsync([FromBody] Dictionary<string, string> body)
-    {
-        // check token guid claim
-        Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-        if (subscriberGuid == null || subscriberGuid == Guid.Empty)
-            return BadRequest();
-
-        Subscriber subscriber = _db.Subscriber
-            .Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid && !t.IsVerified)
-            .Include(t => t.EmailVerification)
-            .FirstOrDefault();
-
-        // check if subscriber is in system and is NOT verified
-        if (subscriber == null)
-            return BadRequest();
-
-        int tokenTtlMinutes = int.Parse(_configuration["EmailVerification:TokenExpirationInMinutes"]);
-        EmailVerification.SetSubscriberEmailVerification(subscriber, tokenTtlMinutes);
-        await _db.SaveChangesAsync(); // save changes
-
-        // create link
-        string link;
-        body.TryGetValue("verifyUrl", out link);
-        Uri uri = new Uri(link);
-        link = String.Concat(
-            uri.Scheme, Uri.SchemeDelimiter,
-            uri.Authority, uri.AbsolutePath,
-            subscriber.EmailVerification.Token, uri.Query
-        );
-
-        // send email
-        SendVerificationEmail(subscriber.Email, link);
-
-        return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Email verification token successfully created. Email queued." });
-    }
-
-    [HttpPost("/api/[controller]/verify-email/{token}")]
-    [Obsolete("No longer necessary with migration to Auth0.",true)]
-    public async Task<IActionResult> Verify(Guid Token)
-    {
-        Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-        if (subscriberGuid == null || subscriberGuid == Guid.Empty)
-            return BadRequest();
-
-        Subscriber subscriber = _db
-            .Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid)
-            .Include(t => t.EmailVerification)
-            .FirstOrDefault();
-
-        if (subscriber == null)
-            return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid subscriber." });
-
-        if (subscriber.IsVerified)
-            return StatusCode(StatusCodes.Status409Conflict, new BasicResponseDto() { StatusCode = 409, Description = "Subscriber/User email already verified. No additional action required to verify this account." });
-
-        if (!subscriber.EmailVerification.Token.Equals(Token) || subscriber.EmailVerification.ExpirationDateTime < DateTime.UtcNow)
-            return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid verification token." });
-
-        subscriber.IsVerified = true;
-        await _db.SaveChangesAsync();
-
-        return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Verification successful." });
-    }
-
-    /// <summary>
-    /// This will verify the contact guid to email, make sure user does not exist already, and create one if it doesn't exist
-    /// </summary>
-    /// <returns></returns>
-    [AllowAnonymous]
-    [HttpPut("/api/[controller]/contact/{partnerContactGuid}")]
-    public async Task<IActionResult> UpdateSubscriberContactAsync(Guid partnerContactGuid, [FromBody] SignUpDto signUpDto)
-    {
-        _syslog.Log(LogLevel.Information, "SubscriberController.UpdateSubscriberContactAsync:: {@PartnerContactGuid} attempting to sign up with email {@Email}", partnerContactGuid, signUpDto.email);
-        signUpDto.password = Crypto.Decrypt(_configuration["Crypto:Key"], signUpDto.password);
-
-        try
-        {
-            await _subscriberService.CreateSubscriberAsync(partnerContactGuid, signUpDto);
-        }
-        catch (ArgumentException ex)
-        {
-            _syslog.Log(LogLevel.Warning, "SubscriberController.UpdateSubscriberContactAsync:: Bad Request reason: \"{message}\", Email used: {email}", ex.Message, signUpDto.email);
-            return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            _syslog.Log(LogLevel.Error, "SubscriberController.UpdateSubscriberContactAsync:: Bad Request reason: \"{message}\", Email used: {email}", ex.Message, signUpDto.email);
-            return StatusCode(500, new BasicResponseDto() { StatusCode = 500, Description = ex.Message });
-        }
-
-        return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Contact has been converted to subscriber." });
-    }
-
+    
     [AllowAnonymous]
     [HttpPost("/api/[controller]/express-sign-up")]
     public async Task<IActionResult> ExpressSignUp([FromBody] SignUpDto signUpDto)

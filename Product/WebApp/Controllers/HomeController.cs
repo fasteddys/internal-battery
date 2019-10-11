@@ -25,6 +25,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.AspNetCore.Authentication;
+
 namespace UpDiddy.Controllers
 {
     public class HomeController : BaseController
@@ -46,7 +47,7 @@ namespace UpDiddy.Controllers
             IHostingEnvironment env,
             ISysEmail sysEmail,
             IMemoryCache memoryCache)
-            
+
             : base(api)
         {
             _env = env;
@@ -73,7 +74,7 @@ namespace UpDiddy.Controllers
             {
                 Response.StatusCode = (int)ex.StatusCode;
                 return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
-            }          
+            }
         }
 
         public IActionResult TermsOfService()
@@ -195,12 +196,12 @@ namespace UpDiddy.Controllers
             // logic being determined in web app for managing API data
 
             await _Api.UpdateStudentCourseProgressAsync(true);
- 
+
             // Handle the case of MsalUiRequireRedirect 
-            var userId =  User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
             string CacheKey = $"{userId}MsalUiRequiredRedirect";
-            string MsalUiRequiredRedirect =  _memoryCache.Get<String>(CacheKey); 
-            if ( string.IsNullOrEmpty(MsalUiRequiredRedirect) == false )
+            string MsalUiRequiredRedirect = _memoryCache.Get<String>(CacheKey);
+            if (string.IsNullOrEmpty(MsalUiRequiredRedirect) == false)
             {
                 _memoryCache.Remove(CacheKey);
                 return Redirect(MsalUiRequiredRedirect);
@@ -488,7 +489,7 @@ namespace UpDiddy.Controllers
              * the code below solves for this by adding the referenced file's last modified timestamp as a hash code to the query 
              * string for all static files referenced.
              */
-            ViewData["BlueBg"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\images\blue_background_login.jpg").GetHashCode());
+                ViewData["BlueBg"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\images\blue_background_login.jpg").GetHashCode());
             ViewData["Bootstrap"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\lib\boostrap\css\bootstrap.min.css").GetHashCode());
             ViewData["Bundle"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\css\Bundle.css").GetHashCode());
             ViewData["FontAwesome"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\lib\font-awesome\css\all.min.css").GetHashCode());
@@ -731,7 +732,7 @@ namespace UpDiddy.Controllers
         [Route("/Home/DisableEmailReminders/{subscriberGuid}")]
         public async Task<IActionResult> DisableEmailRemindersAsync(Guid subscriberGuid)
         {
-            var response  = await _Api.ToggleSubscriberNotificationEmailAsync(subscriberGuid, false);
+            var response = await _Api.ToggleSubscriberNotificationEmailAsync(subscriberGuid, false);
             ViewBag.Status = response.StatusCode == 200 ? "Your notification email reminders have been disabled." : "There was a problem processing your request; please login to disable your notification email reminders.";
             return View("DisableEmailReminders");
         }

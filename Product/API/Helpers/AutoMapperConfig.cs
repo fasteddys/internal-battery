@@ -12,8 +12,9 @@ using CloudTalentSolution = Google.Apis.CloudTalentSolution.v3.Data;
 using UpDiddyLib.Helpers;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.DependencyInjection;
-using UpDiddyApi.Controllers.Resources;
 using UpDiddyApi.ApplicationCore.Services.Identity;
+using UpDiddyLib.Dto.User;
+
 namespace UpDiddyApi.Helpers
 {
     public class AutoMapperConfiguration
@@ -31,8 +32,14 @@ namespace UpDiddyApi.Helpers
     {
         public ApiProfile()
         {
-            CreateMap<User, UserCredentialsResource>()
-                .ForMember(ucr => ucr.Group, u => u.Ignore())
+            CreateMap<User, CreateUserDto>()
+                .ForMember(cud => cud.FirstName, u => u.Ignore())
+                .ForMember(cud => cud.JobReferralCode, u => u.Ignore())
+                .ForMember(cud => cud.LastName, u => u.Ignore())
+                .ForMember(cud => cud.PartnerGuid, u => u.Ignore())
+                .ForMember(cud => cud.PhoneNumber, u => u.Ignore())
+                .ForMember(cud => cud.ReferrerUrl, u => u.Ignore())
+                .ForMember(cud => cud.SubscriberGuid, u => u.Ignore())
                 .ReverseMap();
 
             CreateMap<Topic, TopicDto>().ReverseMap();
