@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
@@ -10,10 +11,10 @@ namespace UpDiddy.Services
 {
     public class CacheService : ICacheService
     {
-        private IDistributedCache _cache = null;
+        private IMemoryCache _cache = null;
         private IConfiguration _configuration = null;
 
-        public CacheService(IDistributedCache cache, IConfiguration conifguration)
+        public CacheService(IMemoryCache cache, IConfiguration conifguration)
         {
             _cache = cache;
             _configuration = conifguration;
@@ -23,7 +24,8 @@ namespace UpDiddy.Services
         {
             try
             {
-                string existingValue = await _cache.GetStringAsync(CacheKey);
+                string existingValue =  _cache.Get<string>(CacheKey);
+                // string existingValue = await _cache.GetStringAsync(CacheKey);
                 if (string.IsNullOrEmpty(existingValue))
                     return (T)Convert.ChangeType(null, typeof(T));
                 else
@@ -49,7 +51,8 @@ namespace UpDiddy.Services
             try
             {
                 string newValue = JsonConvert.SerializeObject(Value);
-                await _cache.SetStringAsync(CacheKey, newValue, new DistributedCacheEntryOptions() { AbsoluteExpiration = expiryTime });
+                 _cache.Set<string>(CacheKey, newValue, expiryTime );
+                // await _cache.SetStringAsync(CacheKey, newValue, new DistributedCacheEntryOptions() { AbsoluteExpiration = expiryTime });
                 return true;
             }
             catch (Exception)
@@ -62,7 +65,8 @@ namespace UpDiddy.Services
         {
             try
             {
-                await _cache.RemoveAsync(CacheKey);
+                // await _cache.RemoveAsync(CacheKey);
+                 _cache.Remove(CacheKey);
                 return true;
             }
             catch (Exception)
