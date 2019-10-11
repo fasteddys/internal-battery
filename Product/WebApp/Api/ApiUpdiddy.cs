@@ -1775,7 +1775,7 @@ namespace UpDiddy.Api
 
         public async  Task<BasicResponseDto> TraitifySignUp(string assessmentId)
         {
-            return await PostAsync<BasicResponseDto>($"traitify/createaccount/{assessmentId}");
+            return await PostAsync<BasicResponseDto>($"subscriber/traitify-signup/{assessmentId}");
         }
 
 

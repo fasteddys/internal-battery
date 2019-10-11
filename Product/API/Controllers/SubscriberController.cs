@@ -915,6 +915,9 @@ namespace UpDiddyApi.Controllers
                 await _jobService.UpdateJobReferral(signUpDto.referralCode, subscriber.SubscriberGuid.ToString());
             }
 
+
+            //TODO; Check if it is traitify and send email with the rest of their result
+
             SendVerificationEmail(subscriber.Email, signUpDto.verifyUrl + subscriber.EmailVerification.Token);
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Contact has been converted to subscriber." });
         }

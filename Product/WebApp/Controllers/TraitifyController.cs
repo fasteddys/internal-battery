@@ -10,6 +10,7 @@ using UpDiddy.Services.ButterCMS;
 using UpDiddy.ViewModels.ButterCMS;
 using ButterCMS.Models;
 using UpDiddyLib.Helpers;
+using UpDiddyLib.Dto.Marketing;
 namespace UpDiddy.Controllers
 {
     public class TraitifyController : BaseController
@@ -81,7 +82,15 @@ namespace UpDiddy.Controllers
         [Route("[controller]/createaccount")]
         public async Task CreateAccount(TraitifyViewModel model)
         {
-            await _api.TraitifySignUp(model.AssessmentId);
+            SignUpDto signUpDto = new SignUpDto
+            {
+                firstName = model.FirstName,
+                lastName = model.LastName,
+                email = model.Email,
+                password = model.Password,
+                traitifyAssessmentId = model.AssessmentId
+            };
+            await _api.ExpressUpdateSubscriberContactAsync(signUpDto);
            
         }
 
