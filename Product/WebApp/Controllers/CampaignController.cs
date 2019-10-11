@@ -294,6 +294,16 @@ namespace UpDiddy.Controllers
                             Description = "Please enter all sign-up fields and try again."
                         });
                     }
+
+                    var phoneModelState = ModelState.Where(x => x.Key == "PhoneNumber").FirstOrDefault().Value;
+                    if (phoneModelState.Errors.Count > 0)
+                    {
+                        return BadRequest(new BasicResponseDto
+                        {
+                            StatusCode = 400,
+                            Description = phoneModelState.Errors.FirstOrDefault().ErrorMessage
+                        });
+                    }
                 }
 
                 SignUpDto sudto = new SignUpDto
@@ -309,7 +319,7 @@ namespace UpDiddy.Controllers
                     verifyUrl = _configuration["Environment:BaseUrl"].TrimEnd('/') + "/email/confirm-verification/",
                     isGatedDownload = landingPage.Data.Fields.isgateddownload && !string.IsNullOrEmpty(landingPage.Data.Fields.gated_file_download_file),
                     gatedDownloadFileUrl = landingPage.Data.Fields.gated_file_download_file,
-                    gatedDownloadMaxAttemptsAllowed = !string.IsNullOrEmpty(landingPage.Data.Fields.gated_file_download_max_attempts_allowed) ? (int) Double.Parse(landingPage.Data.Fields.gated_file_download_max_attempts_allowed) : (int?)null,
+                    gatedDownloadMaxAttemptsAllowed = !string.IsNullOrEmpty(landingPage.Data.Fields.gated_file_download_max_attempts_allowed) ? (int)Double.Parse(landingPage.Data.Fields.gated_file_download_max_attempts_allowed) : (int?)null,
                     referralCode = Request.Cookies["referrerCode"] == null ? null : Request.Cookies["referrerCode"].ToString(),
                     partnerGuid = landingPage.Data.Fields.partner.PartnerGuid != null ? landingPage.Data.Fields.partner.PartnerGuid : Guid.Empty
                 };
@@ -386,9 +396,6 @@ namespace UpDiddy.Controllers
             }
 
             PageResponse<CampaignLandingPageViewModel> landingPage = await GetButterLandingPage(signUpViewModel.CampaignSlug);
-
-
-            // If all checks pass, assemble SignUpDto from information user entered.
             SignUpDto sudto = new SignUpDto
             {
                 email = signUpViewModel.Email,
@@ -401,8 +408,7 @@ namespace UpDiddy.Controllers
                 verifyUrl = _configuration["Environment:BaseUrl"].TrimEnd('/') + "/email/confirm-verification/",
                 isGatedDownload = landingPage.Data.Fields.isgateddownload && !string.IsNullOrEmpty(landingPage.Data.Fields.gated_file_download_file),
                 gatedDownloadFileUrl = landingPage.Data.Fields.gated_file_download_file,
-                gatedDownloadMaxAttemptsAllowed = !string.IsNullOrEmpty(landingPage.Data.Fields.gated_file_download_max_attempts_allowed) ? (int) Double.Parse(landingPage.Data.Fields.gated_file_download_max_attempts_allowed) : (int?)null,
-                //check for any referrerCode 
+                gatedDownloadMaxAttemptsAllowed = !string.IsNullOrEmpty(landingPage.Data.Fields.gated_file_download_max_attempts_allowed) ? (int)Double.Parse(landingPage.Data.Fields.gated_file_download_max_attempts_allowed) : (int?)null,
                 referralCode = Request.Cookies["referrerCode"] == null ? null : Request.Cookies["referrerCode"].ToString(),
                 partnerGuid = landingPage.Data.Fields.partner.PartnerGuid != null ? landingPage.Data.Fields.partner.PartnerGuid : Guid.Empty
             };

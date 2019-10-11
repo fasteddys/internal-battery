@@ -830,48 +830,22 @@ namespace UpDiddyApi.Controllers
         [HttpPost("/api/[controller]/existing-user-signup")]
         public async Task<IActionResult> ExistingUserSignup([FromBody] SignUpDto signUpDto)
         {
-            Subscriber subscriber;
-            if (!HttpContext.User.Identity.IsAuthenticated)
-            {
-                if (signUpDto.subscriberGuid != null && signUpDto.subscriberGuid != Guid.Empty)
-                {
-                    using (var transaction = _db.Database.BeginTransaction())
-                    {
-                        try
-                        {
-                            subscriber = await _subscriberService.GetSubscriberByGuid(signUpDto.subscriberGuid.Value);
-                            subscriber.FirstName = signUpDto.firstName;
-                            subscriber.LastName = signUpDto.lastName;
-                            subscriber.PhoneNumber = signUpDto.phoneNumber;
-                            await _subscriberService.UpdateSubscriber(subscriber);
-                            await _taggingService.CreateGroup(signUpDto.referer, signUpDto.partnerGuid, subscriber.SubscriberId);
-                            await _taggingService.AddConvertedContactToGroupBasedOnPartnerAsync(subscriber.SubscriberId);
-                            transaction.Commit();
-                        }
-                        catch (Exception ex)
-                        {
-                            transaction.Rollback();
-                            _syslog.Log(LogLevel.Error, "SubscriberController.ExistingUserSignup:: Error occured while attempting save existing Subscriber. Exception: {@Exception}", ex);
-                            return StatusCode(500);
-                        }
-                    }
-                }
-            }
-
-            subscriber = await _subscriberService.GetSubscriberByGuid(signUpDto.subscriberGuid.Value);
+            Subscriber subscriber = await _subscriberService.GetSubscriberByGuid(signUpDto.subscriberGuid.Value);
 
             if (subscriber == null)
                 return BadRequest();
-
-            subscriber.FirstName = signUpDto.firstName;
-            subscriber.LastName = signUpDto.lastName;
-            subscriber.PhoneNumber = signUpDto.phoneNumber;
 
             using (var transaction = _db.Database.BeginTransaction())
             {
                 try
                 {
-                    await _subscriberService.UpdateSubscriber(subscriber);
+                    if(signUpDto.isWaitlist)
+                    {
+                        subscriber.FirstName = signUpDto.firstName;
+                        subscriber.LastName = signUpDto.lastName;
+                        subscriber.PhoneNumber = signUpDto.phoneNumber;
+                        await _subscriberService.UpdateSubscriber(subscriber);
+                    }
                     await _taggingService.CreateGroup(signUpDto.referer, signUpDto.partnerGuid, subscriber.SubscriberId);
                     await _taggingService.AddConvertedContactToGroupBasedOnPartnerAsync(subscriber.SubscriberId);
                     await _db.SaveChangesAsync();
