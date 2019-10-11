@@ -863,13 +863,10 @@ namespace UpDiddy.Api
             return await PutAsync<BasicResponseDto>(string.Format("job"), jobPosting);
         }
 
-
-
         public async Task<List<JobPostingDto>> GetJobPostingsForSubscriber(Guid subscriberGuid)
         {
             return await GetAsync<List<JobPostingDto>>(string.Format("job/subscriber/{0}", subscriberGuid.ToString()));
         }
-
 
         public async Task<JobPostingDto> GetJobPostingByGuid(Guid jobPostingGuid)
         {
@@ -906,11 +903,6 @@ namespace UpDiddy.Api
         {
             return await DeleteAsync<BasicResponseDto>(string.Format("job/{0}", jobPostingGuid.ToString()));
         }
-
-
-
-
-
 
         public async Task<IList<SubscriberEducationHistoryDto>> GetEducationHistoryAsync(Guid subscriberGuid)
         {
@@ -1779,6 +1771,11 @@ namespace UpDiddy.Api
 
           public async Task<bool> CompleteAssessment(string assessmentId) {
             return await GetAsync<bool>($"traitify/complete/{assessmentId}");
+        }
+
+        public async  Task<BasicResponseDto> TraitifySignUp(string assessmentId)
+        {
+            return await PostAsync<BasicResponseDto>($"traitify/createaccount/{assessmentId}");
         }
 
 

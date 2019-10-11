@@ -128,6 +128,43 @@ namespace UpDiddyApi.Controllers
             return false;
         }
 
+
+        [HttpPost]
+        [Route("api/[controller]/createaccount/{assessmentId:length(36)}")]
+        public async Task<bool> CreateAccount(string assessmentId)
+        {
+            try
+            {
+                var assessment = _traitify.GetAssessment(assessmentId);
+                if (assessment.completed_at != null)
+                {
+                    string results = await GetJsonResults(assessmentId);
+                    TraitifyDto dto = new TraitifyDto()
+                    {
+                        AssessmentId = assessmentId,
+                        CompleteDate = DateTime.UtcNow,
+                        ResultData = results,
+                        ResultLength = results.Length,
+                        PublicKey = _publicKey,
+                        Host = _host
+                    };
+                    dto = await _traitifyService.CompleteAssessment(dto);
+                    dynamic payload = ProcessResult(results);
+                    await SendCompletionEmail(dto.Email, payload);
+                    return true;
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.Log(LogLevel.Error, $"TraitifyController.CreateAccount: An error occured while attempting to complete the assessment  Message: {e.Message}", e);
+                return false;
+            }
+            return false;
+        }
+
+
+
+
         private async Task SendCompletionEmail(string sendTo, dynamic result)
         {
             bool? isEmailValid = _zeroBounceApi.ValidateEmail(sendTo);

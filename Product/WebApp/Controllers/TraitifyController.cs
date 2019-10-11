@@ -77,6 +77,14 @@ namespace UpDiddy.Controllers
             return View("Assessment", model);
         }
 
+        [HttpPost]
+        [Route("[controller]/createaccount")]
+        public async Task CreateAccount(TraitifyViewModel model)
+        {
+            await _api.TraitifySignUp(model.AssessmentId);
+           
+        }
+
         [HttpGet]
         [Route("[controller]/{assessmentId:length(36)}")]
         public async Task<IActionResult> GetByAssessmentId(string assessmentId)
@@ -99,7 +107,7 @@ namespace UpDiddy.Controllers
             return View("Assessment", model);
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("[controller]/complete/{assessmentId:length(36)}")]
         public async Task<JsonResult> CompleteAssessment(string assessmentId)
         {

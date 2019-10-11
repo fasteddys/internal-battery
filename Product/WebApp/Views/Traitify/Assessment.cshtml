@@ -6,11 +6,61 @@
 	window.onload = function () {
 	   var model = @Html.Raw(Json.Serialize(@Model));
 	   var traitify  = new TraitifyCC(model, this.Traitify);
+	   $("#SignUpComponent form").submit(function (e) {
+	   var agreedTos = $('#SignUpComponent #termsAndConditionsCheck').is(':checked');
+	   $('#SignUpComponent #termsAndConditionsCheck').toggleClass('invalid', !agreedTos);
+
+		if (agreedTos)
+	    {
+			 $.ajax({
+                type: "POST",
+                url: "/traitify/createaccount",
+                data: $(this).serialize()
+            }).done(res => {
+				alert("It worked!");
+            }).fail(res => {
+                var errorText = "Unfortunately, there was an error with your submission. Please try again later.";
+                if (res.responseJSON.description != null)
+                    errorText = res.responseJSON.description;
+                ToastService.error(errorText, 'Whoops...');
+            });
+		}
+		else
+		{
+       		 ToastService.error("Please enter information for all sign-up fields and try again.");
+		}
 	   }
+	}
 </script>
 <div class="traitify-assessment-container pb-5" id="assessmentContainer">
 	<div id="traitifyInstructions" class="traitify-header">
 		Simply click "Me" or "Not Me" as each image relates to you.
+	</div>
+	<div id="traitify-form-container" hidden >
+		<form id="traitifyResultForm" asp-controller="traitify" asp-action="confirmnewaccount" >
+				<div class="d-flex justify-content-center">
+					<div id="SignUpPassword" class="col-12 sign-up-input no-padding">
+					<input class="wide-input" placeholder="Password" type="password" form="@traitifyResultForm" name="Password" asp-for="Password" required />
+				</div>
+				<div id="SignUpPasswordRetype" class="col-12 sign-up-input no-padding">
+					<input class="wide-input" placeholder="Re-enter password" type="password" form="@traitifyResultForm" name="ReenterPassword" asp-for="ReenterPassword" required />
+				</div>
+                <div class="form-check sign-up-input">
+                    <input type="checkbox" class="form-check-input" id="termsAndConditionsCheck" value="agree" required>
+                    <label class="form-check-label text-left" for="termsAndConditionsCheck">I agree to become a member of career circle  and we will email you the results </label>
+                </div>
+				<div>
+					@Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
+                    Text =  "Confirm Signup" ,
+                    SkewDirection = "skew-left-to-right",
+                    ChosenColorScheme = "cc-cscheme-darkred",
+                    Form = "traitifyResultForm",
+                    ButtonAction = ActionButtonViewModel.Action.SUBMIT
+              		  })
+				</div>				
+            </div>
+		 <input type="hidden" asp-for="AssessmentId" name="AssessmentId" value="@Model.AssessmentId" form="SignUpForm" />
+	    </form>
 	</div>
 	<div id="traitify"></div>
 </div>

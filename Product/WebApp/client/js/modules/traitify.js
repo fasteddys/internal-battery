@@ -16,12 +16,13 @@ class TraitifyCC {
                 $("#traitifyInstructions").hide();
                   $.ajax({
                     url: url,
-                    type: 'GET',
+                    type: 'POST',
                     error: function () {
                         ToastService.error('Oops! Something unexpected happened, and we are looking into it.')
                     },
                     success: function (results) {
-                        $('.traitify-modal').modal();
+                       assessment.target("#traitify");
+                       assessment.render("PersonalityTypes");
                     }
                 });
             });
