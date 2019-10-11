@@ -883,7 +883,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> ExpressSignUp([FromBody] SignUpDto signUpDto)
         {
             bool? isEmailValid = _zeroBounceApi.ValidateEmail(signUpDto.email);
-            if (isEmailValid != null && isEmailValid.Value == false)
+            if (isEmailValid.HasValue && isEmailValid.Value == false)
             {
                 var response = new BasicResponseDto() { StatusCode = 400, Description = "Unable to create new account. The email is not a legitimate email." };
                 _syslog.Log(LogLevel.Warning, "SubscriberController.ExpressSignUp:: Bad Request, user tried to sign up with an illegitimate email. {@Email}", signUpDto.email);
