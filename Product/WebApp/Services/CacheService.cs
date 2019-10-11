@@ -25,7 +25,6 @@ namespace UpDiddy.Services
             try
             {
                 string existingValue =  _cache.Get<string>(CacheKey);
-                // string existingValue = await _cache.GetStringAsync(CacheKey);
                 if (string.IsNullOrEmpty(existingValue))
                     return (T)Convert.ChangeType(null, typeof(T));
                 else
@@ -51,8 +50,7 @@ namespace UpDiddy.Services
             try
             {
                 string newValue = JsonConvert.SerializeObject(Value);
-                 _cache.Set<string>(CacheKey, newValue, expiryTime );
-                // await _cache.SetStringAsync(CacheKey, newValue, new DistributedCacheEntryOptions() { AbsoluteExpiration = expiryTime });
+                 _cache.Set<string>(CacheKey, newValue, expiryTime );                
                 return true;
             }
             catch (Exception)
@@ -64,8 +62,7 @@ namespace UpDiddy.Services
         public async Task<bool> RemoveCachedValueAsync(string CacheKey)
         {
             try
-            {
-                // await _cache.RemoveAsync(CacheKey);
+            {                
                  _cache.Remove(CacheKey);
                 return true;
             }
