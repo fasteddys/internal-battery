@@ -59,7 +59,7 @@ namespace UpDiddyApi.Controllers
             }
             else
             {
-                return Ok(new BasicResponseDto() { StatusCode = 404, Description = "A user with that email does not exist in Auth0." });
+                return Ok(new BasicResponseDto() { StatusCode = 400, Description = "A user with that email does not exist in Auth0." });
             }
         }
 
@@ -86,7 +86,7 @@ namespace UpDiddyApi.Controllers
             }
             else
             {
-                return Ok(new BasicResponseDto() { StatusCode = 404, Description = "A user with that email does not exist in ADB2C." });
+                return Ok(new BasicResponseDto() { StatusCode = 400, Description = "A user with that email does not exist in ADB2C." });
             }
         }
 
@@ -112,7 +112,7 @@ namespace UpDiddyApi.Controllers
             }
             else
             {
-                return Ok(new BasicResponseDto() { StatusCode = 404, Description = "This login is not valid for ADB2C." });
+                return Ok(new BasicResponseDto() { StatusCode = 400, Description = "This login is not valid for ADB2C." });
             }
         }
 
@@ -132,9 +132,16 @@ namespace UpDiddyApi.Controllers
 
             var user = _mapper.Map<CreateUserDto, User>(createUserDto);
 
-            _userService.MigrateUserAsync(user);
+            var result = await _userService.MigrateUserAsync(user);
 
-            throw new NotImplementedException();
+            if (result != null && result.Success)
+            {
+                return Ok(new BasicResponseDto() { StatusCode = 200, Description = "The user has been migrated successfully." });
+            }
+            else
+            {
+                return Ok(new BasicResponseDto() { StatusCode = 400, Description = "Tue user was not migrated successfully." });
+            }
         }
 
         [HttpPost("create-user")]

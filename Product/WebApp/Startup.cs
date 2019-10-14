@@ -75,42 +75,7 @@ namespace UpDiddy
                 .AddChakraCore();
 
             services.AddReact();
-            /*
-            if (!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
-            {
-                services.AddAuthentication(sharedOptions =>
-                {
-                    sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                    sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-                })                
-                .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C:Live", options))
-                .AddCookie(options =>
-                {
-                    options.AccessDeniedPath = "/Home/Forbidden";
-                    options.Cookie.Path = "/";
-                    options.SlidingExpiration = false;
-                    options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
-                    options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
-                });
-            }
-            else
-            {
-                services.AddAuthentication(sharedOptions =>
-                {
-                    sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                    sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-                })
-                .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C:Pre", options))
-                .AddCookie(options =>
-                {
-                    options.AccessDeniedPath = "/Home/Forbidden";
-                    options.Cookie.Path = "/";
-                    options.SlidingExpiration = false;
-                    options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
-                    options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
-                });
-            }
-            */
+         
             string domain = $"https://{Configuration["Auth0:Domain"]}";
 
             services.Configure<CookiePolicyOptions>(options =>
@@ -130,6 +95,8 @@ namespace UpDiddy
             .AddCookie(options => {
                 options.LoginPath = "/Session/SignIn";
                 options.LogoutPath = "/Session/SignOut";
+                options.AccessDeniedPath = "/Session/AccessDenied";
+                options.ExpireTimeSpan = new TimeSpan(1, 0, 0); // ensure that this matches the Auth0 application's "JWT Expiration" value
             })
             .AddOpenIdConnect("Auth0", options =>
             {
@@ -222,8 +189,8 @@ namespace UpDiddy
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("IsRecruiterPolicy", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Recruiter" }, domain)));
-                options.AddPolicy("IsCareerCircleAdmin", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Career Circle Administrator" }, domain)));
-                options.AddPolicy("IsRecruiterOrAdmin", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Recruiter", "Career Circle Administrator" }, domain)));
+                options.AddPolicy("IsCareerCircleAdmin", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Career Circle Administrator" }, domain)));
+                options.AddPolicy("IsRecruiterOrAdmin", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Recruiter", "Career Circle Administrator" }, domain)));
             });
 
             //services.AddSingleton<IAuthorizationHandler, ApiGroupAuthorizationHandler>();
@@ -355,35 +322,6 @@ namespace UpDiddy
                         "public,max-age=" + durationInSeconds;
                 }
             });
-            /*
-            app.Use(async (ctx, next) =>
-            {
-                if (ctx.Request.Path == "/signout-oidc" && !ctx.Request.Query["skip"].Any())
-                {
-                    var location = ctx.Request.Path + ctx.Request.QueryString + "&skip=1";
-                    ctx.Response.StatusCode = 200;
-                    var html = $@"
-                        <html><head>
-                            <meta http-equiv='refresh' content='0;url={location}' />
-                        </head></html>";
-                    await ctx.Response.WriteAsync(html);
-                    return;
-                }
-
-                await next();
-
-                if (ctx.Request.Path == "/signin-oidc" && ctx.Response.StatusCode == 302)
-                {
-                    var location = ctx.Response.Headers["location"];
-                    ctx.Response.StatusCode = 200;
-                    var html = $@"
-                        <html><head>
-                            <meta http-equiv='refresh' content='0;url={location}' />
-                        </head></html>";
-                    await ctx.Response.WriteAsync(html);
-                }
-            });
-            */
 
             app.UseSession();
             app.UseCors("UnifiedCors");

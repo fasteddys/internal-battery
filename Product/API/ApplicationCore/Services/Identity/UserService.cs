@@ -35,7 +35,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly ILogger _logger;
         private readonly IB2CGraph _graphClient;
-
+        private readonly string _acceptedTermsOfServiceKeyName = null;
+        private readonly string _isOptInToMarketingEmailsKeyName = null;
         public UserService(IServiceProvider services)
         {
             var configuration = services.GetService<IConfiguration>();
@@ -52,6 +53,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             _repositoryWrapper = services.GetService<IRepositoryWrapper>();
             _logger = services.GetService<ILogger<UserService>>();
             _graphClient = services.GetService<IB2CGraph>();
+            _acceptedTermsOfServiceKeyName = configuration["AzureAdB2C:ExtensionFields:AgreeToCareerCircleTerms"];
+            _isOptInToMarketingEmailsKeyName = configuration["AzureAdB2C:ExtensionFields:AgreeToCareerCircleMarketing"];
         }
 
         private async Task ClearApiTokenAsync()
@@ -129,7 +132,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
 
             try
             {
-                if (users != null)
+                if (users != null && users.Count()> 0)
                 {
                     var auth0User = users.FirstOrDefault();
                     user = new User()
@@ -138,6 +141,10 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                         SubscriberGuid = auth0User.AppMetadata.subscriberGuid,
                         UserId = auth0User.UserId
                     };
+                }
+                else
+                {
+                    return new GetUserResponse(false, "No user was found with that email address.", null);
                 }
             }
             catch (Exception e)
@@ -225,6 +232,14 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             }
             else
             {
+                var userGroupsFromADB2C = await _graphClient.GetUserGroupsByObjectId(subscriber.SubscriberGuid.Value.ToString());
+                var adb2cAccount = await _graphClient.GetUserBySignInEmail(user.Email);
+                string acceptedTermsOfService = string.Empty;
+                bool isOptInToMarketingEmails = false;
+                if (adb2cAccount.AdditionalData.Keys.Contains(_acceptedTermsOfServiceKeyName))
+                    acceptedTermsOfService = adb2cAccount.AdditionalData[_acceptedTermsOfServiceKeyName].ToString();
+                if (adb2cAccount.AdditionalData.Keys.Contains(_isOptInToMarketingEmailsKeyName))
+                    isOptInToMarketingEmails = bool.Parse(adb2cAccount.AdditionalData[_isOptInToMarketingEmailsKeyName].ToString());
                 var apiToken = await GetApiTokenAsync();
                 var managementApiClient = new ManagementApiClient(apiToken, _domain);
 
@@ -237,10 +252,26 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                     AppMetadata = new JObject()
                 };
                 userCreationRequest.AppMetadata.subscriberGuid = subscriber.SubscriberGuid;
-
+                userCreationRequest.AppMetadata.acceptedTermsOfService = acceptedTermsOfService;
+                userCreationRequest.AppMetadata.isOptInToMarketingEmails = isOptInToMarketingEmails;
+                
                 try
                 {
                     userCreationResponse = await managementApiClient.Users.CreateAsync(userCreationRequest);
+                    if (subscriber.IsVerified)
+                        await managementApiClient.Users.UpdateAsync(userCreationResponse.UserId, new UserUpdateRequest() { EmailVerified = true });
+                    if (userGroupsFromADB2C != null && userGroupsFromADB2C.Count() > 0)
+                    {
+                        List<string> newRoles = new List<string>();
+                        var auth0Roles = await managementApiClient.Roles.GetAllAsync(new GetRolesRequest() { NameFilter = null });
+                        foreach (var oldGroup in userGroupsFromADB2C)
+                        {
+                            var matchingRole = auth0Roles.Where(r => r.Name == oldGroup.DisplayName).FirstOrDefault();
+                            newRoles.Add(matchingRole.Id);
+                        }
+                        if (newRoles.Count() > 0)
+                            await managementApiClient.Users.AssignRolesAsync(userCreationResponse.UserId, new AssignRolesRequest() { Roles = newRoles.ToArray() });
+                    }
                 }
                 catch (ApiException ae)
                 {
@@ -255,6 +286,20 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                             apiToken = await GetApiTokenAsync();
                             managementApiClient = new ManagementApiClient(apiToken, _domain);
                             userCreationResponse = await managementApiClient.Users.CreateAsync(userCreationRequest);
+                            if (subscriber.IsVerified)
+                                await managementApiClient.Users.UpdateAsync(userCreationResponse.UserId, new UserUpdateRequest() { EmailVerified = true });
+                            if (userGroupsFromADB2C != null && userGroupsFromADB2C.Count() > 0)
+                            {
+                                List<string> newRoles = new List<string>();
+                                var auth0Roles = await managementApiClient.Roles.GetAllAsync(new GetRolesRequest() { NameFilter = null });
+                                foreach (var oldGroup in userGroupsFromADB2C)
+                                {
+                                    var matchingRole = auth0Roles.Where(r => r.Name == oldGroup.DisplayName).FirstOrDefault();
+                                    newRoles.Add(matchingRole.Id);
+                                }
+                                if (newRoles.Count() > 0)
+                                    await managementApiClient.Users.AssignRolesAsync(userCreationResponse.UserId, new AssignRolesRequest() { Roles = newRoles.ToArray() });
+                            }
                         }
                         catch (Exception e)
                         {
@@ -276,7 +321,6 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                 user.UserId = userCreationResponse.UserId;
                 user.SubscriberGuid = userCreationResponse.AppMetadata.subscriberGuid;
                 _graphClient.DisableUser(user.SubscriberGuid);
-                // todo: implement role assignment logic
 
                 return new CreateUserResponse(true, "User has been migrated successfully.", user);
             }

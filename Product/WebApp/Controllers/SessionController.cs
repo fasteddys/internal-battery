@@ -31,16 +31,24 @@ namespace UpDiddy.Controllers
         private ILogger _syslog = null;
         private IDistributedCache _cache = null;
         private IMemoryCache _memoryCache = null;
-        private IConfiguration _configuration = null;
         private IApi _api = null;
+        private AuthenticationApiClient _auth0Client = null;
+        private string _auth0Domain = null;
+        private string _auth0ClientId = null;
+        private string _auth0ClientSecret = null;
+        private string _auth0Audience = null;
 
         public SessionController(ILogger<SessionController> sysLog, IDistributedCache distributedCache, IMemoryCache memoryCache, IConfiguration configuration, IApi api)
         {
             _syslog = sysLog;
             _cache = distributedCache;
             _memoryCache = memoryCache;
-            _configuration = configuration;
             _api = api;
+            _auth0Client = new AuthenticationApiClient(new Uri($"https://{configuration["Auth0:Domain"]}/"));
+            _auth0Domain = $"https://{configuration["Auth0:Domain"]}";
+            _auth0ClientId = configuration["Auth0:ClientId"];
+            _auth0ClientSecret = configuration["Auth0:ClientSecret"];
+            _auth0Audience = configuration["Auth0:Audience"];
         }
 
         [HttpGet]
@@ -59,6 +67,54 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+        private async Task ExecuteAuth0SignInAsync(string email, string password)
+        {
+            var result = await _auth0Client.GetTokenAsync(new ResourceOwnerTokenRequest
+            {
+                ClientId = _auth0ClientId,
+                ClientSecret = _auth0ClientSecret,
+                Scope = "openid profile email",
+                Realm = "Username-Password-Authentication", // Specify the correct name of your DB connection
+                Username = email,
+                Password = password,
+                Audience = _auth0Audience
+            });
+
+            var user = await _auth0Client.GetUserInfoAsync(result.AccessToken);
+            var firstClaimValue = user.AdditionalClaims.Where(x => x.Key == ClaimTypes.NameIdentifier).FirstOrDefault();
+            Guid subscriberGuid;
+            if (firstClaimValue.Value != null && Guid.TryParse(firstClaimValue.Value.ToString(), out subscriberGuid))
+            {
+                var expiresOn = DateTime.UtcNow.AddSeconds(result.ExpiresIn);
+
+                List<Claim> claims = new List<Claim>();
+                claims.Add(new Claim(ClaimTypes.NameIdentifier, subscriberGuid.ToString()));
+                claims.Add(new Claim(ClaimTypes.Name, user.FullName));
+                claims.Add(new Claim("access_token", result.AccessToken));
+                claims.Add(new Claim(ClaimTypes.Expiration, expiresOn.ToString()));
+
+                var permissionClaim = user.AdditionalClaims.Where(x => x.Key == ClaimTypes.Role).FirstOrDefault().Value.ToList();
+                string permissions = string.Empty;
+
+                foreach (var permission in permissionClaim)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, permission.ToString(), ClaimValueTypes.String, _auth0Domain));
+                }
+
+                var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
+
+                // sync Auth0's email verification status with ours. it would be better if this behavior could be triggered outside of the front-end code,
+                // but having difficulty finding a way to trigger that when the data changes (not just when a login occurs): https://community.auth0.com/t/unable-to-send-context-accesstoken/32098
+                if (user.EmailVerified.HasValue)
+                    await _api.UpdateEmailVerificationStatusAsync(subscriberGuid, user.EmailVerified.Value);
+            }
+            else
+            {
+                throw new ApplicationException("Unable to identify the subscriber.");
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> SignIn(SignInViewModel vm, string returnUrl = null)
         {
@@ -69,55 +125,8 @@ namespace UpDiddy.Controllers
                     var isUserExistsInAuth0 = await _api.IsUserExistsInAuth0Async(vm.EmailAddress);
                     if (isUserExistsInAuth0)
                     {
-                        // perform login attempt using Auth0
-                        AuthenticationApiClient client = new AuthenticationApiClient(new Uri($"https://{_configuration["Auth0:Domain"]}/"));
-                        string domain = $"https://{_configuration["Auth0:Domain"]}";
-                        var result = await client.GetTokenAsync(new ResourceOwnerTokenRequest
-                        {
-                            ClientId = _configuration["Auth0:ClientId"],
-                            ClientSecret = _configuration["Auth0:ClientSecret"],
-                            Scope = "openid profile email",
-                            Realm = "Username-Password-Authentication", // Specify the correct name of your DB connection
-                            Username = vm.EmailAddress,
-                            Password = vm.Password,
-                            Audience = _configuration["Auth0:Audience"]
-                        });
-
-                        var user = await client.GetUserInfoAsync(result.AccessToken);
-                        var firstClaimValue = user.AdditionalClaims.Where(x => x.Key == ClaimTypes.NameIdentifier).FirstOrDefault();
-                        Guid subscriberGuid;
-                        if (firstClaimValue.Value != null && Guid.TryParse(firstClaimValue.Value.ToString(), out subscriberGuid))
-                        {
-                            var expiresOn = DateTime.UtcNow.AddSeconds(result.ExpiresIn);
-
-                            List<Claim> claims = new List<Claim>();
-                            claims.Add(new Claim(ClaimTypes.NameIdentifier, subscriberGuid.ToString()));
-                            claims.Add(new Claim(ClaimTypes.Name, user.FullName));
-                            claims.Add(new Claim("access_token", result.AccessToken));
-                            claims.Add(new Claim(ClaimTypes.Expiration, expiresOn.ToString()));
-
-                            var permissionClaim = user.AdditionalClaims.Where(x => x.Key == ClaimTypes.Role).FirstOrDefault().Value.ToList();
-                            string permissions = string.Empty;
-
-                            foreach (var permission in permissionClaim)
-                            {
-                                claims.Add(new Claim(ClaimTypes.Role, permission.ToString(), ClaimValueTypes.String, domain));
-                            }
-
-                            var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
-                            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
-
-                            // sync Auth0's email verification status with ours. it would be better if this behavior could be triggered outside of the front-end code,
-                            // but having difficulty finding a way to trigger that when the data changes (not just when a login occurs): https://community.auth0.com/t/unable-to-send-context-accesstoken/32098
-                            if (user.EmailVerified.HasValue)
-                                await _api.UpdateEmailVerificationStatusAsync(subscriberGuid, user.EmailVerified.Value);
-
-                            return RedirectToLocal(returnUrl);
-                        }
-                        else
-                        {
-                            throw new ApplicationException("Unable to identify the subscriber.");
-                        }
+                        await ExecuteAuth0SignInAsync(vm.EmailAddress, vm.Password);
+                        return RedirectToLocal(returnUrl);
                     }
                     else
                     {
@@ -126,12 +135,23 @@ namespace UpDiddy.Controllers
                         {
                             // attempt login to adb2c with user's credentials.
                             bool isADB2CLoginValid = await _api.CheckADB2CLoginAsync(vm.EmailAddress, vm.Password);
-                                                        
+
                             if (isADB2CLoginValid)
                             {
-                                // perform the user migration, mark as verified if the adb2c user is verified email address
-                                var response = await _api.MigrateUserAsync(new CreateUserDto() { Email = vm.EmailAddress, Password = vm.Password });   
+                                // perform the user migration
+                                var isMigrationSuccessful = await _api.MigrateUserAsync(new CreateUserDto() { Email = vm.EmailAddress, Password = vm.Password });
 
+                                if (isMigrationSuccessful)
+                                {
+                                    // log the user in using their newly created auth0 account
+                                    await ExecuteAuth0SignInAsync(vm.EmailAddress, vm.Password);
+                                    return RedirectToLocal(returnUrl);
+                                }
+                                else
+                                {
+                                    // intentionally being vague about the error
+                                    ModelState.AddModelError("", "An internal error occurred.");
+                                }
                             }
                             else
                             {
@@ -144,12 +164,15 @@ namespace UpDiddy.Controllers
                             ModelState.AddModelError("", "No account found with that email address.");
                         }
                     }
-
-
+                }
+                catch(Auth0.Core.Exceptions.ApiException ae)
+                {
+                    ModelState.AddModelError("", ae.Message);
                 }
                 catch (Exception e)
                 {
-                    ModelState.AddModelError("", e.Message);
+                    _syslog.LogError($"An unexpected error occurred in SessionController.SignIn: {e.Message}", e);
+                    ModelState.AddModelError("", "An unexpected error occurred.");
                 }
             }
 
