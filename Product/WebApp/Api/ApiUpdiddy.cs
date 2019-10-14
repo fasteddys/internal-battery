@@ -24,6 +24,8 @@ using Microsoft.Extensions.Caching.Memory;
 using System.Net;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
+using UpDiddyLib.Dto.User;
+
 namespace UpDiddy.Api
 {
     public class ApiUpdiddy : IApi
@@ -717,6 +719,41 @@ namespace UpDiddy.Api
             return await PutAsync<List<ImportActionDto>>("contact/import/" + partnerGuid + "/" + HttpUtility.UrlEncode(cacheKey));
         }
 
+        public async Task<bool> IsUserExistsInADB2CAsync(string email)
+        {
+            var basicResponseDto = await GetAsync<BasicResponseDto>($"identity/check-adb2c/{email}");
+            if (basicResponseDto.StatusCode == 200)
+                return true;
+            else
+                return false;
+        }
+
+        public async Task<bool> IsUserExistsInAuth0Async(string email)
+        {
+            var basicResponseDto = await GetAsync<BasicResponseDto>($"identity/check-auth0/{email}");
+            if (basicResponseDto.StatusCode == 200)
+                return true;
+            else
+                return false;
+        }
+
+        public async Task<bool> CheckADB2CLoginAsync(string email, string password)
+        {
+            var basicResponseDto = await PostAsync<BasicResponseDto>("identity/check-adb2c-login", new UserDto() { Email = email, Password = password });
+            if (basicResponseDto.StatusCode == 200)
+                return true;
+            else
+                return false;
+        }
+
+        public async Task<bool> MigrateUserAsync(CreateUserDto createUserDto)
+        {
+            var basicResponseDto = await PostAsync<BasicResponseDto>("identity/migrate-user", createUserDto);
+            if (basicResponseDto.StatusCode == 200)
+                return true;
+            else
+                return false;
+        }
 
         #region Resume Parse 
 

@@ -11,6 +11,8 @@ using UpDiddyApi.ApplicationCore.Services.Identity.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyLib.Dto.User;
+using UpDiddyLib.Dto;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.Controllers
 {
@@ -22,6 +24,8 @@ namespace UpDiddyApi.Controllers
         private readonly IUserService _userService;
         private readonly ISubscriberService _subscriberService;
         private readonly IJobService _jobService;
+        private readonly IB2CGraph _graphClient;
+        private readonly IAPIGateway _adb2cApi;
 
         public IdentityController(IServiceProvider services)
         {
@@ -29,13 +33,13 @@ namespace UpDiddyApi.Controllers
             _userService = services.GetService<IUserService>();
             _subscriberService = services.GetService<ISubscriberService>();
             _jobService = services.GetService<IJobService>();
+            _graphClient = services.GetService<IB2CGraph>();
+            _adb2cApi = services.GetService<IAPIGateway>();
         }
 
-        [HttpPost]
-        public async Task<IActionResult> IsUserInAuth0([FromBody] UserDto userDto)
+        [HttpGet("check-auth0/{email}")]
+        public async Task<IActionResult> IsUserInAuth0(string email)
         {
-            bool? isUserInAuth0 = null;
-
             // todo: secure this request using a secret stored in the key vault 
             if (false)
             {
@@ -47,21 +51,101 @@ namespace UpDiddyApi.Controllers
                 return BadRequest();
             }
 
-            var user = await _userService.GetUserByEmailAsync(userDto.Email);
+            var result = await _userService.GetUserByEmailAsync(email);
 
-            if(user != null)
+            if (result != null && result.Success)
             {
-                return Ok();
+                return Ok(new BasicResponseDto() { StatusCode = 200, Description = "A user with that email exists in Auth0." });
             }
             else
             {
-                return NotFound();
+                return Ok(new BasicResponseDto() { StatusCode = 404, Description = "A user with that email does not exist in Auth0." });
             }
         }
 
-        [HttpPost]
+        [HttpGet("check-adb2c/{email}")]
+        public async Task<IActionResult> IsUserInADB2C(string email)
+        {
+            // todo: secure this request using a secret stored in the key vault 
+            if (false)
+            {
+                return Unauthorized();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            // check if user exits in ADB2C (the account must also be enabled)
+            Microsoft.Graph.User user = await _graphClient.GetUserBySignInEmail(email);
+
+            if (user != null && user.AccountEnabled.HasValue && user.AccountEnabled.Value)
+            {
+                return Ok(new BasicResponseDto() { StatusCode = 200, Description = "A user with that email exists in ADB2C." });
+            }
+            else
+            {
+                return Ok(new BasicResponseDto() { StatusCode = 404, Description = "A user with that email does not exist in ADB2C." });
+            }
+        }
+
+        [HttpPost("check-adb2c-login")]
+        public async Task<IActionResult> CheckADB2CLogin(UserDto userDto)
+        {
+            // todo: secure this request using a secret stored in the key vault 
+            if (false)
+            {
+                return Unauthorized();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            var result = await _adb2cApi.CheckADB2CLogin(userDto.Email, userDto.Password);
+
+            if (result)
+            {
+                return Ok(new BasicResponseDto() { StatusCode = 200, Description = "This login is valid for ADB2C." });
+            }
+            else
+            {
+                return Ok(new BasicResponseDto() { StatusCode = 404, Description = "This login is not valid for ADB2C." });
+            }
+        }
+
+        [HttpPost("migrate-user")]
+        public async Task<IActionResult> MigrateUserAsync([FromBody] CreateUserDto createUserDto)
+        {    
+            // todo: secure this request using a secret stored in the key vault 
+            if (false)
+            {
+                return Unauthorized();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = _mapper.Map<CreateUserDto, User>(createUserDto);
+
+            _userService.MigrateUserAsync(user);
+
+            throw new NotImplementedException();
+        }
+
+        [HttpPost("create-user")]
         public async Task<IActionResult> CreateUserAsync([FromBody] CreateUserDto createUserDto)
         {
+            // todo: secure this request using a secret stored in the key vault 
+            if (false)
+            {
+                return Unauthorized();
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -74,7 +158,7 @@ namespace UpDiddyApi.Controllers
 
             if (!createLoginResponse.Success)
             {
-                return BadRequest(createLoginResponse.Message);
+                return Ok(new BasicResponseDto() { StatusCode = 404, Description = createLoginResponse.Message });
             }
             else
             {
@@ -83,7 +167,7 @@ namespace UpDiddyApi.Controllers
                 if (!createSubscriberResult)
                 {
                     _userService.DeleteUserAsync(user.UserId);
-                    return BadRequest("An error occurred creating the user.");
+                    return Ok(new BasicResponseDto() { StatusCode = 404, Description = "An error occurred creating the user." });
                 }
                 else
                 {
@@ -92,7 +176,7 @@ namespace UpDiddyApi.Controllers
                     {
                         await _jobService.UpdateJobReferral(createUserDto.JobReferralCode, createUserDto.SubscriberGuid.ToString());
                     }
-                    return Ok(createLoginResponse.Message);
+                    return Ok(new BasicResponseDto() { StatusCode = 200, Description = createLoginResponse.Message });
                 }
             }
         }

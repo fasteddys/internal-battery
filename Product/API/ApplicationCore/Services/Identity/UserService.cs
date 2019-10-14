@@ -18,6 +18,7 @@ using UpDiddyApi.ApplicationCore.Services.Identity.Interfaces;
 using UpDiddyLib.Shared;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Models;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.ApplicationCore.Services.Identity
 {
@@ -33,6 +34,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
         private readonly IMemoryCache _memoryCache;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly ILogger _logger;
+        private readonly IB2CGraph _graphClient;
 
         public UserService(IServiceProvider services)
         {
@@ -49,6 +51,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             _memoryCache = services.GetService<IMemoryCache>();
             _repositoryWrapper = services.GetService<IRepositoryWrapper>();
             _logger = services.GetService<ILogger<UserService>>();
+            _graphClient = services.GetService<IB2CGraph>();
         }
 
         private async Task ClearApiTokenAsync()
@@ -209,6 +212,74 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             user.SubscriberGuid = userCreationResponse.AppMetadata.subscriberGuid;
             // todo: implement role assignment logic
             return new CreateUserResponse(true, "Account has been created.", user);
+        }
+
+        public async Task<CreateUserResponse> MigrateUserAsync(User user)
+        {
+            Auth0.ManagementApi.Models.User userCreationResponse = null;
+            var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByEmailAsync(user.Email);
+
+            if (subscriber == null)
+            {
+                return new CreateUserResponse(false, "The subscriber does not exist.", null);
+            }
+            else
+            {
+                var apiToken = await GetApiTokenAsync();
+                var managementApiClient = new ManagementApiClient(apiToken, _domain);
+
+                UserCreateRequest userCreationRequest = new UserCreateRequest()
+                {
+                    Email = user.Email,
+                    Connection = _CONNECTION_TYPE,
+                    Password = user.Password,
+                    VerifyEmail = !subscriber.IsVerified,
+                    AppMetadata = new JObject()
+                };
+                userCreationRequest.AppMetadata.subscriberGuid = subscriber.SubscriberGuid;
+
+                try
+                {
+                    userCreationResponse = await managementApiClient.Users.CreateAsync(userCreationRequest);
+                }
+                catch (ApiException ae)
+                {
+                    if (ae.StatusCode == HttpStatusCode.Unauthorized)
+                    {
+                        _logger.LogWarning($"An unauthorized Auth0 ApiException occurred in UserService.MigrateUserAsync (will refresh token and retry one time): {ae.Message}", ae);
+
+                        try
+                        {
+                            // clear the token, get a new one, and try one more time
+                            await ClearApiTokenAsync();
+                            apiToken = await GetApiTokenAsync();
+                            managementApiClient = new ManagementApiClient(apiToken, _domain);
+                            userCreationResponse = await managementApiClient.Users.CreateAsync(userCreationRequest);
+                        }
+                        catch (Exception e)
+                        {
+                            _logger.LogError($"An unexpected exception occurred in UserService.MigrateUserAsync (will not be retried): {e.Message}", e);
+                            return new CreateUserResponse(false, "An unexpected error has occured.", null);
+                        }
+                    }
+                    else
+                    {
+                        return new CreateUserResponse(false, ae.Message, null);
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError($"An unexpected exception occurred in UserService.MigrateUserAsync (will not be retried): {e.Message}", e);
+                    return new CreateUserResponse(false, "An unexpected error has occured.", null);
+                }
+
+                user.UserId = userCreationResponse.UserId;
+                user.SubscriberGuid = userCreationResponse.AppMetadata.subscriberGuid;
+                _graphClient.DisableUser(user.SubscriberGuid);
+                // todo: implement role assignment logic
+
+                return new CreateUserResponse(true, "User has been migrated successfully.", user);
+            }
         }
 
         public async Task DeleteUserAsync(string userId)

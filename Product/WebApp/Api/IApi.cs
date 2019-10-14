@@ -5,11 +5,16 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Dto.Reporting;
+using UpDiddyLib.Dto.User;
 
 namespace UpDiddy.Api
 {
     public interface IApi
     {
+        Task<bool> IsUserExistsInADB2CAsync(string email);
+        Task<bool> IsUserExistsInAuth0Async(string email);
+        Task<bool> CheckADB2CLoginAsync(string email, string password);
+        Task<bool> MigrateUserAsync(CreateUserDto createUserDto);
         Task<IList<TopicDto>> TopicsAsync();
         Task<TopicDto> TopicByIdAsync(int TopicId);
         Task<TopicDto> TopicBySlugAsync(string TopicSlug);
