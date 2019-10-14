@@ -20,6 +20,7 @@ namespace UpDiddyApi.Models
         public string Description { get; set; }
         public string Code { get; set; }
         public int? TopicId { get; set; }
+        public int? TopicSecondaryId { get; set; }
         public string DesktopImage { get; set; }
         public string TabletImage { get; set; }
         public string MobileImage { get; set; }
