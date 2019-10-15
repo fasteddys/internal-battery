@@ -1,0 +1,42 @@
+@import '_variables';
+@import '_mixins';
+
+.job-details-container
+{
+
+    input[type="file"] {
+        display: none;
+    }
+
+    #ChangeResumeLabel {
+        display: none;
+    }
+
+    #RemoveResume {
+        @include button-with-box-shadow;
+        display: none;
+    }
+
+    #ResumeUploadDisclaimer {
+        padding: 1rem;
+        border-radius: 1rem;
+        display: none;
+        margin-top: 0rem;
+        border: 2px solid $color-secondary;
+    }
+
+    .custom-file-upload {
+        margin-top: 1rem;
+        @include button-with-box-shadow;
+    }
+
+    .btn-resume-submit {
+        border: 0;
+        @include button-with-box-shadow;
+        display: none;
+
+        &:focus {
+            outline: none;
+        }
+    }
+}

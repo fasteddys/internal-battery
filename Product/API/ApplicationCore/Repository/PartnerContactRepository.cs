@@ -36,5 +36,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
             }
             return Partners;
         }
+ 
+
     }
 }

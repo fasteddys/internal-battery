@@ -29,7 +29,7 @@ namespace UpDiddy.Controllers
             IConfiguration configuration,
             IHostingEnvironment env,
             IDeviceResolver deviceResolver
-            ) : base(api)
+            ) : base(api,configuration)
         {
             _env = env;
             _configuration = configuration;

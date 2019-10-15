@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using UpDiddyLib.Dto;
@@ -25,5 +26,6 @@ namespace UpDiddy.ViewModels
         public Guid JobPostingGuid { get; set; }
         public JobPostingDto Job { get; set; }
         public bool HasResumeOnFile { get; set; }
+        public IFormFile UploadedResume { get; set; }
     }
 }

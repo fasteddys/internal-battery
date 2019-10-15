@@ -47,7 +47,7 @@ namespace UpDiddy.Controllers
             ISysEmail sysEmail,
             IMemoryCache memoryCache)
             
-            : base(api)
+            : base(api,configuration)
         {
             _env = env;
             _sysEmail = sysEmail;

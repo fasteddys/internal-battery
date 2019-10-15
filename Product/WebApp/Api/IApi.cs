@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Dto.Reporting;
+using Microsoft.AspNetCore.Http;
 
 namespace UpDiddy.Api
 {
@@ -41,7 +42,7 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> UpdateProfileInformationAsync(SubscriberDto Subscriber);
         Task<BasicResponseDto> UpdateOnboardingStatusAsync();
         Task<Guid> EnrollStudentAndObtainEnrollmentGUIDAsync(EnrollmentFlowDto enrollmentFlowDto);
-        Task<SubscriberDto> CreateSubscriberAsync(string referralCode);
+        Task<SubscriberDto> CreateSubscriberAsync(string source, string referralCode);
         Task<bool> DeleteSubscriberAsync(Guid subscriberGuid, Guid cloudIdentifier);
         Task<WozCourseProgressDto> UpdateStudentCourseProgressAsync(bool FutureSchedule);
         Task<BraintreeResponseDto> SubmitBraintreePaymentAsync(BraintreePaymentDto BraintreePaymentDto);
@@ -57,7 +58,7 @@ namespace UpDiddy.Api
         Task<IList<CompensationTypeDto>> GetCompensationTypesAsync();
         Task<IList<EducationalDegreeTypeDto>> GetEducationalDegreeTypesAsync();
         Task<IList<SkillDto>> GetSkillsBySubscriberAsync(Guid subscriberGuid);
-        Task<BasicResponseDto> UploadResumeAsync(ResumeDto resumeDto);
+        Task<BasicResponseDto> UploadResumeAsync(ResumeDto resumedto);
         Task<SubscriberWorkHistoryDto> AddWorkHistoryAsync(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory);
         Task<SubscriberWorkHistoryDto> UpdateWorkHistoryAsync(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory);
         Task<SubscriberEducationHistoryDto> UpdateEducationHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto educationHistory);
@@ -105,6 +106,7 @@ namespace UpDiddy.Api
         Task<IList<SkillDto>> GetEntitySkillsAsync(string entityType, Guid entityGuid);
         Task<IList<PartnerDto>> GetPartnersAsync();
         Task<PartnerDto> GetPartnerAsync(Guid partnerGuid);
+        Task<PartnerDto> GetPartnerByNameAsync(string partnerName);  
         Task<PartnerDto> CreatePartnerAsync(PartnerDto partnerDto);
         Task<BasicResponseDto> UpdatePartnerAsync(PartnerDto partnerDto);
         Task<BasicResponseDto> DeletePartnerAsync(Guid PartnerGuid);

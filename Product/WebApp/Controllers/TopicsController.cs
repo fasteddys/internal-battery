@@ -23,7 +23,7 @@ namespace UpDiddy.Controllers
         private readonly IButterCMSService _butterService;
 
         public TopicsController(IApi api, IConfiguration configuration, IButterCMSService butterService)
-             : base(api)
+             : base(api,configuration)
         {
             _configuration = configuration;
             _butterService = butterService;

@@ -33,7 +33,7 @@ namespace WebApp.Controllers
         IConfiguration configuration,
         IHostingEnvironment env,
         IButterCMSService butterService)
-         : base(api)
+         : base(api,configuration)
         {
             _api = api;
             _env = env;
