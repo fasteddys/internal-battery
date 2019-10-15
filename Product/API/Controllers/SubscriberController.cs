@@ -104,6 +104,12 @@ public class SubscriberController : Controller
 
     #region Basic Subscriber Endpoints
 
+    /* [Authorize] 
+     * the sign in operation doesn't change the current request user principal; that only happens on incoming requests 
+     * once the cookie or bearer token (or whatever thing the type of auth requires to create an identity) is set. 
+     * as a result, i am unable to mark this method as authorized and send a request from the webapp during sign-in.
+     * todo: follow the steps here to get authorize on here: https://community.auth0.com/t/unable-to-send-context-accesstoken/32098
+     */
     [HttpPost("{subscriberGuid}/email-verification")]
     public async Task<IActionResult> UpdateEmailVerificationStatusAsync(Guid subscriberGuid)
     {
