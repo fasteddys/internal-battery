@@ -8,10 +8,6 @@
 	   var traitify  = new TraitifyCC(model, this.Traitify);
 	  	}
 </script>
-<div class="traitify-assessment-container pb-5" id="assessmentContainer">
-	<div id="traitifyInstructions" class="traitify-header">
-		Simply click "Me" or "Not Me" as each image relates to you.
-	</div>
 	<div id="traitify-form-container" >
 		<form id="SignupForm" asp-controller="traitify" asp-action="createaccount" >
 				<div id="SignUpPassword" class="col-12 sign-up-input no-padding">
@@ -20,7 +16,7 @@
 				<div id="SignUpPasswordRetype" class="col-12 sign-up-input no-padding">
 					<input class="wide-input" placeholder="Re-enter password" type="password" form="SignupForm" name="ReenterPassword" asp-for="ReenterPassword" required />
 				</div>
-				<div >
+				<div>
                     <input type="checkbox"  id="termsAndConditionsCheck" value="agree" required>
                     <label class="form-check-label text-left" for="termsAndConditionsCheck">I agree to become a member of career circle  and we will email you the results </label>
                 </div>
@@ -35,6 +31,10 @@
 				</div>				
 		 @Html.HiddenFor(x => x.AssessmentId)
 	    </form>
+	</div>
+<div class="traitify-assessment-container pb-5" id="assessmentContainer">
+	<div id="traitifyInstructions" class="traitify-header">
+		Simply click "Me" or "Not Me" as each image relates to you.
 	</div>
 	<div id="traitify"></div>
 </div>

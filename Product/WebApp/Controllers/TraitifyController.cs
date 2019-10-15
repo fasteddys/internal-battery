@@ -44,6 +44,7 @@ namespace UpDiddy.Controllers
                     model.FirstName = subscriber.FirstName = subscriber != null ? subscriber.FirstName : string.Empty;
                     model.LastName = subscriber.LastName = subscriber.LastName != null ? subscriber.LastName : string.Empty;
                     model.Email = subscriber.Email != null ? subscriber.Email : string.Empty;
+                    model.IsAuthenticated = true;
                 }
             }
             SetSEOTags(butterPage);
