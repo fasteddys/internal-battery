@@ -22,7 +22,6 @@ namespace UpDiddy.Controllers
 {
     public class CampaignController : BaseController
     {
-        private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
 
         private readonly ButterCMSClient _butterClient;
@@ -30,11 +29,12 @@ namespace UpDiddy.Controllers
         public CampaignController(IApi api,
             IConfiguration configuration,
             IHostingEnvironment env)
-            : base(api)
+            : base(api,configuration)
         {
             _env = env;
             _configuration = configuration;
             _butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
+            _maxCookieLength = int.Parse(_configuration["CareerCircle:MaxCookieLength"]);
         }
 
         [HttpGet("/Wozu")]
@@ -244,6 +244,7 @@ namespace UpDiddy.Controllers
                 campaignGuid = signUpViewModel.CampaignGuid,
                 campaignPhase = WebUtility.UrlDecode(signUpViewModel.CampaignPhase),
                 partnerGuid = landingPage.Data.Fields.partner.PartnerGuid != null ? landingPage.Data.Fields.partner.PartnerGuid : Guid.Empty,
+                subscriberSource = Request.Cookies["source"] == null ? null : Utils.AlphaNumeric(Request.Cookies["source"].ToString(),_maxCookieLength)
             };
 
             // Guard UX from any unforeseen server error.
@@ -409,8 +410,11 @@ namespace UpDiddy.Controllers
                 isGatedDownload = landingPage.Data.Fields.isgateddownload && !string.IsNullOrEmpty(landingPage.Data.Fields.gated_file_download_file),
                 gatedDownloadFileUrl = landingPage.Data.Fields.gated_file_download_file,
                 gatedDownloadMaxAttemptsAllowed = !string.IsNullOrEmpty(landingPage.Data.Fields.gated_file_download_max_attempts_allowed) ? (int)Double.Parse(landingPage.Data.Fields.gated_file_download_max_attempts_allowed) : (int?)null,
-                referralCode = Request.Cookies["referrerCode"] == null ? null : Request.Cookies["referrerCode"].ToString(),
-                partnerGuid = landingPage.Data.Fields.partner.PartnerGuid != null ? landingPage.Data.Fields.partner.PartnerGuid : Guid.Empty
+                partnerGuid = landingPage.Data.Fields.partner.PartnerGuid != null ? landingPage.Data.Fields.partner.PartnerGuid : Guid.Empty,
+
+                //check for any referrerCode 
+                referralCode = Request.Cookies["referrerCode"]==null ? null : Utils.AlphaNumeric(Request.Cookies["referrerCode"].ToString(), _maxCookieLength),
+                subscriberSource = Request.Cookies["source"] == null ? null : Utils.AlphaNumeric(Request.Cookies["source"].ToString(),_maxCookieLength),
             };
 
             // Guard UX from any unforeseen server error.

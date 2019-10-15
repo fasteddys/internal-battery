@@ -31,6 +31,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// <param name="PartnerGuid"></param>
         /// <param name="SubscriberId"></param>
         Task<bool> CreateGroup(string ReferrerUrl, Guid PartnerGuid, int SubscriberId);
+
+        Task<bool> AssociateSourceToSubscriber(string Source,  int SubscriberId);
+
     }
 
 

@@ -3,19 +3,21 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190924095546_Adding partner to job applications")]
+    partial class Addingpartnertojobapplications
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
+                .HasAnnotation("ProductVersion", "2.2.3-servicing-35854")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -650,8 +652,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<string>("TabletImage");
 
                     b.Property<int?>("TopicId");
-
-                    b.Property<int?>("TopicSecondaryId");
 
                     b.Property<int>("VendorId");
 
@@ -1303,39 +1303,6 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("ExperienceLevelId");
 
                     b.ToTable("ExperienceLevel");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.FileDownloadTracker", b =>
-                {
-                    b.Property<int>("FileDownloadTrackerId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("FileDownloadAttemptCount");
-
-                    b.Property<Guid?>("FileDownloadTrackerGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<int?>("MaxFileDownloadAttemptsPermitted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<DateTime?>("MostrecentfiledownloadAttemptinUtc");
-
-                    b.Property<string>("SourceFileCDNUrl");
-
-                    b.Property<Guid?>("SubscriberGuid");
-
-                    b.HasKey("FileDownloadTrackerId");
-
-                    b.ToTable("FileDownloadTracker");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Gender", b =>

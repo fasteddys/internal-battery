@@ -29,7 +29,7 @@ namespace UpDiddy.Controllers
             ICacheService cacheService,
             IButterCMSService butterCMSService,
             IHostingEnvironment env)
-            : base(api)
+            : base(api,configuration)
         {
             _env = env;
             _configuration = configuration;

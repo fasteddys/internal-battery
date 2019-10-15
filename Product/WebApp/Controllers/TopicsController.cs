@@ -9,6 +9,7 @@ using UpDiddy.Services.ButterCMS;
 using UpDiddy.ViewModels.ButterCMS;
 using ButterCMS.Models;
 using Microsoft.AspNetCore.Http;
+using System.Linq;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -22,7 +23,7 @@ namespace UpDiddy.Controllers
         private readonly IButterCMSService _butterService;
 
         public TopicsController(IApi api, IConfiguration configuration, IButterCMSService butterService)
-             : base(api)
+             : base(api,configuration)
         {
             _configuration = configuration;
             _butterService = butterService;
@@ -39,6 +40,16 @@ namespace UpDiddy.Controllers
             QueryParams.Add("levels", _configuration["ButterCMS:CareerCircleTopicsPage:Levels"]);
             PageResponse<TopicsLandingPageViewModel> TopicsPage = await _butterService.RetrievePageAsync<TopicsLandingPageViewModel>("/topics", QueryParams);
 
+            List<TrainingTopicViewModel> trainingTopics = new List<TrainingTopicViewModel>();
+            foreach ( TrainingVendorViewModel tv in TopicsPage.Data.Fields.TrainingVendors )
+            {
+                foreach (TrainingTopicViewModel ttv in tv.TrainingTopicsList)
+                    trainingTopics.Add(ttv);
+            }
+            // Sort the list 
+            trainingTopics = trainingTopics.OrderBy(t => t.SortOrder).ToList();
+
+
             if (TopicsPage == null)
                 return StatusCode(StatusCodes.Status500InternalServerError);
 
@@ -47,7 +58,8 @@ namespace UpDiddy.Controllers
                  HeroHeader = TopicsPage.Data.Fields.HeroHeader,
                  HeroImage = TopicsPage.Data.Fields.HeroImage,
                  TrainingVendors = TopicsPage.Data.Fields.TrainingVendors,
-                 HeroDescription = TopicsPage.Data.Fields.HeroDescription
+                 HeroDescription = TopicsPage.Data.Fields.HeroDescription,
+                 TrainingTopics = trainingTopics
             };
 
             return View("Index", TopicsViewModel);

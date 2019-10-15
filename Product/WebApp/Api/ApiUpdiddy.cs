@@ -962,9 +962,9 @@ namespace UpDiddy.Api
             return await PutAsync<BasicResponseDto>("subscriber/onboard");
         }
 
-        public async Task<SubscriberDto> CreateSubscriberAsync(string referralCode = null)
+        public async Task<SubscriberDto> CreateSubscriberAsync( string source, string referralCode = null)
         {
-            return await PostAsync<SubscriberDto>("subscriber", new ReferralDto() { ReferralCode = referralCode });
+            return await PostAsync<SubscriberDto>("subscriber", new ReferralDto() { JobReferralCode = referralCode, SubscriberSource = source });
         }
         public async Task<bool> DeleteSubscriberAsync(Guid subscriberGuid, Guid cloudIdentifier)
         {
@@ -1333,14 +1333,18 @@ namespace UpDiddy.Api
                 rval = await _SubscriberAsync(subscriberGuid);
                 if (rval == null)
                 {
+                    int MaxCookieLength = int.Parse(_configuration["CareerCircle:MaxCookieLength"]);
+                    //check if there is any referralCode
+                    var referralCode = _contextAccessor.HttpContext.Request.Cookies["referrerCode"] == null ? null : Utils.AlphaNumeric(_contextAccessor.HttpContext.Request.Cookies["referrerCode"].ToString(), MaxCookieLength);
+                    string source = string.Empty;
+                    source = _contextAccessor.HttpContext.Request.Cookies["source"] == null ? null : Utils.AlphaNumeric(_contextAccessor.HttpContext.Request.Cookies["source"].ToString(),MaxCookieLength);
                     // check if there is any referralCode 
-                    var referralCode = _contextAccessor.HttpContext.Request.Cookies["referrerCode"] == null ? null : _contextAccessor.HttpContext.Request.Cookies["referrerCode"].ToString();
                     // not thrilled with the fact that a GET endpoint is capable of invoking a POST endpoint but not worth refactoring right now. 
                     // just adding an additional guard to ensure we don't call this except when we have a referralCode (which should be very rare)
                     if (!string.IsNullOrWhiteSpace(referralCode))
                     {
-                        rval = await CreateSubscriberAsync(referralCode);
-                    }                    
+                        rval = await CreateSubscriberAsync(source, referralCode);
+                    }
                 }
 
                 SetCachedValueAsync<SubscriberDto>(cacheKey, rval);
@@ -1484,6 +1488,23 @@ namespace UpDiddy.Api
             }
             return null;
         }
+
+        public async Task<PartnerDto> GetPartnerByNameAsync(string partnerName)
+        {
+            IList<PartnerDto> _partners = await GetPartnersAsync();
+            foreach (PartnerDto partner in _partners)
+            {
+                if (partner.Name == partnerName)
+                {
+                    return partner;
+                }
+            }
+            return null;
+        }
+
+  
+
+
 
         private async Task<IList<PartnerDto>> _PartnersAsync()
         {

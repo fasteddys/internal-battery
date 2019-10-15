@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.AspNetCore.Http;
 
 namespace UpDiddyLib.Dto
 {
@@ -13,6 +14,10 @@ namespace UpDiddyLib.Dto
         public SubscriberDto Subscriber { get; set; }
     
         public string CoverLetter { get; set; }
+
+        public PartnerDto Partner { get; set; }
+
+
 
     }
 }

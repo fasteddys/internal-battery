@@ -35,7 +35,7 @@ namespace UpDiddy.Controllers
         IConfiguration configuration,
         IHostingEnvironment env,
         ILogger<TalentController> sysLog)
-         : base(api)
+         : base(api,configuration)
         {
             _api = api;
             _env = env;

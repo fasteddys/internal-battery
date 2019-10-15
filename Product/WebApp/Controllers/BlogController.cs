@@ -24,7 +24,7 @@ namespace UpDiddy.Controllers
         private ButterCMSClient _butterCMSClient;
 
         public BlogController(IApi api, IConfiguration configuration, IButterCMSService butterService)
-             : base(api)
+             : base(api,configuration)
         {
             _configuration = configuration;
             _butterService = butterService;

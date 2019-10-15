@@ -60,6 +60,8 @@
         IPromoCodeRepository PromoCodeRepository { get; }
         IFileDownloadTrackerRepository FileDownloadTrackerRepository {get;}
 
-        
+        IPartnerTypeRepository PartnerTypeRepository { get; }
+
+
     }
 }

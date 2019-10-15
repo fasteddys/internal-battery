@@ -22,5 +22,6 @@ namespace UpDiddyLib.Dto.Marketing
         public int? gatedDownloadMaxAttemptsAllowed { get; set; }
         public string campaignSlug { get; set; }
         public Guid? subscriberGuid { get; set; }
+        public string subscriberSource { get; set; }
     }
 }
