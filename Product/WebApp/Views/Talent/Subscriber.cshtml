@@ -330,174 +330,178 @@
 }
 else
 {
-    <div class="container">
+    <meta http-equiv="refresh" content="3; url=/Talent/Subscribers" />
+    <div class="simple-container">
         <div class="row">
-            <div class="col-sm-12 p-4">
-                 Sorry that subscriber seems to be missing....
+            <div class="col-md-12 simple-title">
+                Sorry, we could not find this subscriber.
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 simple-detail">
+                The subscriber you selected no longer exists in our system. We will remove the reference and redirect you to the search page.
             </div>
         </div>
     </div>
+}
 
+@section Scripts{
+    <script type="text/javascript">
+
+        window.onload = function () {
+            var grid = new MvcGrid(document.querySelector('.mvc-grid'));
         }
 
+        //add Notes
+        $(document).ready(function () {
+            $('#notesArea').val('');
+            $('#IsPrivate').checked = false;
 
-        @section Scripts{
-            <script type="text/javascript">
+            //clear notes and isPrivate on clicking addNote button
+            $('.addNote').click(function (e) {
+                $('#notesArea').val('');
+                $('#IsPrivate').prop('checked', false);
+                $('#showError').css('display', 'none');
+                $('#showSuccess').css('display', 'none');
+            });
 
-                window.onload = function () {
-                    var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+            //feed Modal
+            $('#addNoteModal').on('show.bs.modal', function (event) {
+                $('#showError').css('display', 'none');
+                $('#showSuccess').css('display', 'none');
+
+                var button = $(event.relatedTarget);
+                var subscriberNotesGuid = button.data('subscribernotesguid');
+                var subscriberGuid = button.data('subscriberguid');
+                var notes = button.data('notes');
+                var isPrivate = (button.data('isprivate') == 'True');
+
+                var modal = $(this);
+                modal.find('#subscriberNotesGuid').val(subscriberNotesGuid);
+                modal.find('#subscriberGuid').val(subscriberGuid);
+                modal.find('#notesArea').val(notes);
+                modal.find('#IsPrivate')[0].checked = isPrivate;
+            });
+
+            //search Notes on selection of date
+            $('#searchNotes').click(function (e) {
+                e.preventDefault();
+
+                //refresh grid
+                var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+
+                var searchQuery = $('#txtNotesCreateDate').val();
+
+                grid.query.set('searchQuery', searchQuery);
+                grid.reload();
+
+            })
+
+            //save notes
+            $('#saveNotes').click(function (e) {
+                e.preventDefault();
+
+                var notes = $('#notesArea').val();
+                if (notes == '') {
+                    $('.message_box').html(
+                        '<span style="color:red;">Notes is empty!</span>'
+                    );
+                    $('#notesArea').focus();
+                    return false;
                 }
+                else {
+                    $('.message_box').html(
+                        '<span></span>'
+                    );
 
-                //add Notes
-                $(document).ready(function () {
-                    $('#notesArea').val('');
-                    $('#IsPrivate').checked = false;
-
-                    //clear notes and isPrivate on clicking addNote button
-                    $('.addNote').click(function (e) {
-                        $('#notesArea').val('');
-                        $('#IsPrivate').prop('checked', false);
-                        $('#showError').css('display', 'none');
-                        $('#showSuccess').css('display', 'none');
-                    });
-
-                    //feed Modal
-                    $('#addNoteModal').on('show.bs.modal', function (event) {
-                        $('#showError').css('display', 'none');
-                        $('#showSuccess').css('display', 'none');
-
-                        var button = $(event.relatedTarget);
-                        var subscriberNotesGuid = button.data('subscribernotesguid');
-                        var subscriberGuid = button.data('subscriberguid');
-                        var notes = button.data('notes');
-                        var isPrivate = (button.data('isprivate') == 'True');
-
-                        var modal = $(this);
-                        modal.find('#subscriberNotesGuid').val(subscriberNotesGuid);
-                        modal.find('#subscriberGuid').val(subscriberGuid);
-                        modal.find('#notesArea').val(notes);
-                        modal.find('#IsPrivate')[0].checked = isPrivate;
-                    });
-
-                    //search Notes on selection of date
-                    $('#searchNotes').click(function (e) {
-                        e.preventDefault();
-
-                        //refresh grid
-                        var grid = new MvcGrid(document.querySelector('.mvc-grid'));
-
-                        var searchQuery = $('#txtNotesCreateDate').val();
-
-                        grid.query.set('searchQuery', searchQuery);
-                        grid.reload();
-
-                    })
-
-                    //save notes
-                    $('#saveNotes').click(function (e) {
-                        e.preventDefault();
-
-                        var notes = $('#notesArea').val();
-                        if (notes == '') {
-                            $('.message_box').html(
-                                '<span style="color:red;">Notes is empty!</span>'
-                            );
-                            $('#notesArea').focus();
-                            return false;
-                        }
-                        else {
-                            $('.message_box').html(
-                                '<span></span>'
-                            );
-
-                            $.ajax({
-                                url: '/Talent/Subscriber/Notes',
-                                type: 'POST',
-                                contentType: 'application/json',
-                                data: JSON.stringify({
-                                    subscriberNotesGuid: $('#subscriberNotesGuid').val(),
-                                    subscriberGuid: $('#subscriberGuid').val(),
-                                    notes: $('#notesArea').val(),
-                                    ViewableByOthersInRecruiterCompany: $('#IsPrivate').is(":checked") == false ? true : false
-                                }),
-                                success: function (res) {
-                                    if (res) {
-                                        if (res.statusCode == 200) {
-                                            $('#showError').css('display', 'none');
-                                            $('#showSuccess').css('display', 'block');
-                                            setTimeout(function () { $('#addNoteModal').modal('hide'); }, 1000);
+                    $.ajax({
+                        url: '/Talent/Subscriber/Notes',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            subscriberNotesGuid: $('#subscriberNotesGuid').val(),
+                            subscriberGuid: $('#subscriberGuid').val(),
+                            notes: $('#notesArea').val(),
+                            ViewableByOthersInRecruiterCompany: $('#IsPrivate').is(":checked") == false ? true : false
+                        }),
+                        success: function (res) {
+                            if (res) {
+                                if (res.statusCode == 200) {
+                                    $('#showError').css('display', 'none');
+                                    $('#showSuccess').css('display', 'block');
+                                    setTimeout(function () { $('#addNoteModal').modal('hide'); }, 1000);
 
 
-                                            //refresh grid
-                                            var grid = new MvcGrid(document.querySelector('.mvc-grid'));
-                                            var searchQuery = $('#txtNotesCreateDate').val();
+                                    //refresh grid
+                                    var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+                                    var searchQuery = $('#txtNotesCreateDate').val();
 
-                                            grid.query.set('searchQuery', searchQuery);
-                                            grid.reload();
-                                        }
-                                        else {
-                                            $('#showError').css('display', 'block');
-                                            $('#showSuccess').cc('display', 'none');
-                                        }
-
-                                    }
-                                },
-                                error: function (jXHR, textStatus, errorThrown) {
-                                    $('#showError').css('display', 'block');
-                                    $('#showSuccess').css('display', 'none');
+                                    grid.query.set('searchQuery', searchQuery);
+                                    grid.reload();
                                 }
-                            });
-                        }
+                                else {
+                                    $('#showError').css('display', 'block');
+                                    $('#showSuccess').cc('display', 'none');
+                                }
 
-                    })
-
-                    $('#txtNotesCreateDate').datepicker({
-                        autoclose: true,
-                        clearBtn: true
-                    });
-                });
-
-                //delete notes
-                function deleteSubscriberNote(subscriberNotesGuid) {
-                    bootbox.confirm({
-                        message: "Are you sure you want to delete this Note?",
-                        buttons: {
-                            confirm: {
-                                label: 'Yes',
-                                className: 'btn-success'
-                            },
-                            cancel: {
-                                label: 'No',
-                                classname: 'btn-danger'
                             }
                         },
-                        callback: function (result) {
-                            if (result) {
-                                $.ajax({
-                                    url: '/Talent/Subscriber/Notes/' + subscriberNotesGuid,
-                                    method: "DELETE",
-                                    success: function (data, textStatus, jqXHR) {
-                                        if (textStatus === "success") {
-                                            ToastService.success("The grid is being refreshed...", "Note deleted");
-
-                                            //refresh grid
-                                            var grid = new MvcGrid(document.querySelector('.mvc-grid'));
-                                            var searchQuery = $('#txtNotesCreateDate').val();
-
-                                            grid.query.set('searchQuery', searchQuery);
-                                            grid.reload();
-                                        } else {
-                                            ToastService.warning("The Note was not deleted successfully", "Something went wrong");
-                                        }
-                                    },
-                                    error: function (jqXHR, textStatus, errorThrown) {
-                                        ToastService.error(textStatus, errorThrown);
-                                    }
-                                });
-                            }
+                        error: function (jXHR, textStatus, errorThrown) {
+                            $('#showError').css('display', 'block');
+                            $('#showSuccess').css('display', 'none');
                         }
                     });
                 }
-            </script>
+
+            })
+
+            $('#txtNotesCreateDate').datepicker({
+                autoclose: true,
+                clearBtn: true
+            });
+        });
+
+        //delete notes
+        function deleteSubscriberNote(subscriberNotesGuid) {
+            bootbox.confirm({
+                message: "Are you sure you want to delete this Note?",
+                buttons: {
+                    confirm: {
+                        label: 'Yes',
+                        className: 'btn-success'
+                    },
+                    cancel: {
+                        label: 'No',
+                        classname: 'btn-danger'
+                    }
+                },
+                callback: function (result) {
+                    if (result) {
+                        $.ajax({
+                            url: '/Talent/Subscriber/Notes/' + subscriberNotesGuid,
+                            method: "DELETE",
+                            success: function (data, textStatus, jqXHR) {
+                                if (textStatus === "success") {
+                                    ToastService.success("The grid is being refreshed...", "Note deleted");
+
+                                    //refresh grid
+                                    var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+                                    var searchQuery = $('#txtNotesCreateDate').val();
+
+                                    grid.query.set('searchQuery', searchQuery);
+                                    grid.reload();
+                                } else {
+                                    ToastService.warning("The Note was not deleted successfully", "Something went wrong");
+                                }
+                            },
+                            error: function (jqXHR, textStatus, errorThrown) {
+                                ToastService.error(textStatus, errorThrown);
+                            }
+                        });
+                    }
+                }
+            });
         }
+    </script>
+}
 

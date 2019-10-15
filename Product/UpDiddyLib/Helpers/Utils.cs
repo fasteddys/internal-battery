@@ -35,6 +35,8 @@ namespace UpDiddyLib.Helpers
             return rVal;
         }
 
+ 
+
         // quick and dirty email validation class 
         public static bool ValidateEmail(string emailaddress)
         {

@@ -43,7 +43,7 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> UpdateOnboardingStatusAsync();
         Task<Guid> EnrollStudentAndObtainEnrollmentGUIDAsync(EnrollmentFlowDto enrollmentFlowDto);
         Task<SubscriberDto> CreateSubscriberAsync(string source, string referralCode);
-        Task<bool> DeleteSubscriberAsync(Guid subscriberGuid);
+        Task<bool> DeleteSubscriberAsync(Guid subscriberGuid, Guid cloudIdentifier);
         Task<WozCourseProgressDto> UpdateStudentCourseProgressAsync(bool FutureSchedule);
         Task<BraintreeResponseDto> SubmitBraintreePaymentAsync(BraintreePaymentDto BraintreePaymentDto);
         Task<IList<CountryDto>> _GetCountriesAsync();
@@ -100,6 +100,8 @@ namespace UpDiddy.Api
         #endregion
 
         #region AdminPortal
+
+        Task<List<SubscriberInitialSourceDto>> NewSubscribersCSVAsync();
         Task<BasicResponseDto> UpdateEntitySkillsAsync(EntitySkillDto entitySkillDto);
         Task<IList<SkillDto>> GetEntitySkillsAsync(string entityType, Guid entityGuid);
         Task<IList<PartnerDto>> GetPartnersAsync();
