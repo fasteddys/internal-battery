@@ -58,10 +58,9 @@ namespace UpDiddy.Controllers
                 }
                 return File(file.Payload, file.MimeType, file.FileName);
             }
-            catch( Exception ex)
+            catch
             {
-                   ViewBag.Error = ex.InnerException;
-                   return View("Error");
+                return BadRequest();
             }            
         }
     }
