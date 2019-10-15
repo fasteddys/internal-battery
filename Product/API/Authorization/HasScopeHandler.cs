@@ -15,7 +15,7 @@ namespace UpDiddyApi.Authorization
 
             var scopes = context.User.Claims.Where(c => c.Type == "permissions").ToList();
 
-            if (scopes.Any(x => requirement.Claims.Any(y => string.Equals(x.Value, y.Value, StringComparison.InvariantCultureIgnoreCase))))
+            if (scopes.Any(x => requirement.Claims.Any(y => string.Equals(x.Value, y.Value, StringComparison.OrdinalIgnoreCase))))
                 context.Succeed(requirement);
             return Task.CompletedTask;
         }

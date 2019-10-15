@@ -103,11 +103,6 @@ namespace UpDiddy.Controllers
 
                 var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
-
-                // sync Auth0's email verification status with ours. it would be better if this behavior could be triggered outside of the front-end code,
-                // but having difficulty finding a way to trigger that when the data changes (not just when a login occurs): https://community.auth0.com/t/unable-to-send-context-accesstoken/32098
-                if (user.EmailVerified.HasValue)
-                    await _api.UpdateEmailVerificationStatusAsync(subscriberGuid, user.EmailVerified.Value);
             }
             else
             {

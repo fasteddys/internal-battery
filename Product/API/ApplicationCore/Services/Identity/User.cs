@@ -13,6 +13,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
 
         public Guid SubscriberGuid { get; set; }
 
+        public bool? EmailVerified { get; set; }
+
         [Required]
         [DataType(DataType.EmailAddress)]
         [StringLength(255)]

@@ -39,6 +39,7 @@ using System.Net;
 using Auth0.ManagementApi;
 using Auth0.ManagementApi.Models;
 using Newtonsoft.Json.Linq;
+using UpDiddyApi.ApplicationCore.Services.Identity.Interfaces;
 
 [Route("api/[controller]")]
 public class SubscriberController : Controller
@@ -61,7 +62,7 @@ public class SubscriberController : Controller
     private readonly IHangfireService _hangfireService;
     private readonly IJobPostingService _jobPostingService;
     private readonly ManagementApiClient _managementApiClient;
-
+    private readonly IUserService _userService;
     public SubscriberController(UpDiddyDbContext db,
         IMapper mapper,
         IConfiguration configuration,
@@ -78,7 +79,8 @@ public class SubscriberController : Controller
         IJobService jobService,
         IHttpClientFactory httpClientFactory,
         IHangfireService hangfireService,
-        IJobPostingService jobPostingService)
+        IJobPostingService jobPostingService,
+        IUserService userService)
     {
         _db = db;
         _mapper = mapper;
@@ -97,21 +99,24 @@ public class SubscriberController : Controller
         _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory, repositoryWrapper, _subscriberService);
         _hangfireService = hangfireService;
         _jobPostingService = jobPostingService;
-        //TODO - Remove the initialization of the management API here since it will be in the Auth0Service class
-        _managementApiClient = new ManagementApiClient("eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ik1rVXhOekpDUTBVMFJFRkNRalEwT1RaRk4wWkdSakJGT1VVek1VWTJOVE00TWpKRk5UWTRNdyJ9.eyJpc3MiOiJodHRwczovL3N0YWdpbmdjYXJlZXJjaXJjbGUuYXV0aDAuY29tLyIsInN1YiI6IlFWUjZFNzJRZlp6OWdDSGtjM0lnNGJEeTRuM3VmaW5kQGNsaWVudHMiLCJhdWQiOiJodHRwczovL3N0YWdpbmdjYXJlZXJjaXJjbGUuYXV0aDAuY29tL2FwaS92Mi8iLCJpYXQiOjE1NzAyMzA5NDIsImV4cCI6MTU3MDMxNzM0MiwiYXpwIjoiUVZSNkU3MlFmWno5Z0NIa2MzSWc0YkR5NG4zdWZpbmQiLCJzY29wZSI6InJlYWQ6Y2xpZW50X2dyYW50cyBjcmVhdGU6Y2xpZW50X2dyYW50cyBkZWxldGU6Y2xpZW50X2dyYW50cyB1cGRhdGU6Y2xpZW50X2dyYW50cyByZWFkOnVzZXJzIHVwZGF0ZTp1c2VycyBkZWxldGU6dXNlcnMgY3JlYXRlOnVzZXJzIHJlYWQ6dXNlcnNfYXBwX21ldGFkYXRhIHVwZGF0ZTp1c2Vyc19hcHBfbWV0YWRhdGEgZGVsZXRlOnVzZXJzX2FwcF9tZXRhZGF0YSBjcmVhdGU6dXNlcnNfYXBwX21ldGFkYXRhIGNyZWF0ZTp1c2VyX3RpY2tldHMgcmVhZDpjbGllbnRzIHVwZGF0ZTpjbGllbnRzIGRlbGV0ZTpjbGllbnRzIGNyZWF0ZTpjbGllbnRzIHJlYWQ6Y2xpZW50X2tleXMgdXBkYXRlOmNsaWVudF9rZXlzIGRlbGV0ZTpjbGllbnRfa2V5cyBjcmVhdGU6Y2xpZW50X2tleXMgcmVhZDpjb25uZWN0aW9ucyB1cGRhdGU6Y29ubmVjdGlvbnMgZGVsZXRlOmNvbm5lY3Rpb25zIGNyZWF0ZTpjb25uZWN0aW9ucyByZWFkOnJlc291cmNlX3NlcnZlcnMgdXBkYXRlOnJlc291cmNlX3NlcnZlcnMgZGVsZXRlOnJlc291cmNlX3NlcnZlcnMgY3JlYXRlOnJlc291cmNlX3NlcnZlcnMgcmVhZDpkZXZpY2VfY3JlZGVudGlhbHMgdXBkYXRlOmRldmljZV9jcmVkZW50aWFscyBkZWxldGU6ZGV2aWNlX2NyZWRlbnRpYWxzIGNyZWF0ZTpkZXZpY2VfY3JlZGVudGlhbHMgcmVhZDpydWxlcyB1cGRhdGU6cnVsZXMgZGVsZXRlOnJ1bGVzIGNyZWF0ZTpydWxlcyByZWFkOnJ1bGVzX2NvbmZpZ3MgdXBkYXRlOnJ1bGVzX2NvbmZpZ3MgZGVsZXRlOnJ1bGVzX2NvbmZpZ3MgcmVhZDplbWFpbF9wcm92aWRlciB1cGRhdGU6ZW1haWxfcHJvdmlkZXIgZGVsZXRlOmVtYWlsX3Byb3ZpZGVyIGNyZWF0ZTplbWFpbF9wcm92aWRlciBibGFja2xpc3Q6dG9rZW5zIHJlYWQ6c3RhdHMgcmVhZDp0ZW5hbnRfc2V0dGluZ3MgdXBkYXRlOnRlbmFudF9zZXR0aW5ncyByZWFkOmxvZ3MgcmVhZDpzaGllbGRzIGNyZWF0ZTpzaGllbGRzIGRlbGV0ZTpzaGllbGRzIHJlYWQ6YW5vbWFseV9ibG9ja3MgZGVsZXRlOmFub21hbHlfYmxvY2tzIHVwZGF0ZTp0cmlnZ2VycyByZWFkOnRyaWdnZXJzIHJlYWQ6Z3JhbnRzIGRlbGV0ZTpncmFudHMgcmVhZDpndWFyZGlhbl9mYWN0b3JzIHVwZGF0ZTpndWFyZGlhbl9mYWN0b3JzIHJlYWQ6Z3VhcmRpYW5fZW5yb2xsbWVudHMgZGVsZXRlOmd1YXJkaWFuX2Vucm9sbG1lbnRzIGNyZWF0ZTpndWFyZGlhbl9lbnJvbGxtZW50X3RpY2tldHMgcmVhZDp1c2VyX2lkcF90b2tlbnMgY3JlYXRlOnBhc3N3b3Jkc19jaGVja2luZ19qb2IgZGVsZXRlOnBhc3N3b3Jkc19jaGVja2luZ19qb2IgcmVhZDpjdXN0b21fZG9tYWlucyBkZWxldGU6Y3VzdG9tX2RvbWFpbnMgY3JlYXRlOmN1c3RvbV9kb21haW5zIHJlYWQ6ZW1haWxfdGVtcGxhdGVzIGNyZWF0ZTplbWFpbF90ZW1wbGF0ZXMgdXBkYXRlOmVtYWlsX3RlbXBsYXRlcyByZWFkOm1mYV9wb2xpY2llcyB1cGRhdGU6bWZhX3BvbGljaWVzIHJlYWQ6cm9sZXMgY3JlYXRlOnJvbGVzIGRlbGV0ZTpyb2xlcyB1cGRhdGU6cm9sZXMgcmVhZDpwcm9tcHRzIHVwZGF0ZTpwcm9tcHRzIHJlYWQ6YnJhbmRpbmcgdXBkYXRlOmJyYW5kaW5nIiwiZ3R5IjoiY2xpZW50LWNyZWRlbnRpYWxzIn0.RKI_s050D7lLCfoyzMOIZdYKfAnjNu7kTpVMstmqb2jmjOHJS-sd31XXIz2I894C3arLx8YhDji-I2Lp0TRvoV0bHOB_rAO5tLRollItxTkIm64etXUD1h6vGa15JEZHeYFkd2SFoAcRNhhGNcjWsPcxCLZwMwImY4wu5AIa1yV0BjLfvAZ7OhHy7ynSEL_dl75jjvh5J5YnZtS8055527_vtyViGE9lNtiOzDSYOiEUDGKpFW-C1fULmG5wUGOmY7QqZlRRaxUPoSBGqbrAkMDedqRGy9T27Ys9q3woxZSFkIdZcd_6-slYzCK3pn9AgBRk1mlNvkhjwv7Gr6ScOA", "stagingcareercircle.auth0.com");
+        _userService = userService;
     }
 
     #region Basic Subscriber Endpoints
 
-    /* [Authorize] 
-     * the sign in operation doesn't change the current request user principal; that only happens on incoming requests 
-     * once the cookie or bearer token (or whatever thing the type of auth requires to create an identity) is set. 
-     * as a result, i am unable to mark this method as authorized and send a request from the webapp during sign-in.
-     */
-    [HttpPost("{subscriberGuid}/verification/{isEmailVerified}")]
-    public async Task<IActionResult> UpdateEmailVerificationStatusAsync(Guid subscriberGuid, bool isEmailVerified)
+    [HttpPost("{subscriberGuid}/email-verification")]
+    public async Task<IActionResult> UpdateEmailVerificationStatusAsync(Guid subscriberGuid)
     {
-        SubscriberFactory.UpdateEmailVerificationStatus(_db, subscriberGuid, isEmailVerified);
+        var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+        if(subscriber != null)
+        {
+            var response = await _userService.GetUserByEmailAsync(subscriber.Email);
+            if (response != null && response.User !=null && response.User.EmailVerified.HasValue)
+            {
+                SubscriberFactory.UpdateEmailVerificationStatus(_db, subscriberGuid, response.User.EmailVerified.Value);
+            }
+        }
+        
         return Ok();
     }
 

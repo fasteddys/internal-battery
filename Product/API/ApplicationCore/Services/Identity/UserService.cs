@@ -139,7 +139,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                     {
                         Email = auth0User.Email,
                         SubscriberGuid = auth0User.AppMetadata.subscriberGuid,
-                        UserId = auth0User.UserId
+                        UserId = auth0User.UserId,
+                        EmailVerified = auth0User.EmailVerified
                     };
                 }
                 else
