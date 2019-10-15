@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using System;
-using System.Linq;
 using System.Security.Claims;
 using UpDiddy.Api;
 using UpDiddyLib.Helpers;

@@ -10,6 +10,7 @@ namespace UpDiddyLib.Dto
         public int? MaxFileDownloadAttemptsPermitted { get; set; }
         public string SourceFileCDNUrl { get; set; }
         public DateTime? MostrecentfiledownloadAttemptinUtc { get; set; }
-        public Guid? SubscriberGuid {get;set;}
+        public int SubscriberId { get; set; }
+        public int GroupId { get; set; }
     }
 }

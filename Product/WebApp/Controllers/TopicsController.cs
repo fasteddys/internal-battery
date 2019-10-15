@@ -19,13 +19,11 @@ namespace UpDiddy.Controllers
     [Route("[controller]")]
     public class TopicsController : BaseController
     {
-        private readonly IConfiguration _configuration;
         private readonly IButterCMSService _butterService;
 
         public TopicsController(IApi api, IConfiguration configuration, IButterCMSService butterService)
              : base(api,configuration)
         {
-            _configuration = configuration;
             _butterService = butterService;
         }
 

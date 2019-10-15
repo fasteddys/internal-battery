@@ -103,7 +103,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return true;
         }
 
-        public async Task<bool> CreateGroup(string ReferrerUrl, Guid PartnerGuid, int SubscriberId)
+        public async Task<Group> CreateGroup(string ReferrerUrl, Guid PartnerGuid, int SubscriberId)
         {
             try
             {
@@ -134,12 +134,12 @@ namespace UpDiddyApi.ApplicationCore.Services
                         await _repositoryWrapper.GroupPartnerRepository.SaveAsync();
                     }
                 }
-                return true;
+                return Group;
             }
             catch (Exception e)
             {
                 _logger.Log(LogLevel.Error, $"TaggingService:_CreateGroup threw an exception -> {e.Message} for subscriber {SubscriberId} PartnerGuid {PartnerGuid} ReferralUrl {ReferrerUrl}");
-                return false;
+                return null;
             }
         }
 

@@ -109,11 +109,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
-        public async Task TrackingSubscriberFileDownloadAction(Guid subscriberGuid, int fileDownloadTrackerId)
+        public async Task TrackingSubscriberFileDownloadAction(int subscriberId, int fileDownloadTrackerId)
         {
             Models.Action action = await _repositoryWrapper.ActionRepository.GetByNameAsync(UpDiddyLib.Helpers.Constants.Action.DownloadGatedFile);
             EntityType entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync(EntityTypeConst.FileDownloadTracker);
-            Subscriber subscriber = await _repositoryWrapper.Subscriber.GetSubscriberByGuidAsync(subscriberGuid);
+            Subscriber subscriber = await _repositoryWrapper.Subscriber.GetSubscriberByIdAsync(subscriberId);
             SubscriberAction subAction = new SubscriberAction()
             {
                 IsDeleted = 0,

@@ -15,7 +15,6 @@ using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Helpers;
 using UpDiddy.ViewModels.ButterCMS;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 
 
 namespace UpDiddy.Controllers
@@ -32,9 +31,7 @@ namespace UpDiddy.Controllers
             : base(api,configuration)
         {
             _env = env;
-            _configuration = configuration;
             _butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
-            _maxCookieLength = int.Parse(_configuration["CareerCircle:MaxCookieLength"]);
         }
 
         [HttpGet("/Wozu")]
