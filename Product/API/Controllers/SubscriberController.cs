@@ -854,7 +854,15 @@ namespace UpDiddyApi.Controllers
                         subscriber.PhoneNumber = signUpDto.phoneNumber;
                         await _subscriberService.UpdateSubscriber(subscriber);
                     }
-                    group = await _taggingService.CreateGroup(signUpDto.referer, signUpDto.partnerGuid, subscriber.SubscriberId);
+
+                    // Per Brent, subscriber source should be associated with the existing user before any land page 
+                    if (!string.IsNullOrEmpty(signUpDto.subscriberSource))
+                    {                   
+                        await _taggingService.AssociateSourceToSubscriber(signUpDto.subscriberSource, subscriber.SubscriberId);
+                    }
+
+                    var referer = !String.IsNullOrEmpty(signUpDto.referer) ? signUpDto.referer : Request.Headers["Referer"].ToString();
+                    group = await _taggingService.CreateGroup(referer, signUpDto.partnerGuid, subscriber.SubscriberId);
                     await _taggingService.AddConvertedContactToGroupBasedOnPartnerAsync(subscriber.SubscriberId);
                     await _db.SaveChangesAsync();
                     transaction.Commit();
@@ -932,8 +940,6 @@ namespace UpDiddyApi.Controllers
             subscriber.IsVerified = false;
 
             var referer = !String.IsNullOrEmpty(signUpDto.referer) ? signUpDto.referer : Request.Headers["Referer"].ToString();
-
-
 
             Group group;
             // use transaction to verify that both changes 

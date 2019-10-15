@@ -318,8 +318,9 @@ namespace UpDiddy.Controllers
                     isGatedDownload = landingPage.Data.Fields.isgateddownload && !string.IsNullOrEmpty(landingPage.Data.Fields.gated_file_download_file),
                     gatedDownloadFileUrl = landingPage.Data.Fields.gated_file_download_file,
                     gatedDownloadMaxAttemptsAllowed = !string.IsNullOrEmpty(landingPage.Data.Fields.gated_file_download_max_attempts_allowed) ? (int)Double.Parse(landingPage.Data.Fields.gated_file_download_max_attempts_allowed) : (int?)null,
-                    referralCode = Request.Cookies["referrerCode"] == null ? null : Request.Cookies["referrerCode"].ToString(),
-                    partnerGuid = landingPage.Data.Fields.partner.PartnerGuid != null ? landingPage.Data.Fields.partner.PartnerGuid : Guid.Empty
+                    partnerGuid = landingPage.Data.Fields.partner.PartnerGuid != null ? landingPage.Data.Fields.partner.PartnerGuid : Guid.Empty,
+                    referralCode = Request.Cookies["referrerCode"]==null ? null : Utils.AlphaNumeric(Request.Cookies["referrerCode"].ToString(), _maxCookieLength),
+                    subscriberSource = Request.Cookies["source"] == null ? null : Utils.AlphaNumeric(Request.Cookies["source"].ToString(),_maxCookieLength),
                 };
 
                 subscriberResponse = await _Api.ExistingUserGroupSignup(sudto);
