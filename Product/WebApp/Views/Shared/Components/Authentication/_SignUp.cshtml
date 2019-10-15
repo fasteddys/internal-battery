@@ -2,9 +2,14 @@
 @using System.Net
 @model SignUpViewModel
 
-@{ 
+@{
     string _form = Model.IsExpressSignUp ? "ExpressSignUpForm" : "SignUpForm";
     string _aspAction = Model.IsExpressSignUp ? "express-sign-up" : "sign-up";
+    var redirectUrl = "/";
+    if(!String.IsNullOrEmpty(Model.CampaignSlug))
+    {
+        redirectUrl = "campaign/" + Model.CampaignSlug;
+    }
 }
 
 <div id="SignUpComponent">
@@ -16,13 +21,9 @@
                 <input type="hidden" asp-for="CampaignGuid" name="CampaignGuid" value="@Model.CampaignGuid" form="SignUpForm" />
                 <input type="hidden" asp-for="CampaignPhase" name="CampaignPhase" value="@WebUtility.UrlEncode(Model.CampaignPhase)" form="SignUpForm" />
             }
-            if (Model.PartnerGuid != Guid.Empty && Model.PartnerGuid != null)
-            {
-                <input type="hidden" asp-for="PartnerGuid" name="PartnerGuid" value="@Model.PartnerGuid" form="@_form" />
-            }
         }
-        <div class="row">
-            @if(Model.IsWaitList)
+        <div class="row">                                                  
+            @if (Model.IsWaitList)
             {
                 <div id="SignUpFirstName" class="col-12 sign-up-input no-padding">
                     <input class="wide-input" placeholder="Your first name" form="@_form" name="FirstName" asp-for="FirstName" required />
@@ -31,10 +32,10 @@
                     <input class="wide-input" placeholder="Your last name" form="@_form" name="LastName" asp-for="LastName" required />
                 </div>
                 <div id="SignUpPhone" class="col-12 sign-up-input no-padding">
-                    <input class="wide-input" placeholder="Your phone number (optional)" type="text"  maxlength = "16"  form="@_form" name="PhoneNumber" asp-for="PhoneNumber" />
+                    <input class="wide-input" placeholder="Your phone number (optional)" type="text" maxlength="16" form="@_form" name="PhoneNumber" asp-for="PhoneNumber" />
                 </div>
-            }   
-            <div id="SignUpEmail"   
+            }
+            <div id="SignUpEmail" class="col-12 sign-up-input no-padding">
                 <input class="wide-input" placeholder="Your email" form="@_form" data-val="true" name="Email" asp-for="Email" required />
             </div>
             <div id="SignUpPassword" class="col-12 sign-up-input no-padding">
@@ -51,13 +52,20 @@
             </div>
             <div id="SignUpAction" class="col-12 no-padding">
                 @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
-                    Text = Model.SignUpButtonText==null? "Sign Up Now" : Model.SignUpButtonText,
+                    Text = string.IsNullOrEmpty(Model.SignUpButtonText) ? "Sign Up Now" : Model.SignUpButtonText,
                     SkewDirection = "skew-left-to-right",
                     ChosenColorScheme = "cc-cscheme-darkred",
                     Form = _form,
                     ButtonAction = ActionButtonViewModel.Action.SUBMIT
                 })
-            </div>  
+            </div>
+            @if(!string.IsNullOrEmpty(Model.CampaignSlug))
+            {
+                   <div class="col-12 pt-4">
+                     <p>Existing User? Click here to @Html.ActionLink("log in", "signin","session", new { redirectUri = @redirectUrl, rel = "nofollow"  })</p>
+                   </div>
+            }
+         
             @if (!string.IsNullOrWhiteSpace(Model.ObfuscatedEmail))
             {
                 <div class="col-12 no-padding notification">
@@ -65,16 +73,32 @@
                 </div>
             } 
         </div>
-        @Html.HiddenFor(x => Model.IsWaitList)
+        @Html.HiddenFor(x => Model.CampaignSlug)
+        @Html.HiddenFor(x => Model.SubscriberGuid)
     </form>
     <div class="modal signup-modal text-cc-secondary" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Thank You!</h5>
+                    <h5 class="modal-title">
+                        @if(!string.IsNullOrEmpty(Model.SuccessHeader))
+                        {
+                            @Html.Raw(Model.SuccessHeader);
+                        }else
+                        {
+                            @Html.Raw("Thank You!");
+                        }
+                    </h5>
                 </div>
                 <div class="modal-body">
-                    <p>You have signed up successfully. You will now be redirected to the login page.</p>
+                    @if(!string.IsNullOrEmpty(Model.SuccessText))
+                    {
+                        @Html.Raw(Model.SuccessText);
+                    }
+                    else
+                    {
+                        @Html.Raw("<p>You have signed up successfully. You will now be redirected to the login page.</p>");
+                    }
                 </div>
                 <div class="modal-footer">
                     <a href="/Session/SignIn" class="btn btn-primary">Continue</a>

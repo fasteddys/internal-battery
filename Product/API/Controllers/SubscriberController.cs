@@ -60,6 +60,9 @@ namespace UpDiddyApi.Controllers
         private readonly CloudTalent _cloudTalent = null;
         private readonly IHangfireService _hangfireService;
         private readonly IJobPostingService _jobPostingService;
+        private readonly IFileDownloadTrackerService _fileDownloadTrackerService;
+
+        private readonly ZeroBounceApi _zeroBounceApi;
 
 
         public SubscriberController(UpDiddyDbContext db,
@@ -78,7 +81,8 @@ namespace UpDiddyApi.Controllers
             IJobService jobService,
             IHttpClientFactory httpClientFactory,
             IHangfireService hangfireService,
-            IJobPostingService jobPostingService)
+            IJobPostingService jobPostingService,
+            IFileDownloadTrackerService fileDownloadTrackerService)
         {
             _db = db;
             _mapper = mapper;
@@ -97,6 +101,9 @@ namespace UpDiddyApi.Controllers
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory, repositoryWrapper, _subscriberService);
             _hangfireService = hangfireService;
             _jobPostingService = jobPostingService;
+            _fileDownloadTrackerService = fileDownloadTrackerService;
+            _zeroBounceApi = new ZeroBounceApi(_configuration, repositoryWrapper, sysLog);
+
         }
 
         #region Basic Subscriber Endpoints
@@ -122,29 +129,31 @@ namespace UpDiddyApi.Controllers
         [HttpGet("{subscriberGuid}")]
         public async Task<IActionResult> Get(Guid subscriberGuid)
         {
-            // Validate guid for GetSubscriber call
-            if (Guid.Empty.Equals(subscriberGuid) || subscriberGuid == null)
-                return NotFound();
+          
+                // Validate guid for GetSubscriber call
+                if (Guid.Empty.Equals(subscriberGuid) || subscriberGuid == null)
+                    return NotFound();
 
-            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var isAuth = await _authorizationService.AuthorizeAsync(User, "IsRecruiterPolicy");
+                Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                var isAuth = await _authorizationService.AuthorizeAsync(User, "IsRecruiterPolicy");                
 
-            if (subscriberGuid == loggedInUserGuid || isAuth.Succeeded)
-            {
+                if (subscriberGuid == loggedInUserGuid || isAuth.Succeeded)
+                {
+                    
+                    SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
 
-                SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
+                    if (subscriberDto == null)
+                        return Ok(subscriberDto);
 
-                if (subscriberDto == null)
-                    return Ok(subscriberDto);
-
-                // track the subscriber action if performed by someone other than the user who owns the file
-                if (loggedInUserGuid != subscriberDto.SubscriberGuid.Value)
-                    new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);
+                    // track the subscriber action if performed by someone other than the user who owns the file
+                    if (loggedInUserGuid != subscriberDto.SubscriberGuid.Value)
+                        new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);
 
                 return Ok(subscriberDto);
-            }
-            else
-                return Unauthorized();
+                }
+                else
+                    return Unauthorized();
+                        
         }
         
         [Authorize(Policy = "IsCareerCircleAdmin")]
@@ -184,7 +193,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPost("/api/[controller]")]
-        public IActionResult NewSubscriber([FromBody] ReferralDto dto)
+        public async Task<IActionResult> NewSubscriber([FromBody] ReferralDto dto)
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             Subscriber subscriber = _db.Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid).FirstOrDefault();
@@ -208,11 +217,13 @@ namespace UpDiddyApi.Controllers
             _db.SaveChanges();
 
             //updatejiobReferral if referral is not empty
-            if (!string.IsNullOrEmpty(dto.ReferralCode))
-            {
-                _jobService.UpdateJobReferral(dto.ReferralCode, subscriber.SubscriberGuid.ToString());
-            }
+            if (!string.IsNullOrEmpty(dto.JobReferralCode))            
+                await _jobService.UpdateJobReferral(dto.JobReferralCode, subscriber.SubscriberGuid.ToString());            
 
+            // asscociate subscriber with a source if one was provided
+            if (!string.IsNullOrEmpty(dto.SubscriberSource))            
+                 await _taggingService.AssociateSourceToSubscriber(dto.SubscriberSource, subscriber.SubscriberId);
+            
 
             // update google profile 
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
@@ -824,9 +835,72 @@ namespace UpDiddyApi.Controllers
         }
 
         [AllowAnonymous]
+        [HttpPost("/api/[controller]/existing-user-signup")]
+        public async Task<IActionResult> ExistingUserSignup([FromBody] SignUpDto signUpDto)
+        {
+            Subscriber subscriber = await _subscriberService.GetSubscriberByGuid(signUpDto.subscriberGuid.Value);
+            Group group;
+            if (subscriber == null)
+                return BadRequest();
+
+            using (var transaction = _db.Database.BeginTransaction())
+            {
+                try
+                {
+                    if(signUpDto.isWaitlist)
+                    {
+                        subscriber.FirstName = signUpDto.firstName;
+                        subscriber.LastName = signUpDto.lastName;
+                        subscriber.PhoneNumber = signUpDto.phoneNumber;
+                        await _subscriberService.UpdateSubscriber(subscriber);
+                    }
+
+                    // Per Brent, subscriber source should be associated with the existing user before any land page 
+                    if (!string.IsNullOrEmpty(signUpDto.subscriberSource))
+                    {                   
+                        await _taggingService.AssociateSourceToSubscriber(signUpDto.subscriberSource, subscriber.SubscriberId);
+                    }
+
+                    var referer = !String.IsNullOrEmpty(signUpDto.referer) ? signUpDto.referer : Request.Headers["Referer"].ToString();
+                    group = await _taggingService.CreateGroup(referer, signUpDto.partnerGuid, subscriber.SubscriberId);
+                    await _taggingService.AddConvertedContactToGroupBasedOnPartnerAsync(subscriber.SubscriberId);
+                    await _db.SaveChangesAsync();
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    _syslog.Log(LogLevel.Error, "SubscriberController.ExistingUserSignup:: Error occured while attempting save existing Subscriber. Exception: {@Exception}", ex);
+                    return StatusCode(500);
+                }
+            }
+
+            if (signUpDto.referralCode != null)
+            {
+                await _jobService.UpdateJobReferral(signUpDto.referralCode, subscriber.SubscriberGuid.ToString());
+            }
+
+            if (signUpDto.isGatedDownload.Value && group != null)
+            {
+                var downloadUrl = await HandleGatedFileDownload(subscriber.Email, signUpDto.gatedDownloadFileUrl, signUpDto.gatedDownloadMaxAttemptsAllowed, subscriber.SubscriberId, group.GroupId);
+                SendGatedDownloadLink(subscriber.Email, downloadUrl);
+            }
+
+            return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Subscriber has been added to the group" });
+        }
+
+        [AllowAnonymous]
         [HttpPost("/api/[controller]/express-sign-up")]
         public async Task<IActionResult> ExpressSignUp([FromBody] SignUpDto signUpDto)
         {
+            bool? isEmailValid = _zeroBounceApi.ValidateEmail(signUpDto.email);
+            if (isEmailValid.Value == false)
+            {
+                var response = new BasicResponseDto() { StatusCode = 400, Description = "Unable to create new account. The email address is not valid." };
+                _syslog.Log(LogLevel.Warning, "SubscriberController.ExpressSignUp: Bad Request, user tried to sign up with an illegitimate email. {@Email}", signUpDto.email);
+                return BadRequest(response);
+            }
+
             // check if subscriber is in database
             Subscriber subscriber = await _db.Subscriber.Where(s => s.Email == signUpDto.email).FirstOrDefaultAsync();
             if (subscriber != null)
@@ -867,9 +941,7 @@ namespace UpDiddyApi.Controllers
 
             var referer = !String.IsNullOrEmpty(signUpDto.referer) ? signUpDto.referer : Request.Headers["Referer"].ToString();
 
-
-
-
+            Group group;
             // use transaction to verify that both changes 
             using (var transaction = _db.Database.BeginTransaction())
             {
@@ -878,7 +950,12 @@ namespace UpDiddyApi.Controllers
                     _db.Add(subscriber);
                     await _db.SaveChangesAsync();
 
-                    await _taggingService.CreateGroup(referer, signUpDto.partnerGuid, subscriber.SubscriberId);
+                    // Per Brent, subscriber source should be associated with the new user before any land page 
+                    if (!string.IsNullOrEmpty(signUpDto.subscriberSource))
+                    {                   
+                        await _taggingService.AssociateSourceToSubscriber(signUpDto.subscriberSource, subscriber.SubscriberId);
+                    }
+                    group = await _taggingService.CreateGroup(referer, signUpDto.partnerGuid, subscriber.SubscriberId);
                     await _taggingService.AddConvertedContactToGroupBasedOnPartnerAsync(subscriber.SubscriberId);
 
                     SubscriberProfileStagingStore store = new SubscriberProfileStagingStore()
@@ -916,10 +993,26 @@ namespace UpDiddyApi.Controllers
             }
 
 
-            //TODO; Check if it is traitify and send email with the rest of their result
+            if (signUpDto.isGatedDownload.Value && group != null)
+            {
+                var downloadUrl = await HandleGatedFileDownload(subscriber.Email, signUpDto.gatedDownloadFileUrl, signUpDto.gatedDownloadMaxAttemptsAllowed, subscriber.SubscriberId, group.GroupId);
+                SendGatedDownloadLink(subscriber.Email, downloadUrl);
+            }
 
             SendVerificationEmail(subscriber.Email, signUpDto.verifyUrl + subscriber.EmailVerification.Token);
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Contact has been converted to subscriber." });
+        }
+
+        private async Task<string> HandleGatedFileDownload(string email, string fileUrl, int? maxAttemptsAllowed, int subscriberId, int groupId)
+        {
+            FileDownloadTrackerDto fileDownloadTrackerDto = new FileDownloadTrackerDto
+            {
+                SourceFileCDNUrl = fileUrl,
+                MaxFileDownloadAttemptsPermitted = maxAttemptsAllowed,
+                SubscriberId  = subscriberId,
+                GroupId = groupId
+            };
+            return await _fileDownloadTrackerService.CreateFileDownloadLink(fileDownloadTrackerDto);
         }
 
         [HttpGet("/api/[controller]/me/partner-web-redirect")]
@@ -990,7 +1083,6 @@ namespace UpDiddyApi.Controllers
         [HttpGet("/api/[controller]/sources")]
         public IActionResult GetSubscriberSources()
         {
-
             return Ok(_db.SubscriberSources.ProjectTo<SubscriberSourceStatisticDto>(_mapper.ConfigurationProvider).ToList());
         }
 
@@ -1166,6 +1258,25 @@ namespace UpDiddyApi.Controllers
                     null
                 ));
         }
+
+        private void SendGatedDownloadLink(string email, string link)
+        {
+            _hangfireService.Enqueue(() =>
+             _sysEmail.SendTemplatedEmailAsync(
+                 email,
+                 _configuration["SysEmail:Transactional:TemplateIds:GatedDownload-LinkEmail"],
+                 new
+                 {
+                     fileDownloadLinkUrl = link
+                 },
+                 Constants.SendGridAccount.Transactional,
+                 null,
+                 null,
+                 null,
+                 null
+             ));
+        }
+
 
         #region SubscriberNotes
         /// <summary>

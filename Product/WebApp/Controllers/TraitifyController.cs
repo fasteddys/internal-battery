@@ -15,14 +15,12 @@ namespace UpDiddy.Controllers
 {
     public class TraitifyController : BaseController
     {
-        private IApi _api;
         private readonly IConfiguration _config;
         private readonly IButterCMSService _butterService;
         public TraitifyController(IApi api,
          IButterCMSService butterService,
-         IConfiguration config) : base(api)
+         IConfiguration config) : base(api,config)
         {
-            _api = api;
             _config = config;
             _butterService = butterService;
         }
@@ -39,7 +37,7 @@ namespace UpDiddy.Controllers
                 Guid? subscriberGuid = GetSubscriberGuid();
              if (subscriberGuid != null)
                 {
-                    SubscriberDto subscriber = await _api.SubscriberAsync(subscriberGuid.Value, true);
+                    SubscriberDto subscriber = await _Api.SubscriberAsync(subscriberGuid.Value, true);
                     model.SubscriberGuid = subscriberGuid;
                     model.FirstName = subscriber.FirstName = subscriber != null ? subscriber.FirstName : string.Empty;
                     model.LastName = subscriber.LastName = subscriber.LastName != null ? subscriber.LastName : string.Empty;
@@ -70,7 +68,7 @@ namespace UpDiddy.Controllers
                 SubscriberGuid = model.SubscriberGuid
             };
 
-            var result = await _api.StartNewTraitifyAssessment(dto);
+            var result = await _Api.StartNewTraitifyAssessment(dto);
             model.ModalHeader = butterPage.Data.Fields.ModalHeader;
             model.ModalText = butterPage.Data.Fields.ModalText;
             model.AssessmentId = result.AssessmentId;
@@ -103,7 +101,7 @@ namespace UpDiddy.Controllers
             var butterPage = await GetButterLandingPage();
             model.ModalHeader = butterPage.Data.Fields.ModalHeader;
             model.ModalText = butterPage.Data.Fields.ModalText;
-            TraitifyDto dto = await _api.GetTraitifyByAssessmentId(assessmentId);
+            TraitifyDto dto = await _Api.GetTraitifyByAssessmentId(assessmentId);
             if (dto != null)
             {
                 model.AssessmentId = dto.AssessmentId;
@@ -121,7 +119,7 @@ namespace UpDiddy.Controllers
         [Route("[controller]/complete/{assessmentId:length(36)}")]
         public async Task<JsonResult> CompleteAssessment(string assessmentId)
         {
-            var result = await _api.CompleteAssessment(assessmentId);
+            var result = await _Api.CompleteAssessment(assessmentId);
             return Json(result);
         }
 

@@ -18,7 +18,6 @@ namespace UpDiddy.Controllers
 {
     public class SitemapController : BaseController
     {
-        private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
         private readonly ICacheService _cacheService;
         private readonly IButterCMSService _butterService;
@@ -29,10 +28,9 @@ namespace UpDiddy.Controllers
             ICacheService cacheService,
             IButterCMSService butterCMSService,
             IHostingEnvironment env)
-            : base(api)
+            : base(api,configuration)
         {
             _env = env;
-            _configuration = configuration;
             _cacheService = cacheService;
             _butterService = butterCMSService;
         }

@@ -1,5 +1,4 @@
-﻿using Hangfire;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,7 +34,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <returns></returns>
         public async Task<Dictionary<Subscriber, List<JobPosting>>> GetSubscriberAbandonedJobPostingHistoryByDateAsync(DateTime date)
         {
-            IQueryable<SubscriberAction> subscriberAction = _repositoryWrapper.SubscriberActionRepository.GetAll();           
+            IQueryable<SubscriberAction> subscriberAction = _repositoryWrapper.SubscriberActionRepository.GetAll();
             List<SubscriberAction> todaysActions = await subscriberAction
                 .Where(x => x.EntityType.Name == UpDiddyLib.Helpers.Constants.EventType.JobPosting && x.Action.Name == UpDiddyLib.Helpers.Constants.Action.ApplyJob && x.CreateDate.Date == date.Date)
                 .ToListAsync();
@@ -59,7 +58,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                         }
                     }
                     //Add to mapping collection only if there is atleast one job the subscriber applied to without submitting
-                    if(jobPostingList.Count > 0)
+                    if (jobPostingList.Count > 0)
                     {
                         subscribersToJobPostingMapping.Add(subscriber, jobPostingList);
                     }
@@ -103,11 +102,34 @@ namespace UpDiddyApi.ApplicationCore.Services
             Models.Action action = await _repositoryWrapper.ActionRepository.GetByNameAsync(UpDiddyLib.Helpers.Constants.Action.View);
             EntityType entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync(EntityTypeConst.JobPosting);
 
-            if (jobGuid !=Guid.Empty && subscriberGuid!=Guid.Empty)
+            if (jobGuid != Guid.Empty && subscriberGuid != Guid.Empty)
             {
-                    // invoke the Hangfire job to store the tracking information
-                    _hangfireService.Enqueue<ScheduledJobs>(j => j.TrackSubscriberActionInformation(subscriberGuid, action.ActionGuid, entityType.EntityTypeGuid, jobGuid));
+                // invoke the Hangfire job to store the tracking information
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.TrackSubscriberActionInformation(subscriberGuid, action.ActionGuid, entityType.EntityTypeGuid, jobGuid));
             }
+        }
+
+        public async Task TrackingSubscriberFileDownloadAction(int subscriberId, int fileDownloadTrackerId)
+        {
+            Models.Action action = await _repositoryWrapper.ActionRepository.GetByNameAsync(UpDiddyLib.Helpers.Constants.Action.DownloadGatedFile);
+            EntityType entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync(EntityTypeConst.FileDownloadTracker);
+            Subscriber subscriber = await _repositoryWrapper.Subscriber.GetSubscriberByIdAsync(subscriberId);
+            SubscriberAction subAction = new SubscriberAction()
+            {
+                IsDeleted = 0,
+                CreateDate = DateTime.UtcNow,
+                ModifyDate = null,
+                Action = action,
+                CreateGuid = Guid.Empty,
+                Subscriber = subscriber,
+                SubscriberActionGuid = Guid.NewGuid(),
+                EntityType = entityType,
+                EntityId = fileDownloadTrackerId,
+                ModifyGuid = null,
+                OccurredDate = DateTime.UtcNow
+            };
+            await _repositoryWrapper.SubscriberActionRepository.Create(subAction);
+            await _repositoryWrapper.SubscriberActionRepository.SaveAsync();
         }
     }
 }

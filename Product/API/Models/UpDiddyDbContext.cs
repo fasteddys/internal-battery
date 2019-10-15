@@ -174,14 +174,12 @@ namespace UpDiddyApi.Models
 
         public DbSet<ServiceOffering> ServiceOffering { get; set; }
         public DbSet<ServiceOfferingItem> ServiceOfferingItem { get; set; }
-    
+
         public DbSet<ServiceOfferingOrder> ServiceOfferingOrder { get; set; }      
         public DbSet<ServiceOfferingPromoCodeRedemption> ServiceOfferingPromoCodeRedemption { get; set; }
-
         public DbSet<ServiceOfferingPromoCode> ServiceOfferingPromoCode { get; set; }
+        public DbSet<FileDownloadTracker> FileDownloadTracker { get; set; }
         
-
-
 
         public DbSet<CourseSite> CourseSite { get; set; }
         public DbSet<CoursePage> CoursePage { get; set; }

@@ -16,8 +16,13 @@ namespace UpDiddyLib.Dto.Marketing
         public string verifyUrl { get; set; }
         public string referralCode { get; set; }
         public Guid partnerGuid { get; set; }
-        public bool IsWaitList { get; set; }
+        public bool isWaitlist { get; set; }
+        public bool? isGatedDownload { get; set; }
+        public string gatedDownloadFileUrl { get; set; }
+        public int? gatedDownloadMaxAttemptsAllowed { get; set; }
+        public string campaignSlug { get; set; }
+        public Guid? subscriberGuid { get; set; }
+        public string subscriberSource { get; set; }
         public string traitifyAssessmentId { get; set; }
-
     }
 }

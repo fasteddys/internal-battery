@@ -10,6 +10,7 @@ using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
+ 
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -31,6 +32,34 @@ namespace UpDiddyApi.ApplicationCore.Services
             _logger = logger;
             _mapper = mapper;
         }
+
+
+        public async Task<bool> AssociateSourceToSubscriber(string Source, int SubscriberId)
+        {
+             
+             // short circuit if subscriber is already associated with the partner
+             IList<Partner> Partners = await _repositoryWrapper.PartnerContactRepository.GetPartnersAssociatedWithSubscriber(SubscriberId);
+             if (Partners != null)
+             {
+                 foreach (Partner p in Partners)
+                     if (p.Name == Source)
+                         return true;
+             }
+
+             PartnerType partnerType = await _repositoryWrapper.PartnerTypeRepository.GetPartnerTypeByName("ExternalSource");
+
+             if (partnerType == null)
+                 return false;
+ 
+             // Find or create  the source as a partner 
+             Partner Partner = await _repositoryWrapper.PartnerRepository.GetOrCreatePartnerByName(Source, partnerType);
+            
+             // Create/Find group and add user to it
+             await CreateGroup(Source, Partner.PartnerGuid.Value, SubscriberId);
+            
+            return true;
+        }
+
 
         public async Task<bool> AddSubscriberToGroupAsync(int GroupId, int SubscriberId)
         {
@@ -74,7 +103,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return true;
         }
 
-        public async Task<bool> CreateGroup(string ReferrerUrl, Guid PartnerGuid, int SubscriberId)
+        public async Task<Group> CreateGroup(string ReferrerUrl, Guid PartnerGuid, int SubscriberId)
         {
             try
             {
@@ -105,12 +134,12 @@ namespace UpDiddyApi.ApplicationCore.Services
                         await _repositoryWrapper.GroupPartnerRepository.SaveAsync();
                     }
                 }
-                return true;
+                return Group;
             }
             catch (Exception e)
             {
                 _logger.Log(LogLevel.Error, $"TaggingService:_CreateGroup threw an exception -> {e.Message} for subscriber {SubscriberId} PartnerGuid {PartnerGuid} ReferralUrl {ReferrerUrl}");
-                return false;
+                return null;
             }
         }
 

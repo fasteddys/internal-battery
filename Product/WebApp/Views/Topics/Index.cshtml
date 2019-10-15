@@ -21,29 +21,26 @@
             }
         })
     </div>
-    <div class="row topics-courses" id="career-training-categories">
-        <div class="container">
-            @foreach (TrainingVendorViewModel vendor in Model.TrainingVendors)
-            {
-                <div class="row course-categories">
-                    <div class="col-12 career-training-header-container">
-                        <span class="section-heading f-color-primary">
-                            <img src="@vendor.VendorLogo" style="width: 200px" />
-                        </span>
-                    </div>
-                    @foreach (TrainingTopicViewModel topic in vendor.TrainingTopicsList)
-                    {
-                        <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12 card-column">
-                            <a class="card-hyperlink-container" href="@(topic.Url)">
-                                <div class="card">
-                                    <img class="card-img-top" src="@topic.Image" alt="Card image cap">
-                                </div>
-                            </a>
-                        </div>
-                    }
-                </div>
-            }
 
+    <div class="topics-courses pt-3 pb-1" id="career-training-categories">
+      
+        <div class="container">
+            <div class="row">
+                @foreach (TrainingTopicViewModel topic in Model.TrainingTopics)
+                {
+                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 pb-1 card-column">
+
+                        <div class="pt-2 card">
+                            <a class="card-hyperlink-container" href="@(topic.Url)">
+                                <img class="card-img-top"  src="@topic.Image" alt="Card image cap">
+                            </a>
+                            <div class="card-body">
+                               @topic.Description
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
     </div>
 </div>

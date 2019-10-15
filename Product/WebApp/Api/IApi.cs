@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Dto.Reporting;
+using Microsoft.AspNetCore.Http;
 
 namespace UpDiddy.Api
 {
@@ -33,6 +34,7 @@ namespace UpDiddy.Api
         Task<IList<SecurityClearanceDto>> GetSecurityClearanceAsync();
         Task<IList<RecruiterCompanyDto>> GetRecruiterCompaniesAsync(Guid subscriberGuid);
         Task<CourseVariantDto> GetCourseVariantAsync(Guid courseVariantGuid);
+        Task<SubscriberDto> GetSubscriberByGuid(Guid subscriberGuid);
         Task<SubscriberDto> SubscriberAsync(Guid subscriberGuid, bool hardRefresh);
         Task<PromoCodeDto> PromoCodeRedemptionValidationAsync(string promoCodeRedemptionGuid, string courseGuid);
         Task<PromoCodeDto> PromoCodeValidationAsync(string code, string courseVariantGuid);
@@ -41,7 +43,7 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> UpdateProfileInformationAsync(SubscriberDto Subscriber);
         Task<BasicResponseDto> UpdateOnboardingStatusAsync();
         Task<Guid> EnrollStudentAndObtainEnrollmentGUIDAsync(EnrollmentFlowDto enrollmentFlowDto);
-        Task<SubscriberDto> CreateSubscriberAsync(string referralCode);
+        Task<SubscriberDto> CreateSubscriberAsync(string source, string referralCode);
         Task<bool> DeleteSubscriberAsync(Guid subscriberGuid, Guid cloudIdentifier);
         Task<WozCourseProgressDto> UpdateStudentCourseProgressAsync(bool FutureSchedule);
         Task<BraintreeResponseDto> SubmitBraintreePaymentAsync(BraintreePaymentDto BraintreePaymentDto);
@@ -57,7 +59,7 @@ namespace UpDiddy.Api
         Task<IList<CompensationTypeDto>> GetCompensationTypesAsync();
         Task<IList<EducationalDegreeTypeDto>> GetEducationalDegreeTypesAsync();
         Task<IList<SkillDto>> GetSkillsBySubscriberAsync(Guid subscriberGuid);
-        Task<BasicResponseDto> UploadResumeAsync(ResumeDto resumeDto);
+        Task<BasicResponseDto> UploadResumeAsync(ResumeDto resumedto);
         Task<SubscriberWorkHistoryDto> AddWorkHistoryAsync(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory);
         Task<SubscriberWorkHistoryDto> UpdateWorkHistoryAsync(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory);
         Task<SubscriberEducationHistoryDto> UpdateEducationHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto educationHistory);
@@ -67,6 +69,8 @@ namespace UpDiddy.Api
         Task<IList<SubscriberEducationHistoryDto>> GetEducationHistoryAsync(Guid subscriberGuid);
         Task<BasicResponseDto> UpdateSubscriberContactAsync(Guid partnerContactGuid, SignUpDto signUpDto);
         Task<BasicResponseDto> ExpressUpdateSubscriberContactAsync(SignUpDto signUpDto);
+        Task<BasicResponseDto> ExistingUserGroupSignup (SignUpDto signUpDto);
+
         Task<CourseDto> GetCourseByCampaignGuidAsync(Guid CampaignGuid);
         Task<SubscriberEducationHistoryDto> AddEducationalHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto workHistory);
         Task<BasicResponseDto> AddJobPostingAsync(JobPostingDto jobPosting);
@@ -89,6 +93,7 @@ namespace UpDiddy.Api
         Task<PagingDto<UpDiddyLib.Dto.User.JobDto>> GetUserJobsOfInterest(int? page);
         Task<PagingDto<JobPostingAlertDto>> GetUserJobAlerts(int? page, int? timeZoneOffset);
         Task<RedirectDto> GetSubscriberPartnerWebRedirect();
+        Task<FileDto> GetFile(Guid fileDownloadTrackerGuid);
 
         #region TalentPortal
         Task<ProfileSearchResultDto> SubscriberSearchAsync(string searchFilter, string searchQuery, string searchLocationQuery, string sortOrder);
@@ -105,6 +110,7 @@ namespace UpDiddy.Api
         Task<IList<SkillDto>> GetEntitySkillsAsync(string entityType, Guid entityGuid);
         Task<IList<PartnerDto>> GetPartnersAsync();
         Task<PartnerDto> GetPartnerAsync(Guid partnerGuid);
+        Task<PartnerDto> GetPartnerByNameAsync(string partnerName);  
         Task<PartnerDto> CreatePartnerAsync(PartnerDto partnerDto);
         Task<BasicResponseDto> UpdatePartnerAsync(PartnerDto partnerDto);
         Task<BasicResponseDto> DeletePartnerAsync(Guid PartnerGuid);
