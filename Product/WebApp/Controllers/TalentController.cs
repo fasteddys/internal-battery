@@ -4,11 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Configuration;
@@ -26,8 +24,6 @@ namespace UpDiddy.Controllers
     [Authorize(Policy = "IsRecruiterPolicy")]
     public class TalentController : BaseController
     {
-        private IApi _api;
-        private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
         private readonly ILogger _sysLog;
 
@@ -37,9 +33,7 @@ namespace UpDiddy.Controllers
         ILogger<TalentController> sysLog)
          : base(api,configuration)
         {
-            _api = api;
             _env = env;
-            _configuration = configuration;
             _sysLog = sysLog;
         }
 
@@ -71,7 +65,7 @@ namespace UpDiddy.Controllers
         {
             try
             {
-                await _api.DeleteJobPosting(jobPostingGuid);
+                await _Api.DeleteJobPosting(jobPostingGuid);
                 return Ok();
             }
             catch (ApiException ex)
@@ -90,7 +84,7 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> CopyJobPosting(Guid jobPostingGuid)
         {
 
-            await _api.CopyJobPosting(jobPostingGuid);
+            await _Api.CopyJobPosting(jobPostingGuid);
             return Ok();
         }
 
@@ -103,7 +97,7 @@ namespace UpDiddy.Controllers
 
             JobPostingsViewModel model = new JobPostingsViewModel()
             {
-                jobPostings = await _api.GetJobPostingsForSubscriber(this.subscriber.SubscriberGuid.Value)
+                jobPostings = await _Api.GetJobPostingsForSubscriber(this.subscriber.SubscriberGuid.Value)
             };
 
             return View(model.jobPostings);
@@ -194,10 +188,10 @@ namespace UpDiddy.Controllers
                     if (model.IsEdit)
                     {
                         job.JobPostingGuid = model.EditGuid;
-                        rVal = await _api.UpdateJobPostingAsync(job);
+                        rVal = await _Api.UpdateJobPostingAsync(job);
                     }
                     else
-                        rVal = await _api.AddJobPostingAsync(job);
+                        rVal = await _Api.AddJobPostingAsync(job);
 
                 }
                 catch (ApiException ex)
@@ -217,7 +211,7 @@ namespace UpDiddy.Controllers
         [HttpGet]
         public async Task<ViewResult> Subscribers()
         {
-            IList<SubscriberSourceStatisticDto> subscriberSourcesDto = await _api.SubscriberSourcesAsync();
+            IList<SubscriberSourceStatisticDto> subscriberSourcesDto = await _Api.SubscriberSourcesAsync();
             IList<SelectListItem> orderByListItems = new List<SelectListItem>();
             orderByListItems.Add(new SelectListItem() { Value = "relevance desc", Text = "Relevancy", Selected = true });
             orderByListItems.Add(new SelectListItem() { Value = "update_date desc", Text = "Date Modified \u2193" });
@@ -227,7 +221,7 @@ namespace UpDiddy.Controllers
             orderByListItems.Add(new SelectListItem() { Value = "last_name desc", Text = "Last Name \u2193" });
             orderByListItems.Add(new SelectListItem() { Value = "last_name", Text = "Last Name \u2191" });
 
-            //  var subscriberSourcesDto = _api.SubscriberSourcesAsync().Result.OrderByDescending(ss => ss.Count);
+            //  var subscriberSourcesDto = _Api.SubscriberSourcesAsync().Result.OrderByDescending(ss => ss.Count);
             var selectListItems = subscriberSourcesDto.OrderBy(ss => ss.Count).Select(ss => new SelectListItem()
             {
                 Text = $"{ss.Name} ({ss.Count})",
@@ -251,7 +245,7 @@ namespace UpDiddy.Controllers
         {
 
 
-            ProfileSearchResultDto subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery, searchLocationQuery, sortOrder);
+            ProfileSearchResultDto subscribers = await _Api.SubscriberSearchAsync(searchFilter, searchQuery, searchLocationQuery, sortOrder);
             return subscribers;
         }
 
@@ -279,7 +273,7 @@ namespace UpDiddy.Controllers
                 searchQuery = string.Empty;
                 sortOrder = string.Empty;
             }
-            ProfileSearchResultDto subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery, searchLocationQuery, sortOrder);
+            ProfileSearchResultDto subscribers = await _Api.SubscriberSearchAsync(searchFilter, searchQuery, searchLocationQuery, sortOrder);
             return PartialView("_SubscriberGrid", subscribers);
         }
 
@@ -292,7 +286,7 @@ namespace UpDiddy.Controllers
             SubscriberViewModel subscriberViewModel = null;
             try
             {
-                subscriber = await _api.SubscriberAsync(subscriberGuid, false);
+                subscriber = await _Api.SubscriberAsync(subscriberGuid, false);
                 if (subscriber != null)
                 {
                     string AssestBaseUrl = _configuration["CareerCircle:AssetBaseUrl"];
@@ -324,7 +318,7 @@ namespace UpDiddy.Controllers
                 else
                 {
                     // if we get here, it means that we have an orphaned record in Google that should be deleted
-                    await _api.DeleteSubscriberAsync(subscriberGuid, cloudIdentifier);
+                    await _Api.DeleteSubscriberAsync(subscriberGuid, cloudIdentifier);
                 }
             }
             catch (Exception e)
@@ -343,7 +337,7 @@ namespace UpDiddy.Controllers
         [Route("/Talent/Subscriber/{subscriberGuid}/File/{fileGuid}")]
         public async Task<IActionResult> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid)
         {
-            HttpResponseMessage response = await _api.DownloadFileAsync(subscriberGuid, fileGuid);
+            HttpResponseMessage response = await _Api.DownloadFileAsync(subscriberGuid, fileGuid);
             Stream stream = await response.Content.ReadAsStreamAsync();
             return File(stream, "application/octet-stream",
                 response.Content.Headers.ContentDisposition.FileName.Replace("\"", ""));
@@ -354,7 +348,7 @@ namespace UpDiddy.Controllers
         [Route("/Talent/Subscriber/{subscriberGuid}/{cloudIdentifier}")]
         public async Task<IActionResult> DeleteSubscriberAsync(Guid subscriberGuid, Guid cloudIdentifier)
         {
-            var isSubscriberDeleted = await _api.DeleteSubscriberAsync(subscriberGuid, cloudIdentifier);
+            var isSubscriberDeleted = await _Api.DeleteSubscriberAsync(subscriberGuid, cloudIdentifier);
             return new JsonResult(isSubscriberDeleted);
         }
 
@@ -429,7 +423,7 @@ namespace UpDiddy.Controllers
             JobPostingDto jobPostingDto = null;
             if (jobPostingGuid != null)
             {
-                jobPostingDto = await _api.GetJobPostingByGuid(jobPostingGuid.Value);
+                jobPostingDto = await _Api.GetJobPostingByGuid(jobPostingGuid.Value);
             }
 
             Guid USCountryGuid = Guid.Parse(_configuration["CareerCircle:USCountryGuid"]);
@@ -437,12 +431,12 @@ namespace UpDiddy.Controllers
             var states = await _Api.GetStatesByCountryAsync(USCountryGuid);
             var industries = await _Api.GetIndustryAsync();
             var jobCategories = await _Api.GetJobCategoryAsync();
-            var educationLevels = await _api.GetEducationLevelAsync();
-            var experienceLevels = await _api.GetExperienceLevelAsync();
-            var employmentTypes = await _api.GetEmploymentTypeAsync();
-            var compensationType = await _api.GetCompensationTypeAsync();
-            var SecurityClearances = await _api.GetSecurityClearanceAsync();
-            var companies = await _api.GetRecruiterCompaniesAsync(this.subscriber.SubscriberGuid.Value);
+            var educationLevels = await _Api.GetEducationLevelAsync();
+            var experienceLevels = await _Api.GetExperienceLevelAsync();
+            var employmentTypes = await _Api.GetEmploymentTypeAsync();
+            var compensationType = await _Api.GetCompensationTypeAsync();
+            var SecurityClearances = await _Api.GetSecurityClearanceAsync();
+            var companies = await _Api.GetRecruiterCompaniesAsync(this.subscriber.SubscriberGuid.Value);
             int PostingExpirationInDays = int.Parse(_configuration["CareerCircle:PostingExpirationInDays"]);
             CreateJobPostingViewModel model = new CreateJobPostingViewModel()
             {

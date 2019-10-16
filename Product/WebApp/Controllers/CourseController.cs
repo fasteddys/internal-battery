@@ -24,7 +24,6 @@ namespace UpDiddy.Controllers
 {
     public class CourseController : BaseController
     {
-        private readonly IConfiguration _configuration;
         private IBraintreeConfiguration braintreeConfiguration;
         private IButterCMSService _butterService;
         private static readonly TransactionStatus[] transactionSuccessStatuses = {
@@ -39,7 +38,6 @@ namespace UpDiddy.Controllers
 
         public CourseController(IApi api, IConfiguration configuration, IButterCMSService butterCMSService) : base(api,configuration)
         {
-            _configuration = configuration;
             braintreeConfiguration = new BraintreeConfiguration(_configuration);
             _butterService = butterCMSService;
 

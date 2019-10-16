@@ -61,6 +61,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IServiceOfferingPromoCodeRepository _serviceOfferingPromoCodeRepository;
         private IPromoCodeRepository _promoCodeRepository;
         private ITraitifyRepository _traitifyRepository;
+        private IFileDownloadTrackerRepository _fileDownloadTrackerRepository;
         private IPartnerTypeRepository _partnerTypeRepository;
  
 
@@ -744,6 +745,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _traitifyRepository = new TraitifyRepository(_dbContext);
                 }
                 return _traitifyRepository;
+            }
+        }
+
+         public IFileDownloadTrackerRepository FileDownloadTrackerRepository
+        {
+            get
+            {
+                if (_fileDownloadTrackerRepository == null)
+                {
+                    _fileDownloadTrackerRepository = new FileDownloadTrackerRepository(_dbContext);
+                }
+                return _fileDownloadTrackerRepository;
             }
         }
 

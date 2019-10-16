@@ -34,6 +34,7 @@ namespace UpDiddy.Api
         Task<IList<SecurityClearanceDto>> GetSecurityClearanceAsync();
         Task<IList<RecruiterCompanyDto>> GetRecruiterCompaniesAsync(Guid subscriberGuid);
         Task<CourseVariantDto> GetCourseVariantAsync(Guid courseVariantGuid);
+        Task<SubscriberDto> GetSubscriberByGuid(Guid subscriberGuid);
         Task<SubscriberDto> SubscriberAsync(Guid subscriberGuid, bool hardRefresh);
         Task<PromoCodeDto> PromoCodeRedemptionValidationAsync(string promoCodeRedemptionGuid, string courseGuid);
         Task<PromoCodeDto> PromoCodeValidationAsync(string code, string courseVariantGuid);
@@ -68,6 +69,8 @@ namespace UpDiddy.Api
         Task<IList<SubscriberEducationHistoryDto>> GetEducationHistoryAsync(Guid subscriberGuid);
         Task<BasicResponseDto> UpdateSubscriberContactAsync(Guid partnerContactGuid, SignUpDto signUpDto);
         Task<BasicResponseDto> ExpressUpdateSubscriberContactAsync(SignUpDto signUpDto);
+        Task<BasicResponseDto> ExistingUserGroupSignup (SignUpDto signUpDto);
+
         Task<CourseDto> GetCourseByCampaignGuidAsync(Guid CampaignGuid);
         Task<SubscriberEducationHistoryDto> AddEducationalHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto workHistory);
         Task<BasicResponseDto> AddJobPostingAsync(JobPostingDto jobPosting);
@@ -90,6 +93,7 @@ namespace UpDiddy.Api
         Task<PagingDto<UpDiddyLib.Dto.User.JobDto>> GetUserJobsOfInterest(int? page);
         Task<PagingDto<JobPostingAlertDto>> GetUserJobAlerts(int? page, int? timeZoneOffset);
         Task<RedirectDto> GetSubscriberPartnerWebRedirect();
+        Task<FileDto> GetFile(Guid fileDownloadTrackerGuid);
 
         #region TalentPortal
         Task<ProfileSearchResultDto> SubscriberSearchAsync(string searchFilter, string searchQuery, string searchLocationQuery, string sortOrder);

@@ -22,8 +22,6 @@ namespace WebApp.Controllers
 {
     public class ServicesController : BaseController
     {
-        private IApi _api;
-        private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
         private readonly int _activeJobCount = 0;
         private IButterCMSService _butterService;
@@ -35,9 +33,7 @@ namespace WebApp.Controllers
         IButterCMSService butterService)
          : base(api,configuration)
         {
-            _api = api;
             _env = env;
-            _configuration = configuration;
             _butterService = butterService;
             braintreeConfiguration = new BraintreeConfiguration(_configuration);
         }
@@ -171,7 +167,7 @@ namespace WebApp.Controllers
 
             ServiceOfferingOrderDto serviceOfferingOrderDto = null;
             try{
-                serviceOfferingOrderDto = await _api.GetSubscriberOrder(orderGuid);
+                serviceOfferingOrderDto = await _Api.GetSubscriberOrder(orderGuid);
             }
             catch(ApiException e){
                 return NotFound();
@@ -189,7 +185,7 @@ namespace WebApp.Controllers
 
         [HttpPost("/services/promo-code/validate")]
         public async Task<PromoCodeDto> ValidatePromoCodeAsync(ServiceCheckoutViewModel serviceCheckoutViewModel){
-            PromoCodeDto promoCodeDto = await _api.ServiceOfferingPromoCodeValidationAsync(serviceCheckoutViewModel.PromoCodeEntered, serviceCheckoutViewModel.PackageServiceViewModel.PackageId);
+            PromoCodeDto promoCodeDto = await _Api.ServiceOfferingPromoCodeValidationAsync(serviceCheckoutViewModel.PromoCodeEntered, serviceCheckoutViewModel.PackageServiceViewModel.PackageId);
             return promoCodeDto;
         }
 
@@ -220,7 +216,7 @@ namespace WebApp.Controllers
             SubscriberDto Subscriber = null;
 
             if (this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value != null)
-                Subscriber = await _api.SubscriberAsync(Guid.Parse(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value), false);
+                Subscriber = await _Api.SubscriberAsync(Guid.Parse(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value), false);
 
             if(!IsNewSubscriberCheckout && Subscriber == null)
                 return new BasicResponseDto{ StatusCode = 400, Description = "No subscriber found. Please either login, or create an account above."};
@@ -247,7 +243,7 @@ namespace WebApp.Controllers
             PromoCodeDto promoCodeDto = null;
             
             if(serviceCheckoutViewModel.PromoCodeEntered != null && !serviceCheckoutViewModel.PromoCodeEntered.Equals(string.Empty)){
-                promoCodeDto = await _api.ServiceOfferingPromoCodeValidationAsync(serviceCheckoutViewModel.PromoCodeEntered, serviceCheckoutViewModel.PackageServiceViewModel.PackageId);
+                promoCodeDto = await _Api.ServiceOfferingPromoCodeValidationAsync(serviceCheckoutViewModel.PromoCodeEntered, serviceCheckoutViewModel.PackageServiceViewModel.PackageId);
             };
 
             decimal PricePaid = promoCodeDto != null ? promoCodeDto.FinalCost : Decimal.Parse(packagePage.Data.Fields.Price);  
@@ -273,7 +269,7 @@ namespace WebApp.Controllers
             };
             serviceOfferingTransactionDto.ServiceOfferingOrderDto = serviceOfferingOrderDto;
 
-            BasicResponseDto Response = await _api.SubmitServiceOfferingPayment(serviceOfferingTransactionDto);
+            BasicResponseDto Response = await _Api.SubmitServiceOfferingPayment(serviceOfferingTransactionDto);
 
             return Response;
         }

@@ -62,6 +62,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             _hangfireService = hangfireService;
         }
 
+        public async Task<Subscriber> GetSubscriberByGuid(Guid subscriberGuid)
+        {
+            return await _repository.Subscriber.GetSubscriberByGuidAsync(subscriberGuid);
+        }
 
 
         public async Task<IList<SubscriberSourceDto>> GetSubscriberSources(int subscriberId)
@@ -76,7 +80,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             var querableSubscribers = _repository.SubscriberRepository.GetAllSubscribersAsync();
 
-            List<Subscriber> rVal = await querableSubscribers.Where(s => s.IsDeleted == 0 && (s.CloudTalentIndexVersion < indexVersion || s.CloudTalentIndexVersion == 0) )
+            List<Subscriber> rVal = await querableSubscribers.Where(s => s.IsDeleted == 0 && (s.CloudTalentIndexVersion < indexVersion || s.CloudTalentIndexVersion == 0))
                                                             .Take(numSubscribers)
                                                             .ToListAsync();
 
@@ -269,6 +273,12 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 return subscriber;
             }
+        }
+
+        public async Task UpdateSubscriber(Subscriber subscriber)
+        {
+            _repository.Subscriber.Update(subscriber);
+            await _repository.Subscriber.SaveAsync();
         }
 
         /// <summary>

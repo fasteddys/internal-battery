@@ -10,41 +10,26 @@ using UpDiddyLib.Dto;
 using UpDiddy.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using UpDiddy.Authentication;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using X.PagedList;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Security.Claims;
-using static UpDiddyLib.Helpers.Constants;
-using Action = UpDiddyLib.Helpers.Constants.Action;
 using UpDiddyLib.Helpers;
-
-
-// For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace UpDiddy.Controllers
 {
-
-
     public class JobsController : BaseController
     {
-
-        private IApi _api;
-        private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
         private readonly int _activeJobCount = 0;
-        private readonly int _maxCookieLength = 0;
 
         public JobsController(IApi api,
         IConfiguration configuration,
         IHostingEnvironment env)
          : base(api,configuration)
         {
-            _api = api;
             _env = env;
-            _configuration = configuration;
-            int.TryParse(_api.GetActiveJobCountAsync().Result.Description, out _activeJobCount);
-            _maxCookieLength = int.Parse(_configuration["CareerCircle:MaxCookieLength"]);
+            int.TryParse(api.GetActiveJobCountAsync().Result.Description, out _activeJobCount);
         }
 
         [HttpGet("[controller]")]
@@ -125,7 +110,7 @@ namespace UpDiddy.Controllers
 
             try
             {
-                jobSearchResultDto = await _api.GetJobsByLocation(
+                jobSearchResultDto = await _Api.GetJobsByLocation(
                                       queryParametersString);
 
                 // quick fix to increase search radius when search results are limited (only when a keyword and/or location search is executed).
@@ -134,11 +119,11 @@ namespace UpDiddy.Controllers
                 if (jobSearchResultDto.JobCount < 10 & (!string.IsNullOrWhiteSpace(queryParametersString) || queryParametersString.Contains("?")))
                 {
                     queryParametersString += "&search-radius=50";
-                    jobSearchResultDto = await _api.GetJobsByLocation(queryParametersString);
+                    jobSearchResultDto = await _Api.GetJobsByLocation(queryParametersString);
                 }
 
                 if (User.Identity.IsAuthenticated)
-                    favoritesMap = await _api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount).Select(job => job.JobPostingGuid).ToList());
+                    favoritesMap = await _Api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount).Select(job => job.JobPostingGuid).ToList());
             }
             catch (ApiException e)
             {
@@ -197,7 +182,7 @@ namespace UpDiddy.Controllers
             JobPostingDto job = null;
             try
             {
-                job = await _api.GetJobAsync(JobGuid, GoogleCloudEventsTrackingDto.Build(HttpContext.Request.Query, UpDiddyLib.Shared.GoogleJobs.ClientEventType.View));
+                job = await _Api.GetJobAsync(JobGuid, GoogleCloudEventsTrackingDto.Build(HttpContext.Request.Query, UpDiddyLib.Shared.GoogleJobs.ClientEventType.View));
                 if (job != null)
                 {
                     url = job.SemanticJobPath;
@@ -238,7 +223,7 @@ namespace UpDiddy.Controllers
             JobPostingDto job = null;
             try
             {
-                job = await _api.GetJobAsync(JobGuid, GoogleCloudEventsTrackingDto.Build(HttpContext.Request.Query, UpDiddyLib.Shared.GoogleJobs.ClientEventType.View));
+                job = await _Api.GetJobAsync(JobGuid, GoogleCloudEventsTrackingDto.Build(HttpContext.Request.Query, UpDiddyLib.Shared.GoogleJobs.ClientEventType.View));
 
                 if (job.JobStatus == (int)JobPostingStatus.Draft)
                 {
@@ -257,7 +242,7 @@ namespace UpDiddy.Controllers
                         //todo: See if we can allow expired/deleted jobs to get here to decide to show representatives and save an API call.
                         try
                         {
-                            job = await _api.GetExpiredJobAsync(JobGuid);
+                            job = await _Api.GetExpiredJobAsync(JobGuid);
                         }
                         catch (ApiException ae)
                         {
@@ -271,7 +256,7 @@ namespace UpDiddy.Controllers
                         if (job is null)
                         {
                             // Show all jobs.
-                            jobSearchResultDto = await _api.GetJobsByLocation(null);
+                            jobSearchResultDto = await _Api.GetJobsByLocation(null);
                         }
                         else
                         {
@@ -280,9 +265,9 @@ namespace UpDiddy.Controllers
                             location = job?.City + ", " + job?.Province;
                             var queryParametersString = $"?{job.Title}&{location}";
 
-                            jobSearchResultDto = await _api.GetJobsByLocation(queryParametersString);
+                            jobSearchResultDto = await _Api.GetJobsByLocation(queryParametersString);
 
-                            jobSearchResultDto = await _api.GetJobsByLocation(queryParametersString);
+                            jobSearchResultDto = await _Api.GetJobsByLocation(queryParametersString);
                         }
 
                         if (jobSearchResultDto == null)
@@ -323,7 +308,7 @@ namespace UpDiddy.Controllers
             Guid? jobFavoriteGuid = null;
             if (User.Identity.IsAuthenticated)
             {
-                var favorite = await _api.JobFavoritesByJobGuidAsync(new List<Guid>() { job.JobPostingGuid.Value });
+                var favorite = await _Api.JobFavoritesByJobGuidAsync(new List<Guid>() { job.JobPostingGuid.Value });
                 if (favorite.Any())
                     jobFavoriteGuid = favorite.First().Value;
             }
@@ -337,7 +322,7 @@ namespace UpDiddy.Controllers
             Dictionary<Guid, Guid> SimilarJobsFavorites = new Dictionary<Guid, Guid>();
             if (User.Identity.IsAuthenticated)
             {
-                SimilarJobsFavorites = await _api.JobFavoritesByJobGuidAsync(SimilarJobsFavoritesGuids);
+                SimilarJobsFavorites = await _Api.JobFavoritesByJobGuidAsync(SimilarJobsFavoritesGuids);
             }
 
             JobViewDto JobToBeRemoved = null;
@@ -414,7 +399,7 @@ namespace UpDiddy.Controllers
             //check if user is logged in
             if (this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value != null)
             {
-                var subscriber = await _api.SubscriberAsync(Guid.Parse(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value), false);
+                var subscriber = await _Api.SubscriberAsync(Guid.Parse(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value), false);
                 jdvm.LoggedInSubscriberGuid = subscriber.SubscriberGuid;
                 jdvm.LoggedInSubscriberEmail = subscriber.Email;
                 jdvm.LoggedInSubscriberName = subscriber.FirstName + " " + subscriber.LastName;
@@ -439,7 +424,7 @@ namespace UpDiddy.Controllers
             JobPostingDto job = null;
             try
             {
-                job = await _api.GetJobAsync(JobGuid);
+                job = await _Api.GetJobAsync(JobGuid);
             }
             catch (ApiException e)
             {
@@ -458,8 +443,8 @@ namespace UpDiddy.Controllers
                 return NotFound();
 
 
-            var trackingDto = await _api.RecordClientEventAsync(JobGuid, GoogleCloudEventsTrackingDto.Build(HttpContext.Request.Query, UpDiddyLib.Shared.GoogleJobs.ClientEventType.Application_Start));
-            await _api.RecordSubscriberApplyAction(JobGuid, this.subscriber.SubscriberGuid.Value);
+            var trackingDto = await _Api.RecordClientEventAsync(JobGuid, GoogleCloudEventsTrackingDto.Build(HttpContext.Request.Query, UpDiddyLib.Shared.GoogleJobs.ClientEventType.Application_Start));
+            await _Api.RecordSubscriberApplyAction(JobGuid, this.subscriber.SubscriberGuid.Value);
             return View("Apply", new JobApplicationViewModel()
             {
                 RequestId = trackingDto?.RequestId,
@@ -489,7 +474,7 @@ namespace UpDiddy.Controllers
             JobPostingDto job = null;
             try
             {
-                job = await _api.GetJobAsync(JobApplicationViewModel.JobPostingGuid);
+                job = await _Api.GetJobAsync(JobApplicationViewModel.JobPostingGuid);
             }
             catch (ApiException e)
             {
@@ -523,7 +508,7 @@ namespace UpDiddy.Controllers
             if (Request != null && Request.Cookies != null && Request.Cookies[cookieKey] != null && string.IsNullOrEmpty(Request.Cookies[cookieKey].ToString()) == false)
             {
                 string jobPartnerSource = Utils.AlphaNumeric(Request.Cookies[job.JobPostingGuid.ToString()].ToString(), _maxCookieLength);
-                PartnerDto partner = await _api.GetPartnerByNameAsync(jobPartnerSource);
+                PartnerDto partner = await _Api.GetPartnerByNameAsync(jobPartnerSource);
                 if (partner == null )
                 {
                     partner = new PartnerDto()
@@ -543,9 +528,9 @@ namespace UpDiddy.Controllers
             CompletedJobApplicationViewModel cjavm = new CompletedJobApplicationViewModel();
             try
             {
-                Response = await _api.ApplyToJobAsync(jadto);
+                Response = await _Api.ApplyToJobAsync(jadto);
 
-                await _api.RecordClientEventAsync(JobApplicationViewModel.JobPostingGuid, new GoogleCloudEventsTrackingDto()
+                await _Api.RecordClientEventAsync(JobApplicationViewModel.JobPostingGuid, new GoogleCloudEventsTrackingDto()
                 {
                     RequestId = JobApplicationViewModel.RequestId,
                     ParentClientEventId = JobApplicationViewModel.ClientEventId,
@@ -572,7 +557,7 @@ namespace UpDiddy.Controllers
 
             try
             {
-                jobSearchResultDto = await _api.GetJobsUsingRoute();
+                jobSearchResultDto = await _Api.GetJobsUsingRoute();
             }
             catch (ApiException e)
             {
@@ -632,7 +617,7 @@ namespace UpDiddy.Controllers
 
             try
             {
-                jobSearchResultDto = await _api.GetJobsUsingRoute(
+                jobSearchResultDto = await _Api.GetJobsUsingRoute(
                     country,
                     state,
                     city,
@@ -672,7 +657,7 @@ namespace UpDiddy.Controllers
 
             if (User.Identity.IsAuthenticated)
             {
-                jobSearchViewModel.FavoritesMap = await _api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount).Select(job => job.JobPostingGuid).ToList());
+                jobSearchViewModel.FavoritesMap = await _Api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount).Select(job => job.JobPostingGuid).ToList());
             }
 
             // Google seems to be capping the number of results at 500, so we account for that here.
@@ -1179,7 +1164,7 @@ namespace UpDiddy.Controllers
 
             try
             {
-                jobSearchResultDto = await _api.GetJobsUsingRoute(
+                jobSearchResultDto = await _Api.GetJobsUsingRoute(
                     country,
                     state,
                     city,
@@ -1219,7 +1204,7 @@ namespace UpDiddy.Controllers
 
             if (User.Identity.IsAuthenticated)
             {
-                jobSearchViewModel.FavoritesMap = await _api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount).Select(job => job.JobPostingGuid).ToList());
+                jobSearchViewModel.FavoritesMap = await _Api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount).Select(job => job.JobPostingGuid).ToList());
             }
 
             // Google seems to be capping the number of results at 500, so we account for that here.
@@ -1420,7 +1405,7 @@ namespace UpDiddy.Controllers
 
             try
             {
-                jobSearchResultDto = await _api.GetJobsUsingRoute(
+                jobSearchResultDto = await _Api.GetJobsUsingRoute(
                     country,
                     state,
                     city,
@@ -1460,7 +1445,7 @@ namespace UpDiddy.Controllers
 
             if (User.Identity.IsAuthenticated)
             {
-                jobSearchViewModel.FavoritesMap = await _api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount).Select(job => job.JobPostingGuid).ToList());
+                jobSearchViewModel.FavoritesMap = await _Api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount).Select(job => job.JobPostingGuid).ToList());
             }
 
             // Google seems to be capping the number of results at 500, so we account for that here.
@@ -1634,7 +1619,7 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> ReferAJob(string jobPostingId, string referrerGuid, string refereeName, string refereeEmailId, string descriptionEmailBody)
         {
             //send email to referree for the job posting
-            await _api.ReferJobPosting(jobPostingId, referrerGuid, refereeName, refereeEmailId, descriptionEmailBody);
+            await _Api.ReferJobPosting(jobPostingId, referrerGuid, refereeName, refereeEmailId, descriptionEmailBody);
 
             Guid jobPostingGuid = Guid.Parse(jobPostingId);
             return await JobAsync(jobPostingGuid);
@@ -1645,7 +1630,7 @@ namespace UpDiddy.Controllers
         [Route("[controller]/SearchKeyword")]
         public async Task<IActionResult> KeywordSearch(string keyword)
         {
-            var keywordSearchList = await _api.GetKeywordSearchList(keyword);
+            var keywordSearchList = await _Api.GetKeywordSearchList(keyword);
             return Ok(keywordSearchList);
         }
 
@@ -1653,7 +1638,7 @@ namespace UpDiddy.Controllers
         [Route("[controller]/LocationKeyword")]
         public async Task<IActionResult> LocationSearch(string location)
         {
-            var locationSearchList = await _api.GetLocationSearchList(location);
+            var locationSearchList = await _Api.GetLocationSearchList(location);
             return Ok(locationSearchList);
         }
         #endregion

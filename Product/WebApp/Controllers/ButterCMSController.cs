@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using UpDiddy.Api;
 using UpDiddy.Services.ButterCMS;
-using UpDiddy.ViewModels.Components.Layout;
 using UpDiddyLib.Dto;
 
 namespace UpDiddy.Controllers
@@ -16,7 +11,6 @@ namespace UpDiddy.Controllers
     public class ButterCMSController : BaseController
     {
         public IButterCMSService _butterService;
-        public IConfiguration _configuration;
 
         public ButterCMSController(IApi api,
             IButterCMSService butterService,
@@ -24,7 +18,6 @@ namespace UpDiddy.Controllers
             : base(api,configuration)
         {
             _butterService = butterService;
-            _configuration = configuration;
         }
         
         [HttpPost("clear-cached-navigation")]

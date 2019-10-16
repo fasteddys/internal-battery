@@ -19,7 +19,6 @@ using UpDiddy.Api;
 using UpDiddy.Services.ButterCMS;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
-using UpDiddyLib.Dto.Reporting;
 using UpDiddyLib.Helpers;
 
 namespace UpDiddy.Controllers

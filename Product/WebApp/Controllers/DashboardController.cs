@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using UpDiddy.Api;
 using UpDiddy.Authentication;
@@ -18,9 +16,7 @@ namespace UpDiddy.Controllers
     public class DashboardController : BaseController
     {
 
-        private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
-        private readonly IApi _api;
         private readonly IDeviceResolver _deviceResolver;
 
 
@@ -33,7 +29,6 @@ namespace UpDiddy.Controllers
         {
             _env = env;
             _configuration = configuration;
-            _api = api;
             _deviceResolver = deviceResolver;
         }
 
@@ -65,7 +60,7 @@ namespace UpDiddy.Controllers
             }
             else
             {
-                var result = await _api.ToggleSubscriberNotificationEmailAsync((Guid)this.subscriber.SubscriberGuid, _enabled);
+                var result = await _Api.ToggleSubscriberNotificationEmailAsync((Guid)this.subscriber.SubscriberGuid, _enabled);
                 return result.StatusCode == 200;
             }
         }
@@ -75,8 +70,8 @@ namespace UpDiddy.Controllers
         [Route("/Dashboard/SubscriberHasReadNotification")]
         public async Task<int> SubscriberHasReadNotification([FromBody] NotificationDto Notification)
         {
-            await _api.UpdateSubscriberNotificationAsync((Guid)this.subscriber.SubscriberGuid, Notification);
-            this.subscriber = await _api.SubscriberAsync((Guid)this.subscriber.SubscriberGuid, true);
+            await _Api.UpdateSubscriberNotificationAsync((Guid)this.subscriber.SubscriberGuid, Notification);
+            this.subscriber = await _Api.SubscriberAsync((Guid)this.subscriber.SubscriberGuid, true);
             int newNotificationCount = 0;
             foreach (NotificationDto notification in this.subscriber.Notifications)
             {
@@ -91,8 +86,8 @@ namespace UpDiddy.Controllers
         [Route("/Dashboard/DeleteSubscriberNotification")]
         public async Task<int> DeleteSubscriberNotification([FromBody] NotificationDto Notification)
         {
-            await _api.DeleteSubscriberNotificationAsync((Guid)this.subscriber.SubscriberGuid, Notification);
-            this.subscriber = await _api.SubscriberAsync((Guid)this.subscriber.SubscriberGuid, true);
+            await _Api.DeleteSubscriberNotificationAsync((Guid)this.subscriber.SubscriberGuid, Notification);
+            this.subscriber = await _Api.SubscriberAsync((Guid)this.subscriber.SubscriberGuid, true);
             int newNotificationCount = 0;
             foreach (NotificationDto notification in this.subscriber.Notifications)
             {
