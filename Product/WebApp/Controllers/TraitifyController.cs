@@ -15,13 +15,11 @@ namespace UpDiddy.Controllers
 {
     public class TraitifyController : BaseController
     {
-        private readonly IConfiguration _config;
         private readonly IButterCMSService _butterService;
         public TraitifyController(IApi api,
          IButterCMSService butterService,
          IConfiguration config) : base(api,config)
         {
-            _config = config;
             _butterService = butterService;
         }
 
@@ -89,7 +87,7 @@ namespace UpDiddy.Controllers
                 password = model.Password,
                 traitifyAssessmentId = model.AssessmentId
             };
-            await _api.ExpressUpdateSubscriberContactAsync(signUpDto);
+            await _Api.ExpressUpdateSubscriberContactAsync(signUpDto);
            
         }
 
