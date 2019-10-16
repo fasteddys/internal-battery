@@ -158,16 +158,6 @@ namespace UpDiddy
                 };
             });
 
-            services.AddMvc()
-                   .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-            services.Configure<CookiePolicyOptions>(options =>
-            {
-                // This lambda determines whether user consent for non-essential cookies 
-                // is needed for a given request.
-                options.CheckConsentNeeded = context => true;
-                options.MinimumSameSitePolicy = Microsoft.AspNetCore.Http.SameSiteMode.None;
-            });
-
             #region AddLocalization
             services.AddLocalization(options => options.ResourcesPath = "Resources");
 
@@ -251,7 +241,7 @@ namespace UpDiddy
 
             services.AddDetection();
 
-            services.AddMvc().AddJsonOptions(options =>
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1).AddJsonOptions(options =>
             {
                 options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;

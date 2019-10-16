@@ -25,23 +25,23 @@
             @if(Model.IsWaitList)
             {
                 <div id="SignUpFirstName" class="col-12 sign-up-input no-padding">
-                    <input class="wide-input" placeholder="Your first name" form="@_form" name="FirstName" asp-for="FirstName" required />
+                    <input class="form-control input-lg" placeholder="Your first name" form="@_form" name="FirstName" asp-for="FirstName" required />
                 </div>
                 <div id="SignUpLastName" class="col-12 sign-up-input no-padding">
-                    <input class="wide-input" placeholder="Your last name" form="@_form" name="LastName" asp-for="LastName" required />
+                    <input class="form-control input-lg" placeholder="Your last name" form="@_form" name="LastName" asp-for="LastName" required />
                 </div>
                 <div id="SignUpPhone" class="col-12 sign-up-input no-padding">
-                    <input class="wide-input" placeholder="Your phone number (optional)" type="text"  maxlength = "16"  form="@_form" name="PhoneNumber" asp-for="PhoneNumber" />
+                    <input class="form-control input-lg" placeholder="Your phone number (optional)" type="text"  maxlength = "16"  form="@_form" name="PhoneNumber" asp-for="PhoneNumber" />
                 </div>
             }   
             <div id="SignUpEmail" class="col-12 sign-up-input no-padding">
-                <input class="wide-input" placeholder="Your email" form="@_form" data-val="true" name="Email" asp-for="Email" required />
+                <input class="form-control input-lg" placeholder="Your email" form="@_form" data-val="true" name="Email" asp-for="Email" required />
             </div>
             <div id="SignUpPassword" class="col-12 sign-up-input no-padding">
-                <input class="wide-input" placeholder="Password" type="password" form="@_form" name="Password" asp-for="Password" required />
+                <input class="form-control input-lg" placeholder="Password" type="password" form="@_form" name="Password" asp-for="Password" required />
             </div>
             <div id="SignUpPasswordRetype" class="col-12 sign-up-input no-padding">
-                <input class="wide-input" placeholder="Re-enter password" type="password" form="@_form" name="ReenterPassword" asp-for="ReenterPassword" required />
+                <input class="form-control input-lg" placeholder="Re-enter password" type="password" form="@_form" name="ReenterPassword" asp-for="ReenterPassword" required />
             </div>
             <div>
                 <div class="form-check sign-up-input">

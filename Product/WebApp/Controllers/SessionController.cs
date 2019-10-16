@@ -61,7 +61,7 @@ namespace UpDiddy.Controllers
         }
 
         [HttpGet]
-        public IActionResult SignIn(string returnUrl = "/")
+        public IActionResult SignIn(string returnUrl = "/Home/Profile")
         {
             ViewData["ReturnUrl"] = returnUrl;
             return View();
