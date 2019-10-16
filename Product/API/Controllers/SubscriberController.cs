@@ -993,7 +993,7 @@ namespace UpDiddyApi.Controllers
             }
 
 
-            if (signUpDto.isGatedDownload.Value && group != null)
+            if (signUpDto.isGatedDownload.HasValue && signUpDto.isGatedDownload.Value  && group != null)
             {
                 var downloadUrl = await HandleGatedFileDownload(subscriber.Email, signUpDto.gatedDownloadFileUrl, signUpDto.gatedDownloadMaxAttemptsAllowed, subscriber.SubscriberId, group.GroupId);
                 SendGatedDownloadLink(subscriber.Email, downloadUrl);

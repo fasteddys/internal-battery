@@ -394,26 +394,30 @@ namespace UpDiddy.Controllers
                 });
             }
 
-            PageResponse<CampaignLandingPageViewModel> landingPage = await GetButterLandingPage(signUpViewModel.CampaignSlug);
             SignUpDto sudto = new SignUpDto
             {
                 email = signUpViewModel.Email,
                 password = signUpViewModel.Password,
                 campaignGuid = signUpViewModel.CampaignGuid,
-                firstName = landingPage.Data.Fields.iswaitlist ? signUpViewModel.FirstName : null,
-                lastName = landingPage.Data.Fields.iswaitlist ? signUpViewModel.LastName : null,
-                phoneNumber = landingPage.Data.Fields.iswaitlist ? signUpViewModel.PhoneNumber : null,
                 referer = Request.Headers["Referer"].ToString(),
                 verifyUrl = _configuration["Environment:BaseUrl"].TrimEnd('/') + "/email/confirm-verification/",
-                isGatedDownload = landingPage.Data.Fields.isgateddownload && !string.IsNullOrEmpty(landingPage.Data.Fields.gated_file_download_file),
-                gatedDownloadFileUrl = landingPage.Data.Fields.gated_file_download_file,
-                gatedDownloadMaxAttemptsAllowed = !string.IsNullOrEmpty(landingPage.Data.Fields.gated_file_download_max_attempts_allowed) ? (int)Double.Parse(landingPage.Data.Fields.gated_file_download_max_attempts_allowed) : (int?)null,
-                partnerGuid = landingPage.Data.Fields.partner.PartnerGuid != null ? landingPage.Data.Fields.partner.PartnerGuid : Guid.Empty,
 
                 //check for any referrerCode 
                 referralCode = Request.Cookies["referrerCode"]==null ? null : Utils.AlphaNumeric(Request.Cookies["referrerCode"].ToString(), _maxCookieLength),
                 subscriberSource = Request.Cookies["source"] == null ? null : Utils.AlphaNumeric(Request.Cookies["source"].ToString(),_maxCookieLength),
             };
+
+            if(signUpViewModel.CampaignSlug != null)
+            {
+                 PageResponse<CampaignLandingPageViewModel> landingPage = await GetButterLandingPage(signUpViewModel.CampaignSlug);
+                 sudto.firstName = landingPage.Data.Fields.iswaitlist ? signUpViewModel.FirstName : null;
+                 sudto.lastName = landingPage.Data.Fields.iswaitlist ? signUpViewModel.LastName : null;
+                 sudto.phoneNumber = landingPage.Data.Fields.iswaitlist ? signUpViewModel.PhoneNumber : null;
+                 sudto.isGatedDownload = landingPage.Data.Fields.isgateddownload && !string.IsNullOrEmpty(landingPage.Data.Fields.gated_file_download_file);
+                 sudto.gatedDownloadFileUrl = landingPage.Data.Fields.gated_file_download_file;
+                 sudto.gatedDownloadMaxAttemptsAllowed = !string.IsNullOrEmpty(landingPage.Data.Fields.gated_file_download_max_attempts_allowed) ? (int)Double.Parse(landingPage.Data.Fields.gated_file_download_max_attempts_allowed) : (int?)null;
+                 sudto.partnerGuid = landingPage.Data.Fields.partner.PartnerGuid != null ? landingPage.Data.Fields.partner.PartnerGuid : Guid.Empty;
+            }
 
             // Guard UX from any unforeseen server error.
             try
