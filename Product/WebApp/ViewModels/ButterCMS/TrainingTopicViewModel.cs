@@ -19,7 +19,7 @@ namespace UpDiddy.ViewModels.ButterCMS
         [JsonProperty("topic_title")]
         public string TopicTitle { get; set; }
         [JsonProperty("sortorder")]
-        public double SortOrder { get; set; }
+        public double? SortOrder { get; set; }
         [JsonProperty("description")]
         public string Description { get; set; }
     }
