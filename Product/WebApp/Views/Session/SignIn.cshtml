@@ -4,6 +4,7 @@
     ViewData["Title"] = "Sign In";
 }
 
+
 <style type="text/css">
     .tos-container {
         max-height: 250px;
@@ -20,16 +21,14 @@
         </div>
     </div>
     <div class="row justify-content-md-center">
-        <div class="col col-md-5">
-            <form asp-controller="Session" asp-action="SignIn" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post">
+        <div class="col col-md-5 mt-4">
+            <form asp-controller="Session" asp-action="signin" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post">
                 <div asp-validation-summary="All" class="text-danger"></div>
                 <div class="form-group">
                     <input asp-for="EmailAddress" class="form-control input-lg" placeholder="Email Address" />
-                    <span asp-validation-for="EmailAddress" class="text-danger"></span>
                 </div>
                 <div class="form-group">
                     <input asp-for="Password" class="form-control input-lg" placeholder="Password" />
-                    <span asp-validation-for="Password" class="text-danger"></span>
                 </div>
                 <div class="form-group">
                     <div id="SignUpAction" class="col-12 no-padding">

@@ -180,7 +180,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             };
             Guid subscriberGuid = Guid.NewGuid();
             userCreationRequest.AppMetadata.subscriberGuid = subscriberGuid;
-
+            userCreationRequest.AppMetadata.acceptedTermsOfService = "October 16, 2018, version 1.0"; // may need to make this dynamic later
+            userCreationRequest.AppMetadata.isOptInToMarketingEmails = user.IsAgreeToMarketingEmails;
             try
             {
                 userCreationResponse = await managementApiClient.Users.CreateAsync(userCreationRequest);
@@ -217,8 +218,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             }
 
             user.UserId = userCreationResponse.UserId;
-            user.SubscriberGuid = userCreationResponse.AppMetadata.subscriberGuid;
-            // todo: implement role assignment logic
+            user.SubscriberGuid = subscriberGuid;
+
             return new CreateUserResponse(true, "Account has been created.", user);
         }
 

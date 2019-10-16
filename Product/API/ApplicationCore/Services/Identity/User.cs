@@ -15,6 +15,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
 
         public bool? EmailVerified { get; set; }
 
+        public bool IsAgreeToMarketingEmails { get; set; }
+
         [Required]
         [DataType(DataType.EmailAddress)]
         [StringLength(255)]

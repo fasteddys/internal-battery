@@ -26,7 +26,6 @@
                      <div id="SignUpComponentContainer">
                         @{
                         SignUpViewModel suvm = new SignUpViewModel();
-                        suvm.IsExpressSignUp = true;
                         suvm.SignUpButtonText = "Join Our Network";
                         }
                         @Html.Partial("Components/Authentication/_SignUp", suvm)

@@ -408,29 +408,7 @@ namespace UpDiddy.Controllers
                 return RedirectToAction("Profile");
             }
         }
-
-        [Authorize]
-        [HttpGet("/email/confirm-verification/{token}")]
-        public async Task<IActionResult> VerifyEmailAsync([FromQuery(Name = "returnUrl")] string returnUrl, Guid token)
-        {
-            try
-            {
-                await _Api.VerifyEmailAsync(token);
-                ViewBag.returnUrl = string.IsNullOrEmpty(returnUrl) ? "/Home/Profile" : returnUrl;
-            }
-            catch (ApiException ex)
-            {
-                ViewBag.Message = ex.ResponseDto?.Description;
-                if (ex.StatusCode.Equals(HttpStatusCode.Conflict))
-                    return View("EmailVerification/Conflict");
-
-                return View("EmailVerification/Error");
-            }
-
-            return View("EmailVerification/Success");
-        }
-
-
+        
         [HttpGet]
         public IActionResult MessageReceived()
         {

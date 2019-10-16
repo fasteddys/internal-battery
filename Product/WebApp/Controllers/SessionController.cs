@@ -23,6 +23,7 @@ using Auth0.AuthenticationApi.Models;
 using System.Collections.Generic;
 using UpDiddy.Api;
 using UpDiddyLib.Dto.User;
+using UpDiddyLib.Dto;
 
 namespace UpDiddy.Controllers
 {
@@ -56,7 +57,7 @@ namespace UpDiddy.Controllers
         {
             return View(new SignUpViewModel()
             {
-                IsExpressSignUp = true
+
             });
         }
 
@@ -110,6 +111,101 @@ namespace UpDiddy.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("[controller]/signup")]
+        public async Task<IActionResult> SignUp(SignUpViewModel vm, string returnUrl = "Session/SignIn")
+        {
+            // todo: modelstate valid? move waitlist logic there?
+
+            bool modelHasAllFields = !string.IsNullOrEmpty(vm.Email) &&
+                !string.IsNullOrEmpty(vm.Password) &&
+                !string.IsNullOrEmpty(vm.ReenterPassword);
+
+            //Check the fields if it is a waitlist
+            if (vm.IsWaitList)
+            {
+                modelHasAllFields = !string.IsNullOrEmpty(vm.FirstName) &&
+                !string.IsNullOrEmpty(vm.LastName);
+            }
+
+            // Make sure user has filled out all fields.
+            if (!modelHasAllFields)
+            {
+                return BadRequest(new BasicResponseDto
+                {
+                    StatusCode = 400,
+                    Description = "Please enter all sign-up fields and try again."
+                });
+            }
+
+            // This is basically the same check as above, but to be safe...
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new BasicResponseDto
+                {
+                    StatusCode = 400,
+                    Description = "Unfortunately, an error has occured with your submission. Please try again."
+                });
+            }
+
+            // Make sure user's password and re-enter password values match.
+            if (!vm.Password.Equals(vm.ReenterPassword))
+            {
+                return BadRequest(new BasicResponseDto
+                {
+                    StatusCode = 403,
+                    Description = "User's passwords do not match."
+                });
+            }
+
+            // If all checks pass, assemble SignUpDto from information user entered.
+            CreateUserDto createUserDto = new CreateUserDto
+            {
+                Email = vm.Email,
+                Password = vm.Password,
+                FirstName = vm.IsWaitList ? vm.FirstName : null,
+                LastName = vm.IsWaitList ? vm.LastName : null,
+                PhoneNumber = vm.IsWaitList ? vm.PhoneNumber : null,
+                ReferrerUrl = Request.Headers["Referer"].ToString(),
+                JobReferralCode = Request.Cookies["referrerCode"] == null ? null : Request.Cookies["referrerCode"].ToString(),
+                PartnerGuid = vm.PartnerGuid,
+                IsAgreeToMarketingEmails = vm.IsAgreeToMarketingEmails
+            };
+
+            // Guard UX from any unforeseen server error.
+            try
+            {
+                BasicResponseDto basicResponseDto = await _api.CreateUserAsync(createUserDto);
+
+                if (basicResponseDto.StatusCode == 200)
+                {
+                    return Ok(basicResponseDto);
+                }
+                else
+                {
+                    return StatusCode(500, new BasicResponseDto()
+                    {
+                        StatusCode = 500,
+                        Description = basicResponseDto.Description
+                    });
+                }
+            }
+            catch (ApiException e)
+            {
+                return StatusCode(500, new BasicResponseDto
+                {
+                    StatusCode = 500,
+                    Description = e.ResponseDto.Description
+                });
+            }
+        }
+
+        /// <summary>
+        /// New sign in endpoint which handles migration of ADB2C accounts to Auth0 seamlessly (provided they know their existing password).
+        /// </summary>
+        /// <param name="vm"></param>
+        /// <param name="returnUrl"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> SignIn(SignInViewModel vm, string returnUrl = null)
         {
@@ -173,13 +269,12 @@ namespace UpDiddy.Controllers
 
             return View(vm);
         }
-
+        
         [HttpGet]
         public IActionResult ResetPassword()
         {
             throw new NotImplementedException();
         }
-
 
         [HttpGet]
         public async Task SignOut()

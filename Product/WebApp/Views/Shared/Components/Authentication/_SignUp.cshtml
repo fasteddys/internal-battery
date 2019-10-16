@@ -2,51 +2,46 @@
 @using System.Net
 @model SignUpViewModel
 
-@{ 
-    string _form = Model.IsExpressSignUp ? "ExpressSignUpForm" : "SignUpForm";
-    string _aspAction = Model.IsExpressSignUp ? "express-sign-up" : "sign-up";
-}
-
 <div id="SignUpComponent">
-    <form id="@_form" asp-controller="Campaign" asp-action="@_aspAction" data-action="@_aspAction">
+    <form id="SignUpForm" asp-controller="session" asp-action="signup" data-action="signup">
         @{
-            if (!Model.IsExpressSignUp)
-            {
-                <input type="hidden" asp-for="PartnerContactGuid" name="PartnerContactGuid" value="@Model.PartnerContactGuid" form="SignUpForm" />
-                <input type="hidden" asp-for="CampaignGuid" name="CampaignGuid" value="@Model.CampaignGuid" form="SignUpForm" />
-                <input type="hidden" asp-for="CampaignPhase" name="CampaignPhase" value="@WebUtility.UrlEncode(Model.CampaignPhase)" form="SignUpForm" />
-            }
             if (Model.PartnerGuid != Guid.Empty && Model.PartnerGuid != null)
             {
-                <input type="hidden" asp-for="PartnerGuid" name="PartnerGuid" value="@Model.PartnerGuid" form="@_form" />
+                <input type="hidden" asp-for="PartnerGuid" name="PartnerGuid" value="@Model.PartnerGuid" form="SignUpForm" />
             }
         }
         <div class="row">
-            @if(Model.IsWaitList)
+            @if (Model.IsWaitList)
             {
                 <div id="SignUpFirstName" class="col-12 sign-up-input no-padding">
-                    <input class="form-control input-lg" placeholder="Your first name" form="@_form" name="FirstName" asp-for="FirstName" required />
+                    <input class="form-control input-lg" placeholder="Your first name" form="SignUpForm" name="FirstName" asp-for="FirstName" required />
                 </div>
                 <div id="SignUpLastName" class="col-12 sign-up-input no-padding">
-                    <input class="form-control input-lg" placeholder="Your last name" form="@_form" name="LastName" asp-for="LastName" required />
+                    <input class="form-control input-lg" placeholder="Your last name" form="SignUpForm" name="LastName" asp-for="LastName" required />
                 </div>
                 <div id="SignUpPhone" class="col-12 sign-up-input no-padding">
-                    <input class="form-control input-lg" placeholder="Your phone number (optional)" type="text"  maxlength = "16"  form="@_form" name="PhoneNumber" asp-for="PhoneNumber" />
+                    <input class="form-control input-lg" placeholder="Your phone number (optional)" type="text" maxlength="16" form="SignUpForm" name="PhoneNumber" asp-for="PhoneNumber" />
                 </div>
-            }   
+            }
             <div id="SignUpEmail" class="col-12 sign-up-input no-padding">
-                <input class="form-control input-lg" placeholder="Your email" form="@_form" data-val="true" name="Email" asp-for="Email" required />
+                <input class="form-control input-lg" placeholder="Your email" form="SignUpForm" data-val="true" name="Email" asp-for="Email" required />
             </div>
             <div id="SignUpPassword" class="col-12 sign-up-input no-padding">
-                <input class="form-control input-lg" placeholder="Password" type="password" form="@_form" name="Password" asp-for="Password" required />
+                <input class="form-control input-lg" placeholder="Password" type="password" form="SignUpForm" name="Password" asp-for="Password" required />
             </div>
             <div id="SignUpPasswordRetype" class="col-12 sign-up-input no-padding">
-                <input class="form-control input-lg" placeholder="Re-enter password" type="password" form="@_form" name="ReenterPassword" asp-for="ReenterPassword" required />
+                <input class="form-control input-lg" placeholder="Re-enter password" type="password" form="SignUpForm" name="ReenterPassword" asp-for="ReenterPassword" required />
             </div>
             <div>
                 <div class="form-check sign-up-input">
                     <input type="checkbox" class="form-check-input" id="termsAndConditionsCheck" value="agree" required>
-                    <label class="form-check-label text-left" for="termsAndConditionsCheck">I agree to CareerCircle website <a target="_blank" href="/Home/TermsOfService">terms and conditions</a></label>
+                    <label class="form-check-label text-left" for="termsAndConditionsCheck">I agree to CareerCircle website <a target="_blank" href="/Home/TermsOfService">terms and conditions.</a></label>
+                </div>
+            </div>
+            <div>
+                <div class="form-check sign-up-input">
+                    <input type="checkbox" class="form-check-input" id="isAgreeToMarketingEmails" form="SignUpForm" name="IsAgreeToMarketingEmails" asp-for="IsAgreeToMarketingEmails">
+                    <label class="form-check-label text-left" for="isAgreeToMarketingEmails">I would like to receive emails about new offers and promotions from CareerCircle.</label>
                 </div>
             </div>
             <div id="SignUpAction" class="col-12 no-padding">
@@ -54,16 +49,16 @@
                     Text = Model.SignUpButtonText==null? "Sign Up Now" : Model.SignUpButtonText,
                     SkewDirection = "skew-left-to-right",
                     ChosenColorScheme = "cc-cscheme-darkred",
-                    Form = _form,
+                    Form = "SignUpForm",
                     ButtonAction = ActionButtonViewModel.Action.SUBMIT
                 })
-            </div>  
+            </div>
             @if (!string.IsNullOrWhiteSpace(Model.ObfuscatedEmail))
             {
                 <div class="col-12 no-padding notification">
                     You must use the following email: @Model.ObfuscatedEmail
                 </div>
-            } 
+            }
         </div>
         @Html.HiddenFor(x => Model.IsWaitList)
     </form>

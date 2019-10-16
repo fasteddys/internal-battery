@@ -42,7 +42,7 @@ namespace UpDiddy.Api
 
 
         #region Constructor
-        public ApiUpdiddy(IOptions<AzureAdB2COptions> azureAdB2COptions, IHttpContextAccessor contextAccessor, IConfiguration conifguration, IHttpClientFactory httpClientFactory, IDistributedCache cache, ILogger<ApiUpdiddy> sysLog, IMemoryCache memoryCache )
+        public ApiUpdiddy(IOptions<AzureAdB2COptions> azureAdB2COptions, IHttpContextAccessor contextAccessor, IConfiguration conifguration, IHttpClientFactory httpClientFactory, IDistributedCache cache, ILogger<ApiUpdiddy> sysLog, IMemoryCache memoryCache)
         {
             _syslog = sysLog;
             AzureOptions = azureAdB2COptions.Value;
@@ -53,7 +53,7 @@ namespace UpDiddy.Api
             _HttpClientFactory = httpClientFactory;
             _cache = cache;
             _currentContext = contextAccessor.HttpContext;
-             _memoryCache = memoryCache;
+            _memoryCache = memoryCache;
         }
         #endregion
 
@@ -73,7 +73,7 @@ namespace UpDiddy.Api
                 request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             }
 
-                return await client.SendAsync(request);
+            return await client.SendAsync(request);
         }
 
         private async Task<T> RequestAsync<T>(string clientName, HttpMethod method, string endpoint, object body = null)
@@ -108,7 +108,7 @@ namespace UpDiddy.Api
         }
 
         private async Task<AuthenticationResult> GetBearerTokenAsync()
-        {     
+        {
             AuthenticationResult result = null;
             // Retrieve the token with the specified scopes
             var scope = AzureOptions.ApiScopes.Split(' ');
@@ -118,18 +118,18 @@ namespace UpDiddy.Api
                 .WithB2CAuthority(AzureOptions.Authority)
                 .WithClientSecret(AzureOptions.ClientSecret)
                 .Build();
-            
-            new MSALSessionCache(signedInUserID,_cache,_memoryCache).EnablePersistence(app.UserTokenCache);
-            
+
+            new MSALSessionCache(signedInUserID, _cache, _memoryCache).EnablePersistence(app.UserTokenCache);
+
             var accounts = await app.GetAccountsAsync();
-            if ( accounts.Count() == 0 )
+            if (accounts.Count() == 0)
             {
-                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, "MSAL_ApiUpdiddy.GetBearerTokenAsync unable to locate account" );
+                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, "MSAL_ApiUpdiddy.GetBearerTokenAsync unable to locate account");
             }
- 
-            IAccount account = accounts.FirstOrDefault();     
+
+            IAccount account = accounts.FirstOrDefault();
             result = await app.AcquireTokenSilent(scope, account).ExecuteAsync();
-                
+
             // temp code to log jwt info, specifically expiration dates 
             try
             {
@@ -179,7 +179,7 @@ namespace UpDiddy.Api
         public async Task<TopicDto> TopicByIdAsync(int TopicId)
         {
             string cacheKey = $"TopicById{TopicId}";
-            TopicDto rval =  GetCachedValueAsync<TopicDto>(cacheKey);
+            TopicDto rval = GetCachedValueAsync<TopicDto>(cacheKey);
 
             if (rval != null)
                 return rval;
@@ -585,12 +585,14 @@ namespace UpDiddy.Api
             return rval;
         }
 
-        
-        public async Task<BasicResponseDto> SubmitServiceOfferingPayment(ServiceOfferingTransactionDto serviceOfferingTransactionDto){
+
+        public async Task<BasicResponseDto> SubmitServiceOfferingPayment(ServiceOfferingTransactionDto serviceOfferingTransactionDto)
+        {
             return await PostAsync<BasicResponseDto>("serviceOfferingOrder", serviceOfferingTransactionDto);
         }
 
-        public async Task<ServiceOfferingOrderDto> GetSubscriberOrder(Guid OrderGuid){
+        public async Task<ServiceOfferingOrderDto> GetSubscriberOrder(Guid OrderGuid)
+        {
             return await GetAsync<ServiceOfferingOrderDto>("serviceOfferingOrder/subscriber-order/" + OrderGuid);
         }
 
@@ -653,7 +655,7 @@ namespace UpDiddy.Api
         {
             string cacheKey = "job-activeJobCount";
             BasicResponseDto rval = GetCachedValueAsync<BasicResponseDto>(cacheKey);
-            if(rval == null)
+            if (rval == null)
             {
                 rval = await _GetActiveJobCountAsync();
                 SetCachedValueAsync<BasicResponseDto>(cacheKey, rval);
@@ -664,7 +666,7 @@ namespace UpDiddy.Api
         public async Task<JobSearchResultDto> GetJobsByLocation(string searchQueryParameterString)
         {
 
-            var searchFilter = $"all/all/all/all/all/all/0{(searchQueryParameterString.Equals("")? "?" :searchQueryParameterString+"&")}page-size=100";
+            var searchFilter = $"all/all/all/all/all/all/0{(searchQueryParameterString.Equals("") ? "?" : searchQueryParameterString + "&")}page-size=100";
             string cacheKey = $"job-{searchFilter}";
             JobSearchResultDto rval = GetCachedValueAsync<JobSearchResultDto>(cacheKey);
 
@@ -744,6 +746,12 @@ namespace UpDiddy.Api
                 return true;
             else
                 return false;
+        }
+
+        public async Task<BasicResponseDto> CreateUserAsync(CreateUserDto createUserDto)
+        {
+            var basicResponseDto = await PostAsync<BasicResponseDto>("identity/create-user", createUserDto);
+            return basicResponseDto;
         }
 
         public async Task<bool> MigrateUserAsync(CreateUserDto createUserDto)
@@ -861,21 +869,6 @@ namespace UpDiddy.Api
         #endregion
 
         #region Subscriber
-        public async Task<BasicResponseDto> UpdateSubscriberContactAsync(Guid partnerContactGuid, SignUpDto signUpDto)
-        {
-            // encrypt password before sending to API
-            signUpDto.password = Crypto.Encrypt(_configuration["Crypto:Key"], signUpDto.password);
-
-            return await PutAsync<BasicResponseDto>(string.Format("subscriber/contact/{0}", partnerContactGuid.ToString()), signUpDto);
-        }
-
-        public async Task<BasicResponseDto> ExpressUpdateSubscriberContactAsync(SignUpDto signUpDto)
-        {
-            // encrypt password before sending to API
-            signUpDto.password = Crypto.Encrypt(_configuration["Crypto:Key"], signUpDto.password);
-
-            return await PostAsync<BasicResponseDto>("subscriber/express-sign-up", signUpDto);
-        }
 
         public async Task<SubscriberADGroupsDto> MyGroupsAsync()
         {
@@ -1061,13 +1054,6 @@ namespace UpDiddy.Api
         }
         #endregion
 
-        #region EmailVerification
-        public async Task<BasicResponseDto> VerifyEmailAsync(Guid token)
-        {
-            return await PostAsync<BasicResponseDto>($"subscriber/verify-email/{token}");
-        }
-        #endregion
-
         public async Task<BasicResponseDto> SyncLinkedInAccountAsync(string linkedInCode, string returnUrl)
         {
             return await PutAsync<BasicResponseDto>($"linkedin/sync-profile/{linkedInCode}?returnUrl={returnUrl}");
@@ -1140,7 +1126,7 @@ namespace UpDiddy.Api
             }
             return rval;
         }
-        
+
 
         public async Task<IList<ExperienceLevelDto>> _GetExperienceLevelAsync()
         {
@@ -1312,11 +1298,11 @@ namespace UpDiddy.Api
             }
         }
 
-        private  T GetCachedValueAsync<T>(string CacheKey)
+        private T GetCachedValueAsync<T>(string CacheKey)
         {
             try
             {
-           
+
                 //string existingValue = await _cache.GetStringAsync(CacheKey);
                 string existingValue = _memoryCache.Get<string>(CacheKey);
                 if (string.IsNullOrEmpty(existingValue))
@@ -1368,10 +1354,10 @@ namespace UpDiddy.Api
                 endpoint += $"&searchQuery={searchQuery}";
             if (searchLocationQuery != string.Empty)
                 endpoint += $"&searchLocationQuery={searchLocationQuery}";
-            if (sortOrder != string.Empty)                
+            if (sortOrder != string.Empty)
                 endpoint += $"&sortOrder={WebUtility.UrlEncode(sortOrder)}";
-           
-                
+
+
 
             return await GetAsync<ProfileSearchResultDto>(endpoint);
         }
@@ -1726,7 +1712,7 @@ namespace UpDiddy.Api
                 }
             }
         }
-    
+
 
         public async Task<IList<JobCategoryDto>> GetJobCategories()
         {
@@ -1796,17 +1782,19 @@ namespace UpDiddy.Api
 
 
         #region Traitify
-        
+
         public async Task<TraitifyDto> StartNewTraitifyAssessment(TraitifyDto dto)
         {
             return await PostAsync<TraitifyDto>("traitify/new", dto);
         }
 
-        public async Task<TraitifyDto> GetTraitifyByAssessmentId(string assessmentId) {
+        public async Task<TraitifyDto> GetTraitifyByAssessmentId(string assessmentId)
+        {
             return await GetAsync<TraitifyDto>($"traitify/{assessmentId}");
         }
 
-          public async Task<bool> CompleteAssessment(string assessmentId) {
+        public async Task<bool> CompleteAssessment(string assessmentId)
+        {
             return await GetAsync<bool>($"traitify/complete/{assessmentId}");
         }
 
@@ -1819,14 +1807,14 @@ namespace UpDiddy.Api
             string cacheKey = "keywordSearchList";
             IList<string> rval = GetCachedValueAsync<IList<string>>(cacheKey);
 
-             //if rval is null get the value from Api Memory Cache
-            if(rval==null)
+            //if rval is null get the value from Api Memory Cache
+            if (rval == null)
             {
-                rval=await GetAsync<IList<string>>($"cache?cacheKey={cacheKey}");
-                SetCachedValueAsync<IList<string>>(cacheKey,rval);
+                rval = await GetAsync<IList<string>>($"cache?cacheKey={cacheKey}");
+                SetCachedValueAsync<IList<string>>(cacheKey, rval);
             }
 
-            List<string> keywordListresult=rval?.Where(k=>k.Contains(keyword))?.ToList();
+            List<string> keywordListresult = rval?.Where(k => k.Contains(keyword))?.ToList();
 
             return keywordListresult;
         }
@@ -1837,13 +1825,13 @@ namespace UpDiddy.Api
             IList<string> rval = GetCachedValueAsync<IList<string>>(cacheKey);
 
             //if rval is null get the value from Api Memory Cache
-            if(rval==null)
+            if (rval == null)
             {
-               rval=await GetAsync<IList<string>>($"cache?cacheKey={cacheKey}");
-               SetCachedValueAsync<IList<string>>(cacheKey,rval);
+                rval = await GetAsync<IList<string>>($"cache?cacheKey={cacheKey}");
+                SetCachedValueAsync<IList<string>>(cacheKey, rval);
             }
 
-            List<string> locationListresult=rval?.Where(k=>k.Contains(location))?.ToList();
+            List<string> locationListresult = rval?.Where(k => k.Contains(location))?.ToList();
 
             return locationListresult;
         }

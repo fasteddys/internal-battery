@@ -60,10 +60,10 @@
                 url: $(this).attr("action"),
                 data: $(this).serialize()
             }).done(res => {
-                $('.signup-modal a').attr('href', res.description);
+                $('.signup-modal a').attr('href', '/Session/SignIn');
                 $('.signup-modal').modal();
                 setTimeout(function () {
-                    window.location.href = res.description;
+                    window.location.href = '/Session/SignIn';
                 }, 3000);
             }).fail(res => {
                 var errorText = "Unfortunately, there was an error with your submission. Please try again later.";
@@ -79,8 +79,4 @@
         $("#SignUpOverlay").remove();
         ToastService.error("Please enter information for all sign-up fields and try again.");
     }
-    
-    
-    
-
 }); 

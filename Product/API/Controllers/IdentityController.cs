@@ -169,6 +169,7 @@ namespace UpDiddyApi.Controllers
             }
             else
             {
+                createUserDto.SubscriberGuid = createLoginResponse.User.SubscriberGuid;
                 var createSubscriberResult = await _subscriberService.CreateSubscriberAsync(createUserDto);
                 // if the subscriber is not created successfully, remove the associated login that was created and return a failure message
                 if (!createSubscriberResult)

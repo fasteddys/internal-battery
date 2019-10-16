@@ -15,6 +15,7 @@ namespace UpDiddy.Api
         Task<bool> IsUserExistsInAuth0Async(string email);
         Task<bool> CheckADB2CLoginAsync(string email, string password);
         Task<bool> MigrateUserAsync(CreateUserDto createUserDto);
+        Task<BasicResponseDto> CreateUserAsync(CreateUserDto createUserDto);
         Task<IList<TopicDto>> TopicsAsync();
         Task<TopicDto> TopicByIdAsync(int TopicId);
         Task<TopicDto> TopicBySlugAsync(string TopicSlug);
@@ -70,8 +71,6 @@ namespace UpDiddy.Api
         Task<SubscriberEducationHistoryDto> DeleteEducationHistoryAsync(Guid subscriberGuid, Guid educationHistory);
         Task<IList<SubscriberWorkHistoryDto>> GetWorkHistoryAsync(Guid subscriberGuid);
         Task<IList<SubscriberEducationHistoryDto>> GetEducationHistoryAsync(Guid subscriberGuid);
-        Task<BasicResponseDto> UpdateSubscriberContactAsync(Guid partnerContactGuid, SignUpDto signUpDto);
-        Task<BasicResponseDto> ExpressUpdateSubscriberContactAsync(SignUpDto signUpDto);
         Task<CourseDto> GetCourseByCampaignGuidAsync(Guid CampaignGuid);
         Task<SubscriberEducationHistoryDto> AddEducationalHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto workHistory);
         Task<BasicResponseDto> AddJobPostingAsync(JobPostingDto jobPosting);
@@ -84,7 +83,6 @@ namespace UpDiddy.Api
         Task<ContactDto> ContactAsync(Guid partnerContactGuid);
         Task<LinkedInProfileDto> GetLinkedInProfileAsync();
         Task<SubscriberADGroupsDto> MyGroupsAsync();
-        Task<BasicResponseDto> VerifyEmailAsync(Guid token);
         Task<IList<CampaignDto>> GetCampaignsAsync();
         Task<CampaignDto> GetCampaignAsync(Guid campaignGuid);
         Task<CampaignPartnerContactDto> GetCampaignPartnerContactAsync(string tinyId);

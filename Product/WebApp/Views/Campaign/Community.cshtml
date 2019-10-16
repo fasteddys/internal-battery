@@ -93,18 +93,6 @@
                                 <div id="SignUpComponentContainer">
                                     @{
                                         SignUpViewModel suvm = new SignUpViewModel();
-                                        if (Model.IsExpressCampaign)
-                                        {
-                                            suvm.IsExpressSignUp = true;
-                                        }
-                                        else
-                                        {
-                                            suvm.PartnerContactGuid = Model.PartnerContactGuid;
-                                            suvm.CampaignGuid = Model.CampaignGuid;
-                                            suvm.CampaignPhase = Model.CampaignPhase;
-                                            suvm.IsExpressSignUp = false;
-                                        }
-
                                     }
                                     @Html.Partial("Components/Authentication/_SignUp", suvm)
 
