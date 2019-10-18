@@ -143,7 +143,7 @@ namespace UpDiddyApi.Controllers
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = "Tue user was not migrated successfully." });
             }
         }
-
+        
         [HttpPost("create-user")]
         public async Task<IActionResult> CreateUserAsync([FromBody] CreateUserDto createUserDto)
         {

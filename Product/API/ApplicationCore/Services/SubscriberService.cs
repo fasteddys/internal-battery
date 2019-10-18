@@ -34,7 +34,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         private UpDiddyDbContext _db { get; set; }
         private IConfiguration _configuration { get; set; }
         private ICloudStorage _cloudStorage { get; set; }
-        private IB2CGraph _graphClient { get; set; }
         private ILogger _logger { get; set; }
         private IRepositoryWrapper _repository { get; set; }
         private readonly IMapper _mapper;
@@ -44,7 +43,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         public SubscriberService(UpDiddyDbContext context,
             IConfiguration configuration,
             ICloudStorage cloudStorage,
-            IB2CGraph graphClient,
             IRepositoryWrapper repository,
             ILogger<SubscriberService> logger,
             IMapper mapper,
@@ -54,7 +52,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             _db = context;
             _configuration = configuration;
             _cloudStorage = cloudStorage;
-            _graphClient = graphClient;
             _repository = repository;
             _logger = logger;
             _mapper = mapper;

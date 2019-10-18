@@ -249,18 +249,17 @@ namespace UpDiddyApi.ApplicationCore.Services
             // validate that the subscriber is logged in 
             if ( subscriberGuid != Guid.Empty)
             {
-
                 // validate that a subscriber has been specified by the front end 
                 if (serviceOfferingOrderDto.Subscriber == null || serviceOfferingOrderDto.Subscriber?.SubscriberGuid == null)
                 {
                     statusCode = 404;
-                    msg = "For authenticated requests, subscriber must be supplied by front-en";
+                    msg = "For authenticated requests, subscriber must be supplied by front-end";
                     _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     return false;
 
                 }
 
-                // validate that the subscriber passed from the front end is the same as that from the JTW - Not sure if this is 
+                // validate that the subscriber passed from the front end is the same as that from the JWT - Not sure if this is 
                 // necessary but better safe that sorry 
                 if (serviceOfferingOrderDto.Subscriber?.SubscriberGuid.Value != subscriberGuid)
                 {
@@ -279,8 +278,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                     msg = "Unable to locate subscriber specified by JWT";
                     return false;
                 }
-
-
             }
             else
             {             
@@ -292,7 +289,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                     _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     return false;
                 }
-
                 
                 // validate email
                 if ( string.IsNullOrEmpty(serviceOfferingTransactionDto.SignUpDto.email) || Utils.ValidateEmail(serviceOfferingTransactionDto.SignUpDto.email) == false  )
@@ -324,7 +320,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                     _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     return false;
                 }
-
 
                 // check if user exits in AD if the user does then we skip this step
                 Microsoft.Graph.User user = _graphClient.GetUserBySignInEmail(serviceOfferingTransactionDto.SignUpDto.email).Result;

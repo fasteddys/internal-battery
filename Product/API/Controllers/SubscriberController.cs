@@ -49,7 +49,6 @@ public class SubscriberController : Controller
     private readonly IConfiguration _configuration;
     private readonly ILogger _syslog;
     private readonly IDistributedCache _cache;
-    private IB2CGraph _graphClient;
     private IAuthorizationService _authorizationService;
     private ISubscriberService _subscriberService;
     private ISubscriberNotificationService _subscriberNotificationService;
@@ -68,7 +67,6 @@ public class SubscriberController : Controller
         IConfiguration configuration,
         ILogger<SubscriberController> sysLog,
         IDistributedCache distributedCache,
-        IB2CGraph client,
         ICloudStorage cloudStorage,
         ISysEmail sysEmail,
         IAuthorizationService authorizationService,
@@ -87,7 +85,6 @@ public class SubscriberController : Controller
         _configuration = configuration;
         _cache = distributedCache;
         _syslog = sysLog;
-        _graphClient = client;
         _cloudStorage = cloudStorage;
         _sysEmail = sysEmail;
         _authorizationService = authorizationService;
@@ -114,15 +111,15 @@ public class SubscriberController : Controller
     public async Task<IActionResult> UpdateEmailVerificationStatusAsync(Guid subscriberGuid)
     {
         var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
-        if(subscriber != null)
+        if (subscriber != null)
         {
             var response = await _userService.GetUserByEmailAsync(subscriber.Email);
-            if (response != null && response.User !=null && response.User.EmailVerified.HasValue)
+            if (response != null && response.User != null && response.User.EmailVerified.HasValue)
             {
                 SubscriberFactory.UpdateEmailVerificationStatus(_db, subscriberGuid, response.User.EmailVerified.Value);
             }
         }
-        
+
         return Ok();
     }
 
@@ -193,8 +190,10 @@ public class SubscriberController : Controller
             subscriber.ModifyGuid = Guid.Empty;
             _db.SaveChanges();
 
-            // disable the AD account associated with the subscriber
-            _graphClient.DisableUser(subscriberGuid);
+            // disable the Auth0 account associated with the subscriber
+            var getUserResponse = _userService.GetUserByEmailAsync(subscriber.Email).Result;
+            _userService.DeleteUserAsync(getUserResponse.User.UserId);
+
             // delete subscriber from cloud talent 
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(subscriber.SubscriberGuid.Value));
 
@@ -735,7 +734,7 @@ public class SubscriberController : Controller
         else
             return Ok(new BasicResponseDto() { StatusCode = 400, Description = errorMsg });
     }
-    
+
     [HttpPut("/api/[controller]/onboard")]
     public IActionResult Onboard()
     {
@@ -752,7 +751,7 @@ public class SubscriberController : Controller
 
         return Ok();
     }
-    
+
     [HttpGet("/api/[controller]/me/partner-web-redirect")]
     public async Task<IActionResult> GetSubscriberPartnerWebRedirectAsync()
     {
@@ -775,26 +774,7 @@ public class SubscriberController : Controller
         var redirect = await _db.PartnerWebRedirect.Where(e => e.PartnerId == result.PartnerId).FirstOrDefaultAsync();
         return Ok(new RedirectDto() { RelativePath = redirect?.RelativePath });
     }
-
-    [HttpGet("/api/[controller]/me/group")]
-    public async Task<IActionResult> MyGroupsAsync()
-    {
-        IList<Microsoft.Graph.Group> groups = await _graphClient.GetUserGroupsByObjectId(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-        IList<string> response = new List<string>();
-
-        foreach (var group in groups)
-        {
-            ConfigADGroup acceptedGroup = _configuration.GetSection("ADGroups:Values")
-                .Get<List<ConfigADGroup>>()
-                .Find(e => e.Id.Equals(group.AdditionalData["objectId"]));
-
-            if (acceptedGroup != null)
-                response.Add(acceptedGroup.Name);
-        }
-
-        return Json(new { groups = response });
-    }
-
+    
     [HttpGet("/api/[controller]/search")]
     [Authorize(Policy = "IsRecruiterOrAdmin")]
     public IActionResult Search(string searchFilter = "any", string searchQuery = null, string searchLocationQuery = null, string sortOrder = null)
@@ -978,7 +958,7 @@ public class SubscriberController : Controller
 
         return Ok(result);
     }
-    
+
     #region SubscriberNotes
     /// <summary>
     /// Save Notes

@@ -321,7 +321,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             SubscriberDto subscriber = GetSubscriber(_db, SubscriberGuid, _syslog, _mapper);
             if (subscriber == null)
                 return false;
-            return Identity.IsAuthenticated && subscriber.IsVerified && subscriber.Files.Count > 0;
+            return Identity.IsAuthenticated && subscriber.Files.Count > 0;
         }
 
         #region Skills

@@ -82,7 +82,6 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> DeleteJobPosting(Guid jobPostingGuid);
         Task<ContactDto> ContactAsync(Guid partnerContactGuid);
         Task<LinkedInProfileDto> GetLinkedInProfileAsync();
-        Task<SubscriberADGroupsDto> MyGroupsAsync();
         Task<IList<CampaignDto>> GetCampaignsAsync();
         Task<CampaignDto> GetCampaignAsync(Guid campaignGuid);
         Task<CampaignPartnerContactDto> GetCampaignPartnerContactAsync(string tinyId);

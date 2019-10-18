@@ -13,5 +13,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity.Interfaces
         Task DeleteUserAsync(string userId);
         Task<GetUserResponse> GetUserByEmailAsync(string email);
         Task<CreateUserResponse> MigrateUserAsync(User user);
+        Task AssignRolesToUser(string userId, Role[] roles);
+        Task RemoveRolesFromUser(string userId, Role[] roles);
     }
 }

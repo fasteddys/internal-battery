@@ -132,7 +132,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
 
             try
             {
-                if (users != null && users.Count()> 0)
+                if (users != null && users.Count() > 0)
                 {
                     var auth0User = users.FirstOrDefault();
                     user = new User()
@@ -256,7 +256,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                 userCreationRequest.AppMetadata.subscriberGuid = subscriber.SubscriberGuid;
                 userCreationRequest.AppMetadata.acceptedTermsOfService = acceptedTermsOfService;
                 userCreationRequest.AppMetadata.isOptInToMarketingEmails = isOptInToMarketingEmails;
-                
+
                 try
                 {
                     userCreationResponse = await managementApiClient.Users.CreateAsync(userCreationRequest);
@@ -325,6 +325,74 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                 _graphClient.DisableUser(user.SubscriberGuid);
 
                 return new CreateUserResponse(true, "User has been migrated successfully.", user);
+            }
+        }
+
+        public async Task RemoveRolesFromUser(string userId, Role[] roles)
+        {
+            var apiToken = await GetApiTokenAsync();
+            var managementApiClient = new ManagementApiClient(apiToken, _domain);
+
+            try
+            {
+                await managementApiClient.Users.RemoveRolesAsync(userId, new AssignRolesRequest() { Roles = roles.Select(r => r.ToString()).ToArray() });
+            }
+            catch (ApiException ae)
+            {
+                _logger.LogWarning($"An Auth0 ApiException occurred in UserService.RemoveRolesFromUser (will refresh token and retry one time): {ae.Message}", ae);
+                if (ae.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    try
+                    {
+                        // clear the token, get a new one, and try one more time
+                        await ClearApiTokenAsync();
+                        apiToken = await GetApiTokenAsync();
+                        managementApiClient = new ManagementApiClient(apiToken, _domain);
+                        await managementApiClient.Users.RemoveRolesAsync(userId, new AssignRolesRequest() { Roles = roles.Select(r => r.ToString()).ToArray() });
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError($"An unexpected exception occurred in UserService.RemoveRolesFromUser (will not be retried): {e.Message}", e);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"An unexpected exception occurred in UserService.RemoveRolesFromUser (will not be retried): {e.Message}", e);
+            }
+        }
+
+        public async Task AssignRolesToUser(string userId, Role[] roles)
+        {
+            var apiToken = await GetApiTokenAsync();
+            var managementApiClient = new ManagementApiClient(apiToken, _domain);
+
+            try
+            {
+                await managementApiClient.Users.AssignRolesAsync(userId, new AssignRolesRequest() { Roles = roles.Select(r => r.ToString()).ToArray() });
+            }
+            catch (ApiException ae)
+            {
+                _logger.LogWarning($"An Auth0 ApiException occurred in UserService.AddRolesToUser (will refresh token and retry one time): {ae.Message}", ae);
+                if (ae.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    try
+                    {
+                        // clear the token, get a new one, and try one more time
+                        await ClearApiTokenAsync();
+                        apiToken = await GetApiTokenAsync();
+                        managementApiClient = new ManagementApiClient(apiToken, _domain);
+                        await managementApiClient.Users.AssignRolesAsync(userId, new AssignRolesRequest() { Roles = roles.Select(r => r.ToString()).ToArray() });
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError($"An unexpected exception occurred in UserService.AddRolesToUser (will not be retried): {e.Message}", e);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"An unexpected exception occurred in UserService.AddRolesToUser (will not be retried): {e.Message}", e);
             }
         }
 

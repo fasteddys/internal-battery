@@ -24,7 +24,7 @@
                 </div>
             }
             <div id="SignUpEmail" class="col-12 sign-up-input no-padding">
-                <input class="form-control input-lg" placeholder="Your email" form="SignUpForm" data-val="true" name="Email" asp-for="Email" required />
+                <input class="form-control input-lg" placeholder="Email Address" form="SignUpForm" data-val="true" name="Email" asp-for="Email" required />
             </div>
             <div id="SignUpPassword" class="col-12 sign-up-input no-padding">
                 <input class="form-control input-lg" placeholder="Password" type="password" form="SignUpForm" name="Password" asp-for="Password" required />
@@ -66,10 +66,10 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Thank You!</h5>
+                    <h5 class="modal-title">You're almost done!</h5>
                 </div>
                 <div class="modal-body">
-                    <p>You have signed up successfully. You will now be redirected to the login page.</p>
+                    <p>Please check your email and click on the verification link. This action is required before logging in for the first time.</p>
                 </div>
                 <div class="modal-footer">
                     <a href="/Session/SignIn" class="btn btn-primary">Continue</a>

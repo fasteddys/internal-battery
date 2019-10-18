@@ -142,10 +142,7 @@ namespace UpDiddy.Controllers
                 OffersViewModel.UserIsEligibleForOffers = OffersViewModel.UserIsAuthenticated &&
                     OffersViewModel.UserHasValidatedEmail &&
                     OffersViewModel.UserHasUploadedResume;
-
-                if (!OffersViewModel.UserHasValidatedEmail)
-                    OffersViewModel.StepsRequired.Add("Validate your email. <button class='btn btn-link email-verification-btn p-0 align-baseline'>Resend Verification Email</button>");
-
+                
                 if (!OffersViewModel.UserHasUploadedResume)
                     OffersViewModel.StepsRequired.Add("Upload your resume (located at the top of your <a href=\"/Home/Profile\">profile</a>) to your CareerCircle account.");
 
@@ -230,8 +227,6 @@ namespace UpDiddy.Controllers
                 LastName = this.subscriber?.LastName,
                 FormattedPhone = this.subscriber?.PhoneNumber,
                 Email = this.subscriber?.Email,
-                IsVerified = this.subscriber.IsVerified,
-                HasVerificationEmail = this.subscriber.HasVerificationEmail,
                 Address = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.Address),
                 City = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.City),
                 PostalCode = this.subscriber?.PostalCode,

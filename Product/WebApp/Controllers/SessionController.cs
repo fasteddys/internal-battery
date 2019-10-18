@@ -113,7 +113,7 @@ namespace UpDiddy.Controllers
 
         [HttpPost]
         [Route("[controller]/signup")]
-        public async Task<IActionResult> SignUp(SignUpViewModel vm, string returnUrl = "Session/SignIn")
+        public async Task<IActionResult> SignUp(SignUpViewModel vm, [FromQuery] string returnUrl = "Session/SignIn")
         {
             // todo: modelstate valid? move waitlist logic there?
 
@@ -207,7 +207,7 @@ namespace UpDiddy.Controllers
         /// <param name="returnUrl"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> SignIn(SignInViewModel vm, string returnUrl = null)
+        public async Task<IActionResult> SignIn(SignInViewModel vm, [FromQuery] string returnUrl = null)
         {
             if (ModelState.IsValid)
             {

@@ -869,12 +869,7 @@ namespace UpDiddy.Api
         #endregion
 
         #region Subscriber
-
-        public async Task<SubscriberADGroupsDto> MyGroupsAsync()
-        {
-            return await GetAsync<SubscriberADGroupsDto>("subscriber/me/group");
-        }
-
+        
         public async Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid)
         {
             return await RequestAsync(Constants.HttpGetClientName, HttpMethod.Get, String.Format("subscriber/{0}/file/{1}", subscriberGuid, fileGuid.ToString()));

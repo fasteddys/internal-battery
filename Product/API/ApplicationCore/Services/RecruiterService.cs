@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.ApplicationCore.Services.Identity;
+using UpDiddyApi.ApplicationCore.Services.Identity.Interfaces;
 using UpDiddyApi.Authorization;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
@@ -21,19 +23,20 @@ namespace UpDiddyApi.ApplicationCore.Services
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IMapper _mapper;
-        private readonly IB2CGraph _graphService;
         private readonly IConfiguration _configuration;
         private readonly string _tenant;
         private readonly string _recruiterGroupId;
-        public RecruiterService(IConfiguration configuration, IRepositoryWrapper repositoryWrapper, IMapper mapper, IB2CGraph graphService)
+        private readonly IUserService _userService;
+
+        public RecruiterService(IConfiguration configuration, IRepositoryWrapper repositoryWrapper, IMapper mapper, IUserService userService)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
-            _graphService = graphService;
             _configuration = configuration;
             _tenant = _configuration["AzureAdB2C:Tenant"];
             _recruiterGroupId = _configuration.GetSection("ADGroups:Values")
                                              .Get<List<ConfigADGroup>>().FirstOrDefault(g => g.Name == "Recruiter").Id;
+            _userService = userService;
         }
 
         public async Task<string> AddRecruiterAsync(RecruiterDto recruiterDto)
@@ -46,8 +49,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(recruiterDto.SubscriberGuid);
 
                 //check if recruiter exist
-                var queryableRecruiter =  _repositoryWrapper.RecruiterRepository.GetAllRecruiters();
-                var existingRecruiter = await queryableRecruiter.Where(r => r.SubscriberId == subscriber.SubscriberId).FirstOrDefaultAsync(); 
+                var queryableRecruiter = _repositoryWrapper.RecruiterRepository.GetAllRecruiters();
+                var existingRecruiter = await queryableRecruiter.Where(r => r.SubscriberId == subscriber.SubscriberId).FirstOrDefaultAsync();
 
                 if (existingRecruiter != null)
                 {
@@ -96,7 +99,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
                 //Assign permission to recruiter
-                if(recruiterDto.IsInADRecruiterGroupRecruiter)
+                if (recruiterDto.IsInAuth0RecruiterGroupRecruiter)
                     await AssignRecruiterPermissions(recruiterDto.SubscriberGuid);
 
                 response = "Added";
@@ -116,8 +119,8 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             var includeDependentsToRecruiters = queryableRecruiters.Include<Recruiter>("Subscriber").Include<Recruiter>("Company");
             //get only non deleted records
-            var recruiters = _mapper.Map<List<RecruiterDto>>(await includeDependentsToRecruiters.Where(c => c.IsDeleted == 0 
-                                                                            && c.SubscriberId!=null && c.CompanyId!=null && c.RecruiterGuid != Guid.Empty).ToListAsync());
+            var recruiters = _mapper.Map<List<RecruiterDto>>(await includeDependentsToRecruiters.Where(c => c.IsDeleted == 0
+                                                                            && c.SubscriberId != null && c.CompanyId != null && c.RecruiterGuid != Guid.Empty).ToListAsync());
 
             await CheckRecruiterPermissionAsync(recruiters);
             return recruiters;
@@ -134,25 +137,20 @@ namespace UpDiddyApi.ApplicationCore.Services
                 recruiter.ModifyDate = DateTime.Now;
 
                 await _repositoryWrapper.RecruiterRepository.UpdateRecruiter(recruiter);
-
-                //check if member was assigned permission previously
-                var members = await GetRecruiterGroupMembers();
-                if (recruiterDto.IsInADRecruiterGroupRecruiter)
-                {                   
-                    if (members.FirstOrDefault(x => x["url"].ToString().Contains(recruiterDto.SubscriberGuid.ToString())) == null)
-                    {
-                        await AssignRecruiterPermissions(recruiterDto.SubscriberGuid);
-                    }
-                }
-                else
-                {
-                    
-                    if (members.FirstOrDefault(x => x["url"].ToString().Contains(recruiterDto.SubscriberGuid.ToString())) != null)
-                    {
-                        await RevokeRecruiterPermissions(recruiterDto.SubscriberGuid);
-                    }
-                }
                 
+                var getUserResponse = await _userService.GetUserByEmailAsync(recruiter.Email);
+                if (getUserResponse.Success)
+                {
+                    bool isAssignedToRecruiterRole = getUserResponse.User.Roles.Contains(Role.Recruiter);
+
+                    if(recruiterDto.IsInAuth0RecruiterGroupRecruiter && !isAssignedToRecruiterRole)
+                    {
+                        // assign permission
+                    }else if(!recruiterDto.IsInAuth0RecruiterGroupRecruiter && isAssignedToRecruiterRole)
+                    {
+                        // remove permission
+                    }
+                }
             }
         }
 
@@ -169,10 +167,12 @@ namespace UpDiddyApi.ApplicationCore.Services
                 await _repositoryWrapper.RecruiterRepository.UpdateRecruiter(recruiter);
 
                 //check if member was assigned permission previously
-                var members = await GetRecruiterGroupMembers();
-                if (members.FirstOrDefault(x => x["url"].ToString().Contains(recruiterDto.SubscriberGuid.ToString())) != null)
+                if (recruiterDto.IsInAuth0RecruiterGroupRecruiter)
                 {
-                    await RevokeRecruiterPermissions(recruiterDto.SubscriberGuid);
+                    var getUserResponse = await _userService.GetUserByEmailAsync(recruiter.Email);
+                    if (!getUserResponse.Success || string.IsNullOrWhiteSpace(getUserResponse.User.UserId))
+                        throw new ApplicationException("User could not be found in Auth0");
+                    await _userService.RemoveRolesFromUser(getUserResponse.User.UserId, new Role[] { Role.Recruiter });
                 }
             }
         }
@@ -180,43 +180,37 @@ namespace UpDiddyApi.ApplicationCore.Services
         #region Private methods
         private async Task AssignRecruiterPermissions(Guid subscriberGuid)
         {
-            var api = "/groups/" + _recruiterGroupId + "/$links/members";
-            var url = $"https://graph.windows.net/" + _tenant + "/directoryObjects/" + subscriberGuid.ToString();
-
-            var result = await _graphService.SendGraphPostRequest(api, JsonConvert.SerializeObject(new { url }));
+            var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+            var getUserResponse = await _userService.GetUserByEmailAsync(subscriber.Email);
+            if (!getUserResponse.Success || string.IsNullOrWhiteSpace(getUserResponse.User.UserId))
+                throw new ApplicationException("User could not be found in Auth0");
+            _userService.AssignRolesToUser(getUserResponse.User.UserId, new Role[] { Role.Recruiter });
         }
 
         private async Task RevokeRecruiterPermissions(Guid subscriberGuid)
         {
-            var api = "/groups/" + _recruiterGroupId + "/$links/members/" + subscriberGuid.ToString();
-            var result = await _graphService.SendGraphDeleteRequest(api);
+            var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+            var getUserResponse = await _userService.GetUserByEmailAsync(subscriber.Email);
+            if (!getUserResponse.Success || string.IsNullOrWhiteSpace(getUserResponse.User.UserId))
+                throw new ApplicationException("User could not be found in Auth0");
+            _userService.RemoveRolesFromUser(getUserResponse.User.UserId, new Role[] { Role.Recruiter });
         }
 
         private async Task CheckRecruiterPermissionAsync(List<RecruiterDto> recruiters)
         {
-            var members = await GetRecruiterGroupMembers();
+            // todo: use lucene search syntax to return all users from recruiter emails or retrieve users one at a time (much slower)
+            throw new NotImplementedException();
 
-            foreach (var recruiter in recruiters)
-            {
-                if (members.FirstOrDefault(x => x["url"].ToString().Contains(recruiter.Subscriber.SubscriberGuid.ToString())) != null)
-                    recruiter.IsInADRecruiterGroupRecruiter = true;
-                else
-                    recruiter.IsInADRecruiterGroupRecruiter = false;
-            }
+            //foreach (var recruiter in recruiters)
+            //{
+            //    if (members.FirstOrDefault(x => x["url"].ToString().Contains(recruiter.Subscriber.SubscriberGuid.ToString())) != null)
+            //        recruiter.IsInADRecruiterGroupRecruiter = true;
+            //    else
+            //        recruiter.IsInADRecruiterGroupRecruiter = false;
+            //}
 
         }
-
-        private async Task<List<JToken>> GetRecruiterGroupMembers()
-        {
-            //get all members of recruiter group
-            var api = "/groups/" + _recruiterGroupId + "/$links/members/";
-            var membersResponse = await _graphService.SendGraphGetRequest(api, "");
-
-            var members = JObject.Parse(membersResponse)["value"].ToList();
-
-            return members;
-        }
+        
         #endregion
-
     }
 }
