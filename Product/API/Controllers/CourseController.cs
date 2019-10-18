@@ -109,8 +109,9 @@ namespace UpDiddyApi.Controllers
             }
 
             IList<CourseDto> rval = null;
+            // include logic for secondary topic id to allow courses to appear in more than 1 woz topic 
             rval = _db.Course
-                .Where(t => t.IsDeleted == 0 && t.TopicId == topicId)
+                .Where(t => t.IsDeleted == 0 && (t.TopicId == topicId) || t.TopicSecondaryId == topicId )
                 .ProjectTo<CourseDto>(_mapper.ConfigurationProvider)
                 .OrderBy(x => x.SortOrder).ToList();
 

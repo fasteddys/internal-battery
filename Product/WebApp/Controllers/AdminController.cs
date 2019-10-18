@@ -7,17 +7,18 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UpDiddy.Api;
 using UpDiddy.Services.ButterCMS;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
-using UpDiddyLib.Dto.Reporting;
 using UpDiddyLib.Helpers;
 
 namespace UpDiddy.Controllers
@@ -30,15 +31,39 @@ namespace UpDiddy.Controllers
         private IDistributedCache _cache;
         private IButterCMSService _butterService;
 
+
         public AdminController(IApi api, IConfiguration configuration, IDistributedCache cache, IButterCMSService butterService)
         {
             _api = api;
             _configuration = configuration;
             _cache = cache;
             _butterService = butterService;
+
+        }
+
+
+ 
+        [Authorize]
+        [HttpGet]
+        [Route("/admin/new-subscriber-csv")]
+        public  async Task<FileResult> NewSubscriberCSV()
+        {
+            List<SubscriberInitialSourceDto> data = await _api.NewSubscribersCSVAsync();
+
+            StringWriter csvString = new StringWriter();
+            using (var csv = new CsvWriter(csvString))
+            {
+                csv.WriteRecords<SubscriberInitialSourceDto>(data);
+            }
+
+            string csvData = csvString.ToString();
+            byte[] fileBytes = Encoding.ASCII.GetBytes(csvData);
+            string fileName = "Subscribers_" + DateTime.UtcNow.ToString("yyyy -MM-dd-HH-mm-ss", CultureInfo.InvariantCulture) + ".csv";
+            return File(fileBytes, "text/csv", fileName);  
         }
 
  
+
         [Authorize]
         [HttpGet]
         [Route("/admin/jobscrapestats")]

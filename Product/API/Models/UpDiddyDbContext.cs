@@ -174,14 +174,12 @@ namespace UpDiddyApi.Models
 
         public DbSet<ServiceOffering> ServiceOffering { get; set; }
         public DbSet<ServiceOfferingItem> ServiceOfferingItem { get; set; }
-    
+
         public DbSet<ServiceOfferingOrder> ServiceOfferingOrder { get; set; }      
         public DbSet<ServiceOfferingPromoCodeRedemption> ServiceOfferingPromoCodeRedemption { get; set; }
-
         public DbSet<ServiceOfferingPromoCode> ServiceOfferingPromoCode { get; set; }
+        public DbSet<FileDownloadTracker> FileDownloadTracker { get; set; }
         
-
-
 
         public DbSet<CourseSite> CourseSite { get; set; }
         public DbSet<CoursePage> CoursePage { get; set; }
@@ -202,6 +200,8 @@ namespace UpDiddyApi.Models
         public DbQuery<JobAbandonmentStatistics> JobAbandonmentStatistics { get; set; }
         public DbQuery<JobCountPerProvince> JobCountPerProvince { get; set; }
         public DbQuery<SubscriberSourceDto> SubscriberSourcesDetails { get; set; }
+ 
+         public DbQuery<SubscriberInitialSourceDto> SubscriberInitialSource { get; set; }
 
 
 

@@ -236,7 +236,9 @@ namespace UpDiddyApi
 
             // kick off the subscriber notification email reminder process every day at 12 UTC 
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.SubscriberNotificationEmailReminder(), Cron.Daily(12));
-            
+
+            // sync job posting alerts between Hangfire and our database
+            BackgroundJob.Enqueue<ScheduledJobs>(x => x.SyncJobPostingAlertsBetweenDbAndHangfire());
             #endregion
 
             services.AddHttpClient(Constants.HttpGetClientName);
@@ -276,8 +278,7 @@ namespace UpDiddyApi
             services.AddScoped<IHangfireService, HangfireService>();
             services.AddScoped<IMemoryCacheService, MemoryCacheService>();
             services.AddScoped<IServiceOfferingPromoCodeRedemptionService, ServiceOfferingPromoCodeRedemptionService>();
-
-
+            services.AddScoped<IFileDownloadTrackerService, FileDownloadTrackerService>();
             #endregion
 
             // Configure SnapshotCollector from application settings

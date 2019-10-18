@@ -9,6 +9,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     public interface IPartnerContactRepository : IUpDiddyRepositoryBase<PartnerContact>
     {
         Task<IList<Partner>> GetPartnersAssociatedWithSubscriber(int SubscriberId);
+
     }
 }
 

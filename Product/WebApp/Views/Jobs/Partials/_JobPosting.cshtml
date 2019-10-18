@@ -5,7 +5,7 @@
 @using React.AspNet;
 @model JobDetailsViewModel
 @{
-    string url = string.Format("/jobs/apply/{0}", Model.PostingId);
+    string url = Model.ApplyUrl;
     url = GoogleCloudEventsTrackingDto.AddParametersToUrl(url, Model.RequestId, Model.ClientEventId);
 }
 
@@ -127,7 +127,7 @@
         <div class="pt-3">
             @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
                 Text = "Apply <i class=\"fas fa-arrow-right\"></i>",
-                Hyperlink = $"/jobs/apply/{Model.PostingId}",
+                Hyperlink = url,
                 FitToText = true,
                 ChosenColorScheme = "cc-cscheme-secondary",
                 ButtonAction = ActionButtonViewModel.Action.CTA

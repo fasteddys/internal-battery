@@ -37,6 +37,7 @@ namespace UpDiddyApi.Controllers
         private ISysEmail _sysEmail;
         private ISubscriberService _subscriberService;
         private readonly IHangfireService _hangfireService;
+        private readonly IRepositoryWrapper _repositoryWrapper;
 
 
         #region constructor 
@@ -58,7 +59,7 @@ namespace UpDiddyApi.Controllers
             _syslog = sysLog;
             _httpClientFactory = httpClientFactory;
             _postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
-
+            _repositoryWrapper = repositoryWrapper;
             _sysEmail = sysEmail;
             _subscriberService = subscriberService;
             _hangfireService = hangfireService;
@@ -231,6 +232,15 @@ namespace UpDiddyApi.Controllers
                 jobApplication.JobPostingId = jobPosting.JobPostingId;
                 jobApplication.SubscriberId = subscriber.SubscriberId;
                 jobApplication.CoverLetter = jobApplicationDto.CoverLetter == null ? string.Empty : jobApplicationDto.CoverLetter;
+                // Map Partner 
+                if ( jobApplicationDto.Partner != null )
+                {
+                    PartnerType partnerType = await _repositoryWrapper.PartnerTypeRepository.GetPartnerTypeByName("ExternalSource");
+                    // Get or create the referenced partner 
+                    Partner partner = await _repositoryWrapper.PartnerRepository.GetOrCreatePartnerByName(jobApplicationDto.Partner.Name, partnerType);                    
+                    jobApplication.PartnerId = partner.PartnerId;                  
+                }
+                    
                 _db.JobApplication.Add(jobApplication);
                 _db.SaveChanges();
 

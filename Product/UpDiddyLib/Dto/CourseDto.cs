@@ -29,5 +29,6 @@ namespace UpDiddyLib.Dto
         public List<SkillDto> Skills { get; set; }
         public List<TagTopicDto> TagTopics { get; set; }
         public bool IsExternal { get; set; }
+        public int? TopicSecondaryId { get; set; }
     }
 }
