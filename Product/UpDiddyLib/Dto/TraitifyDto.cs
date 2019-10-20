@@ -13,6 +13,7 @@ namespace UpDiddyLib.Dto
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
+        public string Password {get;set;}
         public DateTime? CompleteDate { get; set; }
         public string DeckId { get; set; }
         public string ResultData { get; set; }

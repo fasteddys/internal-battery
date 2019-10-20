@@ -62,7 +62,10 @@ namespace UpDiddyApi.Controllers
         private readonly IJobPostingService _jobPostingService;
         private readonly IFileDownloadTrackerService _fileDownloadTrackerService;
 
+
         private readonly ZeroBounceApi _zeroBounceApi;
+
+
 
 
         public SubscriberController(UpDiddyDbContext db,
@@ -997,6 +1000,11 @@ namespace UpDiddyApi.Controllers
             {
                 var downloadUrl = await HandleGatedFileDownload(subscriber.Email, signUpDto.gatedDownloadFileUrl, signUpDto.gatedDownloadMaxAttemptsAllowed, subscriber.SubscriberId, group.GroupId);
                 SendGatedDownloadLink(subscriber.Email, downloadUrl);
+            }
+
+            if(!string.IsNullOrEmpty(signUpDto.traitifyAssessmentId))
+            {
+                
             }
 
             SendVerificationEmail(subscriber.Email, signUpDto.verifyUrl + subscriber.EmailVerification.Token);

@@ -88,7 +88,6 @@ namespace UpDiddy.Controllers
                 traitifyAssessmentId = model.AssessmentId
             };
             await _Api.ExpressUpdateSubscriberContactAsync(signUpDto);
-           
         }
 
         [HttpGet]
