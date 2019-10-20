@@ -63,9 +63,6 @@ namespace UpDiddyApi.Controllers
         private readonly IFileDownloadTrackerService _fileDownloadTrackerService;
 
 
-        private readonly ZeroBounceApi _zeroBounceApi;
-
-
 
 
         public SubscriberController(UpDiddyDbContext db,
@@ -105,8 +102,6 @@ namespace UpDiddyApi.Controllers
             _hangfireService = hangfireService;
             _jobPostingService = jobPostingService;
             _fileDownloadTrackerService = fileDownloadTrackerService;
-            _zeroBounceApi = new ZeroBounceApi(_configuration, repositoryWrapper, sysLog);
-
         }
 
         #region Basic Subscriber Endpoints
@@ -896,14 +891,6 @@ namespace UpDiddyApi.Controllers
         [HttpPost("/api/[controller]/express-sign-up")]
         public async Task<IActionResult> ExpressSignUp([FromBody] SignUpDto signUpDto)
         {
-            bool? isEmailValid = _zeroBounceApi.ValidateEmail(signUpDto.email);
-            if (isEmailValid.Value == false)
-            {
-                var response = new BasicResponseDto() { StatusCode = 400, Description = "Unable to create new account. The email address is not valid." };
-                _syslog.Log(LogLevel.Warning, "SubscriberController.ExpressSignUp: Bad Request, user tried to sign up with an illegitimate email. {@Email}", signUpDto.email);
-                return BadRequest(response);
-            }
-
             // check if subscriber is in database
             Subscriber subscriber = await _db.Subscriber.Where(s => s.Email == signUpDto.email).FirstOrDefaultAsync();
             if (subscriber != null)
@@ -996,7 +983,7 @@ namespace UpDiddyApi.Controllers
             }
 
 
-            if (signUpDto.isGatedDownload.Value && group != null)
+            if (signUpDto.isGatedDownload.HasValue && signUpDto.isGatedDownload.Value  && group != null)
             {
                 var downloadUrl = await HandleGatedFileDownload(subscriber.Email, signUpDto.gatedDownloadFileUrl, signUpDto.gatedDownloadMaxAttemptsAllowed, subscriber.SubscriberId, group.GroupId);
                 SendGatedDownloadLink(subscriber.Email, downloadUrl);
