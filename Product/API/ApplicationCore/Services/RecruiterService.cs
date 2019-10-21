@@ -24,8 +24,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
-        private readonly string _tenant;
-        private readonly string _recruiterGroupId;
         private readonly IUserService _userService;
 
         public RecruiterService(IConfiguration configuration, IRepositoryWrapper repositoryWrapper, IMapper mapper, IUserService userService)
@@ -33,9 +31,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
             _configuration = configuration;
-            _tenant = _configuration["AzureAdB2C:Tenant"];
-            _recruiterGroupId = _configuration.GetSection("ADGroups:Values")
-                                             .Get<List<ConfigADGroup>>().FirstOrDefault(g => g.Name == "Recruiter").Id;
             _userService = userService;
         }
 
@@ -97,10 +92,9 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 }
 
-
                 //Assign permission to recruiter
                 if (recruiterDto.IsInAuth0RecruiterGroupRecruiter)
-                    await AssignRecruiterPermissions(recruiterDto.SubscriberGuid);
+                    await AssignRecruiterPermissionsAsync(recruiterDto.SubscriberGuid);
 
                 response = "Added";
             }
@@ -137,18 +131,21 @@ namespace UpDiddyApi.ApplicationCore.Services
                 recruiter.ModifyDate = DateTime.Now;
 
                 await _repositoryWrapper.RecruiterRepository.UpdateRecruiter(recruiter);
-                
+
                 var getUserResponse = await _userService.GetUserByEmailAsync(recruiter.Email);
                 if (getUserResponse.Success)
                 {
                     bool isAssignedToRecruiterRole = getUserResponse.User.Roles.Contains(Role.Recruiter);
 
-                    if(recruiterDto.IsInAuth0RecruiterGroupRecruiter && !isAssignedToRecruiterRole)
+                    if (recruiterDto.IsInAuth0RecruiterGroupRecruiter && !isAssignedToRecruiterRole)
                     {
                         // assign permission
-                    }else if(!recruiterDto.IsInAuth0RecruiterGroupRecruiter && isAssignedToRecruiterRole)
+                        await this.AssignRecruiterPermissionsAsync(recruiterDto.SubscriberGuid);
+                    }
+                    else if (!recruiterDto.IsInAuth0RecruiterGroupRecruiter && isAssignedToRecruiterRole)
                     {
                         // remove permission
+                        await this.RevokeRecruiterPermissionsAsync(recruiterDto.SubscriberGuid);
                     }
                 }
             }
@@ -172,45 +169,47 @@ namespace UpDiddyApi.ApplicationCore.Services
                     var getUserResponse = await _userService.GetUserByEmailAsync(recruiter.Email);
                     if (!getUserResponse.Success || string.IsNullOrWhiteSpace(getUserResponse.User.UserId))
                         throw new ApplicationException("User could not be found in Auth0");
-                    await _userService.RemoveRolesFromUser(getUserResponse.User.UserId, new Role[] { Role.Recruiter });
+                    await _userService.RemoveRoleFromUserAsync(getUserResponse.User.UserId, Role.Recruiter);
                 }
             }
         }
 
         #region Private methods
-        private async Task AssignRecruiterPermissions(Guid subscriberGuid)
+
+        private async Task AssignRecruiterPermissionsAsync(Guid subscriberGuid)
         {
             var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
             var getUserResponse = await _userService.GetUserByEmailAsync(subscriber.Email);
             if (!getUserResponse.Success || string.IsNullOrWhiteSpace(getUserResponse.User.UserId))
                 throw new ApplicationException("User could not be found in Auth0");
-            _userService.AssignRolesToUser(getUserResponse.User.UserId, new Role[] { Role.Recruiter });
+            _userService.AssignRoleToUserAsync(getUserResponse.User.UserId, Role.Recruiter);
         }
 
-        private async Task RevokeRecruiterPermissions(Guid subscriberGuid)
+        private async Task RevokeRecruiterPermissionsAsync(Guid subscriberGuid)
         {
             var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
             var getUserResponse = await _userService.GetUserByEmailAsync(subscriber.Email);
             if (!getUserResponse.Success || string.IsNullOrWhiteSpace(getUserResponse.User.UserId))
                 throw new ApplicationException("User could not be found in Auth0");
-            _userService.RemoveRolesFromUser(getUserResponse.User.UserId, new Role[] { Role.Recruiter });
+            _userService.RemoveRoleFromUserAsync(getUserResponse.User.UserId, Role.Recruiter);
         }
 
         private async Task CheckRecruiterPermissionAsync(List<RecruiterDto> recruiters)
         {
-            // todo: use lucene search syntax to return all users from recruiter emails or retrieve users one at a time (much slower)
-            throw new NotImplementedException();
-
-            //foreach (var recruiter in recruiters)
-            //{
-            //    if (members.FirstOrDefault(x => x["url"].ToString().Contains(recruiter.Subscriber.SubscriberGuid.ToString())) != null)
-            //        recruiter.IsInADRecruiterGroupRecruiter = true;
-            //    else
-            //        recruiter.IsInADRecruiterGroupRecruiter = false;
-            //}
-
+            var response = await _userService.GetUsersInRoleAsync(Role.Recruiter);
+            if (!response.Success)
+                throw new ApplicationException("There was a problem retrieving users in the recruiter role");
+            var usersInRole = response.Users;
+            foreach (var recruiter in recruiters)
+            {
+                var user = usersInRole.Where(u => u.Email == recruiter.Email).FirstOrDefault();
+                if (user != null)
+                    recruiter.IsInAuth0RecruiterGroupRecruiter = true;
+                else
+                    recruiter.IsInAuth0RecruiterGroupRecruiter = false;
+            }
         }
-        
+
         #endregion
     }
 }

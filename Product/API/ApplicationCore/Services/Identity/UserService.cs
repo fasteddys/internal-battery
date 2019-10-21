@@ -19,6 +19,8 @@ using UpDiddyLib.Shared;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Models;
 using UpDiddyApi.ApplicationCore.Interfaces;
+using Auth0.Core.Collections;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.ApplicationCore.Services.Identity
 {
@@ -95,9 +97,34 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             var apiToken = await GetApiTokenAsync();
             var managementApiClient = new ManagementApiClient(apiToken, _domain);
             IList<Auth0.ManagementApi.Models.User> users = null;
+            IPagedList<Auth0.ManagementApi.Models.Role> roles = null;
+
             try
             {
                 users = await managementApiClient.Users.GetUsersByEmailAsync(email);
+                if (users != null && users.Count() > 0)
+                {
+                    var auth0User = users.FirstOrDefault();
+                    roles = await managementApiClient.Users.GetRolesAsync(auth0User.UserId, new PaginationInfo());
+                    
+                    user = new User()
+                    {
+                        Email = auth0User.Email,
+                        SubscriberGuid = auth0User.AppMetadata.subscriberGuid,
+                        UserId = auth0User.UserId,
+                        EmailVerified = auth0User.EmailVerified,
+                        Roles = roles.Select(r =>
+                            Enum.GetValues(typeof(Role))
+                            .Cast<Role>()
+                            .FirstOrDefault(x => x.GetDescription() == r.Name
+                        )).ToList()
+                    };
+                }
+                else
+                {
+                    return new GetUserResponse(false, "No user was found with that email address.", null);
+                }
+
             }
             catch (ApiException ae)
             {
@@ -112,6 +139,28 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                         apiToken = await GetApiTokenAsync();
                         managementApiClient = new ManagementApiClient(apiToken, _domain);
                         users = await managementApiClient.Users.GetUsersByEmailAsync(email);
+                        if (users != null && users.Count() > 0)
+                        {
+                            var auth0User = users.FirstOrDefault();
+                            roles = await managementApiClient.Users.GetRolesAsync(auth0User.UserId, new PaginationInfo());
+
+                            user = new User()
+                            {
+                                Email = auth0User.Email,
+                                SubscriberGuid = auth0User.AppMetadata.subscriberGuid,
+                                UserId = auth0User.UserId,
+                                EmailVerified = auth0User.EmailVerified,
+                                Roles = roles.Select(r =>
+                                    Enum.GetValues(typeof(Role))
+                                    .Cast<Role>()
+                                    .FirstOrDefault(x => x.GetDescription() == r.Name
+                                )).ToList()
+                            };
+                        }
+                        else
+                        {
+                            return new GetUserResponse(false, "No user was found with that email address.", null);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -128,30 +177,6 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             {
                 _logger.LogError($"An unexpected exception occurred in UserService.GetUserByEmailAsync (will not be retried): {e.Message}", e);
                 return new GetUserResponse(false, "An unexpected error has occured.", null);
-            }
-
-            try
-            {
-                if (users != null && users.Count() > 0)
-                {
-                    var auth0User = users.FirstOrDefault();
-                    user = new User()
-                    {
-                        Email = auth0User.Email,
-                        SubscriberGuid = auth0User.AppMetadata.subscriberGuid,
-                        UserId = auth0User.UserId,
-                        EmailVerified = auth0User.EmailVerified
-                    };
-                }
-                else
-                {
-                    return new GetUserResponse(false, "No user was found with that email address.", null);
-                }
-            }
-            catch (Exception e)
-            {
-                _logger.LogError($"An error occurred while retrieving the user in UserService.GetUserByEmailAsync (will not be retried): {e.Message}", e);
-                return new GetUserResponse(false, "An error occurred while retrieving the user", null);
             }
 
             return new GetUserResponse(true, "User was retrieved successfully.", user);
@@ -220,7 +245,67 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             user.UserId = userCreationResponse.UserId;
             user.SubscriberGuid = subscriberGuid;
 
+            // todo: implement role assignment during user creation - potential security concerns here
+            if (userRoles != null || userRoles.Length > 0)
+                throw new NotImplementedException("Role assignment is not yet supported");
+
             return new CreateUserResponse(true, "Account has been created.", user);
+        }
+
+        public async Task<GetUsersResponse> GetUsersInRoleAsync(Role role)
+        {
+            var apiToken = await GetApiTokenAsync();
+            var managementApiClient = new ManagementApiClient(apiToken, _domain);
+            IPagedList<AssignedUser> assignedUsersInRole = null;
+            try
+            {
+                var recruiterRoleIdLookup = await managementApiClient.Roles.GetAllAsync(new GetRolesRequest() { NameFilter = role.ToString() });
+                assignedUsersInRole = await managementApiClient.Roles.GetUsersAsync(recruiterRoleIdLookup.FirstOrDefault().Id);
+            }
+            catch (ApiException ae)
+            {
+                _logger.LogWarning($"An Auth0 ApiException occurred in UserService.GetUsersInRoleAsync (will refresh token and retry one time): {ae.Message}", ae);
+                if (ae.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    try
+                    {
+                        // clear the token, get a new one, and try one more time
+                        await ClearApiTokenAsync();
+                        apiToken = await GetApiTokenAsync();
+                        managementApiClient = new ManagementApiClient(apiToken, _domain);
+                        var recruiterRoleIdLookup = await managementApiClient.Roles.GetAllAsync(new GetRolesRequest() { NameFilter = role.ToString() });
+                        assignedUsersInRole = await managementApiClient.Roles.GetUsersAsync(recruiterRoleIdLookup.FirstOrDefault().Id);
+
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError($"An unexpected exception occurred in UserService.GetUsersInRoleAsync (will not be retried): {e.Message}", e);
+                        return new GetUsersResponse(false, e.Message, null);
+                    }
+                }
+                else
+                {
+                    _logger.LogError($"An unexpected exception occurred in UserService.GetUsersInRoleAsync (will not be retried): {ae.Message}", ae);
+                    return new GetUsersResponse(false, ae.Message, null);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"An unexpected exception occurred in UserService.GetUsersInRoleAsync (will not be retried): {e.Message}", e);
+                return new GetUsersResponse(false, e.Message, null);
+            }
+
+            List<User> usersInRole = new List<User>();
+            foreach (var assignedUserInRole in assignedUsersInRole)
+            {
+                usersInRole.Add(new User()
+                {
+                    Email = assignedUserInRole.Email,
+                    UserId = assignedUserInRole.UserId,
+                });
+            }
+
+            return new GetUsersResponse(true, $"Successfully retrieved users in role: {role.ToString()}", usersInRole);
         }
 
         public async Task<CreateUserResponse> MigrateUserAsync(User user)
@@ -311,6 +396,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                     }
                     else
                     {
+                        _logger.LogError($"An exception occurred in UserService.MigrateUserAsync (will not be retried): {ae.Message}", ae);
                         return new CreateUserResponse(false, ae.Message, null);
                     }
                 }
@@ -328,18 +414,19 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             }
         }
 
-        public async Task RemoveRolesFromUser(string userId, Role[] roles)
+        public async Task RemoveRoleFromUserAsync(string userId, Role role)
         {
             var apiToken = await GetApiTokenAsync();
             var managementApiClient = new ManagementApiClient(apiToken, _domain);
 
             try
             {
-                await managementApiClient.Users.RemoveRolesAsync(userId, new AssignRolesRequest() { Roles = roles.Select(r => r.ToString()).ToArray() });
+                var roleLookup = await managementApiClient.Roles.GetAllAsync(new GetRolesRequest() { NameFilter = role.GetDescription() });
+                await managementApiClient.Users.RemoveRolesAsync(userId, new AssignRolesRequest() { Roles = new string[] { roleLookup.FirstOrDefault().Id } });
             }
             catch (ApiException ae)
             {
-                _logger.LogWarning($"An Auth0 ApiException occurred in UserService.RemoveRolesFromUser (will refresh token and retry one time): {ae.Message}", ae);
+                _logger.LogWarning($"An Auth0 ApiException occurred in UserService.RemoveRolesFromUserAsync (will refresh token and retry one time): {ae.Message}", ae);
                 if (ae.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     try
@@ -347,33 +434,38 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                         // clear the token, get a new one, and try one more time
                         await ClearApiTokenAsync();
                         apiToken = await GetApiTokenAsync();
-                        managementApiClient = new ManagementApiClient(apiToken, _domain);
-                        await managementApiClient.Users.RemoveRolesAsync(userId, new AssignRolesRequest() { Roles = roles.Select(r => r.ToString()).ToArray() });
+                        var roleLookup = await managementApiClient.Roles.GetAllAsync(new GetRolesRequest() { NameFilter = role.GetDescription() });
+                        await managementApiClient.Users.RemoveRolesAsync(userId, new AssignRolesRequest() { Roles = new string[] { roleLookup.FirstOrDefault().Id } });
                     }
                     catch (Exception e)
                     {
-                        _logger.LogError($"An unexpected exception occurred in UserService.RemoveRolesFromUser (will not be retried): {e.Message}", e);
+                        _logger.LogError($"An unexpected exception occurred in UserService.RemoveRolesFromUserAsync (will not be retried): {e.Message}", e);
                     }
+                }
+                else
+                {
+                    _logger.LogError($"An exception occurred in UserService.RemoveRolesFromUserAsync (will not be retried): {ae.Message}", ae);
                 }
             }
             catch (Exception e)
             {
-                _logger.LogError($"An unexpected exception occurred in UserService.RemoveRolesFromUser (will not be retried): {e.Message}", e);
+                _logger.LogError($"An unexpected exception occurred in UserService.RemoveRolesFromUserAsync (will not be retried): {e.Message}", e);
             }
         }
 
-        public async Task AssignRolesToUser(string userId, Role[] roles)
+        public async Task AssignRoleToUserAsync(string userId, Role role)
         {
             var apiToken = await GetApiTokenAsync();
             var managementApiClient = new ManagementApiClient(apiToken, _domain);
 
             try
             {
-                await managementApiClient.Users.AssignRolesAsync(userId, new AssignRolesRequest() { Roles = roles.Select(r => r.ToString()).ToArray() });
+                var roleLookup = await managementApiClient.Roles.GetAllAsync(new GetRolesRequest() { NameFilter = role.GetDescription() });
+                await managementApiClient.Users.AssignRolesAsync(userId, new AssignRolesRequest() { Roles = new string[] { roleLookup.FirstOrDefault().Id } });
             }
             catch (ApiException ae)
             {
-                _logger.LogWarning($"An Auth0 ApiException occurred in UserService.AddRolesToUser (will refresh token and retry one time): {ae.Message}", ae);
+                _logger.LogWarning($"An Auth0 ApiException occurred in UserService.AssignRolesToUserAsync (will refresh token and retry one time): {ae.Message}", ae);
                 if (ae.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     try
@@ -382,17 +474,22 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                         await ClearApiTokenAsync();
                         apiToken = await GetApiTokenAsync();
                         managementApiClient = new ManagementApiClient(apiToken, _domain);
-                        await managementApiClient.Users.AssignRolesAsync(userId, new AssignRolesRequest() { Roles = roles.Select(r => r.ToString()).ToArray() });
+                        var roleLookup = await managementApiClient.Roles.GetAllAsync(new GetRolesRequest() { NameFilter = role.GetDescription() });
+                        await managementApiClient.Users.AssignRolesAsync(userId, new AssignRolesRequest() { Roles = new string[] { roleLookup.FirstOrDefault().Id } });
                     }
                     catch (Exception e)
                     {
-                        _logger.LogError($"An unexpected exception occurred in UserService.AddRolesToUser (will not be retried): {e.Message}", e);
+                        _logger.LogError($"An unexpected exception occurred in UserService.AssignRolesToUserAsync (will not be retried): {e.Message}", e);
                     }
+                }
+                else
+                {
+                    _logger.LogError($"An exception occurred in UserService.AssignRolesToUserAsync (will not be retried): {ae.Message}", ae);
                 }
             }
             catch (Exception e)
             {
-                _logger.LogError($"An unexpected exception occurred in UserService.AddRolesToUser (will not be retried): {e.Message}", e);
+                _logger.LogError($"An unexpected exception occurred in UserService.AssignRolesToUserAsync (will not be retried): {e.Message}", e);
             }
         }
 
@@ -422,6 +519,14 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                         _logger.LogError($"An unexpected exception occurred in UserService.DeleteUserAsync (will not be retried): {e.Message}", e);
                     }
                 }
+                else
+                {
+                    _logger.LogError($"An exception occurred in UserService.DeleteUserAsync (will not be retried): {ae.Message}", ae);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"An unexpected exception occurred in UserService.DeleteUserAsync (will not be retried): {e.Message}", e);
             }
         }
     }

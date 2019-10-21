@@ -36,9 +36,9 @@ import {
 } from '@devexpress/dx-react-grid-material-ui';
 
 const AddButton = ({ onExecute }) => (
-    <div class="row">
-        <div class="col-12">
-            <button type="button" class="btn btn-primary addNote text-right" data-toggle="modal" data-target="#addRecruiterModal" >
+    <div className="row">
+        <div className="col-12">
+            <button type="button" className="btn btn-primary addNote text-right" data-toggle="modal" data-target="#addRecruiterModal" >
                 Add
                     </button>
         </div>
@@ -170,7 +170,7 @@ class RecruitersGrid extends React.PureComponent {
                 { name: 'LastName', title: 'Last Name', dataType: 'string' },
                 { name: 'Email', title: 'Email', dataType: 'string' },
                 { name: 'Phone', title: 'Phone', dataType: 'int' },
-                { name: 'IsRecruiter', title: 'Recruiter Talent Access' },
+                { name: 'IsRecruiter', title: 'Recruiter Access' },
                 { name: 'CompanyName', title: 'Company Name', dataType: 'string' },
             ],
             booleanColumns: ['IsRecruiter'],
@@ -230,7 +230,7 @@ class RecruitersGrid extends React.PureComponent {
                 LastName: x.lastName,
                 Email: x.email,
                 Phone: x.phoneNumber,
-                IsRecruiter: x.is,
+                IsRecruiter: x.isInAuth0RecruiterGroupRecruiter,
                 CompanyName: x.company.companyName,
                 RecruiterGuid: x.recruiterGuid,
                 SubscriberGuid: x.subscriber.subscriberGuid
@@ -555,66 +555,66 @@ class RecruitersGrid extends React.PureComponent {
         return (
             <div>
                 {/*Add Recruiter*/}
-                <div class="modal fade" id="addRecruiterModal" tabindex="-1" role="dialog" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
+                <div className="modal fade" id="addRecruiterModal" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div className="modal-dialog" role="document">
+                        <div className="modal-content">
                             <div name="RecruiterForm">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel"><b>Recruiter</b></h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <div className="modal-header">
+                                    <h5 className="modal-title" id="exampleModalLabel"><b>Recruiter</b></h5>
+                                    <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                                         <span aria-hidden="true">&times;</span>
                                     </button>
                                 </div>
-                                <div class="modal-body">
-                                    <div class="row">
-                                        <div class="col-8">
+                                <div className="modal-body">
+                                    <div className="row">
+                                        <div className="col-8">
                                             <input id="searchRecruitersBox" type="text" placeholder="   Search by Email" ref={(value) => this.searchRecruiter = value} />
                                         </div>
-                                        <div class="col-4">
-                                            <button id="searchRecruitersButton" type="button" onClick={this.searchRecruiters} class="btn btn-primary">Search</button>
+                                        <div className="col-4">
+                                            <button id="searchRecruitersButton" type="button" onClick={this.searchRecruiters} className="btn btn-primary">Search</button>
                                         </div>
                                     </div>
                                     <br/>
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <div class="form-group">
-                                                <div class="row">
-                                                    <div class="col-4">
-                                                        <label for="firstName">First Name :</label>
+                                    <div className="row">
+                                        <div className="col-12">
+                                            <div className="form-group">
+                                                <div className="row">
+                                                    <div className="col-4">
+                                                        <label htmlFor="firstName">First Name :</label>
                                                     </div>
-                                                    <div class="col-8">
+                                                    <div className="col-8">
                                                         <input type="text" id="firstName" placeholder="John" value={recruiter.firstName} onChange={e => this.changeFirstName(e.target.value)} />
                                                     </div>
                                                 </div>
-                                                <div class="row">
-                                                    <div class="col-4">
-                                                        <label for="lastName">Last Name :</label>
+                                                <div className="row">
+                                                    <div className="col-4">
+                                                        <label htmlFor="lastName">Last Name :</label>
                                                     </div>
-                                                    <div class="col-8">
+                                                    <div className="col-8">
                                                         <input type="text" id="lastName" placeholder="Smith" value={recruiter.lastName} onChange={e => this.changeLastName(e.target.value)} />
                                                     </div>
                                                 </div>
-                                                <div class="row">
-                                                    <div class="col-4">
-                                                        <label for="email">Email :</label>
+                                                <div className="row">
+                                                    <div className="col-4">
+                                                        <label htmlFor="email">Email :</label>
                                                     </div>
-                                                    <div class="col-8">
+                                                    <div className="col-8">
                                                         <label>{recruiter.email}</label>
                                                     </div>
                                                 </div>
-                                                <div class="row">
-                                                    <div class="col-4">
-                                                        <label for="phone">Phone :</label>
+                                                <div className="row">
+                                                    <div className="col-4">
+                                                        <label htmlFor="phone">Phone :</label>
                                                     </div>
-                                                    <div class="col-8">
+                                                    <div className="col-8">
                                                         <input type="text" id="phone" placeholder="1234567890" value={recruiter.phone} onChange={e => this.changePhone(e.target.value)} />
                                                     </div>
                                                 </div>
-                                                <div class="row">
-                                                    <div class="col-4">
-                                                        <label for="isRecruiter">Is Recruiter</label>
+                                                <div className="row">
+                                                    <div className="col-4">
+                                                        <label htmlFor="isRecruiter">Is Recruiter</label>
                                                     </div>
-                                                    <div class="col-4">
+                                                    <div className="col-4">
                                                         <input type="checkbox" id="isRecruiter" checked={recruiter.isInAuth0RecruiterGroupRecruiter} onChange={this.changePermissions} />
                                                     </div>
                                                 </div>
@@ -622,9 +622,9 @@ class RecruitersGrid extends React.PureComponent {
                                         </div>
                                     </div>
                                 </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                    <button id="addRecruitersButton" type="button" onClick={this.addRecruiter} class="btn btn-primary">Add</button>
+                                <div className="modal-footer">
+                                    <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button id="addRecruitersButton" type="button" onClick={this.addRecruiter} className="btn btn-primary">Add</button>
                                 </div>
 
                             </div>

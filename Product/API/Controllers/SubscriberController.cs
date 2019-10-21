@@ -176,7 +176,6 @@ public class SubscriberController : Controller
     {
         try
         {
-
             if (subscriberGuid == null)
                 return BadRequest(new { code = 400, message = "No subscriber identifier was provided" });
 
