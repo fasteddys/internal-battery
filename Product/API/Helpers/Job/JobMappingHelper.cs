@@ -27,9 +27,28 @@ namespace UpDiddyApi.Helpers.Job
     {
         #region Cloud talent job -> CC job helpers
 
+
+        public static JobSummaryViewDto CreateSummaryJobView(CloudTalentSolution.MatchingJob matchingJob)
+        {
+            JobSummaryViewDto rVal = new JobSummaryViewDto();
+ 
+            Guid postingGuid = Guid.Empty;
+            Guid.TryParse(matchingJob.Job.RequisitionId, out postingGuid);
+            rVal.JobPostingGuid = postingGuid; 
+            rVal.CompanyName = matchingJob.Job.CompanyDisplayName;
+            rVal.Title = matchingJob.Job.Title; 
+            rVal.PostingDateUTC = DateTime.Parse(matchingJob.Job.PostingCreateTime.ToString());
+            // map location that was indexed into google -- do not use a foreach loop since it's sloooooow (might be string concat0
+   
+
+            return rVal;
+        }
+
+
         public static JobViewDto CreateJobView(CloudTalentSolution.MatchingJob matchingJob)
         {
             JobViewDto rVal = new JobViewDto();
+            
             rVal.JobSummary = matchingJob.JobSummary;
             rVal.JobTitleSnippet = matchingJob.SearchTextSnippet;
             rVal.SearchTextSnippet = matchingJob.SearchTextSnippet;
@@ -48,6 +67,47 @@ namespace UpDiddyApi.Helpers.Job
 
             return rVal;
         }
+
+        public static JobSearchSummaryResultDto MapSummarySearchResults(ILogger syslog, IMapper mapper, IConfiguration configuration, CloudTalentSolution.SearchJobsResponse searchJobsResponse, JobQueryDto jobQuery)
+        {
+
+            JobSearchSummaryResultDto rVal = new JobSearchSummaryResultDto();
+            // handle case of no jobs found 
+            if (searchJobsResponse == null || searchJobsResponse.MatchingJobs == null)
+            {
+                rVal.JobCount = 0;
+                rVal.TotalHits = 0;
+                rVal.NumPages = 0;
+                return rVal;
+            }
+
+            rVal.JobCount = searchJobsResponse.MatchingJobs.Count;
+            rVal.TotalHits = searchJobsResponse.TotalSize.Value;
+            rVal.RequestId = searchJobsResponse.Metadata.RequestId;
+            rVal.PageSize = jobQuery.PageSize;
+            rVal.NumPages = rVal.PageSize != 0 ? (int)Math.Ceiling((double)rVal.TotalHits / rVal.PageSize) : 0;
+
+
+            foreach (CloudTalentSolution.MatchingJob j in searchJobsResponse.MatchingJobs)
+            {
+                try
+                {
+                    // Automapper is too slow so do the mapping the old fashion way                    
+                    JobSummaryViewDto jv = CreateSummaryJobView(j);
+                    if (jobQuery.ExcludeCustomProperties == 0)
+                        JobMappingHelper.MapCustomSummaryJobPostingAttributes(j, jv);
+                    rVal.Jobs.Add(jv);
+                }
+                catch (Exception e)
+                {
+                    syslog.LogError(e, "JobPostingFactory.MapSearchResults Error mapping job", e, j);
+                }
+            }
+            if (jobQuery.ExcludeFacets == 0)
+                rVal.Facets = JobMappingHelper.MapFacets(configuration, jobQuery, searchJobsResponse);
+            return rVal;
+        }
+
 
 
 
@@ -189,6 +249,30 @@ namespace UpDiddyApi.Helpers.Job
             else
                 jobViewDto.CommuteTime = 0;
 
+
+        }
+
+
+        public static void MapCustomSummaryJobPostingAttributes(CloudTalentSolution.MatchingJob matchingJob, JobSummaryViewDto jobViewDto)
+        {
+            DateTime dateVal = DateTime.MinValue;
+            // Short circuit if the job has no custom attributes 
+            if (matchingJob.Job.CustomAttributes == null)
+                return;
+
+            // grabs some values needed for semantic url 
+            string Industry = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "Industry");       
+            string JobCategory = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "JobCategory");
+            string Country = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "Country");
+
+
+            // map province 
+            jobViewDto.Province = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "Province");
+            // map city
+            jobViewDto.City = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "City");
+            // map postal code             
+            // semantic url
+            jobViewDto.SemanticJobPath = Utils.CreateSemanticJobPath(Industry, JobCategory, Country, jobViewDto.Province, jobViewDto.City, jobViewDto.JobPostingGuid.ToString());
 
         }
 
