@@ -63,7 +63,87 @@
         .traitify-header {
             padding: 25px;
             font-size: 1.5rem;
+        }
+    }
 
+
+
+    .traitify-assessment-container {
+        .traitify-result-container {
+            margin: 2rem;
+        }
+    }
+
+    .traitify-signup-container {
+        color: $color-white;
+        position: relative;
+        margin-bottom: 2rem;
+        background-repeat: no-repeat;
+        background-position: top;
+        position: relative;
+        background-color: $color-secondary;
+
+        .sub-header {
+            font-size: 1.5rem;
+            line-height: 2rem;
+            margin-bottom: .25rem;
+        }
+
+        .mini-header {
+            margin-bottom: 1.25rem;
+            font-size: .9rem;
+        }
+
+        .traitify-signup-band-right {
+            .traitify-signup-form {
+                text-align: center;
+                background-color: $color-secondary !important;
+            }
+        }
+
+        .traitify-signup-band-left {
+            padding: 3rem;
+        }
+
+        #SignUpComponent {
+            .form-check {
+                .form-check-label {
+                    line-height: 1.3em;
+                }
+            }
+
+            .sign-up-input {
+                margin-bottom: 1rem;
+
+                .wide-input {
+                    border-radius: .25rem;
+                    width: 100%;
+                    padding: .5rem;
+                    padding-left: 1.5rem;
+                    font-size: .8rem;
+                    border: none;
+                }
+
+                input {
+
+                    &.form-check-input {
+                        top: .2em;
+                        margin-top: 0;
+                    }
+
+                    &:focus {
+                        outline: none;
+                    }
+
+                    &.invalid {
+                        border: 2px solid $color-red;
+
+                        &.form-check-input {
+                            outline: 1.5px solid $color-red;
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -87,6 +167,3 @@
         }
     }
 }
-
-// Extra Large Styles
-@media (min-width: 1200px) {}

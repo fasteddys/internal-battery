@@ -1815,8 +1815,8 @@ namespace UpDiddy.Api
             return await GetAsync<TraitifyDto>($"traitify/{assessmentId}");
         }
 
-          public async Task<bool> CompleteAssessment(string assessmentId) {
-            return await GetAsync<bool>($"traitify/complete/{assessmentId}");
+          public async Task<TraitifyDto> CompleteAssessment(string assessmentId) {
+            return await GetAsync<TraitifyDto>($"traitify/complete/{assessmentId}");
         }
 
         public async  Task<BasicResponseDto> TraitifySignUp(string assessmentId)

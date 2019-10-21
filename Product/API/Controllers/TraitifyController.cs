@@ -42,19 +42,17 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet]
         [Route("api/[controller]/{assessmentId:length(36)}")]
-        public TraitifyDto GetAssessment(string assessmentId)
+        public async Task<TraitifyDto> GetAssessment(string assessmentId)
         {
-            return _traitifyService.GetAssessment(assessmentId);
+            return await _traitifyService.GetAssessment(assessmentId);
         }
 
         [HttpGet]
         [Route("api/[controller]/complete/{assessmentId:length(36)}")]
-        public async Task<bool> CompleteAssessment(string assessmentId)
+        public async Task<TraitifyDto> CompleteAssessment(string assessmentId)
         {
             return await _traitifyService.CompleteAssessment(assessmentId);
         }
-
-
     }
 }
 

@@ -22,26 +22,46 @@ class TraitifyCC {
                     ToastService.error('Oops! Something unexpected happened, and we are looking into it.')
                 },
                 success: function (results) {
-                    $("#traitify-form-container").show();
                     if (results.isAuthenticated) {
                         assessment.render("Results");
                     } else {
+                        $("#Email").val(results.email);
+                        $("#traitify-hidden-signup-container").show()
                         assessment.render("PersonalityTraits");
                     }
                     assessment.target("#traitify");
                 }
             });
         });
-        assessment.assessmentID(assessmentId);
-        assessment.allowFullscreen();
         assessment.target("#traitify");
-        assessment.render("SlideDeck");
+        if(this.model.isComplete)
+        {
+            assessment.assessmentID(this.model.assessmentId);
+            $("#traitifyInstructions").hide();
+            if(this.model.isAuthenticated)
+            {
+                assessment.render("Results");
+            }
+            else
+            {
+                $("#Email").val(this.model.email);
+                $("#traitify-hidden-signup-container").show()
+                assessment.render("PersonalityTraits");
+            }
+        }
+        else
+        {
+            assessment.assessmentID(assessmentId);
+            assessment.allowFullscreen();
+            assessment.render("SlideDeck");
+        }
 
-        $("#SignUpComponent form").submit(function (e) {
+        $("#SignUpComponent").submit(function (e) {
+            e.preventDefault();
+
             var agreedTos = $('#SignUpComponent #termsAndConditionsCheck').is(':checked');
             $('#SignUpComponent #termsAndConditionsCheck').toggleClass('invalid', !agreedTos);
-
-            if (agreedTos) {
+            if ($("#SignUpComponent #Email").val() && $("#SignUpComponent #Password").val() && $("#SignUpComponent #ReenterPassword").val() && agreedTos) {
                 $.ajax({
                     type: "POST",
                     url: "/traitify/createaccount",

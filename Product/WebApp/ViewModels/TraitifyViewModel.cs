@@ -31,7 +31,16 @@ namespace UpDiddy.ViewModels
         public string FormText { get; set; }
         public string FormButtonText { get; set; }
         public string ExistingUserButtonText { get; set; }
+        public string SignupFormImageBanner {get;set;}
+        public string SignupFormSubmitButtonText {get;set;}
+
+        public string SignupFormHeader {get;set;}
+        public string SignupFormText {get;set;}
+        public string SignupHeroTitle {get;set;}
+        public string SignupHeroContent {get;set;}
         public Guid? SubscriberGuid { get; set; }
         public bool IsAuthenticated { get; set; }
+
+        public bool IsComplete {get;set;}
     }
 }

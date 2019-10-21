@@ -20,6 +20,7 @@ namespace UpDiddyLib.Dto
         public int ResultLength {get;set;}
         public string PublicKey {get;set;}
         public string Host {get;set;}
+        public bool IsComplete {get;set;}
 
     }
 }

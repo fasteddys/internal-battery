@@ -77,17 +77,55 @@ namespace UpDiddy.Controllers
 
         [HttpPost]
         [Route("[controller]/createaccount")]
-        public async Task CreateAccount(TraitifyViewModel model)
+        public async Task<ActionResult> CreateAccount(TraitifyViewModel model)
         {
-            SignUpDto signUpDto = new SignUpDto
+            bool modelHasAllFields = !string.IsNullOrEmpty(model.Password) && !string.IsNullOrEmpty(model.ReenterPassword);
+
+            if (!modelHasAllFields)
             {
-                firstName = model.FirstName,
-                lastName = model.LastName,
-                email = model.Email,
-                password = model.Password,
-                traitifyAssessmentId = model.AssessmentId
-            };
-            await _Api.ExpressUpdateSubscriberContactAsync(signUpDto);
+                return BadRequest(new BasicResponseDto
+                {
+                    StatusCode = 400,
+                    Description = "Please enter all sign-up fields and try again."
+                });
+            }
+
+
+            try
+            {
+                TraitifyDto traitifyDto = await _Api.GetTraitifyByAssessmentId(model.AssessmentId);
+                SignUpDto signUpDto = new SignUpDto
+                {
+                    firstName = model.FirstName,
+                    lastName = model.LastName,
+                    email = traitifyDto.Email,
+                    password = model.Password,
+                    traitifyAssessmentId = model.AssessmentId,
+
+                };
+                BasicResponseDto subscriberResponse = await _Api.ExpressUpdateSubscriberContactAsync(signUpDto);
+                switch (subscriberResponse.StatusCode)
+                {
+
+                    case 200:
+                        return Ok(new BasicResponseDto
+                        {
+                            StatusCode = subscriberResponse.StatusCode,
+                            Description = "/session/signin"
+                        });
+                    default:
+                        return StatusCode(500, subscriberResponse);
+                }
+            }
+            catch (ApiException e)
+            {
+                // Generic server error to display gracefully to the user.
+                return StatusCode(500, new BasicResponseDto
+                {
+                    StatusCode = 500,
+                    Description = e.ResponseDto.Description
+                });
+            }
         }
 
         [HttpGet]
@@ -98,12 +136,23 @@ namespace UpDiddy.Controllers
             var butterPage = await GetButterLandingPage();
             model.ModalHeader = butterPage.Data.Fields.ModalHeader;
             model.ModalText = butterPage.Data.Fields.ModalText;
+            if (!HttpContext.User.Identity.IsAuthenticated)
+            {
+                model.SignupFormImageBanner = butterPage.Data.Fields.SignupFormImageBanner;
+                model.SignupFormHeader = butterPage.Data.Fields.SignupFormHeader;
+                model.SignupFormSubmitButtonText = butterPage.Data.Fields.SignupFormSubmitButtonText;
+                model.SignupFormText = butterPage.Data.Fields.SignupFormText;
+                model.SignupHeroContent = butterPage.Data.Fields.SignupHeroContent;
+                model.SignupHeroTitle = butterPage.Data.Fields.SignupHeroTitle;
+            }
             TraitifyDto dto = await _Api.GetTraitifyByAssessmentId(assessmentId);
             if (dto != null)
             {
+                model.IsComplete = dto.IsComplete;
                 model.AssessmentId = dto.AssessmentId;
                 model.PublicKey = dto.PublicKey;
                 model.Host = dto.Host;
+                model.Email = dto.Email;
             }
             else
             {
@@ -118,7 +167,7 @@ namespace UpDiddy.Controllers
         {
             var response = await _Api.CompleteAssessment(assessmentId);
             var IsAuthenticated = HttpContext.User.Identity.IsAuthenticated;
-            return Json(new { success = response, IsAuthenticated = IsAuthenticated });
+            return Json(new { success = response, email = response.Email, IsAuthenticated = IsAuthenticated });
 
         }
 
@@ -144,6 +193,15 @@ namespace UpDiddy.Controllers
             model.FormText = landingPage.Data.Fields.FormText;
             model.FormButtonText = landingPage.Data.Fields.FormSubmitButtonText;
             model.ExistingUserButtonText = landingPage.Data.Fields.ExistingUserSubmitButtonText;
+            if (!HttpContext.User.Identity.IsAuthenticated)
+            {
+                model.SignupFormImageBanner = landingPage.Data.Fields.SignupFormImageBanner;
+                model.SignupFormHeader = landingPage.Data.Fields.SignupFormHeader;
+                model.SignupFormSubmitButtonText = landingPage.Data.Fields.SignupFormSubmitButtonText;
+                model.SignupFormText = landingPage.Data.Fields.SignupFormText;
+                model.SignupHeroContent = landingPage.Data.Fields.SignupHeroContent;
+                model.SignupHeroTitle = landingPage.Data.Fields.SignupHeroTitle;
+            }
             return model;
         }
 

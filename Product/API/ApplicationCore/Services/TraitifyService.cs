@@ -30,7 +30,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly string _publicKey;
         private readonly string _host;
         private readonly string _resultUrl;
-         private readonly com.traitify.net.TraitifyLibrary.Traitify _traitify;
+        private readonly com.traitify.net.TraitifyLibrary.Traitify _traitify;
 
 
         public TraitifyService(IRepositoryWrapper repositoryWrapper,
@@ -74,32 +74,33 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _mapper.Map<TraitifyDto>(result);
         }
 
-        public TraitifyDto GetAssessment(string assessmentId)
+        public async Task<TraitifyDto> GetAssessment(string assessmentId)
         {
             try
             {
                 var assessment = _traitify.GetAssessment(assessmentId);
-                if (assessment.completed_at == null)
+                TraitifyDto dto = new TraitifyDto()
                 {
-                    TraitifyDto dto = new TraitifyDto()
-                    {
-                        AssessmentId = assessmentId,
-                        CompleteDate = null,
-                        PublicKey = _publicKey,
-                        Host = _host
-                    };
-                    return dto;
+                    AssessmentId = assessmentId,
+                    PublicKey = _publicKey,
+                    Host = _host
+                };
+                if(assessment.completed_at != null)
+                {
+                    var completedAssessment = await GetByAssessmentId(assessmentId);
+                    dto.IsComplete = true;
+                    dto.Email = completedAssessment.Email;                    
                 }
+                return dto;
             }
             catch (Exception e)
             {
                 _logger.Log(LogLevel.Error, $"TraitifyController.GetByAssessmentId: An error occured while attempting retrieve assessment Message: {e.Message}", e);
                 return null;
             }
-            return null;
         }
 
-        public async Task<bool> CompleteAssessment(string assessmentId)
+        public async Task<TraitifyDto> CompleteAssessment(string assessmentId)
         {
             try
             {
@@ -118,19 +119,19 @@ namespace UpDiddyApi.ApplicationCore.Services
                     };
                     dto = await CompleteAssessment(dto);
                     dynamic payload = ProcessResult(results);
-                    await SendCompletionEmail(dto.Email, payload);
-                    return true;
+                    //await SendCompletionEmail(dto.Email, payload);
+                    return dto;
                 }
             }
             catch (Exception e)
             {
                 _logger.Log(LogLevel.Error, $"TraitifyController.CompleteAssessment: An error occured while attempting to complete the assessment  Message: {e.Message}", e);
-                return false;
+                return null;
             }
-            return false;
+            return null;
         }
 
-        
+
 
         public async Task CreateNewAssessment(TraitifyDto dto)
         {
@@ -155,7 +156,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _repositoryWrapper.TraitifyRepository.SaveAsync();
         }
 
-        public async Task<TraitifyDto> CompleteAssessment(TraitifyDto dto)
+        private async Task<TraitifyDto> CompleteAssessment(TraitifyDto dto)
         {
             UpDiddyApi.Models.Traitify traitify = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(dto.AssessmentId);
             traitify.CompleteDate = dto.CompleteDate;
