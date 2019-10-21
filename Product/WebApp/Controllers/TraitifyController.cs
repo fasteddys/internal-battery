@@ -18,7 +18,7 @@ namespace UpDiddy.Controllers
         private readonly IButterCMSService _butterService;
         public TraitifyController(IApi api,
          IButterCMSService butterService,
-         IConfiguration config) : base(api,config)
+         IConfiguration config) : base(api, config)
         {
             _butterService = butterService;
         }
@@ -33,7 +33,7 @@ namespace UpDiddy.Controllers
             if (HttpContext.User.Identity.IsAuthenticated)
             {
                 Guid? subscriberGuid = GetSubscriberGuid();
-             if (subscriberGuid != null)
+                if (subscriberGuid != null)
                 {
                     SubscriberDto subscriber = await _Api.SubscriberAsync(subscriberGuid.Value, true);
                     model.SubscriberGuid = subscriberGuid;
@@ -116,8 +116,10 @@ namespace UpDiddy.Controllers
         [Route("[controller]/complete/{assessmentId:length(36)}")]
         public async Task<JsonResult> CompleteAssessment(string assessmentId)
         {
-            var result = await _Api.CompleteAssessment(assessmentId);
-            return Json(result);
+            var response = await _Api.CompleteAssessment(assessmentId);
+            var IsAuthenticated = HttpContext.User.Identity.IsAuthenticated;
+            return Json(new { success = response, IsAuthenticated = IsAuthenticated });
+
         }
 
         private async Task<PageResponse<TraitifyLandingPageViewModel>> GetButterLandingPage()
@@ -141,10 +143,10 @@ namespace UpDiddy.Controllers
             model.FormHeader = landingPage.Data.Fields.FormHeader;
             model.FormText = landingPage.Data.Fields.FormText;
             model.FormButtonText = landingPage.Data.Fields.FormSubmitButtonText;
-            model.ExistingUserButtonText = landingPage.Data.Fields.ExistingUserSubmitButtonText; 
-            return model;        
+            model.ExistingUserButtonText = landingPage.Data.Fields.ExistingUserSubmitButtonText;
+            return model;
         }
-        
+
         private void SetSEOTags(PageResponse<TraitifyLandingPageViewModel> landingPage)
         {
             ViewData[Constants.Seo.TITLE] = landingPage.Data.Fields.Title;
