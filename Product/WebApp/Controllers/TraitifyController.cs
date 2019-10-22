@@ -122,7 +122,8 @@ namespace UpDiddy.Controllers
                     email = model.Email,
                     password = model.Password,
                     traitifyAssessmentId = model.AssessmentId,
-                    referer = _configuration["Environment:BaseUrl"] + "traitify"
+                    referer = _configuration["Environment:BaseUrl"] + "traitify",
+                    verifyUrl = _configuration["Environment:BaseUrl"].TrimEnd('/') + "/email/confirm-verification/",
                 };
                 BasicResponseDto subscriberResponse = await _Api.ExpressUpdateSubscriberContactAsync(signUpDto);
                 switch (subscriberResponse.StatusCode)
