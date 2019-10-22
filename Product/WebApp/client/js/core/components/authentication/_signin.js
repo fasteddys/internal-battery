@@ -34,7 +34,7 @@ $(document).ready(function () {
     }
     
     var currentUrl = window.location.href;
-    var afterDomain = currentUrl.substring(currURL.lastIndexOf('/') + 1);
+    var afterDomain = currentUrl.substring(currentUrl.lastIndexOf('/') + 1);
     var beforeQueryString = afterDomain.split("?")[0];
     window.history.replaceState({}, document.title, '/' + beforeQueryString);
 }); 

@@ -47,7 +47,6 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> UpdateProfileInformationAsync(SubscriberDto Subscriber);
         Task<BasicResponseDto> UpdateOnboardingStatusAsync();
         Task<Guid> EnrollStudentAndObtainEnrollmentGUIDAsync(EnrollmentFlowDto enrollmentFlowDto);
-        Task<SubscriberDto> CreateSubscriberAsync(string referralCode);
         Task<bool> DeleteSubscriberAsync(Guid subscriberGuid);
         Task<WozCourseProgressDto> UpdateStudentCourseProgressAsync(bool FutureSchedule);
         Task<BraintreeResponseDto> SubmitBraintreePaymentAsync(BraintreePaymentDto BraintreePaymentDto);

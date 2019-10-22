@@ -106,7 +106,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                 {
                     var auth0User = users.FirstOrDefault();
                     roles = await managementApiClient.Users.GetRolesAsync(auth0User.UserId, new PaginationInfo());
-                    
+
                     user = new User()
                     {
                         Email = auth0User.Email,
@@ -246,7 +246,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             user.SubscriberGuid = subscriberGuid;
 
             // todo: implement role assignment during user creation - potential security concerns here
-            if (userRoles != null || userRoles.Length > 0)
+            if (userRoles != null && userRoles.Length > 0)
                 throw new NotImplementedException("Role assignment is not yet supported");
 
             return new CreateUserResponse(true, "Account has been created.", user);
@@ -307,7 +307,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
 
             return new GetUsersResponse(true, $"Successfully retrieved users in role: {role.ToString()}", usersInRole);
         }
-
+        
         public async Task<CreateUserResponse> MigrateUserAsync(User user)
         {
             Auth0.ManagementApi.Models.User userCreationResponse = null;

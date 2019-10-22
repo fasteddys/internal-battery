@@ -115,7 +115,7 @@ namespace UpDiddyApi.Controllers
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = "This login is not valid for ADB2C." });
             }
         }
-
+        
         [HttpPost("migrate-user")]
         public async Task<IActionResult> MigrateUserAsync([FromBody] CreateUserDto createUserDto)
         {    
@@ -140,7 +140,7 @@ namespace UpDiddyApi.Controllers
             }
             else
             {
-                return Ok(new BasicResponseDto() { StatusCode = 400, Description = "Tue user was not migrated successfully." });
+                return Ok(new BasicResponseDto() { StatusCode = 400, Description = "The user was not migrated successfully." });
             }
         }
         

@@ -720,7 +720,7 @@ namespace UpDiddy.Api
         {
             return await PutAsync<List<ImportActionDto>>("contact/import/" + partnerGuid + "/" + HttpUtility.UrlEncode(cacheKey));
         }
-
+        
         public async Task<bool> IsUserExistsInADB2CAsync(string email)
         {
             var basicResponseDto = await GetAsync<BasicResponseDto>($"identity/check-adb2c/{email}");
@@ -962,11 +962,6 @@ namespace UpDiddy.Api
         public async Task<BasicResponseDto> UpdateOnboardingStatusAsync()
         {
             return await PutAsync<BasicResponseDto>("subscriber/onboard");
-        }
-
-        public async Task<SubscriberDto> CreateSubscriberAsync(string referralCode = null)
-        {
-            return await PostAsync<SubscriberDto>("subscriber", new ReferralDto() { ReferralCode = referralCode });
         }
         public async Task<bool> DeleteSubscriberAsync(Guid subscriberGuid)
         {
@@ -1330,13 +1325,6 @@ namespace UpDiddy.Api
             else
             {
                 rval = await _SubscriberAsync(subscriberGuid);
-                if (rval == null)
-                {
-                    //check if there is any referralCode
-                    var referralCode = _contextAccessor.HttpContext.Request.Cookies["referrerCode"] == null ? null : _contextAccessor.HttpContext.Request.Cookies["referrerCode"].ToString();
-                    rval = await CreateSubscriberAsync(referralCode);
-                }
-
                 SetCachedValueAsync<SubscriberDto>(cacheKey, rval);
             }
             return rval;

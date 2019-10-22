@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using UpDiddy.Api;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Dto;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddy.Controllers
 {
@@ -38,6 +39,7 @@ namespace UpDiddy.Controllers
         private string _auth0ClientId = null;
         private string _auth0ClientSecret = null;
         private string _auth0Audience = null;
+        private string _auth0Connection = null;
 
         public SessionController(ILogger<SessionController> sysLog, IDistributedCache distributedCache, IMemoryCache memoryCache, IConfiguration configuration, IApi api)
         {
@@ -50,85 +52,30 @@ namespace UpDiddy.Controllers
             _auth0ClientId = configuration["Auth0:ClientId"];
             _auth0ClientSecret = configuration["Auth0:ClientSecret"];
             _auth0Audience = configuration["Auth0:Audience"];
+            _auth0Connection = configuration["Auth0:Connection"];
         }
 
         [HttpGet]
+        [Route("/signup")]
         public IActionResult SignUp(string returnUrl = "/")
         {
-            return View(new SignUpViewModel()
-            {
-
-            });
+            return View(new SignUpViewModel());
         }
-
-        [HttpGet]
-        public IActionResult SignIn(string returnUrl = "/Home/Profile")
-        {
-            ViewData["ReturnUrl"] = returnUrl;
-            return View();
-        }
-
-        private async Task ExecuteAuth0SignInAsync(string email, string password)
-        {
-            var result = await _auth0Client.GetTokenAsync(new ResourceOwnerTokenRequest
-            {
-                ClientId = _auth0ClientId,
-                ClientSecret = _auth0ClientSecret,
-                Scope = "openid profile email",
-                Realm = "Username-Password-Authentication", // Specify the correct name of your DB connection
-                Username = email,
-                Password = password,
-                Audience = _auth0Audience
-            });
-
-            var user = await _auth0Client.GetUserInfoAsync(result.AccessToken);
-            var firstClaimValue = user.AdditionalClaims.Where(x => x.Key == ClaimTypes.NameIdentifier).FirstOrDefault();
-            Guid subscriberGuid;
-            if (firstClaimValue.Value != null && Guid.TryParse(firstClaimValue.Value.ToString(), out subscriberGuid))
-            {
-                var expiresOn = DateTime.UtcNow.AddSeconds(result.ExpiresIn);
-
-                List<Claim> claims = new List<Claim>();
-                claims.Add(new Claim(ClaimTypes.NameIdentifier, subscriberGuid.ToString()));
-                claims.Add(new Claim(ClaimTypes.Name, user.FullName));
-                claims.Add(new Claim("access_token", result.AccessToken));
-                claims.Add(new Claim(ClaimTypes.Expiration, expiresOn.ToString()));
-
-                var permissionClaim = user.AdditionalClaims.Where(x => x.Key == ClaimTypes.Role).FirstOrDefault().Value.ToList();
-                string permissions = string.Empty;
-
-                foreach (var permission in permissionClaim)
-                {
-                    claims.Add(new Claim(ClaimTypes.Role, permission.ToString(), ClaimValueTypes.String, _auth0Domain));
-                }
-
-                var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
-                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
-            }
-            else
-            {
-                throw new ApplicationException("Unable to identify the subscriber.");
-            }
-        }
-
+        
         [HttpPost]
-        [Route("[controller]/signup")]
-        public async Task<IActionResult> SignUp(SignUpViewModel vm, [FromQuery] string returnUrl = "Session/SignIn")
+        [Route("/signup")]
+        public async Task<IActionResult> SignUp(SignUpViewModel vm, [FromQuery] string returnUrl = "/signin")
         {
-            // todo: modelstate valid? move waitlist logic there?
-
             bool modelHasAllFields = !string.IsNullOrEmpty(vm.Email) &&
                 !string.IsNullOrEmpty(vm.Password) &&
                 !string.IsNullOrEmpty(vm.ReenterPassword);
 
-            //Check the fields if it is a waitlist
             if (vm.IsWaitList)
             {
                 modelHasAllFields = !string.IsNullOrEmpty(vm.FirstName) &&
                 !string.IsNullOrEmpty(vm.LastName);
             }
 
-            // Make sure user has filled out all fields.
             if (!modelHasAllFields)
             {
                 return BadRequest(new BasicResponseDto
@@ -138,7 +85,6 @@ namespace UpDiddy.Controllers
                 });
             }
 
-            // This is basically the same check as above, but to be safe...
             if (!ModelState.IsValid)
             {
                 return BadRequest(new BasicResponseDto
@@ -148,7 +94,6 @@ namespace UpDiddy.Controllers
                 });
             }
 
-            // Make sure user's password and re-enter password values match.
             if (!vm.Password.Equals(vm.ReenterPassword))
             {
                 return BadRequest(new BasicResponseDto
@@ -158,7 +103,6 @@ namespace UpDiddy.Controllers
                 });
             }
 
-            // If all checks pass, assemble SignUpDto from information user entered.
             CreateUserDto createUserDto = new CreateUserDto
             {
                 Email = vm.Email,
@@ -172,7 +116,6 @@ namespace UpDiddy.Controllers
                 IsAgreeToMarketingEmails = vm.IsAgreeToMarketingEmails
             };
 
-            // Guard UX from any unforeseen server error.
             try
             {
                 BasicResponseDto basicResponseDto = await _api.CreateUserAsync(createUserDto);
@@ -200,13 +143,16 @@ namespace UpDiddy.Controllers
             }
         }
 
-        /// <summary>
-        /// New sign in endpoint which handles migration of ADB2C accounts to Auth0 seamlessly (provided they know their existing password).
-        /// </summary>
-        /// <param name="vm"></param>
-        /// <param name="returnUrl"></param>
-        /// <returns></returns>
+        [HttpGet]
+        [Route("/signin")]
+        public IActionResult SignIn(string returnUrl = "/Home/Profile")
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            return View();
+        }
+
         [HttpPost]
+        [Route("/signin")]
         public async Task<IActionResult> SignIn(SignInViewModel vm, [FromQuery] string returnUrl = null)
         {
             if (ModelState.IsValid)
@@ -256,7 +202,7 @@ namespace UpDiddy.Controllers
                         }
                     }
                 }
-                catch(Auth0.Core.Exceptions.ApiException ae)
+                catch (Auth0.Core.Exceptions.ApiException ae)
                 {
                     ModelState.AddModelError("", ae.Message);
                 }
@@ -269,14 +215,87 @@ namespace UpDiddy.Controllers
 
             return View(vm);
         }
-        
+
         [HttpGet]
+        [Route("/resetpassword")]
         public IActionResult ResetPassword()
         {
-            throw new NotImplementedException();
+            return View();
+        }
+
+        [HttpPost("/resetpassword")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel vm)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var isUserExistsInAuth0 = await _api.IsUserExistsInAuth0Async(vm.EmailAddress);
+                    if (!isUserExistsInAuth0)
+                    {
+                        var isUserExistsInADB2C = await _api.IsUserExistsInADB2CAsync(vm.EmailAddress);
+
+                        if (isUserExistsInADB2C)
+                        {
+                            // perform the migration with a random password
+                            var randomPassword = Utils.GeneratePassword(true, true, true, true, 20);
+                            var isMigrationSuccessful = await _api.MigrateUserAsync(new CreateUserDto() { Email = vm.EmailAddress, Password = randomPassword });
+                            if (!isMigrationSuccessful)
+                            {
+                                _syslog.LogError($"There was a problem migrating a user prior to changing their password.", null);
+                                return BadRequest(new BasicResponseDto
+                                {
+                                    StatusCode = 400,
+                                    Description = "There was a problem reseting your password."
+                                });
+                            }
+                        }
+                        else
+                        {
+                            // user doesn't exist in either environment
+                            return BadRequest(new BasicResponseDto
+                            {
+                                StatusCode = 400,
+                                Description = "Email address is not recognized."
+                            });
+                        }
+                    }
+
+                    // send the password reset request
+                    var connectionString = string.Empty;
+                    var changePasswordResponse = await _auth0Client.ChangePasswordAsync(new ChangePasswordRequest()
+                    {
+                        Email = vm.EmailAddress,
+                        ClientId = _auth0ClientId,
+                        Connection = _auth0Connection
+                    });
+
+                }
+                catch (Auth0.Core.Exceptions.ApiException ae)
+                {
+                    _syslog.LogError($"There was a problem resetting a user's password: {ae.Message}", ae);
+                    return BadRequest(new BasicResponseDto
+                    {
+                        StatusCode = 400,
+                        Description = "There was a problem resetting your password."
+                    });
+                }
+                catch (Exception e)
+                {
+                    _syslog.LogError($"An unexpected error occurred in SessionController.ResetPassword: {e.Message}", e);
+                    return BadRequest(new BasicResponseDto
+                    {
+                        StatusCode = 400,
+                        Description = "An unexpected error occurred."
+                    });
+                }
+            }
+
+            return View(vm);
         }
 
         [HttpGet]
+        [Route("/signout")]
         public async Task SignOut()
         {
             await HttpContext.SignOutAsync("Auth0", new AuthenticationProperties
@@ -303,6 +322,49 @@ namespace UpDiddy.Controllers
         }
 
         #region Helpers
+
+        private async Task ExecuteAuth0SignInAsync(string email, string password)
+        {
+            var result = await _auth0Client.GetTokenAsync(new ResourceOwnerTokenRequest
+            {
+                ClientId = _auth0ClientId,
+                ClientSecret = _auth0ClientSecret,
+                Scope = "openid profile email",
+                Realm = _auth0Connection,
+                Username = email,
+                Password = password,
+                Audience = _auth0Audience
+            });
+
+            var user = await _auth0Client.GetUserInfoAsync(result.AccessToken);
+            var firstClaimValue = user.AdditionalClaims.Where(x => x.Key == ClaimTypes.NameIdentifier).FirstOrDefault();
+            Guid subscriberGuid;
+            if (firstClaimValue.Value != null && Guid.TryParse(firstClaimValue.Value.ToString(), out subscriberGuid))
+            {
+                var expiresOn = DateTime.UtcNow.AddSeconds(result.ExpiresIn);
+
+                List<Claim> claims = new List<Claim>();
+                claims.Add(new Claim(ClaimTypes.NameIdentifier, subscriberGuid.ToString()));
+                claims.Add(new Claim(ClaimTypes.Name, user.FullName));
+                claims.Add(new Claim("access_token", result.AccessToken));
+                claims.Add(new Claim(ClaimTypes.Expiration, expiresOn.ToString()));
+
+                var permissionClaim = user.AdditionalClaims.Where(x => x.Key == ClaimTypes.Role).FirstOrDefault().Value.ToList();
+                string permissions = string.Empty;
+
+                foreach (var permission in permissionClaim)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, permission.ToString(), ClaimValueTypes.String, _auth0Domain));
+                }
+
+                var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
+            }
+            else
+            {
+                throw new ApplicationException("Unable to identify the subscriber.");
+            }
+        }
 
         private IActionResult RedirectToLocal(string returnUrl)
         {
