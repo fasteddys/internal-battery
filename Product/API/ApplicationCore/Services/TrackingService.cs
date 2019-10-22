@@ -131,5 +131,26 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _repositoryWrapper.SubscriberActionRepository.Create(subAction);
             await _repositoryWrapper.SubscriberActionRepository.SaveAsync();
         }
+
+        public async Task TrackSubscriberAction(int subscriberId, Models.Action action, EntityType entityType, int entityId)
+        {
+            Subscriber subscriber = await _repositoryWrapper.Subscriber.GetSubscriberByIdAsync(subscriberId);
+            SubscriberAction subAction = new SubscriberAction()
+            {
+                IsDeleted = 0,
+                CreateDate = DateTime.UtcNow,
+                ModifyDate = null,
+                Action = action,
+                CreateGuid = Guid.Empty,
+                Subscriber = subscriber,
+                SubscriberActionGuid = Guid.NewGuid(),
+                EntityType = entityType,
+                EntityId = entityId,
+                ModifyGuid = null,
+                OccurredDate = DateTime.UtcNow
+            };
+            await _repositoryWrapper.SubscriberActionRepository.Create(subAction);
+            await _repositoryWrapper.SubscriberActionRepository.SaveAsync();
+        }
     }
 }

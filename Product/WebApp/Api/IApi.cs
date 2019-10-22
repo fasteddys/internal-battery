@@ -161,7 +161,8 @@ namespace UpDiddy.Api
         #region Traitify
         Task<TraitifyDto> StartNewTraitifyAssessment(TraitifyDto dto);
         Task<TraitifyDto> GetTraitifyByAssessmentId(string assessmentId);
-        Task<bool> CompleteAssessment(string assessmentId);
+        Task<TraitifyDto> CompleteAssessment(string assessmentId);
+        Task<BasicResponseDto> TraitifySignUp(string assessmentId); 
         #endregion
 
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);
