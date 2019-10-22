@@ -8,7 +8,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<TraitifyDto> GetByAssessmentId(string assessmentId);
         Task CreateNewAssessment(TraitifyDto dto);
 
-        Task CompleteSignup(string assessmentId, int subscriberId);
+        Task CompleteSignup(string assessmentId, string email, int subscriberId);
         Task<TraitifyDto> StartNewAssesment(TraitifyDto dto);
 
         Task<TraitifyDto> GetAssessment(string assessmentId);

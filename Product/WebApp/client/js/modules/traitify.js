@@ -28,30 +28,26 @@ class TraitifyCC {
                     } else {
                         $("#Email").val(results.email);
                         $("#traitify-hidden-signup-container").show()
-                        assessment.render("PersonalityTraits");
+                        $("#resultFooter").show();
+                        assessment.render("PersonalityBlend");
                     }
                     assessment.target("#traitify");
                 }
             });
         });
         assessment.target("#traitify");
-        if(this.model.isComplete)
-        {
+        if (this.model.isComplete) {
             assessment.assessmentID(this.model.assessmentId);
             $("#traitifyInstructions").hide();
-            if(this.model.isAuthenticated || this.model.isRegistered)
-            {
+            if (this.model.isAuthenticated || this.model.isRegistered) {
                 assessment.render("Results");
-            }
-            else
-            {
+            } else {
                 $("#Email").val(this.model.email);
                 $("#traitify-hidden-signup-container").show()
-                assessment.render("PersonalityTraits");
-            } 
-        }
-        else
-        {
+                assessment.render("PersonalityBlend");
+                $("#resultFooter").show();
+            }
+        } else {
             assessment.assessmentID(assessmentId);
             assessment.allowFullscreen();
             assessment.render("SlideDeck");
@@ -59,29 +55,32 @@ class TraitifyCC {
 
         $("#SignUpComponent").submit(function (e) {
             $("body").prepend("<div class=\"overlay\" id=\"SignUpOverlay\"><div id=\"loading-img\" ></div></div>");
-            $("#SignUpOverlay").show();  
+            $("#SignUpOverlay").show();
             e.preventDefault();
             var agreedTos = $('#SignUpComponent #termsAndConditionsCheck').is(':checked');
             $('#SignUpComponent #termsAndConditionsCheck').toggleClass('invalid', !agreedTos);
             if ($("#SignUpComponent #Email").val() && $("#SignUpComponent #Password").val() && $("#SignUpComponent #ReenterPassword").val() && agreedTos) {
-                $.ajax({
-                    type: "POST",
-                    url: "/traitify/createaccount",
-                    data: $(this).serialize()
-                }).done(res => {
-                    $('.traitify-modal a').attr('href', res.description);
-                    $('.traitify-modal').modal();
-                    $('.traitify-modal').on('hidden.bs.modal', function (e) {
-                        window.location.href = res.description;
-                    });
-                }).fail(res => {
-                    var errorText = "Unfortunately, there was an error with your submission. Please try again later.";
-                    if (res.responseJSON.description != null)
-                        errorText = res.responseJSON.description;
-                    ToastService.error(errorText, 'Whoops...');
-                }).always(() => {
+                if ($("#SignUpComponent #Password").val() !== $("#SignUpComponent #ReenterPassword").val()) {
                     $("#SignUpOverlay").remove();
-                });
+                    ToastService.error("The passwords you have entered do not match.", 'Whoops...');
+                } else {
+                    $.ajax({
+                        type: "POST",
+                        url: "/traitify/createaccount",
+                        data: $(this).serialize()
+                    }).done(res => {
+                        $("#traitify-hidden-signup-container").hide()
+                        $("#resultFooter").hide();
+                        $('.traitify-modal').modal();
+                    }).fail(res => {
+                        var errorText = "Unfortunately, there was an error with your submission. Please try again later.";
+                        if (res.responseJSON.description != null)
+                            errorText = res.responseJSON.description;
+                        ToastService.error(errorText, 'Whoops...');
+                    }).always(() => {
+                        $("#SignUpOverlay").remove();
+                    });
+                }
             } else {
                 ToastService.error("Please enter information for all sign-up fields and try again.");
                 $("#SignUpOverlay").remove();

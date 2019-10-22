@@ -11,6 +11,9 @@ using UpDiddy.ViewModels.ButterCMS;
 using ButterCMS.Models;
 using UpDiddyLib.Helpers;
 using UpDiddyLib.Dto.Marketing;
+using System.Linq;
+
+
 namespace UpDiddy.Controllers
 {
     public class TraitifyController : BaseController
@@ -88,14 +91,35 @@ namespace UpDiddy.Controllers
                 });
             }
 
+            var emailModelState = ModelState.Where(x => x.Key == "Email").FirstOrDefault().Value;
+            if (emailModelState.Errors.Count > 0)
+            {
+                return BadRequest(new BasicResponseDto
+                {
+                    StatusCode = 400,
+                    Description = emailModelState.Errors.FirstOrDefault().ErrorMessage
+                });
+            }
+
+            var passwordModelState = ModelState.Where(x => x.Key == "Password").FirstOrDefault().Value;
+            if (passwordModelState.Errors.Count > 0)
+            {
+                return BadRequest(new BasicResponseDto
+                {
+                    StatusCode = 400,
+                    Description = passwordModelState.Errors.FirstOrDefault().ErrorMessage
+                });
+            }
+
+
             try
             {
                 TraitifyDto traitifyDto = await _Api.GetTraitifyByAssessmentId(model.AssessmentId);
                 SignUpDto signUpDto = new SignUpDto
                 {
-                    firstName = model.FirstName,
-                    lastName = model.LastName,
-                    email = traitifyDto.Email,
+                    firstName = traitifyDto.FirstName,
+                    lastName = traitifyDto.LastName,
+                    email = model.Email,
                     password = model.Password,
                     traitifyAssessmentId = model.AssessmentId,
                     referer = _configuration["Environment:BaseUrl"] + "traitify"
@@ -186,6 +210,7 @@ namespace UpDiddy.Controllers
             model.SignupFormText = landingPage.Data.Fields.SignupFormText;
             model.SignupHeroContent = landingPage.Data.Fields.SignupHeroContent;
             model.SignupHeroTitle = landingPage.Data.Fields.SignupHeroTitle;
+            model.ResultFooterText = landingPage.Data.Fields.ResultFooterText;
             return model;
         }
 
