@@ -13,8 +13,7 @@ using Newtonsoft.Json.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using static UpDiddyLib.Helpers.Constants;
-
-using com.traitify.net.TraitifyLibrary;
+using EntityTypeConst = UpDiddyLib.Helpers.Constants.EventType;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -31,14 +30,15 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly string _host;
         private readonly string _resultUrl;
         private readonly com.traitify.net.TraitifyLibrary.Traitify _traitify;
-
+        private readonly ITrackingService _trackingService;
 
         public TraitifyService(IRepositoryWrapper repositoryWrapper,
          IMapper mapper
          , ISubscriberService subscriberService
          , ILogger<TraitifyService> logger
          , IConfiguration config
-         , ISysEmail sysEmail)
+         , ISysEmail sysEmail
+         , ITrackingService trackingService)
         {
             string secretKey = config["Traitify:SecretKey"];
             string version = config["Traitify:Version"];
@@ -52,9 +52,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             _logger = logger;
             _zeroBounceApi = new ZeroBounceApi(config, repositoryWrapper, logger);
             _config = config;
-
+            _sysEmail = sysEmail;
+            _trackingService = trackingService;
         }
-
 
         public async Task<TraitifyDto> StartNewAssesment(TraitifyDto dto)
         {
@@ -85,11 +85,13 @@ namespace UpDiddyApi.ApplicationCore.Services
                     PublicKey = _publicKey,
                     Host = _host
                 };
-                if(assessment.completed_at != null)
+                if (assessment.completed_at != null)
                 {
                     var completedAssessment = await GetByAssessmentId(assessmentId);
+                    dto.SubscriberGuid = completedAssessment.SubscriberGuid;
                     dto.IsComplete = true;
-                    dto.Email = completedAssessment.Email;                    
+                    dto.IsRegistered = completedAssessment.SubscriberId != null ? true : false;
+                    dto.Email = completedAssessment.Email;
                 }
                 return dto;
             }
@@ -108,18 +110,19 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (assessment.completed_at != null)
                 {
                     string results = await GetJsonResults(assessmentId);
-                    TraitifyDto dto = new TraitifyDto()
+                    UpDiddyApi.Models.Traitify traitify = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(assessmentId);
+                    traitify.CompleteDate = DateTime.UtcNow;
+                    traitify.ResultData = results;
+                    traitify.ResultLength = results.Length;
+                    if (traitify.SubscriberId != null)
                     {
-                        AssessmentId = assessmentId,
-                        CompleteDate = DateTime.UtcNow,
-                        ResultData = results,
-                        ResultLength = results.Length,
-                        PublicKey = _publicKey,
-                        Host = _host
+                        await SendCompletionEmail(assessmentId, traitify.Email);
+                    }
+                    await _repositoryWrapper.TraitifyRepository.SaveAsync();
+                    TraitifyDto dto = new TraitifyDto
+                    {
+                        Email = traitify.Email
                     };
-                    dto = await CompleteAssessment(dto);
-                    dynamic payload = ProcessResult(results);
-                    //await SendCompletionEmail(dto.Email, payload);
                     return dto;
                 }
             }
@@ -130,8 +133,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             return null;
         }
-
-
 
         public async Task CreateNewAssessment(TraitifyDto dto)
         {
@@ -156,36 +157,29 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _repositoryWrapper.TraitifyRepository.SaveAsync();
         }
 
-        private async Task<TraitifyDto> CompleteAssessment(TraitifyDto dto)
-        {
-            UpDiddyApi.Models.Traitify traitify = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(dto.AssessmentId);
-            traitify.CompleteDate = dto.CompleteDate;
-            traitify.ResultData = dto.ResultData;
-            traitify.ResultLength = dto.ResultLength;
-            dto.Email = traitify.Email;
-            await _repositoryWrapper.TraitifyRepository.SaveAsync();
-            return dto;
-        }
-
         public async Task CompleteSignup(string assessmentId, int subscriberId)
         {
             UpDiddyApi.Models.Traitify traitify = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(assessmentId);
             traitify.SubscriberId = subscriberId;
             traitify.ModifyDate = DateTime.UtcNow;
             await _repositoryWrapper.TraitifyRepository.SaveAsync();
-
-            //track user created an account
+            Models.Action action = await _repositoryWrapper.ActionRepository.GetByNameAsync(UpDiddyLib.Helpers.Constants.Action.TraitifyAccountCreation);
+            EntityType entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync(EntityTypeConst.TraitifyAssessment);
+            await _trackingService.TrackSubscriberAction(subscriberId, action, entityType, traitify.Id);
+            await SendCompletionEmail(assessmentId, traitify.Email);
         }
 
-        private async Task SendCompletionEmail(string sendTo, dynamic result)
+        private async Task SendCompletionEmail(string assessmentId, string sendTo)
         {
+            string results = await GetJsonResults(assessmentId);
+            dynamic payload = await ProcessResult(results);
             bool? isEmailValid = _zeroBounceApi.ValidateEmail(sendTo);
             if (isEmailValid != null && isEmailValid.Value == true)
             {
                 await _sysEmail.SendTemplatedEmailAsync(
                                  sendTo,
                                  _config["SysEmail:Transactional:TemplateIds:PersonalityAssessment-ResultsSummary"],
-                                 result,
+                                 payload,
                                  SendGridAccount.Transactional,
                                  null,
                                  null);
@@ -208,12 +202,13 @@ namespace UpDiddyApi.ApplicationCore.Services
             return apiResponse;
         }
 
-        private dynamic ProcessResult(string rawData)
+        private async Task<dynamic> ProcessResult(string rawData)
         {
             var result = JObject.Parse(rawData);
             dynamic jObj = new JObject();
             jObj.blend = (JObject)result["personality_blend"];
             jObj.types = (JArray)result["personality_types"];
+            jObj.courses = await GetSuggestedCourses(jObj.blend);
             foreach (var type in jObj.types)
             {
                 decimal score = (decimal)type["score"];
@@ -234,5 +229,43 @@ namespace UpDiddyApi.ApplicationCore.Services
             jObj.traits = traits;
             return jObj;
         }
+
+        private async Task<dynamic> GetSuggestedCourses(dynamic blend)
+        {
+            string type1 = blend["personality_type_1"].SelectToken("name").Value;
+            string type2 = blend["personality_type_2"].SelectToken("name").Value;
+            var mapping = await _repositoryWrapper.TraitifyCourseTopicBlendMappingRepository.GetByPersonalityTypes(type1, type2);
+            var courses = new JArray();
+            string baseUrl = _config["Environment:BaseUrl"];
+            baseUrl = baseUrl.Substring(0, (baseUrl.Length - 1));
+            if (mapping != null)
+            {
+                if (!string.IsNullOrEmpty(mapping.TopicOneName))
+                {
+                    dynamic course1 = new JObject();
+                    course1.imgUrl = mapping.TopicOneImgUrl;
+                    course1.courseUrl = baseUrl + mapping.TopicOneUrl;
+                    courses.Add(course1);
+                }
+
+                if (!string.IsNullOrEmpty(mapping.TopicTwoName))
+                {
+                    dynamic course2 = new JObject();
+                    course2.imgUrl = mapping.TopicTwoImgUrl;
+                    course2.courseUrl = baseUrl + mapping.TopicTwoUrl;
+                    courses.Add(course2);
+                }
+
+                if (!string.IsNullOrEmpty(mapping.TopicThreeName))
+                {
+                    dynamic course3 = new JObject();
+                    course3.imgUrl = mapping.TopicThreeImgUrl;
+                    course3.courseUrl = baseUrl + mapping.TopicThreeUrl;
+                    courses.Add(course3);
+                }
+            }
+            return courses;
+        }
+
     }
 }

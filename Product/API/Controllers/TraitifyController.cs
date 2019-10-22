@@ -1,37 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using UpDiddyApi.ApplicationCore.Interfaces.Repository;
-using AutoMapper;
 using UpDiddyLib.Dto;
-using com.traitify.net.TraitifyLibrary;
-using Microsoft.Extensions.Configuration;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using System.Threading.Tasks;
-using System;
-using UpDiddyLib.Helpers;
-using static UpDiddyLib.Helpers.Constants;
-using Newtonsoft.Json.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
-using UpDiddyApi.ApplicationCore.Services;
 
 namespace UpDiddyApi.Controllers
 {
     [ApiController]
     public class TraitifyController : ControllerBase
     {
-
         private readonly ITraitifyService _traitifyService;
-
-
         public TraitifyController(ITraitifyService traitifyService)
         {
-
             _traitifyService = traitifyService;
-
         }
-
 
         [HttpPost]
         [Route("api/[controller]/new")]

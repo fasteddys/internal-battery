@@ -52,9 +52,9 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> Index(TraitifyViewModel model)
         {
             var butterPage = await GetButterLandingPage();
+            model = PopulateButterFields(model, butterPage);
             if (!ModelState.IsValid && model.SubscriberGuid == null)
             {
-                model = PopulateButterFields(model, butterPage);
                 return View(model);
             }
 
@@ -67,8 +67,6 @@ namespace UpDiddy.Controllers
             };
 
             var result = await _Api.StartNewTraitifyAssessment(dto);
-            model.ModalHeader = butterPage.Data.Fields.ModalHeader;
-            model.ModalText = butterPage.Data.Fields.ModalText;
             model.AssessmentId = result.AssessmentId;
             model.PublicKey = result.PublicKey;
             model.Host = result.Host;
@@ -90,7 +88,6 @@ namespace UpDiddy.Controllers
                 });
             }
 
-
             try
             {
                 TraitifyDto traitifyDto = await _Api.GetTraitifyByAssessmentId(model.AssessmentId);
@@ -101,7 +98,7 @@ namespace UpDiddy.Controllers
                     email = traitifyDto.Email,
                     password = model.Password,
                     traitifyAssessmentId = model.AssessmentId,
-
+                    referer = _configuration["Environment:BaseUrl"] + "traitify"
                 };
                 BasicResponseDto subscriberResponse = await _Api.ExpressUpdateSubscriberContactAsync(signUpDto);
                 switch (subscriberResponse.StatusCode)
@@ -134,17 +131,7 @@ namespace UpDiddy.Controllers
         {
             TraitifyViewModel model = new TraitifyViewModel();
             var butterPage = await GetButterLandingPage();
-            model.ModalHeader = butterPage.Data.Fields.ModalHeader;
-            model.ModalText = butterPage.Data.Fields.ModalText;
-            if (!HttpContext.User.Identity.IsAuthenticated)
-            {
-                model.SignupFormImageBanner = butterPage.Data.Fields.SignupFormImageBanner;
-                model.SignupFormHeader = butterPage.Data.Fields.SignupFormHeader;
-                model.SignupFormSubmitButtonText = butterPage.Data.Fields.SignupFormSubmitButtonText;
-                model.SignupFormText = butterPage.Data.Fields.SignupFormText;
-                model.SignupHeroContent = butterPage.Data.Fields.SignupHeroContent;
-                model.SignupHeroTitle = butterPage.Data.Fields.SignupHeroTitle;
-            }
+            model = PopulateButterFields(model, butterPage);
             TraitifyDto dto = await _Api.GetTraitifyByAssessmentId(assessmentId);
             if (dto != null)
             {
@@ -153,6 +140,7 @@ namespace UpDiddy.Controllers
                 model.PublicKey = dto.PublicKey;
                 model.Host = dto.Host;
                 model.Email = dto.Email;
+                model.IsRegistered = dto.IsRegistered;
             }
             else
             {
@@ -167,8 +155,7 @@ namespace UpDiddy.Controllers
         {
             var response = await _Api.CompleteAssessment(assessmentId);
             var IsAuthenticated = HttpContext.User.Identity.IsAuthenticated;
-            return Json(new { success = response, email = response.Email, IsAuthenticated = IsAuthenticated });
-
+            return Json(new { email = response.Email, IsAuthenticated = IsAuthenticated });
         }
 
         private async Task<PageResponse<TraitifyLandingPageViewModel>> GetButterLandingPage()
@@ -193,15 +180,12 @@ namespace UpDiddy.Controllers
             model.FormText = landingPage.Data.Fields.FormText;
             model.FormButtonText = landingPage.Data.Fields.FormSubmitButtonText;
             model.ExistingUserButtonText = landingPage.Data.Fields.ExistingUserSubmitButtonText;
-            if (!HttpContext.User.Identity.IsAuthenticated)
-            {
-                model.SignupFormImageBanner = landingPage.Data.Fields.SignupFormImageBanner;
-                model.SignupFormHeader = landingPage.Data.Fields.SignupFormHeader;
-                model.SignupFormSubmitButtonText = landingPage.Data.Fields.SignupFormSubmitButtonText;
-                model.SignupFormText = landingPage.Data.Fields.SignupFormText;
-                model.SignupHeroContent = landingPage.Data.Fields.SignupHeroContent;
-                model.SignupHeroTitle = landingPage.Data.Fields.SignupHeroTitle;
-            }
+            model.SignupFormImageBanner = landingPage.Data.Fields.SignupFormImageBanner;
+            model.SignupFormHeader = landingPage.Data.Fields.SignupFormHeader;
+            model.SignupFormSubmitButtonText = landingPage.Data.Fields.SignupFormSubmitButtonText;
+            model.SignupFormText = landingPage.Data.Fields.SignupFormText;
+            model.SignupHeroContent = landingPage.Data.Fields.SignupHeroContent;
+            model.SignupHeroTitle = landingPage.Data.Fields.SignupHeroTitle;
             return model;
         }
 

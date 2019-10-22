@@ -23,6 +23,7 @@ class TraitifyCC {
                 },
                 success: function (results) {
                     if (results.isAuthenticated) {
+                        $('.traitify-modal').modal();
                         assessment.render("Results");
                     } else {
                         $("#Email").val(results.email);
@@ -38,7 +39,7 @@ class TraitifyCC {
         {
             assessment.assessmentID(this.model.assessmentId);
             $("#traitifyInstructions").hide();
-            if(this.model.isAuthenticated)
+            if(this.model.isAuthenticated || this.model.isRegistered)
             {
                 assessment.render("Results");
             }
@@ -47,7 +48,7 @@ class TraitifyCC {
                 $("#Email").val(this.model.email);
                 $("#traitify-hidden-signup-container").show()
                 assessment.render("PersonalityTraits");
-            }
+            } 
         }
         else
         {
@@ -57,8 +58,9 @@ class TraitifyCC {
         }
 
         $("#SignUpComponent").submit(function (e) {
+            $("body").prepend("<div class=\"overlay\" id=\"SignUpOverlay\"><div id=\"loading-img\" ></div></div>");
+            $("#SignUpOverlay").show();  
             e.preventDefault();
-
             var agreedTos = $('#SignUpComponent #termsAndConditionsCheck').is(':checked');
             $('#SignUpComponent #termsAndConditionsCheck').toggleClass('invalid', !agreedTos);
             if ($("#SignUpComponent #Email").val() && $("#SignUpComponent #Password").val() && $("#SignUpComponent #ReenterPassword").val() && agreedTos) {
@@ -67,15 +69,22 @@ class TraitifyCC {
                     url: "/traitify/createaccount",
                     data: $(this).serialize()
                 }).done(res => {
-                    alert("It worked!");
+                    $('.traitify-modal a').attr('href', res.description);
+                    $('.traitify-modal').modal();
+                    $('.traitify-modal').on('hidden.bs.modal', function (e) {
+                        window.location.href = res.description;
+                    });
                 }).fail(res => {
                     var errorText = "Unfortunately, there was an error with your submission. Please try again later.";
                     if (res.responseJSON.description != null)
                         errorText = res.responseJSON.description;
                     ToastService.error(errorText, 'Whoops...');
+                }).always(() => {
+                    $("#SignUpOverlay").remove();
                 });
             } else {
                 ToastService.error("Please enter information for all sign-up fields and try again.");
+                $("#SignUpOverlay").remove();
             }
         });
     }

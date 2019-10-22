@@ -42,5 +42,6 @@ namespace UpDiddy.ViewModels
         public bool IsAuthenticated { get; set; }
 
         public bool IsComplete {get;set;}
+        public bool IsRegistered {get;set;}
     }
 }
