@@ -67,6 +67,10 @@
                <span asp-validation-for="Email" class="text-danger"></span>
             </div>
          </div>
+         @if(!_readOnly)
+         {
+            <div class="d-flex justify-content-center form-group g-recaptcha" data-sitekey="6LfyG6YUAAAAACnUU2wHebNKpTqaOnuQOuMG3OU4"></div>
+         }
          <div class="col-12 " style="width:100%">
             @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
             Text = @Model.FormButtonText,
@@ -80,7 +84,6 @@
             <div class="col-12 pt-4 d-flex justify-content-center">
                <p>Existing User? Click here to @Html.ActionLink("log in", "signin","session", new { redirectUri = "/traitify", rel = "nofollow"  })</p>
             </div>
-            <div class="d-flex justify-content-center form-group g-recaptcha" data-sitekey="6LfyG6YUAAAAACnUU2wHebNKpTqaOnuQOuMG3OU4"></div>
          }
          @Html.HiddenFor(x => x.SubscriberGuid)
          @Html.HiddenFor(x => x.FirstName)
