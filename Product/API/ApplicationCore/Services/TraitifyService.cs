@@ -92,6 +92,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                     dto.IsComplete = true;
                     dto.IsRegistered = completedAssessment.SubscriberId != null ? true : false;
                     dto.Email = completedAssessment.Email;
+                    dto.FirstName = completedAssessment.FirstName;
+                    dto.LastName = completedAssessment.LastName;
                 }
                 return dto;
             }
@@ -157,11 +159,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _repositoryWrapper.TraitifyRepository.SaveAsync();
         }
 
-        public async Task CompleteSignup(string assessmentId, int subscriberId)
+        public async Task CompleteSignup(string assessmentId, string email,  int subscriberId)
         {
             UpDiddyApi.Models.Traitify traitify = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(assessmentId);
             traitify.SubscriberId = subscriberId;
             traitify.ModifyDate = DateTime.UtcNow;
+            traitify.Email = email;
             await _repositoryWrapper.TraitifyRepository.SaveAsync();
             Models.Action action = await _repositoryWrapper.ActionRepository.GetByNameAsync(UpDiddyLib.Helpers.Constants.Action.TraitifyAccountCreation);
             EntityType entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync(EntityTypeConst.TraitifyAssessment);

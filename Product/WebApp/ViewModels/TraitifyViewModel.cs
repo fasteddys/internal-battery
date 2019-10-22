@@ -3,8 +3,7 @@ using Newtonsoft.Json;
 using System;
 namespace UpDiddy.ViewModels
 {
-    public class 
-    TraitifyViewModel
+    public class  TraitifyViewModel
     {
         public string AssessmentId { get; set; }
         public string PublicKey { get; set; }
@@ -38,9 +37,9 @@ namespace UpDiddy.ViewModels
         public string SignupFormText {get;set;}
         public string SignupHeroTitle {get;set;}
         public string SignupHeroContent {get;set;}
+        public string ResultFooterText {get;set;}
         public Guid? SubscriberGuid { get; set; }
         public bool IsAuthenticated { get; set; }
-
         public bool IsComplete {get;set;}
         public bool IsRegistered {get;set;}
     }

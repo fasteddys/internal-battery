@@ -6,10 +6,25 @@
    {
       _readOnly = true;
    }
+   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+   <script type="text/javascript">
+    function validateRecaptcha()
+            {
+                var response = grecaptcha.getResponse();
+                if (response.length === 0)
+                {
+                    ToastService.warning('Please confirm you are not a robot');
+                    return false;
+                }
+                else
+                    return true;
+            }
+
+   </script>
 }
 <div class="traitify-form-container ">
    <div class="d-flex justify-content-center">
-      <form class="traitify-signup-form p-4"id="AssessmentForm" asp-controller="Traitify" asp-action="Index">
+      <form class="traitify-signup-form p-4"id="AssessmentForm" asp-controller="Traitify" asp-action="Index"  onsubmit="return validateRecaptcha();">
          <div class="col-12  sub-header font-bold d-flex justify-content-center">
             @Html.Raw(Model.FormHeader)
          </div>
@@ -60,6 +75,7 @@
                <p>Existing User? Click here to @Html.ActionLink("log in", "signin","session", new { redirectUri = "/traitify", rel = "nofollow"  })</p>
             </div>
          }
+         <div class="d-flex justify-content-center form-group g-recaptcha" data-sitekey="6LfyG6YUAAAAACnUU2wHebNKpTqaOnuQOuMG3OU4"></div>
          @Html.HiddenFor(x => x.SubscriberGuid)
          @Html.HiddenFor(x => x.FirstName)
          @Html.HiddenFor(x => x.LastName)
@@ -67,3 +83,4 @@
       </form>
    </div>
 </div>
+

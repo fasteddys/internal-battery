@@ -46,7 +46,7 @@
 						</div>
 						<form id="SignUpComponent" asp-controller="traitify" asp-action="createaccount" >
 							<div id="SignUpEmail" class="col-12 sign-up-input no-padding">
-								<input class="wide-input" form="SignUpComponent" id="Email" disabled />
+								<input class="wide-input" form="SignUpComponent" id="Email" asp-for="Email"  />
 							</div>	
 							<div id="SignUpPassword" class="col-12 sign-up-input no-padding">
 								<input class="wide-input" placeholder="Password" type="password" form="SignUpComponent" name="Password" asp-for="Password" required />
@@ -68,6 +68,7 @@
 								})
 							</div>				
 							@Html.HiddenFor(x => x.AssessmentId)
+
 						</form>
 					</div>
 				</div>
@@ -82,6 +83,13 @@
 		Simply click "Me" or "Not Me" as each image relates to you.
 	</div>
 	<div class="traitify-result-container" id="traitify"></div>
+	<div id="resultFooter" class="text-center" style="display:none;" >
+	@if(!Model.IsAuthenticated)
+	{
+		@Html.Raw(Model.ResultFooterText)
+	}
+	</div>
+	
 </div>
 <div class="modal traitify-modal text-cc-secondary" tabindex="-1" role="dialog">
 	<div class="modal-dialog" role="document">

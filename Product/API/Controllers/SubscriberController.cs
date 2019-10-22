@@ -995,7 +995,7 @@ namespace UpDiddyApi.Controllers
 
             if(!string.IsNullOrEmpty(signUpDto.traitifyAssessmentId))
             {
-                await _traitifyService.CompleteSignup(signUpDto.traitifyAssessmentId, subscriber.SubscriberId);
+                await _traitifyService.CompleteSignup(signUpDto.traitifyAssessmentId, signUpDto.email, subscriber.SubscriberId);
             }
 
             SendVerificationEmail(subscriber.Email, signUpDto.verifyUrl + subscriber.EmailVerification.Token);
