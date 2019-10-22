@@ -62,6 +62,10 @@ namespace UpDiddyApi.Controllers
         private readonly IJobPostingService _jobPostingService;
         private readonly IFileDownloadTrackerService _fileDownloadTrackerService;
 
+        private readonly ITraitifyService _traitifyService;
+
+
+
 
         public SubscriberController(UpDiddyDbContext db,
             IMapper mapper,
@@ -80,7 +84,8 @@ namespace UpDiddyApi.Controllers
             IHttpClientFactory httpClientFactory,
             IHangfireService hangfireService,
             IJobPostingService jobPostingService,
-            IFileDownloadTrackerService fileDownloadTrackerService)
+            IFileDownloadTrackerService fileDownloadTrackerService,
+            ITraitifyService traitifyService)
         {
             _db = db;
             _mapper = mapper;
@@ -100,6 +105,7 @@ namespace UpDiddyApi.Controllers
             _hangfireService = hangfireService;
             _jobPostingService = jobPostingService;
             _fileDownloadTrackerService = fileDownloadTrackerService;
+            _traitifyService = traitifyService;
         }
 
         #region Basic Subscriber Endpoints
@@ -987,6 +993,11 @@ namespace UpDiddyApi.Controllers
                 SendGatedDownloadLink(subscriber.Email, downloadUrl);
             }
 
+            if(!string.IsNullOrEmpty(signUpDto.traitifyAssessmentId))
+            {
+                await _traitifyService.CompleteSignup(signUpDto.traitifyAssessmentId, subscriber.SubscriberId);
+            }
+
             SendVerificationEmail(subscriber.Email, signUpDto.verifyUrl + subscriber.EmailVerification.Token);
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Contact has been converted to subscriber." });
         }
@@ -1264,6 +1275,7 @@ namespace UpDiddyApi.Controllers
                  null
              ));
         }
+
 
 
         #region SubscriberNotes
