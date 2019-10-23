@@ -212,7 +212,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         } 
 
-        public async  Task<JobPostingAlertDto> SaveJobAlert(Guid job, Guid subscriberGuid)
+        public async Task SaveJobAlert(Guid job, Guid subscriberGuid)
         {
             throw new NotImplementedException();
         }

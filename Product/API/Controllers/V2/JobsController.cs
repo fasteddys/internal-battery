@@ -83,22 +83,11 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         public async Task<IActionResult> SaveJobAlert(Guid job)
         {
-            if (job == Guid.Empty)
-            {
-                return BadRequest();
-            }
             try
             {
                 Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                JobPostingAlertDto jobPostingAlertDbo = await _jobService.SaveJobAlert(job, subscriberGuid);
-                if (jobPostingAlertDbo == null)
-                {
-                    return BadRequest();
-                }
-                else
-                {
-                    return StatusCode(201);
-                }
+                await _jobService.SaveJobAlert(job, subscriberGuid);
+                return StatusCode(201);
             }
             catch (Exception)
             {
