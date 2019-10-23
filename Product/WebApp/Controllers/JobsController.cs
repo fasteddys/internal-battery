@@ -1628,17 +1628,17 @@ namespace UpDiddy.Controllers
         #region Keyword and location Search
         [HttpGet]
         [Route("[controller]/SearchKeyword")]
-        public async Task<IActionResult> KeywordSearch(string keyword)
+        public async Task<IActionResult> KeywordSearch(string value)
         {
-            var keywordSearchList = await _Api.GetKeywordSearchList(keyword);
+            var keywordSearchList = await _Api.GetKeywordSearchTermsAsync(value);
             return Ok(keywordSearchList);
         }
 
         [HttpGet]
         [Route("[controller]/LocationKeyword")]
-        public async Task<IActionResult> LocationSearch(string location)
+        public async Task<IActionResult> LocationSearch(string value)
         {
-            var locationSearchList = await _Api.GetLocationSearchList(location);
+            var locationSearchList = await _Api.GetLocationSearchTermsAsync(value);
             return Ok(locationSearchList);
         }
         #endregion

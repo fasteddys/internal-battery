@@ -145,6 +145,8 @@ namespace UpDiddy.Api
         #endregion
 
         #region JobBoard
+        Task<IList<SearchTermDto>> GetKeywordSearchTermsAsync(string value);
+        Task<IList<SearchTermDto>> GetLocationSearchTermsAsync(string value);
         Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid, GoogleCloudEventsTrackingDto dto = null);
         Task<JobPostingDto> GetExpiredJobAsync(Guid JobPostingGuid);
         Task<BasicResponseDto> ApplyToJobAsync(JobApplicationDto JobApplication);
@@ -168,7 +170,5 @@ namespace UpDiddy.Api
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);
         Task RecordSubscriberApplyAction(Guid jobGuid, Guid subscriberGuid);
         Task RecordSubscriberJobViewAction(Guid jobGuid, Guid subscriberGuid);
-        Task<IList<string>> GetKeywordSearchList(string keyword);
-        Task<IList<string>> GetLocationSearchList(string location);
     }
 }

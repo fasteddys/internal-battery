@@ -36,8 +36,7 @@ namespace UpDiddy.Api
         public IMemoryCache _memoryCache { get; set; }
         public HttpContext _currentContext { get; set; }
         private readonly ILogger _syslog;
-
-
+        
         #region Constructor
         public ApiUpdiddy(IOptions<AzureAdB2COptions> azureAdB2COptions, IHttpContextAccessor contextAccessor, IConfiguration conifguration, IHttpClientFactory httpClientFactory, IDistributedCache cache, ILogger<ApiUpdiddy> sysLog, IMemoryCache memoryCache)
         {
@@ -1114,22 +1113,19 @@ namespace UpDiddy.Api
             }
             return rval;
         }
-
-
+        
         public async Task<IList<ExperienceLevelDto>> _GetExperienceLevelAsync()
         {
 
             return await GetAsync<IList<ExperienceLevelDto>>("lookupdata/experience-level");
         }
-
-
+        
         public async Task<IList<EducationLevelDto>> _GetEducationLevelAsync()
         {
 
             return await GetAsync<IList<EducationLevelDto>>("lookupdata/education-level");
         }
-
-
+        
         public async Task<IList<SecurityClearanceDto>> _GetSecurityClearanceAsync()
         {
 
@@ -1141,8 +1137,7 @@ namespace UpDiddy.Api
 
             return await GetAsync<IList<RecruiterCompanyDto>>($"subscriber/{subscriberGuid}/company");
         }
-
-
+        
         public async Task<IList<EmploymentTypeDto>> _GetEmploymentTypeAsync()
         {
 
@@ -1154,7 +1149,6 @@ namespace UpDiddy.Api
 
             return await GetAsync<IList<CompensationTypeDto>>("lookupdata/compensation-type");
         }
-
 
         public async Task<List<JobPostingDto>> _GetAllJobsAsync()
         {
@@ -1182,13 +1176,11 @@ namespace UpDiddy.Api
         {
             return await GetAsync<IList<CourseDto>>("course/topic/" + TopicSlug);
         }
+
         private async Task<IList<CourseDto>> _CoursesAsync()
         {
             return await GetAsync<IList<CourseDto>>("course/");
         }
-
-
-
 
         private async Task<CourseDto> _CourseAsync(string CourseSlug)
         {
@@ -1205,8 +1197,7 @@ namespace UpDiddy.Api
         {
             return await GetAsync<IList<CompanyDto>>("companies/");
         }
-
-
+        
         private async Task<IList<CompanyDto>> _GetCompaniesAsync(string userQuery)
         {
             return await GetAsync<IList<CompanyDto>>("company/" + userQuery);
@@ -1221,21 +1212,17 @@ namespace UpDiddy.Api
         {
             return await GetAsync<IList<EducationalDegreeDto>>("educational-degree/" + userQuery);
         }
-
-
+        
         private async Task<IList<CompensationTypeDto>> _GetCompensationTypesAsync()
         {
             return await GetAsync<IList<CompensationTypeDto>>("compensation-types");
         }
-
-
-
+        
         private async Task<IList<EducationalDegreeTypeDto>> _GetEducationalDegreeTypesAsync()
         {
             return await GetAsync<IList<EducationalDegreeTypeDto>>("educational-degree-types");
         }
-
-
+        
         public async Task<IList<SkillDto>> GetSkillsBySubscriberAsync(Guid subscriberGuid)
         {
             return await GetAsync<IList<SkillDto>>("subscriber/" + subscriberGuid + "/skill");
@@ -1682,6 +1669,53 @@ namespace UpDiddy.Api
 
         #region JobBoard
 
+
+        private async Task<IList<SearchTermDto>> _GetKeywordSearchTermsAsync()
+        {
+            return await GetAsync<IList<SearchTermDto>>("job/keyword-search-terms");
+        }
+
+        private async Task<IList<SearchTermDto>> _GetLocationSearchTermsAsync()
+        {
+            return await GetAsync<IList<SearchTermDto>>("job/location-search-terms");
+        }
+
+        public async Task<IList<SearchTermDto>> GetKeywordSearchTermsAsync(string value)
+        {
+            string cacheKey = $"GetKeywordSearchTerms";
+            IList<SearchTermDto> rval = GetCachedValueAsync<IList<SearchTermDto>>(cacheKey);
+
+            if(rval != null)
+            {
+                return rval;
+            }
+            else
+            {
+                rval = await _GetKeywordSearchTermsAsync();
+                SetCachedValueAsync<IList<SearchTermDto>>(cacheKey, rval);
+            }
+
+            return rval?.Where(v => v.Value.Contains(value))?.ToList();
+        }
+
+        public async Task<IList<SearchTermDto>> GetLocationSearchTermsAsync(string value)
+        {
+            string cacheKey = $"GetLocationSearchTerms";
+            IList<SearchTermDto> rval = GetCachedValueAsync<IList<SearchTermDto>>(cacheKey);
+
+            if (rval != null)
+            {
+                return rval;
+            }
+            else
+            {
+                rval = await _GetLocationSearchTermsAsync();
+                SetCachedValueAsync<IList<SearchTermDto>>(cacheKey, rval);
+            }
+
+            return rval?.Where(v => v.Value.Contains(value))?.ToList();
+        }
+
         public async Task<JobPostingDto> _GetJobAsync(Guid JobPostingGuid)
         {
             return await GetAsync<JobPostingDto>("job/" + JobPostingGuid);
@@ -1735,8 +1769,7 @@ namespace UpDiddy.Api
                 }
             }
         }
-
-
+        
         public async Task<IList<JobCategoryDto>> GetJobCategories()
         {
             string cacheKey = $"JobCategories";
@@ -1802,8 +1835,7 @@ namespace UpDiddy.Api
         }
 
         #endregion
-
-
+        
         #region Traitify
         
         public async Task<TraitifyDto> StartNewTraitifyAssessment(TraitifyDto dto)
@@ -1825,42 +1857,6 @@ namespace UpDiddy.Api
         }
 
 
-        #endregion
-
-        #region <<Keyword and Location Search List>>
-        public async Task<IList<string>> GetKeywordSearchList(string keyword)
-        {
-            string cacheKey = "keywordSearchList";
-            IList<string> rval = GetCachedValueAsync<IList<string>>(cacheKey);
-
-             //if rval is null get the value from Api Memory Cache
-            if(rval==null)
-            {
-                rval=await GetAsync<IList<string>>($"cache?cacheKey={cacheKey}");
-                SetCachedValueAsync<IList<string>>(cacheKey,rval);
-            }
-
-            List<string> keywordListresult=rval?.Where(k=>k.Contains(keyword))?.ToList();
-
-            return keywordListresult;
-        }
-
-        public async Task<IList<string>> GetLocationSearchList(string location)
-        {
-            string cacheKey = "locationSearchList";
-            IList<string> rval = GetCachedValueAsync<IList<string>>(cacheKey);
-
-            //if rval is null get the value from Api Memory Cache
-            if(rval==null)
-            {
-               rval=await GetAsync<IList<string>>($"cache?cacheKey={cacheKey}");
-               SetCachedValueAsync<IList<string>>(cacheKey,rval);
-            }
-
-            List<string> locationListresult=rval?.Where(k=>k.Contains(location))?.ToList();
-
-            return locationListresult;
-        }
         #endregion
     }
 }

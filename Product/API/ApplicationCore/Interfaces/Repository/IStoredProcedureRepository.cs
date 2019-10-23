@@ -9,6 +9,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface IStoredProcedureRepository
     {
+        Task<List<SearchTermDto>> GetKeywordSearchTermsAsync();
+        Task<List<SearchTermDto>> GetLocationSearchTermsAsync();
         Task<List<JobAbandonmentStatistics>> GetJobAbandonmentStatisticsAsync(DateTime startDate, DateTime endDate);
         Task<List<JobCountPerProvince>> GetJobCountPerProvince();
         Task<List<JobDto>> GetSubscriberJobFavorites(int SubscriberId);

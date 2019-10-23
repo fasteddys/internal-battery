@@ -217,9 +217,7 @@ namespace UpDiddyApi
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.Weekly(DayOfWeek.Sunday, 4));
                 //Keyword and Location Search Intellisense Job
             }
-
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(), Cron.Hourly(55));
-
+            
             // LOCAL TESTING ONLY - DO NOT UNCOMMENT THIS CODE!
             // BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
 
