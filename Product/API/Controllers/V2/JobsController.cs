@@ -22,7 +22,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using Microsoft.AspNetCore.Http;
 using UpDiddyApi.ApplicationCore.Interfaces;
 
-namespace UpDiddyApi.Controllers.V2
+namespace UpDiddyApi.Controllers
 {
    
     [ApiController]
@@ -69,18 +69,16 @@ namespace UpDiddyApi.Controllers.V2
         #endregion
 
 
-
         [HttpGet]
-        [Route("/V2/[controller]/Search")]
+        [Route("/V2/[controller]/search")]
         public async Task<IActionResult> Search()
         {
-
-            int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
-            JobQueryDto jobQuery = JobQueryHelper.CreateJobQuery(PageSize, Request.Query);
-            JobSearchSummaryResultDto rVal = _cloudTalent.JobSummarySearch(jobQuery);
-            return Ok(rVal);
- 
+            JobSearchSummaryResultDto rVal = await _jobService.SummaryJobSearch(Request.Query); 
+            return Ok(rVal); 
         }
+
+ 
+
 
     }
 } 

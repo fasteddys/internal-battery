@@ -20,6 +20,14 @@ namespace UpDiddyLib.Helpers
 {
     static public class Utils
     {
+
+        public static string QueryParamsToCacheKey( IQueryCollection query)
+        {
+            var sortedQuery = query.OrderBy(q => q.Key);
+            string cacheKey = string.Join("", sortedQuery.Select(q => q.Key + q.Value));
+            return cacheKey;
+        }
+
         public static string  AlphaNumeric(string input, int maxLen)
         {
 

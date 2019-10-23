@@ -9,6 +9,9 @@ namespace UpDiddyApi.Helpers.Job
 
 
 
+        #region CC2020 
+
+
         /* Query parameters as defined by API gateway Job Search Query
 
 
@@ -26,14 +29,26 @@ namespace UpDiddyApi.Helpers.Job
     
 */
 
+        /*
+         *  TODO JAB implement 
+                public int ExcludeCouseSkillsHistogram { get; set; }
 
-        static public JobQueryDto CreateJobQuery(int PageSize, IQueryCollection query)
+                /// <summary>
+                /// 
+                /// Include related courses in search results 
+                /// </summary>
+                public int ExcludeRelatedCourses { get; set; }
+
+            */
+
+
+        static public JobQueryDto CreateSummaryJobQuery(int PageSize, IQueryCollection query)
         {
             JobQueryDto jobQuery = new JobQueryDto();
 
- 
-            PageSize =  GetIntQueryParam(query, "limit", PageSize);
-            int PageNum = GetIntQueryParam(query, "offset");           
+            PageSize = GetIntQueryParam(query, "limit", PageSize);
+            int PageNum = GetIntQueryParam(query, "offset"); 
+            jobQuery.IncludeCouseSkillsHistogram = GetIntQueryParam(query, "includeskillshistogram");
 
 
             // map parameters that may have been specified via an url component 
@@ -45,19 +60,19 @@ namespace UpDiddyApi.Helpers.Job
             jobQuery.Skill = GetQueryParam(query, "skill", "all");
             // map parameters that can only be specied via a query string parameter 
             jobQuery.Location = GetQueryParam(query, "location");
-            jobQuery.PostalCode = GetQueryParam(query, "postal-code");
-            jobQuery.StreetAddress = GetQueryParam(query, "street-address");
+            jobQuery.PostalCode = GetQueryParam(query, "postalcode");
+            jobQuery.StreetAddress = GetQueryParam(query, "streetaddress");
             jobQuery.Keywords = GetQueryParam(query, "keyword");
             jobQuery.DatePublished = GetQueryParam(query, "datepublished");
             jobQuery.CompanyName = GetQueryParam(query, "companyname");
             jobQuery.EmploymentType = GetQueryParam(query, "employmenttype");
-            jobQuery.ExperienceLevel = GetQueryParam(query, "experience-level");
-            jobQuery.EducationLevel = GetQueryParam(query, "education-level");
-            jobQuery.SearchRadius = GetIntQueryParam(query, "search-radius");
+            jobQuery.ExperienceLevel = GetQueryParam(query, "experiencelevel");
+            jobQuery.EducationLevel = GetQueryParam(query, "educationlevel");
+            jobQuery.SearchRadius = GetIntQueryParam(query, "searchradius");
 
             // Search options
-            jobQuery.ExcludeCustomProperties = GetIntQueryParam(query, "exclude-custom-properties");
-            jobQuery.ExcludeFacets = GetIntQueryParam(query, "exclude-facets");
+            jobQuery.ExcludeCustomProperties = GetIntQueryParam(query, "excludecustomproperties");
+            jobQuery.ExcludeFacets = GetIntQueryParam(query, "excludefacets");
             if (string.IsNullOrWhiteSpace(jobQuery.Country)
                 && string.IsNullOrWhiteSpace(jobQuery.Province)
                 && string.IsNullOrWhiteSpace(jobQuery.City)
@@ -82,25 +97,35 @@ namespace UpDiddyApi.Helpers.Job
             {
                 string sort = GetQueryParam(query, "sort");
                 string order = GetQueryParam(query, "order");
-                if ( string.IsNullOrEmpty(sort) == false && string.IsNullOrEmpty(order) == false )
-                    jobQuery.OrderBy = sort +  " " + order;
+                if (string.IsNullOrEmpty(sort) == false && string.IsNullOrEmpty(order) == false)
+                    jobQuery.OrderBy = sort + " " + order;
             }
 
             // Commute search
             jobQuery.Lat = GetDoubleQueryParam(query, "lat");
             jobQuery.Lng = GetDoubleQueryParam(query, "lng");
-            jobQuery.CommuteTime = GetIntQueryParam(query, "commute-time");
+            jobQuery.CommuteTime = GetIntQueryParam(query, "commutetime");
 
-            jobQuery.PreciseAddress = GetBoolQueryParam(query, "precise-address");
-            jobQuery.PublicTransit = GetBoolQueryParam(query, "public-transit");
-            jobQuery.RushHour = GetBoolQueryParam(query, "rush-hour");
+            jobQuery.PreciseAddress = GetBoolQueryParam(query, "preciseaddress");
+            jobQuery.PublicTransit = GetBoolQueryParam(query, "publictransit");
+            jobQuery.RushHour = GetBoolQueryParam(query, "rushhour");
 
             // Set up pagination
-            jobQuery.PageNum = GetIntQueryParam(query, "page-num", PageNum);
-            jobQuery.PageSize = GetIntQueryParam(query, "page-size", PageSize);
+            jobQuery.PageNum = GetIntQueryParam(query, "pagenum", PageNum);
+            jobQuery.PageSize = GetIntQueryParam(query, "pagesize", PageSize);
 
             return jobQuery;
         }
+
+
+
+
+
+
+        #endregion
+
+
+
 
 
 

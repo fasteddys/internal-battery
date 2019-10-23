@@ -33,6 +33,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IHttpClientFactory _httpClientFactory = null;
         private readonly ICompanyService _companyService;
         private readonly ISubscriberService _subscriberService;
+        private readonly IMemoryCacheService _cache;
         public JobService(IServiceProvider services, IHangfireService hangfireService)
         {
             _services = services;
@@ -46,9 +47,34 @@ namespace UpDiddyApi.ApplicationCore.Services
             _configuration = _services.GetService<Microsoft.Extensions.Configuration.IConfiguration>();
             _companyService=services.GetService<ICompanyService>();
             _subscriberService = services.GetService<ISubscriberService>();
+            _cache = services.GetService<IMemoryCacheService>();
             _hangfireService = hangfireService;
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper,_subscriberService);
         }
+
+
+      
+
+
+        public async Task<JobSearchSummaryResultDto> SummaryJobSearch(IQueryCollection query)
+        {
+
+            string cacheKey = Utils.QueryParamsToCacheKey(query);
+            JobSearchSummaryResultDto rVal = (JobSearchSummaryResultDto) _cache.GetCacheValue(cacheKey);
+            if ( rVal == null )
+            {
+                int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
+                JobQueryDto jobQuery = JobQueryHelper.CreateSummaryJobQuery(PageSize, query);
+                rVal = _cloudTalent.JobSummarySearch(jobQuery);
+                _cache.SetCacheValue<JobSearchSummaryResultDto>(cacheKey, rVal);
+
+            }
+
+            return rVal; ;
+        }
+
+
+
         public async Task ReferJobToFriend(JobReferralDto jobReferralDto)
         {
             var jobReferralGuid=await SaveJobReferral(jobReferralDto);

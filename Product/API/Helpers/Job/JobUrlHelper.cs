@@ -9,6 +9,33 @@ namespace UpDiddyApi.Helpers.Job
     {
         #region Job Urls
 
+
+
+        public static string MapFacetToUrlQueryParams(JobQueryDto query, string facetName, string facetValue, string JobNavigatorUrl)
+        {
+
+
+            switch (facetName.ToLower())
+            {
+
+                case "admin_1":
+                    return MapQueryStringFacet(JobNavigatorUrl, "province", FacetQueryParam(facetValue));                    
+                case "city":        
+                    return MapCityFacetAsQueryParam(JobNavigatorUrl,facetValue);                    
+                default:
+                    return MapQueryStringFacet(JobNavigatorUrl, facetName.ToLower(), FacetQueryParam(facetValue));
+
+
+
+
+            }
+
+
+            
+        }
+
+
+
         public static string MapFacetToUrl(JobQueryDto query, string facetName, string facetValue, string IndustryUrl, string LocationUrl, string TopLevelDomain)
         {
            
@@ -58,16 +85,27 @@ namespace UpDiddyApi.Helpers.Job
         /// <param name="defUrl"></param>
         /// <param name="facetValue"></param>
         /// <returns></returns>
-        public static string MapCityFacet( string defUrl, string facetValue)
+        public static string MapCityFacet(string defUrl, string facetValue)
         {
             string rVal = string.Empty;
-            string [] info = facetValue.Split(",");
-            rVal = UrlComponentReplace(defUrl, 4, FacetQueryParam(info[0]) );
+            string[] info = facetValue.Split(",");
+            rVal = UrlComponentReplace(defUrl, 4, FacetQueryParam(info[0]));
             rVal = UrlComponentReplace(rVal, 3, FacetQueryParam(info[1]));
 
             return rVal;
 
         }
+
+        public static string MapCityFacetAsQueryParam(string defUrl, string facetValue)
+        {
+            string rVal = defUrl + "?";
+            string[] info = facetValue.Split(",");
+            rVal += "city=" + FacetQueryParam(info[0]);
+            rVal += "&province=" + FacetQueryParam(info[1]) ;
+            return rVal;
+
+        }
+
 
         public static string MapQueryStringFacet(string defUrl, string queryStringName, string facetValue )
         {

@@ -27,7 +27,7 @@ namespace UpDiddyApi.Controllers
 
 
     [ApiController]
-    public class CourseController : ControllerBase
+    public partial class CourseController : ControllerBase
     {
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;

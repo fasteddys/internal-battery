@@ -31,6 +31,9 @@ namespace UpDiddyLib.Dto
         public List<JobSummaryViewDto> Jobs { get; set; } = new List<JobSummaryViewDto>();
 
         public List<JobQueryFacetDto> Facets { get; set; } = new List<JobQueryFacetDto>();
-        public JobQueryDto JobQueryForAlert { get; set; }
+ 
+        public Dictionary<string, int> SkillHistogram { get; set; }
+
+
     }
 }
