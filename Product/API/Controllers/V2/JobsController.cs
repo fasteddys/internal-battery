@@ -24,7 +24,7 @@ using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.Controllers
 {
-   
+
     [ApiController]
     public class JobsController : ControllerBase
     {
@@ -73,12 +73,38 @@ namespace UpDiddyApi.Controllers
         [Route("/V2/[controller]/search")]
         public async Task<IActionResult> Search()
         {
-            JobSearchSummaryResultDto rVal = await _jobService.SummaryJobSearch(Request.Query); 
-            return Ok(rVal); 
+            JobSearchSummaryResultDto rVal = await _jobService.SummaryJobSearch(Request.Query);
+            return Ok(rVal);
         }
 
- 
 
+        [HttpPost]
+        [Route("/V2/[controller]/{job}/alert")]
+        [Authorize]
+        public async Task<IActionResult> SaveJobAlert(Guid job)
+        {
+            if (job == Guid.Empty)
+            {
+                return BadRequest();
+            }
+            try
+            {
+                Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                JobPostingAlertDto jobPostingAlertDbo = await _jobService.SaveJobAlert(job, subscriberGuid);
+                if (jobPostingAlertDbo == null)
+                {
+                    return BadRequest();
+                }
+                else
+                {
+                    return StatusCode(201);
+                }
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
 
     }
-} 
+}

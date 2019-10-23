@@ -211,5 +211,10 @@ namespace UpDiddyApi.ApplicationCore.Services
                     job.CompanyLogoUrl = _configuration["StorageAccount:AssetBaseUrl"] + "Company/" + company.LogoUrl;
             }
         } 
+
+        public async  Task<JobPostingAlertDto> SaveJobAlert(Guid job, Guid subscriberGuid)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
