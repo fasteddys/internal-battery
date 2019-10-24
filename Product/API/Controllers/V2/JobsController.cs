@@ -1,23 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using UpDiddyApi.ApplicationCore.Factory;
 using UpDiddyApi.ApplicationCore.Services;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using AutoMapper;
-using UpDiddyApi.Helpers.Job;
 using System.Security.Claims;
-using Google.Apis.CloudTalentSolution.v3.Data;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using Microsoft.Extensions.DependencyInjection;
-using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using Microsoft.AspNetCore.Http;
 using UpDiddyApi.ApplicationCore.Interfaces;
@@ -79,21 +72,20 @@ namespace UpDiddyApi.Controllers
 
 
         [HttpPost]
-        [Route("/V2/[controller]/{job}/alert")]
+        [Route("V2/[controller]/alert")]
         [Authorize]
-        public async Task<IActionResult> SaveJobAlert(JobPostingAlertDomainModel jobPostingDomainModel)
+        public async Task<IActionResult> SaveJobAlert([FromBody] JobAlertDto jobPostingAlertDto)
         {
             try
             {
                 Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                await _jobService.SaveJobAlert(subscriberGuid, jobPostingDomainModel);
+                await _jobService.SaveJobAlert(subscriberGuid, jobPostingAlertDto);
                 return StatusCode(201);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return BadRequest();
+                return BadRequest(e);
             }
         }
-
     }
 }
