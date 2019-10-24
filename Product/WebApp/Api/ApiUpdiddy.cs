@@ -1685,11 +1685,7 @@ namespace UpDiddy.Api
             string cacheKey = $"GetKeywordSearchTerms";
             IList<SearchTermDto> rval = GetCachedValueAsync<IList<SearchTermDto>>(cacheKey);
 
-            if(rval != null)
-            {
-                return rval;
-            }
-            else
+            if(rval == null)
             {
                 rval = await _GetKeywordSearchTermsAsync();
                 SetCachedValueAsync<IList<SearchTermDto>>(cacheKey, rval);
@@ -1703,11 +1699,7 @@ namespace UpDiddy.Api
             string cacheKey = $"GetLocationSearchTerms";
             IList<SearchTermDto> rval = GetCachedValueAsync<IList<SearchTermDto>>(cacheKey);
 
-            if (rval != null)
-            {
-                return rval;
-            }
-            else
+            if (rval == null)
             {
                 rval = await _GetLocationSearchTermsAsync();
                 SetCachedValueAsync<IList<SearchTermDto>>(cacheKey, rval);
