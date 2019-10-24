@@ -15,6 +15,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using Microsoft.AspNetCore.Http;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyLib.Domain.Models;
+using UpDiddyApi.ApplicationCore.Exceptions;
 namespace UpDiddyApi.Controllers
 {
 
@@ -35,10 +36,10 @@ namespace UpDiddyApi.Controllers
         private readonly IHangfireService _hangfireService;
         private readonly ISubscriberService _subscriberService;
         private readonly IJobPostingService _jobPostingService;
-
+        private readonly IJobAlertService _jobAlertService;
 
         #region constructor 
-        public JobsController(IServiceProvider services, IHangfireService hangfireService)
+        public JobsController(IServiceProvider services, IHangfireService hangfireService, IJobAlertService jobAlertService)
 
         {
             _services = services;
@@ -57,6 +58,7 @@ namespace UpDiddyApi.Controllers
             _jobService = _services.GetService<IJobService>();
             _jobPostingService = _services.GetService<IJobPostingService>();
             _hangfireService = hangfireService;
+            _jobAlertService = jobAlertService;
         }
 
         #endregion
@@ -70,22 +72,51 @@ namespace UpDiddyApi.Controllers
             return Ok(rVal);
         }
 
+        #region Job Alert
 
         [HttpPost]
-        [Route("V2/[controller]/alert")]
+        [Route("/V2/[controller]/alert")]
         [Authorize]
-        public async Task<IActionResult> SaveJobAlert([FromBody] JobAlertDto jobPostingAlertDto)
+        public async Task<IActionResult> CreateJobAlert([FromBody] JobAlertDto jobPostingAlertDto)
         {
             try
             {
                 Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                await _jobService.SaveJobAlert(subscriberGuid, jobPostingAlertDto);
+                await _jobAlertService.CreateJobAlert(subscriberGuid, jobPostingAlertDto);
                 return StatusCode(201);
+            }
+            catch (MaximumReachedException e)
+            {
+                return BadRequest(e);
             }
             catch (Exception e)
             {
                 return BadRequest(e);
             }
         }
+
+        [HttpGet]
+        [Route("/V2/[controller]/alert")]
+        [Authorize]
+        public async Task<IActionResult> GetJobAlerts()
+        {
+            try
+            {
+                Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                var jobAlerts = await _jobAlertService.GetJobAlert(subscriberGuid);
+                return Ok(jobAlerts);
+            }
+            catch (NotFoundException e)
+            {
+                return BadRequest(e);
+            }
+            catch (Exception e)
+            {
+
+            }
+        }
+
+        #endregion
+
     }
 }
