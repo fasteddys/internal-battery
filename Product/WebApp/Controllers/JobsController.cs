@@ -1628,18 +1628,30 @@ namespace UpDiddy.Controllers
         #region Keyword and location Search
         [HttpGet]
         [Route("[controller]/SearchKeyword")]
-        public async Task<IActionResult> KeywordSearch(string keyword)
+        public async Task<IActionResult> KeywordSearch(string value)
         {
-            var keywordSearchList = await _Api.GetKeywordSearchList(keyword);
-            return Ok(keywordSearchList);
+            var keywordSearchList = await _Api.GetKeywordSearchTermsAsync(value);
+
+            // consider modifying the front end to include the type information next to each intellisense result
+            // it will be easy to support this by returning the keywordSearchList instead of valuesOnly
+            // https://jqueryui.com/autocomplete/#categories
+            var valuesOnly = keywordSearchList.Select(k => k.Value).ToList();
+
+            return Ok(valuesOnly);
         }
 
         [HttpGet]
         [Route("[controller]/LocationKeyword")]
-        public async Task<IActionResult> LocationSearch(string location)
+        public async Task<IActionResult> LocationSearch(string value)
         {
-            var locationSearchList = await _Api.GetLocationSearchList(location);
-            return Ok(locationSearchList);
+            var locationSearchList = await _Api.GetLocationSearchTermsAsync(value);
+
+            // consider modifying the front end to include the type information next to each intellisense result
+            // it will be easy to support this by returning the locationSearchList instead of valuesOnly
+            // https://jqueryui.com/autocomplete/#categories
+            var valuesOnly = locationSearchList.Select(l => l.Value).ToList();
+
+            return Ok(valuesOnly);
         }
         #endregion
     }

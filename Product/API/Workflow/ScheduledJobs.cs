@@ -1173,7 +1173,7 @@ namespace UpDiddyApi.Workflow
             try
             {
                 var jobPostingAlerts = _repositoryWrapper.JobPostingAlertRepository.GetByConditionAsync(jpa => jpa.IsDeleted == 0).Result;
-                foreach(JobPostingAlert jobPostingAlert in jobPostingAlerts)
+                foreach (JobPostingAlert jobPostingAlert in jobPostingAlerts)
                 {
                     // construct the Cron schedule for job alert
                     string cronSchedule = null;
@@ -1801,69 +1801,7 @@ namespace UpDiddyApi.Workflow
             }
         }
         #endregion
-
-        #region Pull all JobTitles, Company, City, State and Postal Code for search intelligence
-
-        [DisableConcurrentExecution(timeoutInSeconds: 60 * 30)]
-        public async Task CacheKeywordLocationSearchIntelligenceInfo()
-        {
-            List<string> keywordSearch = new List<string>();
-            List<string> locationSearch = new List<string>();
-
-            //JobTitles, Company, City and Postal Code
-            IQueryable<JobPosting> queryableJobPostings = _repositoryWrapper.JobPosting.GetAllJobPostings();
-            var jobPostingsSearchInfoResults = await queryableJobPostings.Include(co => co.Company)
-                                                                        .Where(jpg => jpg.IsDeleted == 0)
-                                                                        .Select(jp => new
-                                                                        {
-                                                                            JobTitle = jp.Title,
-                                                                            CompanyName = jp.Company.CompanyName,
-                                                                            City = jp.City,
-                                                                            PostalCode = jp.PostalCode
-                                                                        }).ToListAsync();
-
-            //Get Skills for all active Job Postings
-            IEnumerable<Skill> skillsList = await _repositoryWrapper.SkillRepository.GetAllSkillsForJobPostings();
-
-            //Get State Names
-            IEnumerable<State> statesList = await _repositoryWrapper.State.GetStatesForDefaultCountry();
-
-            foreach (State state in statesList)
-            {
-                if (state.Name != null)
-                    locationSearch.Add(state.Name);
-            }
-
-            foreach (var jobPostingSearchInfo in jobPostingsSearchInfoResults)
-            {
-                if (jobPostingSearchInfo.JobTitle != null)
-                    keywordSearch.Add(jobPostingSearchInfo.JobTitle);
-
-                if (jobPostingSearchInfo.CompanyName != null)
-                    keywordSearch.Add(jobPostingSearchInfo.CompanyName);
-
-                if (jobPostingSearchInfo.City != null)
-                    locationSearch.Add(jobPostingSearchInfo.City);
-
-                if (jobPostingSearchInfo?.PostalCode != null)
-                    locationSearch.Add(jobPostingSearchInfo.PostalCode);
-            }
-
-            foreach (Skill skill in skillsList)
-            {
-                if (skill.SkillName != null)
-                    keywordSearch.Add(skill.SkillName);
-            }
-
-            string serializedKeyworkSearchList = JsonConvert.SerializeObject(keywordSearch.ConvertAll(k => k.ToLower()).Distinct());
-            string serializedLocationSearchList = JsonConvert.SerializeObject(locationSearch.ConvertAll(l => l.ToLower()).Distinct());
-
-            //store in memory cache
-            _memoryCache.Set("keywordSearchList",serializedKeyworkSearchList,DateTimeOffset.Now.AddDays(Convert.ToDouble(_configuration["KeywordLocationSearchIntellisenseJob:TimeSpanToRun"])));
-            _memoryCache.Set("locationSearchList",serializedLocationSearchList,DateTimeOffset.Now.AddDays(Convert.ToDouble(_configuration["KeywordLocationSearchIntellisenseJob:TimeSpanToRun"])));
-        }
-        #endregion
-
+        
         #region Update for Allegis Group Jobs Raw Data Fix
         /// <summary>
         /// Fix the RawData field in JobPage table for Allegis Group so that when job mining runs, it doesn't classify existing job as new jobs  
