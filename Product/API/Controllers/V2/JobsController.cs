@@ -21,7 +21,7 @@ using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using Microsoft.AspNetCore.Http;
 using UpDiddyApi.ApplicationCore.Interfaces;
-
+using UpDiddyLib.Domain.Models;
 namespace UpDiddyApi.Controllers
 {
 
@@ -81,12 +81,12 @@ namespace UpDiddyApi.Controllers
         [HttpPost]
         [Route("/V2/[controller]/{job}/alert")]
         [Authorize]
-        public async Task<IActionResult> SaveJobAlert(Guid job)
+        public async Task<IActionResult> SaveJobAlert(JobPostingAlertDomainModel jobPostingDomainModel)
         {
             try
             {
                 Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                await _jobService.SaveJobAlert(job, subscriberGuid);
+                await _jobService.SaveJobAlert(subscriberGuid, jobPostingDomainModel);
                 return StatusCode(201);
             }
             catch (Exception)

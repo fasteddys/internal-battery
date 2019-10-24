@@ -16,6 +16,7 @@ using System.Net.Http;
 using Google.Apis.CloudTalentSolution.v3.Data;
 using UpDiddyLib.Shared.GoogleJobs;
 using Microsoft.AspNetCore.Http;
+using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -212,7 +213,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         } 
 
-        public async Task SaveJobAlert(Guid job, Guid subscriberGuid)
+        public async Task SaveJobAlert(Guid subscriberGuid, JobPostingAlertDomainModel jobPostingDomainModel)
         {
             throw new NotImplementedException();
         }

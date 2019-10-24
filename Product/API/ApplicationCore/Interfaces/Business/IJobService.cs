@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyLib.Dto;
 using Microsoft.AspNetCore.Http;
-
+using UpDiddyLib.Domain.Models;
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface IJobService
@@ -14,6 +14,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task UpdateJobViewed(string referrerCode);
         Task<JobSearchResultDto> GetJobsByLocationAsync(string Country, string Province, string City, string Industry, string JobCategory, string Skill, int PageNum,IQueryCollection query);
         Task<JobSearchSummaryResultDto> SummaryJobSearch(IQueryCollection query);
-        Task SaveJobAlert(Guid job, Guid subscriberGuid);
+        Task SaveJobAlert(Guid subscriberGuid, JobPostingAlertDomainModel jobPostingDomainModel);
     }
 }
