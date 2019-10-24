@@ -91,7 +91,7 @@ namespace UpDiddyApi.Controllers
             }
             catch (Exception e)
             {
-                return BadRequest(e);
+
             }
         }
 
@@ -105,6 +105,31 @@ namespace UpDiddyApi.Controllers
                 Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
                 var jobAlerts = await _jobAlertService.GetJobAlert(subscriberGuid);
                 return Ok(jobAlerts);
+            }
+            catch (NotFoundException e)
+            {
+                return BadRequest(e);
+            }
+            catch (Exception e)
+            {
+
+            }
+        }
+
+        [HttpDelete]
+        [Route("/V2/[controller]/alert")]
+        [Authorize]
+        public async Task<IActionResult> DeleteJobAlert(Guid jobAlertGuid)
+        {
+            try
+            {
+                Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                await _jobAlertService.DeleteJobAlert(jobAlertGuid);
+                return StatusCode(204);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
             }
             catch (NotFoundException e)
             {

@@ -121,12 +121,17 @@ namespace UpDiddyApi.ApplicationCore.Services
             return jobPostingAlerts;
         }
 
-        public async Task DeleteJobAlert(Guid jobAlertGuid)
+        public async Task DeleteJobAlert(Guid subscriberGuid, Guid jobAlertGuid)
         {
             var alert = await _repositoryWrapper.JobPostingAlertRepository.GetJobPostingAlert(jobAlertGuid);
             if (alert == null)
             {
                 throw new NotFoundException("Job Alert could not be found");
+            }
+
+            if (alert.Subscriber.SubscriberGuid != subscriberGuid)
+            {
+                throw new UnauthorizedAccessException();
             }
             alert.IsDeleted = 1;
             await _repositoryWrapper.JobPostingAlertRepository.SaveAsync();
