@@ -207,6 +207,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             userCreationRequest.AppMetadata.subscriberGuid = subscriberGuid;
             userCreationRequest.AppMetadata.acceptedTermsOfService = "October 16, 2018, version 1.0"; // may need to make this dynamic later
             userCreationRequest.AppMetadata.isOptInToMarketingEmails = user.IsAgreeToMarketingEmails;
+
             try
             {
                 userCreationResponse = await managementApiClient.Users.CreateAsync(userCreationRequest);
@@ -359,6 +360,13 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                         if (newRoles.Count() > 0)
                             await managementApiClient.Users.AssignRolesAsync(userCreationResponse.UserId, new AssignRolesRequest() { Roles = newRoles.ToArray() });
                     }
+                    _graphClient.DisableUser(user.SubscriberGuid);
+
+                    subscriber.Auth0UserId = userCreationResponse.UserId;
+                    subscriber.ModifyDate = DateTime.UtcNow;
+                    subscriber.ModifyGuid = Guid.Empty;
+                    await _repositoryWrapper.SubscriberRepository.SaveAsync();
+
                 }
                 catch (ApiException ae)
                 {
@@ -387,6 +395,12 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                                 if (newRoles.Count() > 0)
                                     await managementApiClient.Users.AssignRolesAsync(userCreationResponse.UserId, new AssignRolesRequest() { Roles = newRoles.ToArray() });
                             }
+                            _graphClient.DisableUser(user.SubscriberGuid);
+
+                            subscriber.Auth0UserId = userCreationResponse.UserId;
+                            subscriber.ModifyDate = DateTime.UtcNow;
+                            subscriber.ModifyGuid = Guid.Empty;
+                            await _repositoryWrapper.SubscriberRepository.SaveAsync();
                         }
                         catch (Exception e)
                         {
@@ -408,7 +422,6 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
 
                 user.UserId = userCreationResponse.UserId;
                 user.SubscriberGuid = userCreationResponse.AppMetadata.subscriberGuid;
-                _graphClient.DisableUser(user.SubscriberGuid);
 
                 return new CreateUserResponse(true, "User has been migrated successfully.", user);
             }

@@ -32,9 +32,4 @@ $(document).ready(function () {
     } else if (success === 'false') {
         ToastService.error(message, 'Failure');
     }
-    
-    var currentUrl = window.location.href;
-    var afterDomain = currentUrl.substring(currentUrl.lastIndexOf('/') + 1);
-    var beforeQueryString = afterDomain.split("?")[0];
-    window.history.replaceState({}, document.title, '/' + beforeQueryString);
 }); 

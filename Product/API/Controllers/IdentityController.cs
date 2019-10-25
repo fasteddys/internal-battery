@@ -13,6 +13,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Dto;
 using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyApi.Authorization;
 
 namespace UpDiddyApi.Controllers
 {
@@ -36,16 +37,11 @@ namespace UpDiddyApi.Controllers
             _graphClient = services.GetService<IB2CGraph>();
             _adb2cApi = services.GetService<IAPIGateway>();
         }
-
+                
         [HttpGet("check-auth0/{email}")]
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
         public async Task<IActionResult> IsUserInAuth0(string email)
         {
-            // todo: secure this request using a secret stored in the key vault 
-            if (false)
-            {
-                return Unauthorized();
-            }
-
             if (!ModelState.IsValid)
             {
                 return BadRequest();
@@ -64,14 +60,9 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet("check-adb2c/{email}")]
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
         public async Task<IActionResult> IsUserInADB2C(string email)
         {
-            // todo: secure this request using a secret stored in the key vault 
-            if (false)
-            {
-                return Unauthorized();
-            }
-
             if (!ModelState.IsValid)
             {
                 return BadRequest();
@@ -91,14 +82,9 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPost("check-adb2c-login")]
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
         public async Task<IActionResult> CheckADB2CLogin(UserDto userDto)
         {
-            // todo: secure this request using a secret stored in the key vault 
-            if (false)
-            {
-                return Unauthorized();
-            }
-
             if (!ModelState.IsValid)
             {
                 return BadRequest();
@@ -117,14 +103,9 @@ namespace UpDiddyApi.Controllers
         }
         
         [HttpPost("migrate-user")]
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
         public async Task<IActionResult> MigrateUserAsync([FromBody] CreateUserDto createUserDto)
-        {    
-            // todo: secure this request using a secret stored in the key vault 
-            if (false)
-            {
-                return Unauthorized();
-            }
-
+        {   
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -145,14 +126,9 @@ namespace UpDiddyApi.Controllers
         }
         
         [HttpPost("create-user")]
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
         public async Task<IActionResult> CreateUserAsync([FromBody] CreateUserDto createUserDto)
         {
-            // todo: secure this request using a secret stored in the key vault 
-            if (false)
-            {
-                return Unauthorized();
-            }
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -170,6 +146,7 @@ namespace UpDiddyApi.Controllers
             else
             {
                 createUserDto.SubscriberGuid = createLoginResponse.User.SubscriberGuid;
+                createUserDto.Auth0UserId = createLoginResponse.User.UserId;
                 var createSubscriberResult = await _subscriberService.CreateSubscriberAsync(createUserDto);
                 // if the subscriber is not created successfully, remove the associated login that was created and return a failure message
                 if (!createSubscriberResult)

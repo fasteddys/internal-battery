@@ -90,7 +90,7 @@ namespace UpDiddy.Api
         Task<PagingDto<UpDiddyLib.Dto.User.JobDto>> GetUserJobsOfInterest(int? page);
         Task<PagingDto<JobPostingAlertDto>> GetUserJobAlerts(int? page, int? timeZoneOffset);
         Task<RedirectDto> GetSubscriberPartnerWebRedirect();
-        Task UpdateEmailVerificationStatusAsync(Guid subscriberGuid, bool isEmailVerified);
+        Task<BasicResponseDto> UpdateLastSignIn(Guid subscriberGuid);
 
         #region TalentPortal
         Task<ProfileSearchResultDto> SubscriberSearchAsync(string searchFilter, string searchQuery, string searchLocationQuery, string sortOrder);

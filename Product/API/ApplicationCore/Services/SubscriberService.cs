@@ -150,6 +150,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 _repository.SubscriberRepository.Create(new Subscriber()
                 {
                     SubscriberGuid = createUserDto.SubscriberGuid,
+                    Auth0UserId = createUserDto.Auth0UserId,
                     Email = createUserDto.Email,
                     FirstName = !string.IsNullOrWhiteSpace(createUserDto.FirstName) ? createUserDto.FirstName : null,
                     LastName = !string.IsNullOrWhiteSpace(createUserDto.LastName) ? createUserDto.LastName : null,

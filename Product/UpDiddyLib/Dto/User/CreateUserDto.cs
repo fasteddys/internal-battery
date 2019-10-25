@@ -19,5 +19,7 @@ namespace UpDiddyLib.Dto.User
         public Guid SubscriberGuid { get; set; }
 
         public bool IsAgreeToMarketingEmails { get; set; }
+
+        public string Auth0UserId { get; set; }
     }
 }

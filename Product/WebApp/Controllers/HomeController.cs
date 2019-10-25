@@ -137,7 +137,7 @@ namespace UpDiddy.Controllers
 
             if (User.Identity.IsAuthenticated)
             {
-                OffersViewModel.UserHasValidatedEmail = this.subscriber.IsVerified;
+                OffersViewModel.UserHasValidatedEmail = this.subscriber.IsEmailVerified;
                 OffersViewModel.UserHasUploadedResume = this.subscriber.Files.Count > 0;
                 OffersViewModel.UserIsEligibleForOffers = OffersViewModel.UserIsAuthenticated &&
                     OffersViewModel.UserHasValidatedEmail &&

@@ -101,27 +101,17 @@ public class SubscriberController : Controller
 
     #region Basic Subscriber Endpoints
 
-    /* [Authorize] 
-     * the sign in operation doesn't change the current request user principal; that only happens on incoming requests 
-     * once the cookie or bearer token (or whatever thing the type of auth requires to create an identity) is set. 
-     * as a result, i am unable to mark this method as authorized and send a request from the webapp during sign-in.
-     * todo: follow the steps here to get authorize on here: https://community.auth0.com/t/unable-to-send-context-accesstoken/32098
-     */
-    [HttpPost("{subscriberGuid}/email-verification")]
-    public async Task<IActionResult> UpdateEmailVerificationStatusAsync(Guid subscriberGuid)
+    [HttpPut("/api/[controller]/{subscriberGuid}/update-last-sign-in")]
+    public IActionResult UpdateLastSignIn(Guid subscriberGuid)
     {
-        var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
-        if (subscriber != null)
-        {
-            var response = await _userService.GetUserByEmailAsync(subscriber.Email);
-            if (response != null && response.User != null && response.User.EmailVerified.HasValue)
-            {
-                SubscriberFactory.UpdateEmailVerificationStatus(_db, subscriberGuid, response.User.EmailVerified.Value);
-            }
-        }
+        if (subscriberGuid == null || subscriberGuid == Guid.Empty)
+            return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid subscriber" });
+        
+        SubscriberFactory.UpdateLastSignIn(_db, subscriberGuid);
 
-        return Ok();
+        return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Subscriber updated successfully" });
     }
+
 
     [HttpGet("{subscriberGuid}/company")]
     [Authorize]
@@ -183,19 +173,24 @@ public class SubscriberController : Controller
             if (subscriber == null)
                 return BadRequest(new { code = 404, message = "No subscriber could be found with that identifier" });
 
-            // perform logical delete on the subscriber entity only (no modification to related tables)
+            // delete the Auth0 account associated with the subscriber
+            var getUserResponse = _userService.GetUserByEmailAsync(subscriber.Email).Result;
+            _userService.DeleteUserAsync(getUserResponse.User.UserId);
+
+            // perform logical delete on the subscriber entity only
             subscriber.IsDeleted = 1;
             subscriber.ModifyDate = DateTime.UtcNow;
             subscriber.ModifyGuid = Guid.Empty;
             _db.SaveChanges();
 
-            // disable the Auth0 account associated with the subscriber
-            var getUserResponse = _userService.GetUserByEmailAsync(subscriber.Email).Result;
-            _userService.DeleteUserAsync(getUserResponse.User.UserId);
+            // write audit information to the database
+            var deleteUserAuditInformation = new JObject();
+            deleteUserAuditInformation.Add("action", "deleted");
+            deleteUserAuditInformation.Add("Auth0UserId", subscriber.Auth0UserId);
+            SubscriberProfileStagingStoreFactory.Save(_db, subscriber, "Auth0", "Json", JsonConvert.SerializeObject(deleteUserAuditInformation));
 
             // delete subscriber from cloud talent 
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(subscriber.SubscriberGuid.Value));
-
         }
         catch (Exception e)
         {
@@ -205,44 +200,7 @@ public class SubscriberController : Controller
 
         return Ok(true);
     }
-
-    [HttpPost("/api/[controller]")]
-    public IActionResult NewSubscriber([FromBody] ReferralDto dto)
-    {
-        Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-        Subscriber subscriber = _db.Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid).FirstOrDefault();
-
-        // Subscriber exists do NOT create a duplicate
-        if (subscriber != null)
-            return BadRequest(new { code = 400, message = "Subscriber is already in the system" });
-
-        subscriber = new Subscriber();
-        subscriber.SubscriberGuid = subscriberGuid;
-        subscriber.Email = HttpContext.User.FindFirst("emails").Value;
-        subscriber.CreateDate = DateTime.UtcNow;
-        subscriber.ModifyDate = DateTime.UtcNow;
-        subscriber.IsDeleted = 0;
-        subscriber.ModifyGuid = Guid.Empty;
-        subscriber.CreateGuid = Guid.Empty;
-        subscriber.IsVerified = true;
-
-        // Save subscriber to database 
-        _db.Subscriber.Add(subscriber);
-        _db.SaveChanges();
-
-        //updatejiobReferral if referral is not empty
-        if (!string.IsNullOrEmpty(dto.ReferralCode))
-        {
-            _jobService.UpdateJobReferral(dto.ReferralCode, subscriber.SubscriberGuid.ToString());
-        }
-
-
-        // update google profile 
-        _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
-
-        return Ok(_mapper.Map<SubscriberDto>(subscriber));
-    }
-
+    
     [HttpPut("/api/[controller]")]
     public IActionResult Update([FromBody] SubscriberDto Subscriber)
     {

@@ -24,21 +24,6 @@ namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class SubscriberFactory
     {
-        public static void UpdateEmailVerificationStatus(UpDiddyDbContext db, Guid subscriberGuid, bool isEmailVerified)
-        {
-            var subscriber = db.Subscriber
-                            .Where(s => s.SubscriberGuid.Value == subscriberGuid)
-                            .FirstOrDefault();
-
-            if(subscriber != null && subscriber.IsVerified != isEmailVerified)
-            {
-                subscriber.IsVerified = isEmailVerified;
-                subscriber.ModifyDate = DateTime.UtcNow;
-                subscriber.ModifyGuid = Guid.Empty;
-                db.SaveChangesAsync();
-            }
-        }
-
         // Can we get rid of this function given the one below it?
         // JAB - It is being used by the resume parse methods.  Refactor rquired for removal
         public static Subscriber GetSubscriberById(UpDiddyDbContext db, int subscriberId)
@@ -53,7 +38,29 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             return config["CareerCircle:ViewTalentUrl"] + subscriberGuid;
         }
+        
+        /// <summary>
+        /// Updates the subscriber to indicate the last time they signed in. We could add a computed column 
+        /// to infer whether or not they are verified based on this data, since users may not sign in without
+        /// verifying their email address via Auth0.
+        /// </summary>
+        /// <param name="_db"></param>
+        /// <param name="subscriberGuid"></param>
+        public static void UpdateLastSignIn(UpDiddyDbContext _db, Guid subscriberGuid)
+        {
+            Subscriber subscriber = _db.Subscriber
+                .Where(s => s.SubscriberGuid == subscriberGuid)
+                .FirstOrDefault();
 
+            if(subscriber != null)
+            {
+                var currentTime = DateTime.UtcNow;
+                subscriber.ModifyDate = currentTime;
+                subscriber.LastSignIn = currentTime;
+                subscriber.ModifyGuid = Guid.Empty;
+                _db.SaveChanges();
+            }
+        }
 
         public static SubscriberDto GetSubscriber(UpDiddyDbContext _db, Guid subscriberGuid, ILogger _syslog, IMapper _mapper)
         {

@@ -56,15 +56,15 @@ namespace UpDiddy.Controllers
         }
 
         [HttpGet]
-        [Route("/signup")]
+        [Route("/session/signup")]
         public IActionResult SignUp(string returnUrl = "/")
         {
             return View(new SignUpViewModel());
         }
         
         [HttpPost]
-        [Route("/signup")]
-        public async Task<IActionResult> SignUp(SignUpViewModel vm, [FromQuery] string returnUrl = "/signin")
+        [Route("/session/signup")]
+        public async Task<IActionResult> SignUp(SignUpViewModel vm, [FromQuery] string returnUrl = "/session/signin")
         {
             bool modelHasAllFields = !string.IsNullOrEmpty(vm.Email) &&
                 !string.IsNullOrEmpty(vm.Password) &&
@@ -144,7 +144,7 @@ namespace UpDiddy.Controllers
         }
 
         [HttpGet]
-        [Route("/signin")]
+        [Route("/session/signin")]
         public IActionResult SignIn(string returnUrl = "/Home/Profile")
         {
             ViewData["ReturnUrl"] = returnUrl;
@@ -152,7 +152,7 @@ namespace UpDiddy.Controllers
         }
 
         [HttpPost]
-        [Route("/signin")]
+        [Route("/session/signin")]
         public async Task<IActionResult> SignIn(SignInViewModel vm, [FromQuery] string returnUrl = null)
         {
             if (ModelState.IsValid)
@@ -217,13 +217,13 @@ namespace UpDiddy.Controllers
         }
 
         [HttpGet]
-        [Route("/resetpassword")]
+        [Route("/session/resetpassword")]
         public IActionResult ResetPassword()
         {
             return View();
         }
 
-        [HttpPost("/resetpassword")]
+        [HttpPost("/session/resetpassword")]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel vm)
         {
             if (ModelState.IsValid)
@@ -295,7 +295,7 @@ namespace UpDiddy.Controllers
         }
 
         [HttpGet]
-        [Route("/signout")]
+        [Route("/session/signout")]
         public async Task SignOut()
         {
             await HttpContext.SignOutAsync("Auth0", new AuthenticationProperties
@@ -358,7 +358,9 @@ namespace UpDiddy.Controllers
                 }
 
                 var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
+
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
+                await _api.UpdateLastSignIn(subscriberGuid);
             }
             else
             {

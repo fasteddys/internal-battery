@@ -58,12 +58,15 @@ namespace UpDiddy.Api
         #endregion
 
         #region Request Methods
-        private async Task<HttpResponseMessage> RequestAsync(string clientName, HttpMethod method, string endpoint, object body = null)
+        private async Task<HttpResponseMessage> RequestAsync(string clientName, HttpMethod method, string endpoint, object body = null, bool isAddUserManagementAuthorizationHeader = false)
         {
             HttpClient client = _HttpClientFactory.CreateClient(clientName);
             client.BaseAddress = new Uri(_ApiBaseUri);
 
             client = await AddBearerTokenAsync(client);
+
+            if (isAddUserManagementAuthorizationHeader)
+                client = AddUserManagementAuthorizationHeader(client);
 
             HttpRequestMessage request = new HttpRequestMessage(method, endpoint);
 
@@ -76,9 +79,9 @@ namespace UpDiddy.Api
             return await client.SendAsync(request);
         }
 
-        private async Task<T> RequestAsync<T>(string clientName, HttpMethod method, string endpoint, object body = null)
+        private async Task<T> RequestAsync<T>(string clientName, HttpMethod method, string endpoint, object body = null, bool isAddUserManagementAuthorizationHeader = false)
         {
-            using (var response = await RequestAsync(clientName, method, endpoint, body))
+            using (var response = await RequestAsync(clientName, method, endpoint, body, isAddUserManagementAuthorizationHeader))
             {
                 if (response.IsSuccessStatusCode)
                     return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
@@ -87,74 +90,48 @@ namespace UpDiddy.Api
             }
         }
 
-        public async Task<T> GetAsync<T>(string endpoint)
+        public async Task<T> GetAsync<T>(string endpoint, bool isAddUserManagementAuthorizationHeader = false)
         {
-            return await RequestAsync<T>(Constants.HttpGetClientName, HttpMethod.Get, endpoint);
+            return await RequestAsync<T>(Constants.HttpGetClientName, HttpMethod.Get, endpoint, null, isAddUserManagementAuthorizationHeader);
         }
 
-        public async Task<T> PostAsync<T>(string endpoint, object body = null)
+        public async Task<T> PostAsync<T>(string endpoint, object body = null, bool isAddUserManagementAuthorizationHeader = false)
         {
-            return await RequestAsync<T>(Constants.HttpPostClientName, HttpMethod.Post, endpoint, body);
+            return await RequestAsync<T>(Constants.HttpPostClientName, HttpMethod.Post, endpoint, body, isAddUserManagementAuthorizationHeader);
         }
 
-        public async Task<T> PutAsync<T>(string endpoint, object body = null)
+        public async Task<T> PutAsync<T>(string endpoint, object body = null, bool isAddUserManagementAuthorizationHeader = false)
         {
-            return await RequestAsync<T>(Constants.HttpPutClientName, HttpMethod.Put, endpoint, body);
+            return await RequestAsync<T>(Constants.HttpPutClientName, HttpMethod.Put, endpoint, body, isAddUserManagementAuthorizationHeader);
         }
 
-        public async Task<T> DeleteAsync<T>(string endpoint)
+        public async Task<T> DeleteAsync<T>(string endpoint, bool isAddUserManagementAuthorizationHeader = false)
         {
-            return await RequestAsync<T>(Constants.HttpDeleteClientName, HttpMethod.Delete, endpoint);
+            return await RequestAsync<T>(Constants.HttpDeleteClientName, HttpMethod.Delete, endpoint, null, isAddUserManagementAuthorizationHeader);
         }
 
-        private async Task<AuthenticationResult> GetBearerTokenAsync()
+        private HttpClient AddUserManagementAuthorizationHeader(HttpClient client)
         {
-            AuthenticationResult result = null;
-            // Retrieve the token with the specified scopes
-            var scope = AzureOptions.ApiScopes.Split(' ');
-            string signedInUserID = _contextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            IConfidentialClientApplication app = ConfidentialClientApplicationBuilder
-                .Create(AzureOptions.ClientId)
-                .WithB2CAuthority(AzureOptions.Authority)
-                .WithClientSecret(AzureOptions.ClientSecret)
-                .Build();
+            var clientSecret = _configuration["Auth0:ClientSecret"];
 
-            new MSALSessionCache(signedInUserID, _cache, _memoryCache).EnablePersistence(app.UserTokenCache);
+            if (string.IsNullOrWhiteSpace(clientSecret))
+                throw new ApplicationException("User management authorization header could not be found.");
 
-            var accounts = await app.GetAccountsAsync();
-            if (accounts.Count() == 0)
-            {
-                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, "MSAL_ApiUpdiddy.GetBearerTokenAsync unable to locate account");
-            }
+            string encryptedClientSecret = Crypto.Encrypt(_configuration["Crypto:Key"], _configuration["Auth0:ClientSecret"]);
 
-            IAccount account = accounts.FirstOrDefault();
-            result = await app.AcquireTokenSilent(scope, account).ExecuteAsync();
+            client.DefaultRequestHeaders.Add("UserManagement", encryptedClientSecret);
 
-            // temp code to log jwt info, specifically expiration dates 
-            try
-            {
-                string scopes = string.Empty;
-                foreach (string s in result.Scopes)
-                    scopes += s + ";";
-                string LogInfo = $"MSAL_ApiUpdiddy.GetBearerTokenAsync Token ExpiresOn: {result.ExpiresOn} Token ExtendedExpiresOn: {result.ExtendedExpiresOn} Access Token Length: {result.AccessToken.Length}  Scopes: {scopes}  User: {result.UniqueId} )";
-                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, LogInfo);
-            }
-            catch (Exception ex)
-            {
-                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_ApiUpdiddy.GetBearerTokenAsync Error logging info {ex.Message}");
-            }
-
-            return result;
+            return client;
         }
 
         private async Task<HttpClient> AddBearerTokenAsync(HttpClient client)
         {
             if (_contextAccessor.HttpContext.User.Identity.IsAuthenticated)
             {
-                // AuthenticationResult authResult = await GetBearerTokenAsync();
                 string accessToken = _contextAccessor.HttpContext.User.FindFirst("access_token")?.Value;
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken != null ? accessToken : string.Empty);
             }
+
             return client;
         }
         #endregion
@@ -716,14 +693,19 @@ namespace UpDiddy.Api
 
         #region Public UnCached Methods
 
+        public async Task<BasicResponseDto> UpdateLastSignIn(Guid subscriberGuid)
+        {
+            return await PutAsync<BasicResponseDto>($"subscriber/{subscriberGuid}/update-last-sign-in");
+        }
+
         public async Task<List<ImportActionDto>> ImportContactsAsync(Guid partnerGuid, string cacheKey)
         {
             return await PutAsync<List<ImportActionDto>>("contact/import/" + partnerGuid + "/" + HttpUtility.UrlEncode(cacheKey));
         }
-        
+
         public async Task<bool> IsUserExistsInADB2CAsync(string email)
         {
-            var basicResponseDto = await GetAsync<BasicResponseDto>($"identity/check-adb2c/{email}");
+            var basicResponseDto = await GetAsync<BasicResponseDto>($"identity/check-adb2c/{email}", true);
             if (basicResponseDto.StatusCode == 200)
                 return true;
             else
@@ -732,7 +714,7 @@ namespace UpDiddy.Api
 
         public async Task<bool> IsUserExistsInAuth0Async(string email)
         {
-            var basicResponseDto = await GetAsync<BasicResponseDto>($"identity/check-auth0/{email}");
+            var basicResponseDto = await GetAsync<BasicResponseDto>($"identity/check-auth0/{email}", true);
             if (basicResponseDto.StatusCode == 200)
                 return true;
             else
@@ -741,7 +723,7 @@ namespace UpDiddy.Api
 
         public async Task<bool> CheckADB2CLoginAsync(string email, string password)
         {
-            var basicResponseDto = await PostAsync<BasicResponseDto>("identity/check-adb2c-login", new UserDto() { Email = email, Password = password });
+            var basicResponseDto = await PostAsync<BasicResponseDto>("identity/check-adb2c-login", new UserDto() { Email = email, Password = password }, true);
             if (basicResponseDto.StatusCode == 200)
                 return true;
             else
@@ -750,13 +732,13 @@ namespace UpDiddy.Api
 
         public async Task<BasicResponseDto> CreateUserAsync(CreateUserDto createUserDto)
         {
-            var basicResponseDto = await PostAsync<BasicResponseDto>("identity/create-user", createUserDto);
+            var basicResponseDto = await PostAsync<BasicResponseDto>("identity/create-user", createUserDto, true);
             return basicResponseDto;
         }
 
         public async Task<bool> MigrateUserAsync(CreateUserDto createUserDto)
         {
-            var basicResponseDto = await PostAsync<BasicResponseDto>("identity/migrate-user", createUserDto);
+            var basicResponseDto = await PostAsync<BasicResponseDto>("identity/migrate-user", createUserDto, true);
             if (basicResponseDto.StatusCode == 200)
                 return true;
             else
@@ -869,7 +851,7 @@ namespace UpDiddy.Api
         #endregion
 
         #region Subscriber
-        
+
         public async Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid)
         {
             return await RequestAsync(Constants.HttpGetClientName, HttpMethod.Get, String.Format("subscriber/{0}/file/{1}", subscriberGuid, fileGuid.ToString()));
@@ -1065,10 +1047,6 @@ namespace UpDiddy.Api
             return await GetAsync<RedirectDto>("subscriber/me/partner-web-redirect");
         }
 
-        public async Task UpdateEmailVerificationStatusAsync(Guid subscriberGuid, bool isEmailVerified)
-        {
-            await PostAsync<Task>($"subscriber/{subscriberGuid}/verification/{isEmailVerified}");
-        }
 
         #endregion
 
