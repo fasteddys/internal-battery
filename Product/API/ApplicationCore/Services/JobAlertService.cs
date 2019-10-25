@@ -28,9 +28,9 @@ namespace UpDiddyApi.ApplicationCore.Services
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
 
-        private IHangfireService _hangfireService;
+        private readonly IHangfireService _hangfireService;
 
-        public JobAlertService(HangfireService hangfireService, IRepositoryWrapper repositoryWrapper)
+        public JobAlertService(IHangfireService hangfireService, IRepositoryWrapper repositoryWrapper)
         {
             _repositoryWrapper = repositoryWrapper;
             _hangfireService = hangfireService;
@@ -43,7 +43,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 JobQueryDto jobQueryDto = new JobQueryDto();
                 jobQueryDto.Keywords = jobAlertDto.Keywords;
-                jobQueryDto.Location = jobQueryDto.Location;
+                jobQueryDto.Location = string.IsNullOrEmpty(jobQueryDto.Location) ? string.Empty : jobQueryDto.Location;
+                jobQueryDto.ExcludeCustomProperties = 1;
+                jobQueryDto.ExcludeFacets = 1;
+                jobQueryDto.PageSize = 20;
+                jobQueryDto.NumPages = 1;
                 var alerts = await _repositoryWrapper.JobPostingAlertRepository.GetAllJobPostingAlertsBySubscriber(subscriberGuid);
                 if (alerts.ToList().Count >= 4)
                 {

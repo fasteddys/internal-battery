@@ -271,6 +271,9 @@ namespace UpDiddyApi
             services.AddScoped<IHangfireService, HangfireService>();
             services.AddScoped<IMemoryCacheService, MemoryCacheService>();
             services.AddScoped<IServiceOfferingPromoCodeRedemptionService, ServiceOfferingPromoCodeRedemptionService>();
+            services.AddScoped<IJobAlertService, JobAlertService>();
+            services.AddScoped<IHangfireService, HangfireService>();
+
 
 
             #endregion
