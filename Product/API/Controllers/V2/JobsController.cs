@@ -80,9 +80,9 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> CreateJobAlert([FromBody] JobAlertDto jobPostingAlertDto)
         {
 
-                Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                await _jobAlertService.CreateJobAlert(subscriberGuid, jobPostingAlertDto);
-                return StatusCode(201);
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _jobAlertService.CreateJobAlert(subscriberGuid, jobPostingAlertDto);
+            return StatusCode(201);
         }
 
         [HttpGet]
@@ -90,21 +90,10 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         public async Task<IActionResult> GetJobAlerts()
         {
-            try
-            {
-                Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                var jobAlerts = await _jobAlertService.GetJobAlert(subscriberGuid);
-                return Ok(jobAlerts);
-            }
-            catch (NotFoundException e)
-            {
-                return BadRequest(e);
-            }
-            catch (Exception e)
-            {
 
-            }
-            return null;
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var jobAlerts = await _jobAlertService.GetJobAlert(subscriberGuid);
+            return Ok(jobAlerts);
         }
 
         [HttpDelete]
@@ -112,25 +101,10 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteJobAlert(Guid jobAlertGuid)
         {
-            try
-            {
-                Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                await _jobAlertService.DeleteJobAlert(subscriberGuid, jobAlertGuid);
-                return StatusCode(204);
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Forbid();
-            }
-            catch (NotFoundException e)
-            {
-                return BadRequest(e);
-            }
-            catch (Exception e)
-            {
 
-            }
-            return null;
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _jobAlertService.DeleteJobAlert(subscriberGuid, jobAlertGuid);
+            return StatusCode(204);
         }
 
         #endregion
