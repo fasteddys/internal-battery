@@ -9,6 +9,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface IJobService
     {
+        Task<List<SearchTermDto>> GetKeywordSearchTermsAsync();
+        Task<List<SearchTermDto>> GetLocationSearchTermsAsync();
         Task ReferJobToFriend(JobReferralDto jobReferralDto);
         Task UpdateJobReferral(string referrerCode, string subscriberGuid);
         Task UpdateJobViewed(string referrerCode);
