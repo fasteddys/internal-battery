@@ -49,13 +49,23 @@ namespace UpDiddyApi.ApplicationCore.Services
             _hangfireService = hangfireService;
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper,_subscriberService);
         }
+
+        public async Task<List<SearchTermDto>> GetKeywordSearchTermsAsync()
+        {
+            return await _repositoryWrapper.StoredProcedureRepository.GetKeywordSearchTermsAsync();
+        }
+
+        public async Task<List<SearchTermDto>> GetLocationSearchTermsAsync()
+        {
+            return await _repositoryWrapper.StoredProcedureRepository.GetLocationSearchTermsAsync();
+        }
+
         public async Task ReferJobToFriend(JobReferralDto jobReferralDto)
         {
             var jobReferralGuid=await SaveJobReferral(jobReferralDto);
             await SendReferralEmail(jobReferralDto, jobReferralGuid);
         }
-
-
+        
         public async Task UpdateJobReferral(string referrerCode, string subscriberGuid)
         {
             //get jobReferral instance to update

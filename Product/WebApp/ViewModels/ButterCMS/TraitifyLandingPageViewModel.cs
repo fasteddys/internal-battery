@@ -29,5 +29,24 @@ namespace UpDiddy.ViewModels.ButterCMS
         public string FormSubmitButtonText { get; set; }
         [JsonProperty("existing_user_submit_button_text")]
         public string ExistingUserSubmitButtonText { get; set; }
+
+        [JsonProperty("signup_form_image_banner")]
+        public string SignupFormImageBanner { get; set; }
+
+        [JsonProperty("signup_form_submit_button_text")]
+        public string SignupFormSubmitButtonText { get; set; }
+
+        [JsonProperty("signup_form_header")]
+        public string SignupFormHeader { get; set; }
+
+        [JsonProperty("signup_form_text")]
+        public string SignupFormText { get; set; }
+        [JsonProperty("signup_hero_title")]
+        public string SignupHeroTitle { get; set; }
+        [JsonProperty("signup_hero_content")]
+        public string SignupHeroContent { get; set; }
+
+        [JsonProperty("result_footer_text")]
+        public string ResultFooterText {get;set;}
     }
 }

@@ -21,8 +21,6 @@ using System.Net.Http;
 using System.Security.Claims;
 using UpDiddy.Authentication;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.AspNetCore.Authentication;
 
@@ -30,10 +28,8 @@ namespace UpDiddy.Controllers
 {
     public class HomeController : BaseController
     {
-        private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
         private readonly ISysEmail _sysEmail;
-        private readonly IApi _api;
         private readonly IMemoryCache _memoryCache;
 
         [HttpGet]
@@ -47,13 +43,11 @@ namespace UpDiddy.Controllers
             IHostingEnvironment env,
             ISysEmail sysEmail,
             IMemoryCache memoryCache)
-
-            : base(api)
+            
+            : base(api,configuration)
         {
             _env = env;
             _sysEmail = sysEmail;
-            _configuration = configuration;
-            _api = api;
             _memoryCache = memoryCache;
         }
         [HttpGet]

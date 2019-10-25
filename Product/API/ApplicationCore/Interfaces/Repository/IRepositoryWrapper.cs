@@ -37,7 +37,7 @@
         IOfferRepository Offer { get; }
         ISubscriberFileRepository SubscriberFileRepository { get; }
         ISkillRepository SkillRepository { get; }
-        IStoredProcedureRepository StoredProcedureRepository { get;  }
+        IStoredProcedureRepository StoredProcedureRepository { get; }
         ICourseSiteRepository CourseSite { get; }
         ICoursePageRepository CoursePage { get; }
         ICourseRepository Course { get; }
@@ -50,15 +50,15 @@
         ITagCourseRepository TagCourse { get; }
         IVendorRepository Vendor { get; }
         IEnrollmentRepository EnrollmentRepository { get; }
-        ITraitifyRepository TraitifyRepository {get;}
+        ITraitifyRepository TraitifyRepository { get; }
         IServiceOfferingRepository ServiceOfferingRepository { get; }
         IServiceOfferingItemRepository ServiceOfferingItemRepository { get; }
         IServiceOfferingOrderRepository ServiceOfferingOrderRepository { get; }
         IServiceOfferingPromoCodeRedemptionRepository ServiceOfferingPromoCodeRedemptionRepository { get; }
-
-        IServiceOfferingPromoCodeRepository ServiceOfferingPromoCodeRepository { get;  }
+        IServiceOfferingPromoCodeRepository ServiceOfferingPromoCodeRepository { get; }
         IPromoCodeRepository PromoCodeRepository { get; }
-
-        
+        IFileDownloadTrackerRepository FileDownloadTrackerRepository { get; }
+        IPartnerTypeRepository PartnerTypeRepository { get; }
+        ITraitifyCourseTopicBlendMappingRepository TraitifyCourseTopicBlendMappingRepository { get; }
     }
 }

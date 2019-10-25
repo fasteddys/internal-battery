@@ -61,6 +61,9 @@
                 data: $(this).serialize()
             }).done(res => {
                 $('.signup-modal').modal();
+                $('.signup-modal').on('hidden.bs.modal', function (e) {
+                    window.location.href = res.description;
+                });
             }).fail(res => {
                 var errorText = "Unfortunately, there was an error with your submission. Please try again later.";
                 if (res.responseJSON.description != null)
@@ -75,4 +78,26 @@
         $("#SignUpOverlay").remove();
         ToastService.error("Please enter information for all sign-up fields and try again.");
     }
+});
+
+$("#ExistingUserComponent form").submit(function (e) {
+    e.preventDefault();
+    $.ajax({
+        type: "POST",
+        url: $(this).attr("action"),
+        data: $(this).serialize()
+    }).done(res => {
+        $('.signup-modal a').attr('href', res.description);
+        $('.signup-modal').modal();
+        $('.signup-modal').on('hidden.bs.modal', function (e) {
+            window.location.href = res.description;
+        });
+    }).fail(res => {
+        var errorText = "Unfortunately, there was an error with your submission. Please try again later.";
+        if (res.responseJSON.description != null)
+            errorText = res.responseJSON.description;
+        ToastService.error(errorText, 'Whoops...');
+    }).always(() => {
+        $("#SignUpOverlay").remove();
+    });
 }); 

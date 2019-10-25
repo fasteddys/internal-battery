@@ -25,5 +25,9 @@ namespace UpDiddyApi.Models
         public virtual JobApplicationStatus JobApplicationStatus { get; set; }
 
         public int JobApplicationStatusId { get; set; }
+
+        public int? PartnerId { get; set; }
+
+        public virtual Partner Partner { get; set; }
     }
 }

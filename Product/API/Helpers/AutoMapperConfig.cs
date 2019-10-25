@@ -86,8 +86,8 @@ namespace UpDiddyApi.Helpers
             CreateMap<ServiceOfferingItem, ServiceOfferingItemDto>().ReverseMap();
             CreateMap<ServiceOfferingOrder, ServiceOfferingOrderDto>().ReverseMap();
             CreateMap<ServiceOfferingPromoCodeRedemption, ServiceOfferingPromoCodeRedemptionDto>().ReverseMap();
-
-            CreateMap<Traitify, TraitifyDto>();
+            CreateMap<FileDownloadTracker, FileDownloadTrackerDto>().ReverseMap();
+            CreateMap<Traitify, TraitifyDto>().ReverseMap();
             CreateMap<JobPostingSkill, SkillDto>()
             .ForMember(c => c.SkillGuid, opt => opt.MapFrom(src => src.Skill.SkillGuid))
             .ForMember(c => c.SkillName, opt => opt.MapFrom(src => src.Skill.SkillName))

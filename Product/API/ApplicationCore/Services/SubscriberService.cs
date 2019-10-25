@@ -58,7 +58,13 @@ namespace UpDiddyApi.ApplicationCore.Services
             _taggingService = taggingService;
             _hangfireService = hangfireService;
         }
-        
+
+        public async Task<Subscriber> GetSubscriberByGuid(Guid subscriberGuid)
+        {
+            return await _repository.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+        }
+
+
         public async Task<IList<SubscriberSourceDto>> GetSubscriberSources(int subscriberId)
         {
             return await _repository.StoredProcedureRepository.GetSubscriberSources(subscriberId);
@@ -176,6 +182,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
             return isSubscriberCreatedSuccessfully;
+        }
+
+        public async Task UpdateSubscriber(Subscriber subscriber)
+        {
+            _repository.SubscriberRepository.Update(subscriber);
+            await _repository.SubscriberRepository.SaveAsync();
         }
 
         /// <summary>

@@ -133,12 +133,17 @@ namespace UpDiddyLib.Helpers
         public static class EventType
         {
             public static readonly string JobPosting = "Job posting";
+            public static readonly string FileDownloadTracker = "File Download Tracker";
+            public static readonly string TraitifyAssessment = "Traitify Assessment";
+            
         }
 
         public static class Action
         {
             public static readonly string ApplyJob = "Apply job";
             public static readonly string View = "View";
+            public static readonly string DownloadGatedFile = "Download Gated File";
+            public static readonly string TraitifyAccountCreation = "Traitify Account Creation";
         }
     }
 }

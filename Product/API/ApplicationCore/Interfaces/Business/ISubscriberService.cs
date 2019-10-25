@@ -45,6 +45,20 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<bool> CreateSubscriberAsync(CreateUserDto createUserDto);
         
         /// <summary>
+        ///  Updates existing subscriber info like first name, last name and phone number
+        /// </summary>
+        /// <param name="signUpdto"></param>
+        /// <returns></returns>
+        Task UpdateSubscriber(Subscriber subscriber);
+
+        /// <summary>
+        /// Gets subscriber using the guid
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        Task<Subscriber> GetSubscriberByGuid( Guid subscriberGuid); 
+
+        /// <summary>
         /// Creates a background job to scan resume of subscriber if they have a resume on file.
         /// </summary>
         /// <param name="subscriberGuid"></param>

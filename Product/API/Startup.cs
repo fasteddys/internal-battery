@@ -197,26 +197,19 @@ namespace UpDiddyApi
 
             // remove TinyIds from old CampaignPartnerContact records
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DeactivateCampaignPartnerContacts(), Cron.Daily());
-
-            // Run this job once to initially get the keyword and location search
-            BackgroundJob.Enqueue<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo());
-
+           
             if (_currentEnvironment.IsProduction())
             {
                 // run the job crawl in production Monday through Friday once per day at 15:00 UTC
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), "0 15 * * Mon,Tue,Wed,Thu,Fri");
-                //Keyword and Location Search Intellisense Job
             }
 
             // run the process in staging once a week on the weekend (Sunday 4 UTC)
             if (_currentEnvironment.IsStaging())
             {
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.Weekly(DayOfWeek.Sunday, 4));
-                //Keyword and Location Search Intellisense Job
             }
-
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(), Cron.Hourly(55));
-
+            
             // LOCAL TESTING ONLY - DO NOT UNCOMMENT THIS CODE!
             // BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
 
@@ -233,7 +226,9 @@ namespace UpDiddyApi
 
             // kick off the subscriber notification email reminder process every day at 12 UTC 
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.SubscriberNotificationEmailReminder(), Cron.Daily(12));
-            
+
+            // sync job posting alerts between Hangfire and our database
+            BackgroundJob.Enqueue<ScheduledJobs>(x => x.SyncJobPostingAlertsBetweenDbAndHangfire());
             #endregion
 
             services.AddHttpClient(Constants.HttpGetClientName);
@@ -274,8 +269,7 @@ namespace UpDiddyApi
             services.AddScoped<IHangfireService, HangfireService>();
             services.AddScoped<IMemoryCacheService, MemoryCacheService>();
             services.AddScoped<IServiceOfferingPromoCodeRedemptionService, ServiceOfferingPromoCodeRedemptionService>();
-
-
+            services.AddScoped<IFileDownloadTrackerService, FileDownloadTrackerService>();
             #endregion
 
             // Configure SnapshotCollector from application settings

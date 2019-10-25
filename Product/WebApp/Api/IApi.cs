@@ -6,6 +6,7 @@ using System.Net.Http;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Dto.Reporting;
 using UpDiddyLib.Dto.User;
+using Microsoft.AspNetCore.Http;
 
 namespace UpDiddy.Api
 {
@@ -15,6 +16,7 @@ namespace UpDiddy.Api
         Task<bool> IsUserExistsInAuth0Async(string email);
         Task<bool> CheckADB2CLoginAsync(string email, string password);
         Task<bool> MigrateUserAsync(CreateUserDto createUserDto);
+        Task<BasicResponseDto> UpdateLastSignIn(Guid subscriberGuid);
         Task<BasicResponseDto> CreateUserAsync(CreateUserDto createUserDto);
         Task<IList<TopicDto>> TopicsAsync();
         Task<TopicDto> TopicByIdAsync(int TopicId);
@@ -39,6 +41,7 @@ namespace UpDiddy.Api
         Task<IList<SecurityClearanceDto>> GetSecurityClearanceAsync();
         Task<IList<RecruiterCompanyDto>> GetRecruiterCompaniesAsync(Guid subscriberGuid);
         Task<CourseVariantDto> GetCourseVariantAsync(Guid courseVariantGuid);
+        Task<SubscriberDto> GetSubscriberByGuid(Guid subscriberGuid);
         Task<SubscriberDto> SubscriberAsync(Guid subscriberGuid, bool hardRefresh);
         Task<PromoCodeDto> PromoCodeRedemptionValidationAsync(string promoCodeRedemptionGuid, string courseGuid);
         Task<PromoCodeDto> PromoCodeValidationAsync(string code, string courseVariantGuid);
@@ -47,7 +50,7 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> UpdateProfileInformationAsync(SubscriberDto Subscriber);
         Task<BasicResponseDto> UpdateOnboardingStatusAsync();
         Task<Guid> EnrollStudentAndObtainEnrollmentGUIDAsync(EnrollmentFlowDto enrollmentFlowDto);
-        Task<bool> DeleteSubscriberAsync(Guid subscriberGuid);
+        Task<bool> DeleteSubscriberAsync(Guid subscriberGuid, Guid cloudIdentifier);
         Task<WozCourseProgressDto> UpdateStudentCourseProgressAsync(bool FutureSchedule);
         Task<BraintreeResponseDto> SubmitBraintreePaymentAsync(BraintreePaymentDto BraintreePaymentDto);
         Task<IList<CountryDto>> _GetCountriesAsync();
@@ -62,7 +65,7 @@ namespace UpDiddy.Api
         Task<IList<CompensationTypeDto>> GetCompensationTypesAsync();
         Task<IList<EducationalDegreeTypeDto>> GetEducationalDegreeTypesAsync();
         Task<IList<SkillDto>> GetSkillsBySubscriberAsync(Guid subscriberGuid);
-        Task<BasicResponseDto> UploadResumeAsync(ResumeDto resumeDto);
+        Task<BasicResponseDto> UploadResumeAsync(ResumeDto resumedto);
         Task<SubscriberWorkHistoryDto> AddWorkHistoryAsync(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory);
         Task<SubscriberWorkHistoryDto> UpdateWorkHistoryAsync(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory);
         Task<SubscriberEducationHistoryDto> UpdateEducationHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto educationHistory);
@@ -70,6 +73,10 @@ namespace UpDiddy.Api
         Task<SubscriberEducationHistoryDto> DeleteEducationHistoryAsync(Guid subscriberGuid, Guid educationHistory);
         Task<IList<SubscriberWorkHistoryDto>> GetWorkHistoryAsync(Guid subscriberGuid);
         Task<IList<SubscriberEducationHistoryDto>> GetEducationHistoryAsync(Guid subscriberGuid);
+        Task<BasicResponseDto> UpdateSubscriberContactAsync(Guid partnerContactGuid, SignUpDto signUpDto);
+        Task<BasicResponseDto> ExpressUpdateSubscriberContactAsync(SignUpDto signUpDto);
+        Task<BasicResponseDto> ExistingUserGroupSignup (SignUpDto signUpDto);
+
         Task<CourseDto> GetCourseByCampaignGuidAsync(Guid CampaignGuid);
         Task<SubscriberEducationHistoryDto> AddEducationalHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto workHistory);
         Task<BasicResponseDto> AddJobPostingAsync(JobPostingDto jobPosting);
@@ -90,7 +97,7 @@ namespace UpDiddy.Api
         Task<PagingDto<UpDiddyLib.Dto.User.JobDto>> GetUserJobsOfInterest(int? page);
         Task<PagingDto<JobPostingAlertDto>> GetUserJobAlerts(int? page, int? timeZoneOffset);
         Task<RedirectDto> GetSubscriberPartnerWebRedirect();
-        Task<BasicResponseDto> UpdateLastSignIn(Guid subscriberGuid);
+        Task<FileDto> GetFile(Guid fileDownloadTrackerGuid);
 
         #region TalentPortal
         Task<ProfileSearchResultDto> SubscriberSearchAsync(string searchFilter, string searchQuery, string searchLocationQuery, string sortOrder);
@@ -101,10 +108,13 @@ namespace UpDiddy.Api
         #endregion
 
         #region AdminPortal
+
+        Task<List<SubscriberInitialSourceDto>> NewSubscribersCSVAsync();
         Task<BasicResponseDto> UpdateEntitySkillsAsync(EntitySkillDto entitySkillDto);
         Task<IList<SkillDto>> GetEntitySkillsAsync(string entityType, Guid entityGuid);
         Task<IList<PartnerDto>> GetPartnersAsync();
         Task<PartnerDto> GetPartnerAsync(Guid partnerGuid);
+        Task<PartnerDto> GetPartnerByNameAsync(string partnerName);  
         Task<PartnerDto> CreatePartnerAsync(PartnerDto partnerDto);
         Task<BasicResponseDto> UpdatePartnerAsync(PartnerDto partnerDto);
         Task<BasicResponseDto> DeletePartnerAsync(Guid PartnerGuid);
@@ -139,6 +149,8 @@ namespace UpDiddy.Api
         #endregion
 
         #region JobBoard
+        Task<IList<SearchTermDto>> GetKeywordSearchTermsAsync(string value);
+        Task<IList<SearchTermDto>> GetLocationSearchTermsAsync(string value);
         Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid, GoogleCloudEventsTrackingDto dto = null);
         Task<JobPostingDto> GetExpiredJobAsync(Guid JobPostingGuid);
         Task<BasicResponseDto> ApplyToJobAsync(JobApplicationDto JobApplication);
@@ -155,13 +167,12 @@ namespace UpDiddy.Api
         #region Traitify
         Task<TraitifyDto> StartNewTraitifyAssessment(TraitifyDto dto);
         Task<TraitifyDto> GetTraitifyByAssessmentId(string assessmentId);
-        Task<bool> CompleteAssessment(string assessmentId);
+        Task<TraitifyDto> CompleteAssessment(string assessmentId);
+        Task<BasicResponseDto> TraitifySignUp(string assessmentId); 
         #endregion
 
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);
         Task RecordSubscriberApplyAction(Guid jobGuid, Guid subscriberGuid);
         Task RecordSubscriberJobViewAction(Guid jobGuid, Guid subscriberGuid);
-        Task<IList<string>> GetKeywordSearchList(string keyword);
-        Task<IList<string>> GetLocationSearchList(string location);
     }
 }

@@ -102,8 +102,10 @@
     <Compile Remove="Resources\Resources.Designer.cs" />
     <Compile Remove="Helpers\AppConfiguration.cs" />
     <Compile Remove="DTO\TopicDTO.cs" />
+    <Compile Remove="Views\Admin\NewSubscriberCSV.cshtml.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Remove="Views\Admin\NewSubscriberCSV.cshtml" />
     <Content Remove="wwwroot\Resources\AppResources.resx" />
     <Content Remove="wwwroot\Resources\AppResources.fr.resx" />
     <Content Remove="wwwroot\Resources\Resources.resx" />

@@ -43,7 +43,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private GoogleProfileService _profileApi = null;
         private GoogleProfileService _googleProfile = null;
         private ISubscriberService _subscriberService;
-      //  private RepositoryWrapper repositoryWrapper;
+        //  private RepositoryWrapper repositoryWrapper;
 
         #region Constructor
         public CloudTalent(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger sysLog, IHttpClientFactory httpClientFactory, IRepositoryWrapper repositoryWrapper, ISubscriberService ISubscriberService)
@@ -85,17 +85,17 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             _googleProfile = new GoogleProfileService(context, mapper, configuration, sysLog, httpClientFactory);
 
-    }
+        }
         #endregion
 
 
         #region Profile Tenants
 
         public BasicResponseDto ProfileTenantList()
-        {           
+        {
             // search the google talent cloud
             string errorMsg = string.Empty;
-            BasicResponseDto searchResults = _googleProfile.TenantList( ref errorMsg);          
+            BasicResponseDto searchResults = _googleProfile.TenantList(ref errorMsg);
             return searchResults;
         }
 
@@ -112,51 +112,81 @@ namespace UpDiddyApi.ApplicationCore.Services
                 return _profileApi.DeleteProfile(talentCloudUri, ref errorMsg);
 
             }
-            catch 
+            catch
             {
                 return new BasicResponseDto()
                 {
-                    StatusCode = 400                     
+                    StatusCode = 400
                 };
             }
         }
 
-
-        public bool DeleteProfileFromCloudTalent(UpDiddyDbContext db, Guid subscriberGuid)
-    {
-        try
+        private bool DeleteMissingSubscriberProfileFromIndex(Guid cloudIdentifier)
         {
-            Subscriber subscriber = SubscriberFactory.GetDeletedSubscriberProfileByGuid(db, subscriberGuid);
-            // validate we have good data 
-            if (subscriber == null)
-                return false;
-            // index the job to google 
-            return RemoveProfileFromIndex(subscriber);
+            bool isRemoved = false;
+            try
+            {
+                string errorMsg = string.Empty;
+                BasicResponseDto deleteStatus = null;
+                string cloudTalentUri = _configuration["CloudTalent:ProfileTenant"].ToString() + "/profiles/" + cloudIdentifier.ToString();
+                deleteStatus = _profileApi.DeleteProfile(cloudTalentUri, ref errorMsg);
+                if (deleteStatus.StatusCode == 200)
+                {
+                    isRemoved = true;
+                    _syslog.LogInformation("CloudTalent.RemoveMissingSubscriberProfileFromIndex removed cloudIdentifier: {cloudIdentifier}", cloudIdentifier);
+                }
+            }
+            catch (Exception e)
+            {
+                _syslog.LogError(e, "CloudTalent.RemoveMissingSubscriberProfileFromIndex Error", e);
+                throw e;
+            }
+            return isRemoved;
         }
-        catch
+
+        public bool DeleteProfileFromCloudTalent(UpDiddyDbContext db, Guid subscriberGuid, Guid? cloudIdentifier)
         {
-            return false;
+            bool isRemoved = false;
+            try
+            {
+                Subscriber subscriber = SubscriberFactory.GetDeletedSubscriberProfileByGuid(db, subscriberGuid);
+                
+                if (subscriber != null)
+                {
+                    // attempt to remove the profile and update the associated subscriber
+                    isRemoved = RemoveProfileFromIndex(subscriber);
+                }
+
+                if (!isRemoved)
+                {
+                    // attempt to remove the profile from Google without the subscriber
+                    isRemoved = DeleteMissingSubscriberProfileFromIndex(cloudIdentifier.Value);
+                }
+            }
+            catch (Exception e)
+            {
+                _syslog.LogError(e, $"CloudTalent.DeleteProfileFromCloudTalent Error: {e.Message} ");
+            }
+            return isRemoved;
         }
-    }
-
-
-    public bool AddOrUpdateProfileToCloudTalent(UpDiddyDbContext db, Guid subscriberGuid)
+        
+        public bool AddOrUpdateProfileToCloudTalent(UpDiddyDbContext db, Guid subscriberGuid)
         {
             try
             {
-               
+
                 Subscriber subscriber = SubscriberFactory.GetSubscriberProfileByGuid(db, subscriberGuid);
                 // validate we have good data 
                 if (subscriber == null)
                     return false;
 
-                IList<SubscriberSkill> skills= SubscriberFactory.GetSubscriberSkillsById(db, subscriber.SubscriberId);
+                IList<SubscriberSkill> skills = SubscriberFactory.GetSubscriberSkillsById(db, subscriber.SubscriberId);
                 // index the job to google 
                 if (string.IsNullOrEmpty(subscriber.CloudTalentUri))
-                    return IndexProfile(subscriber,skills);
+                    return IndexProfile(subscriber, skills);
                 else
-                    return ReIndexProfile(subscriber,skills);
-                 
+                    return ReIndexProfile(subscriber, skills);
+
             }
             catch
             {
@@ -164,22 +194,21 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
- 
         public bool IndexProfile(Subscriber subscriber, IList<SubscriberSkill> skills)
         {
             int step = 0;
             try
             {
-                
-                int maxProfileSkillLen =  int.Parse(_configuration["CloudTalent:MaxProfileSkillLen"]);
+
+                int maxProfileSkillLen = int.Parse(_configuration["CloudTalent:MaxProfileSkillLen"]);
                 // create googleCloud Profile 
-                GoogleCloudProfile googleCloudProfile = ProfileMappingHelper.CreateGoogleProfile(_repositoryWrapper, maxProfileSkillLen, subscriber, skills,_subscriberService);
+                GoogleCloudProfile googleCloudProfile = ProfileMappingHelper.CreateGoogleProfile(_repositoryWrapper, maxProfileSkillLen, subscriber, skills, _subscriberService);
                 step = 1;
                 string errorMsg = string.Empty;
-                BasicResponseDto basicResponseDto =  _profileApi.AddProfile(googleCloudProfile, ref errorMsg);
+                BasicResponseDto basicResponseDto = _profileApi.AddProfile(googleCloudProfile, ref errorMsg);
                 step = 2;
-                
-                if ( basicResponseDto != null && basicResponseDto.StatusCode == 200)
+
+                if (basicResponseDto != null && basicResponseDto.StatusCode == 200)
                 {
                     step = 3;
                     subscriber.CloudTalentUri = basicResponseDto.Data.name;
@@ -191,8 +220,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                     return true;
                 }
                 else
-                    throw new Exception(errorMsg);              
-                
+                    throw new Exception(errorMsg);
+
             }
             catch (Exception e)
             {
@@ -210,7 +239,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             try
             {
                 int maxProfileSkillLen = int.Parse(_configuration["CloudTalent:MaxProfileSkillLen"]);
-                GoogleCloudProfile googleCloudProfile = ProfileMappingHelper.CreateGoogleProfile(_repositoryWrapper, maxProfileSkillLen, subscriber, skills,_subscriberService);
+                GoogleCloudProfile googleCloudProfile = ProfileMappingHelper.CreateGoogleProfile(_repositoryWrapper, maxProfileSkillLen, subscriber, skills, _subscriberService);
                 string errorMsg = string.Empty;
 
                 if (_profileApi.UpdateProfile(googleCloudProfile, ref errorMsg))
@@ -235,38 +264,30 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
-
- 
-
-
         public bool RemoveProfileFromIndex(Subscriber subscriber)
         {
+            bool isRemoved = false;
             try
             {
-                bool isIndexed = false;
                 string errorMsg = string.Empty;
                 BasicResponseDto deleteStatus = null;
                 if (subscriber.CloudTalentUri != null && string.IsNullOrEmpty(subscriber.CloudTalentUri.Trim()) == false)
                 {
-                   isIndexed = true;
-                   deleteStatus =  _profileApi.DeleteProfile(subscriber.CloudTalentUri.Trim(), ref errorMsg);
-                }
+                    deleteStatus = _profileApi.DeleteProfile(subscriber.CloudTalentUri.Trim(), ref errorMsg);
 
-                // Update job posting with index error
-                if (deleteStatus.StatusCode == 200)
-                {
-                    if (isIndexed)
+                    // Update job posting with index error
+                    if (deleteStatus.StatusCode == 200)
+                    {
                         subscriber.CloudTalentIndexInfo = "Deleted on " + Utils.ISO8601DateString(DateTime.Now);
+                        isRemoved = true;
+                    }
                     else
-                        subscriber.CloudTalentIndexInfo = "Deleted on " + Utils.ISO8601DateString(DateTime.Now) + " (not google indexed)";
-                }
-                else
-                    subscriber.CloudTalentIndexInfo = "Error: " + errorMsg + " deleting profile on " + Utils.ISO8601DateString(DateTime.Now);
+                        subscriber.CloudTalentIndexInfo = "Error: " + errorMsg + " deleting profile on " + Utils.ISO8601DateString(DateTime.Now);
 
-                subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.DeletedFromIndex;
-                subscriber.ModifyDate = DateTime.UtcNow; 
-                _db.SaveChanges();
-                return true;
+                    subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.DeletedFromIndex;
+                    subscriber.ModifyDate = DateTime.UtcNow;
+                    _db.SaveChanges();
+                }
             }
             catch (Exception e)
             {
@@ -279,6 +300,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 _syslog.LogError(e, "CloudTalent.RemoveProfileFromIndex Error", e, subscriber);
                 throw e;
             }
+            return isRemoved;
         }
 
         #endregion
@@ -296,8 +318,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 domain = "www.careercircle.com"
 
             };
- 
-            ProfileQuery cloudTalentProfileQuery = new ProfileQuery();            
+
+            ProfileQuery cloudTalentProfileQuery = new ProfileQuery();
             // add keywords 
             if (string.IsNullOrEmpty(profileQuery.Keywords) == false)
             {
@@ -338,7 +360,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     };
             }
             // add employer filter 
-            if ( ! string.IsNullOrEmpty(profileQuery.Employer) )
+            if (!string.IsNullOrEmpty(profileQuery.Employer))
             {
                 cloudTalentProfileQuery.employerFilters = new List<EmployerFilter>();
                 EmployerFilter employerFilter = new EmployerFilter()
@@ -375,7 +397,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             // custom attribute filters        
             string attributeFilters = string.Empty;
             // search for a specific email address 
-            if ( string.IsNullOrEmpty(profileQuery.EmailAddress) == false )
+            if (string.IsNullOrEmpty(profileQuery.EmailAddress) == false)
             {
                 if (attributeFilters.Length > 0)
                     attributeFilters += " AND ";
@@ -408,7 +430,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 attributeFilters += "LOWER(lastName) = \"" + profileQuery.LastName.Trim().ToLower() + "\"";
             }
- 
+
             // Add Custom Attribute Filter 
             if (attributeFilters.Length > 0)
                 cloudTalentProfileQuery.customAttributeFilter = attributeFilters;
@@ -450,7 +472,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
             ProfileSearchResultDto rVal = new ProfileSearchResultDto();
- 
+
             // map profile query to cloud talent search request 
             DateTime startSearch = DateTime.Now;
             SearchProfilesRequest searchProfileRequest = CreateProfileSearchRequest(profileQuery);
@@ -459,12 +481,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             // search the google talent cloud
             BasicResponseDto searchResults = _googleProfile.Search(searchProfileRequest, ref errorMsg);
             string json = Newtonsoft.Json.JsonConvert.SerializeObject(searchResults.Data);
-    
+
             SearchProfileResponse searchProfileResponse = JsonConvert.DeserializeObject<SearchProfileResponse>(json);
-                // map cloud talent results to cc search results 
+            // map cloud talent results to cc search results 
             DateTime startMap = DateTime.Now;
             try
-            {               
+            {
                 rVal = ProfileMappingHelper.MapSearchResults(_syslog, _mapper, _configuration, searchProfileResponse, profileQuery);
                 // pass back any information returned from google 
                 rVal.Info = searchResults.Description;
@@ -599,7 +621,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 jobPosting.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.IndexError;
                 _db.SaveChanges();
                 _syslog.LogError(e, "CloudTalent.IndexJob Error", e, jobPosting);
-                    throw e;
+                throw e;
             }
         }
 
@@ -948,7 +970,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 PageSize = jobQuery.PageSize,
                 Offset = jobQuery.PageSize * (jobQuery.PageNum - 1),
                 OrderBy = jobQuery.OrderBy
-               
+
 
             };
 
@@ -1012,7 +1034,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-   
+
 
         #region ClientEvents
         /// <summary>

@@ -4,11 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Configuration;
@@ -19,15 +17,13 @@ using UpDiddy.Api;
 using UpDiddy.Authentication;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
- 
+
 
 namespace UpDiddy.Controllers
 {
     [Authorize(Policy = "IsRecruiterPolicy")]
     public class TalentController : BaseController
     {
-        private IApi _api;
-        private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
         private readonly ILogger _sysLog;
 
@@ -35,11 +31,9 @@ namespace UpDiddy.Controllers
         IConfiguration configuration,
         IHostingEnvironment env,
         ILogger<TalentController> sysLog)
-         : base(api)
+         : base(api,configuration)
         {
-            _api = api;
             _env = env;
-            _configuration = configuration;
             _sysLog = sysLog;
         }
 
@@ -55,8 +49,8 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> EditJobPosting(Guid jobPostingGuid)
         {
 
-            CreateJobPostingViewModel model = await CreateJobPostingViewModel(jobPostingGuid);            
-            return View("CreateJobPosting",model);
+            CreateJobPostingViewModel model = await CreateJobPostingViewModel(jobPostingGuid);
+            return View("CreateJobPosting", model);
         }
 
 
@@ -66,18 +60,18 @@ namespace UpDiddy.Controllers
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
         [HttpDelete]
-        [Route("[controller]/jobPosting/{jobPostingGuid}/delete")]   
+        [Route("[controller]/jobPosting/{jobPostingGuid}/delete")]
         public async Task<IActionResult> DeleteJobPosting(Guid jobPostingGuid)
         {
             try
             {
-                await _api.DeleteJobPosting(jobPostingGuid);
+                await _Api.DeleteJobPosting(jobPostingGuid);
                 return Ok();
             }
-            catch ( ApiException ex )
+            catch (ApiException ex)
             {
-                return BadRequest(new JsonResult(ex.ResponseDto )) ;
-              
+                return BadRequest(new JsonResult(ex.ResponseDto));
+
             }
 
         }
@@ -90,7 +84,7 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> CopyJobPosting(Guid jobPostingGuid)
         {
 
-            await _api.CopyJobPosting(jobPostingGuid);
+            await _Api.CopyJobPosting(jobPostingGuid);
             return Ok();
         }
 
@@ -103,9 +97,9 @@ namespace UpDiddy.Controllers
 
             JobPostingsViewModel model = new JobPostingsViewModel()
             {
-                jobPostings = await _api.GetJobPostingsForSubscriber(this.subscriber.SubscriberGuid.Value)
+                jobPostings = await _Api.GetJobPostingsForSubscriber(this.subscriber.SubscriberGuid.Value)
             };
-          
+
             return View(model.jobPostings);
 
         }
@@ -114,18 +108,18 @@ namespace UpDiddy.Controllers
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> CreateJobPosting()
-        {           
+        {
             CreateJobPostingViewModel model = await CreateJobPostingViewModel();
             return View(model);
         }
- 
+
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> CreateJobPosting(CreateJobPostingViewModel model )
+        public async Task<IActionResult> CreateJobPosting(CreateJobPostingViewModel model)
         {
             BasicResponseDto rVal = null;
-            if ( ModelState.IsValid )
+            if (ModelState.IsValid)
             {
                 // create job posting dto and initailize all required fields 
                 JobPostingDto job = new JobPostingDto()
@@ -148,9 +142,9 @@ namespace UpDiddy.Controllers
                             SubscriberGuid = this.subscriber.SubscriberGuid
                         },
 
-                    },                   
+                    },
                     Province = model.SelectedState,
-                    ThirdPartyApply = false                    
+                    ThirdPartyApply = false
                 };
 
                 job.ApplicationDeadlineUTC = model.ApplicationDeadline;
@@ -178,11 +172,11 @@ namespace UpDiddy.Controllers
                     job.ExperienceLevel = new ExperienceLevelDto() { ExperienceLevelGuid = model.SelectedExperienceLevel.Value };
                 if (model.SelectedEducationLevel != null)
                     job.EducationLevel = new EducationLevelDto() { EducationLevelGuid = model.SelectedEducationLevel.Value };
-                if ( string.IsNullOrEmpty(model.SelectedSkills) == false )
+                if (string.IsNullOrEmpty(model.SelectedSkills) == false)
                 {
                     string[] skillGuids = model.SelectedSkills.Trim().Split(',');
                     job.JobPostingSkills = new List<SkillDto>();
-                    foreach ( string guid in skillGuids )
+                    foreach (string guid in skillGuids)
                     {
                         SkillDto skill = new SkillDto() { SkillGuid = Guid.Parse(guid) };
                         job.JobPostingSkills.Add(skill);
@@ -191,22 +185,22 @@ namespace UpDiddy.Controllers
 
                 try
                 {
-                    if ( model.IsEdit )
+                    if (model.IsEdit)
                     {
-                        job.JobPostingGuid = model.EditGuid;         
-                        rVal = await _api.UpdateJobPostingAsync(job);                        
-                    }                    
-                    else                                           
-                      rVal = await _api.AddJobPostingAsync(job);
-                      
+                        job.JobPostingGuid = model.EditGuid;
+                        rVal = await _Api.UpdateJobPostingAsync(job);
+                    }
+                    else
+                        rVal = await _Api.AddJobPostingAsync(job);
+
                 }
                 catch (ApiException ex)
                 {
                     return Redirect(model.RequestPath + "?ErrorMsg=" + WebUtility.UrlEncode(ex.ResponseDto.Description));
                 }
-  
+
             }
- 
+
             return RedirectToAction("JobPostings");
 
         }
@@ -217,9 +211,9 @@ namespace UpDiddy.Controllers
         [HttpGet]
         public async Task<ViewResult> Subscribers()
         {
-            IList<SubscriberSourceStatisticDto> subscriberSourcesDto = await _api.SubscriberSourcesAsync();
+            IList<SubscriberSourceStatisticDto> subscriberSourcesDto = await _Api.SubscriberSourcesAsync();
             IList<SelectListItem> orderByListItems = new List<SelectListItem>();
-            orderByListItems.Add(new SelectListItem() {Value = "relevance desc", Text = "Relevancy", Selected = true });
+            orderByListItems.Add(new SelectListItem() { Value = "relevance desc", Text = "Relevancy", Selected = true });
             orderByListItems.Add(new SelectListItem() { Value = "update_date desc", Text = "Date Modified \u2193" });
             orderByListItems.Add(new SelectListItem() { Value = "create_date desc", Text = "Join Date \u2193" });
             orderByListItems.Add(new SelectListItem() { Value = "first_name desc", Text = "First Name \u2193" });
@@ -227,7 +221,7 @@ namespace UpDiddy.Controllers
             orderByListItems.Add(new SelectListItem() { Value = "last_name desc", Text = "Last Name \u2193" });
             orderByListItems.Add(new SelectListItem() { Value = "last_name", Text = "Last Name \u2191" });
 
-            //  var subscriberSourcesDto = _api.SubscriberSourcesAsync().Result.OrderByDescending(ss => ss.Count);
+            //  var subscriberSourcesDto = _Api.SubscriberSourcesAsync().Result.OrderByDescending(ss => ss.Count);
             var selectListItems = subscriberSourcesDto.OrderBy(ss => ss.Count).Select(ss => new SelectListItem()
             {
                 Text = $"{ss.Name} ({ss.Count})",
@@ -249,9 +243,9 @@ namespace UpDiddy.Controllers
         [Route("[controller]/subscriberData")]
         public async Task<ProfileSearchResultDto> SubscriberData(string searchFilter, string searchQuery = "", string searchLocationQuery = "", string sortOrder = "")
         {
-       
- 
-            ProfileSearchResultDto subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery, searchLocationQuery, sortOrder);
+
+
+            ProfileSearchResultDto subscribers = await _Api.SubscriberSearchAsync(searchFilter, searchQuery, searchLocationQuery, sortOrder);
             return subscribers;
         }
 
@@ -279,65 +273,71 @@ namespace UpDiddy.Controllers
                 searchQuery = string.Empty;
                 sortOrder = string.Empty;
             }
-            ProfileSearchResultDto subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery, searchLocationQuery, sortOrder);
+            ProfileSearchResultDto subscribers = await _Api.SubscriberSearchAsync(searchFilter, searchQuery, searchLocationQuery, sortOrder);
             return PartialView("_SubscriberGrid", subscribers);
         }
 
         [Authorize]
         [HttpGet]
-        [Route("/Talent/Subscriber/{subscriberGuid}")]
-        public async Task<IActionResult> SubscriberAsync(Guid subscriberGuid)
+        [Route("/Talent/Subscriber/{subscriberGuid}/{cloudIdentifier}")]
+        public async Task<IActionResult> SubscriberAsync(Guid subscriberGuid, Guid cloudIdentifier)
         {
             SubscriberDto subscriber = null;
             SubscriberViewModel subscriberViewModel = null;
             try
             {
-   
-                subscriber =  await _api.SubscriberAsync(subscriberGuid, false);
-                string AssestBaseUrl = _configuration["CareerCircle:AssetBaseUrl"];
-                string CacheBuster = "?" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
-                subscriberViewModel = new SubscriberViewModel()
+                subscriber = await _Api.SubscriberAsync(subscriberGuid, false);
+                if (subscriber != null)
                 {
-                    FirstName = subscriber.FirstName,
-                    LastName = subscriber.LastName,
-                    Email = subscriber.Email,
-                    PhoneNumber = subscriber.PhoneNumber,
-                    Address = subscriber.Address,
-                    City = subscriber.City,
-                    State = subscriber.State?.Code,
-                    Country = subscriber.State?.Country?.Code3,
-                    GithubUrl = subscriber.GithubUrl,
-                    LinkedInUrl = subscriber.LinkedInUrl,
-                    StackOverflowUrl = subscriber.StackOverflowUrl,
-                    TwitterUrl = subscriber.TwitterUrl,
-                    WorkHistory = subscriber.WorkHistory,
-                    EducationHistory = subscriber.EducationHistory,
-                    Skills = subscriber.Skills,
-                    Enrollments = subscriber.Enrollments,
-                    ResumeFileGuid = subscriber.Files?.FirstOrDefault()?.SubscriberFileGuid,
-                    ResumeFileName = subscriber.Files?.FirstOrDefault()?.SimpleName,
-                    SubscriberGuid = subscriber.SubscriberGuid.Value,
-                    AvatarUrl = string.IsNullOrEmpty(subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + subscriber.AvatarUrl + CacheBuster
-                };
+                    string AssestBaseUrl = _configuration["CareerCircle:AssetBaseUrl"];
+                    string CacheBuster = "?" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+                    subscriberViewModel = new SubscriberViewModel()
+                    {
+                        FirstName = subscriber.FirstName,
+                        LastName = subscriber.LastName,
+                        Email = subscriber.Email,
+                        PhoneNumber = subscriber.PhoneNumber,
+                        Address = subscriber.Address,
+                        City = subscriber.City,
+                        State = subscriber.State?.Code,
+                        Country = subscriber.State?.Country?.Code3,
+                        GithubUrl = subscriber.GithubUrl,
+                        LinkedInUrl = subscriber.LinkedInUrl,
+                        StackOverflowUrl = subscriber.StackOverflowUrl,
+                        TwitterUrl = subscriber.TwitterUrl,
+                        WorkHistory = subscriber.WorkHistory,
+                        EducationHistory = subscriber.EducationHistory,
+                        Skills = subscriber.Skills,
+                        Enrollments = subscriber.Enrollments,
+                        ResumeFileGuid = subscriber.Files?.FirstOrDefault()?.SubscriberFileGuid,
+                        ResumeFileName = subscriber.Files?.FirstOrDefault()?.SimpleName,
+                        SubscriberGuid = subscriber.SubscriberGuid.Value,
+                        AvatarUrl = string.IsNullOrEmpty(subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + subscriber.AvatarUrl + CacheBuster
+                    };
+                }
+                else
+                {
+                    // if we get here, it means that we have an orphaned record in Google that should be deleted
+                    await _Api.DeleteSubscriberAsync(subscriberGuid, cloudIdentifier);
+                }
             }
-            catch
+            catch (Exception e)
             {
+                _sysLog.Log(LogLevel.Information, "An exception occurred in TalentController.SubscriberAsync(): {e.Message}", e);
                 // empty catch here to pass null to the view which will let the user know that the subscriber cannot be found.  This code
                 // path will most mostly likely be hit when there's a mistmatch between the google profile index and the sql server 
                 // database which should not be that often
             }
 
-
-        
             return View("Subscriber", subscriberViewModel);
         }
-        
+
         [HttpGet]
         [Authorize]
         [Route("/Talent/Subscriber/{subscriberGuid}/File/{fileGuid}")]
         public async Task<IActionResult> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid)
         {
-            HttpResponseMessage response = await _api.DownloadFileAsync(subscriberGuid, fileGuid);
+            HttpResponseMessage response = await _Api.DownloadFileAsync(subscriberGuid, fileGuid);
             Stream stream = await response.Content.ReadAsStreamAsync();
             return File(stream, "application/octet-stream",
                 response.Content.Headers.ContentDisposition.FileName.Replace("\"", ""));
@@ -345,10 +345,10 @@ namespace UpDiddy.Controllers
 
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [HttpDelete]
-        [Route("/Talent/Subscriber/{subscriberGuid}")]
-        public async Task<IActionResult> DeleteSubscriberAsync(Guid subscriberGuid)
+        [Route("/Talent/Subscriber/{subscriberGuid}/{cloudIdentifier}")]
+        public async Task<IActionResult> DeleteSubscriberAsync(Guid subscriberGuid, Guid cloudIdentifier)
         {
-            var isSubscriberDeleted = await _api.DeleteSubscriberAsync(subscriberGuid);
+            var isSubscriberDeleted = await _Api.DeleteSubscriberAsync(subscriberGuid, cloudIdentifier);
             return new JsonResult(isSubscriberDeleted);
         }
 
@@ -357,14 +357,14 @@ namespace UpDiddy.Controllers
         [Route("Talent/Subscriber/Notes")]
         public async Task<IActionResult> SaveNotes([FromBody]SubscriberNotesDto subscriberNotes)
         {
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
                 try
                 {
-                    var response=await _Api.SaveNotes(subscriberNotes);
+                    var response = await _Api.SaveNotes(subscriberNotes);
                     return Ok(response);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _sysLog.Log(LogLevel.Error, $"WebApp TalentController.SaveNotes : Error occured when saving notes for data: {JsonConvert.SerializeObject(subscriberNotes)} with message={ex.Message}", ex);
                     return StatusCode(500, new BasicResponseDto { StatusCode = 400, Description = "Internal Server Error." });
@@ -382,7 +382,7 @@ namespace UpDiddy.Controllers
         public async Task<PartialViewResult> SubscriberNotesGrid(string subscriberGuid, string searchQuery)
         {
             IList<SubscriberNotesDto> response;
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
                 response = await _Api.SubscriberNotesSearch(subscriberGuid, searchQuery);
                 return PartialView("_SubscriberNotesGrid", response);
@@ -417,26 +417,26 @@ namespace UpDiddy.Controllers
         }
 
         #region private helper functions
-        private async Task<CreateJobPostingViewModel> CreateJobPostingViewModel(Guid? jobPostingGuid = null )
+        private async Task<CreateJobPostingViewModel> CreateJobPostingViewModel(Guid? jobPostingGuid = null)
         {
-         
+
             JobPostingDto jobPostingDto = null;
-            if ( jobPostingGuid != null )
+            if (jobPostingGuid != null)
             {
-                    jobPostingDto = await _api.GetJobPostingByGuid(jobPostingGuid.Value);
+                jobPostingDto = await _Api.GetJobPostingByGuid(jobPostingGuid.Value);
             }
-     
+
             Guid USCountryGuid = Guid.Parse(_configuration["CareerCircle:USCountryGuid"]);
 
             var states = await _Api.GetStatesByCountryAsync(USCountryGuid);
             var industries = await _Api.GetIndustryAsync();
             var jobCategories = await _Api.GetJobCategoryAsync();
-            var educationLevels = await _api.GetEducationLevelAsync();
-            var experienceLevels = await _api.GetExperienceLevelAsync();
-            var employmentTypes = await _api.GetEmploymentTypeAsync();
-            var compensationType = await _api.GetCompensationTypeAsync();
-            var SecurityClearances = await _api.GetSecurityClearanceAsync();
-            var companies = await _api.GetRecruiterCompaniesAsync(this.subscriber.SubscriberGuid.Value);
+            var educationLevels = await _Api.GetEducationLevelAsync();
+            var experienceLevels = await _Api.GetExperienceLevelAsync();
+            var employmentTypes = await _Api.GetEmploymentTypeAsync();
+            var compensationType = await _Api.GetCompensationTypeAsync();
+            var SecurityClearances = await _Api.GetSecurityClearanceAsync();
+            var companies = await _Api.GetRecruiterCompaniesAsync(this.subscriber.SubscriberGuid.Value);
             int PostingExpirationInDays = int.Parse(_configuration["CareerCircle:PostingExpirationInDays"]);
             CreateJobPostingViewModel model = new CreateJobPostingViewModel()
             {
@@ -457,7 +457,7 @@ namespace UpDiddy.Controllers
                 JobCategories = jobCategories.Select(s => new SelectListItem()
                 {
                     Text = s.Name,
-                    Value = s.JobCategoryGuid.ToString(),                   
+                    Value = s.JobCategoryGuid.ToString(),
                     Selected = jobPostingDto?.JobCategory?.JobCategoryGuid != null && jobPostingDto?.JobCategory?.JobCategoryGuid == s.JobCategoryGuid
                 }),
                 ExperienceLevels = experienceLevels.Select(s => new SelectListItem()
@@ -498,15 +498,15 @@ namespace UpDiddy.Controllers
                 }),
 
                 PostingExpirationDate = jobPostingDto == null ? DateTime.Now.AddDays(PostingExpirationInDays) : jobPostingDto.PostingExpirationDateUTC,
-                ApplicationDeadline =  jobPostingDto == null  ? DateTime.Now.AddDays(PostingExpirationInDays) : jobPostingDto.ApplicationDeadlineUTC
+                ApplicationDeadline = jobPostingDto == null ? DateTime.Now.AddDays(PostingExpirationInDays) : jobPostingDto.ApplicationDeadlineUTC
             };
 
             model.Title = jobPostingDto == null ? string.Empty : jobPostingDto.Title;
             model.Description = jobPostingDto == null ? string.Empty : jobPostingDto.Description;
-            model.City =  jobPostingDto == null ? string.Empty : jobPostingDto.City;
+            model.City = jobPostingDto == null ? string.Empty : jobPostingDto.City;
             model.StreetAddress = jobPostingDto == null ? string.Empty : jobPostingDto.StreetAddress;
-            model.PostalCode = jobPostingDto == null ? string.Empty : jobPostingDto.PostalCode; 
-            model.IsDraft = jobPostingDto == null ? true : jobPostingDto.JobStatus == (int) JobPostingStatus.Draft;
+            model.PostalCode = jobPostingDto == null ? string.Empty : jobPostingDto.PostalCode;
+            model.IsDraft = jobPostingDto == null ? true : jobPostingDto.JobStatus == (int)JobPostingStatus.Draft;
             model.IsPrivate = jobPostingDto == null ? false : jobPostingDto.IsPrivate == 1 ? true : false;
             model.IsAgency = jobPostingDto == null ? true : jobPostingDto.IsAgencyJobPosting;
 
@@ -516,7 +516,7 @@ namespace UpDiddy.Controllers
                 model.Telecommute = jobPostingDto.TelecommutePercentage;
 
             // Initialize skills             
-            if ( jobPostingDto!= null && jobPostingDto.JobPostingSkills != null )           
+            if (jobPostingDto != null && jobPostingDto.JobPostingSkills != null)
                 model.Skills = jobPostingDto.JobPostingSkills;
 
             if (jobPostingDto != null)

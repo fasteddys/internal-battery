@@ -11,6 +11,12 @@ using UpDiddyLib.Dto.Reporting;
 using Microsoft.AspNet.OData.Query;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using UpDiddyLib.Dto;
+using UpDiddyApi.ApplicationCore.Repository;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using System.Reflection;
+using Newtonsoft.Json.Linq;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.Controllers
 {
@@ -20,12 +26,26 @@ namespace UpDiddyApi.Controllers
         private UpDiddyDbContext _db { get; set; }
         private readonly IReportingService _reportingService;
         private readonly ILogger _syslog;
-        public ReportController(UpDiddyDbContext db, IReportingService reportingService, ILogger<ReportController> sysLog)
+        private readonly IRepositoryWrapper _repositoryWrapper;
+        public ReportController(UpDiddyDbContext db, IReportingService reportingService, ILogger<ReportController> sysLog, IRepositoryWrapper respositoryWrapper)
         {
             _db = db;
             _reportingService = reportingService;
             _syslog = sysLog;
+            _repositoryWrapper = respositoryWrapper;
         }
+
+ 
+        [HttpGet]
+        [Route("/api/[controller]/new-subscriber-csv")]
+        public async Task<IActionResult> NewSubscriberCSV()
+        {
+            var data = await _repositoryWrapper.StoredProcedureRepository.GetNewSubscribers();           
+            return Ok(data);
+        }
+ 
+
+
 
         [HttpGet]
         [Route("/api/[controller]/offer-action-summary")]

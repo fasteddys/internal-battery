@@ -46,7 +46,7 @@ namespace UpDiddy
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
-
+             
             // if environment is set to development then add user secrets
             if (env.IsDevelopment())
             {

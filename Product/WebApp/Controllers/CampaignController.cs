@@ -14,21 +14,24 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Helpers;
 using UpDiddy.ViewModels.ButterCMS;
+using System.Security.Claims;
+
 
 namespace UpDiddy.Controllers
 {
     public class CampaignController : BaseController
     {
-        private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
+
+        private readonly ButterCMSClient _butterClient;
 
         public CampaignController(IApi api,
             IConfiguration configuration,
             IHostingEnvironment env)
-            : base(api)
+            : base(api,configuration)
         {
             _env = env;
-            _configuration = configuration;
+            _butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
         }
 
         [HttpGet("/Wozu")]
@@ -122,27 +125,40 @@ namespace UpDiddy.Controllers
         }
 
         [Route("/campaign/{LandingPageSlug}")]
-        public IActionResult ShowCampaignLandingPage(string LandingPageSlug)
+        public async Task<IActionResult> ShowCampaignLandingPage(string LandingPageSlug)
         {
-            // Grab all query params from the request and put them into dictionary that's passed
-            // to ButterCMS call.
-            Dictionary<string, string> QueryParams = new Dictionary<string, string>();
-            foreach (string s in HttpContext.Request.Query.Keys)
+            PageResponse<CampaignLandingPageViewModel> LandingPage = await GetButterLandingPage(LandingPageSlug);
+
+            SubscriberDto subscriber = null;
+            if (HttpContext.User.Identity.IsAuthenticated)
             {
-                QueryParams.Add(s, HttpContext.Request.Query[s].ToString());
+                Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                subscriber = await _Api.GetSubscriberByGuid(loggedInUserGuid);
             }
-
-            QueryParams.Add(UpDiddyLib.Helpers.Constants.CMS.LEVELS, _configuration["ButterCMS:CareerCirclePages:Levels"]);
-
-            // Create ButterCMS client and call their API to get JSON response of page data values.
-            var butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
-            PageResponse<CampaignLandingPageViewModel> LandingPage = butterClient.RetrievePage<CampaignLandingPageViewModel>("*", LandingPageSlug, QueryParams);
 
             // Return 404 if no page data is returned from Butter.
             if (LandingPage == null)
                 return NotFound();
 
             // Assemble ViewModel from results returned in Butter GET call.
+            SignUpViewModel signUpViewModel = new SignUpViewModel()
+            {
+                CampaignSlug = LandingPageSlug,
+                Email = subscriber != null ? subscriber.Email : null,
+                FirstName = subscriber != null ? subscriber.FirstName : null,
+                LastName = subscriber != null ? subscriber.LastName : null,
+                PhoneNumber = subscriber != null ? subscriber.PhoneNumber : null,
+                SubscriberGuid = subscriber != null ? subscriber.SubscriberGuid : null,
+                SignUpButtonText = LandingPage.Data.Fields.signup_form_submit_button_text,
+                SuccessHeader = LandingPage.Data.Fields.success_header,
+                SuccessText = LandingPage.Data.Fields.success_text,
+                ExistingUserButtonText = LandingPage.Data.Fields.existing_user_button_text,
+                ExistingUserSubmitButtonText = LandingPage.Data.Fields.existing_user_form_submit_button_text,
+                ExistingUserSuccessHeader = LandingPage.Data.Fields.existing_user_success_header,
+                ExistingUserSuccessText = LandingPage.Data.Fields.existing_user_success_text,
+                IsWaitList = LandingPage.Data.Fields.iswaitlist,
+            };
+
             var CampaignLandingPageViewModel = new CampaignLandingPageViewModel
             {
                 hero_title = LandingPage.Data.Fields.hero_title,
@@ -151,10 +167,14 @@ namespace UpDiddy.Controllers
                 hero_sub_image = LandingPage.Data.Fields.hero_sub_image,
                 content_band_header = LandingPage.Data.Fields.content_band_header,
                 content_band_text = LandingPage.Data.Fields.content_band_text,
-                partner = LandingPage.Data.Fields.partner,
-                IsWaitList = LandingPage.Data.Fields.IsWaitList
+                signup_form_header = LandingPage.Data.Fields.signup_form_header,
+                signup_form_text = LandingPage.Data.Fields.signup_form_text,
+                existing_user_form_header = LandingPage.Data.Fields.existing_user_form_header,
+                existing_user_form_text = LandingPage.Data.Fields.existing_user_form_text,
+                isLoggedIn = HttpContext.User.Identity.IsAuthenticated,
+                iswaitlist = LandingPage.Data.Fields.iswaitlist,
+                signUpViewModel = signUpViewModel
             };
-
             return View("CampaignLandingPage", CampaignLandingPageViewModel);
         }
 
@@ -163,6 +183,19 @@ namespace UpDiddy.Controllers
         {
             var redirectUrl = "/campaign/salesforce-waitlist";
             return Redirect(redirectUrl);
+        }
+
+        private async Task<PageResponse<CampaignLandingPageViewModel>> GetButterLandingPage(string landingPageSlug)
+        {
+            Dictionary<string, string> QueryParams = new Dictionary<string, string>();
+            foreach (string s in HttpContext.Request.Query.Keys)
+            {
+                QueryParams.Add(s, HttpContext.Request.Query[s].ToString());
+            }
+            QueryParams.Add(UpDiddyLib.Helpers.Constants.CMS.LEVELS, _configuration["ButterCMS:CareerCirclePages:Levels"]);
+            var butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
+            PageResponse<CampaignLandingPageViewModel> landingPage = await butterClient.RetrievePageAsync<CampaignLandingPageViewModel>("*", landingPageSlug, QueryParams);
+            return landingPage;
         }
     }
 }

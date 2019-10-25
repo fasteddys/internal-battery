@@ -62,6 +62,9 @@ public class SubscriberController : Controller
     private readonly IJobPostingService _jobPostingService;
     private readonly ManagementApiClient _managementApiClient;
     private readonly IUserService _userService;
+    private readonly ITraitifyService _traitifyService;
+    private readonly IFileDownloadTrackerService _fileDownloadTrackerService;
+
     public SubscriberController(UpDiddyDbContext db,
         IMapper mapper,
         IConfiguration configuration,
@@ -78,7 +81,9 @@ public class SubscriberController : Controller
         IHttpClientFactory httpClientFactory,
         IHangfireService hangfireService,
         IJobPostingService jobPostingService,
-        IUserService userService)
+        IUserService userService,
+            IFileDownloadTrackerService fileDownloadTrackerService,
+            ITraitifyService traitifyService)
     {
         _db = db;
         _mapper = mapper;
@@ -97,6 +102,8 @@ public class SubscriberController : Controller
         _hangfireService = hangfireService;
         _jobPostingService = jobPostingService;
         _userService = userService;
+        _fileDownloadTrackerService = fileDownloadTrackerService;
+        _traitifyService = traitifyService;
     }
 
     #region Basic Subscriber Endpoints
@@ -161,8 +168,8 @@ public class SubscriberController : Controller
     }
 
     [Authorize(Policy = "IsCareerCircleAdmin")]
-    [HttpDelete("{subscriberGuid}")]
-    public IActionResult DeleteSubscriber(Guid subscriberGuid)
+    [HttpDelete("{subscriberGuid}/{cloudIdentifier}")]
+    public IActionResult DeleteSubscriber(Guid subscriberGuid, Guid cloudIdentifier)
     {
         try
         {
@@ -188,9 +195,8 @@ public class SubscriberController : Controller
             deleteUserAuditInformation.Add("action", "deleted");
             deleteUserAuditInformation.Add("Auth0UserId", subscriber.Auth0UserId);
             SubscriberProfileStagingStoreFactory.Save(_db, subscriber, "Auth0", "Json", JsonConvert.SerializeObject(deleteUserAuditInformation));
-
             // delete subscriber from cloud talent 
-            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(subscriber.SubscriberGuid.Value));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(subscriberGuid, cloudIdentifier));
         }
         catch (Exception e)
         {
@@ -916,7 +922,25 @@ public class SubscriberController : Controller
         return Ok(result);
     }
 
-    #region SubscriberNotes
+    private void SendGatedDownloadLink(string email, string link)
+    {
+        _hangfireService.Enqueue(() =>
+         _sysEmail.SendTemplatedEmailAsync(
+             email,
+             _configuration["SysEmail:Transactional:TemplateIds:GatedDownload-LinkEmail"],
+             new
+             {
+                 fileDownloadLinkUrl = link
+             },
+             Constants.SendGridAccount.Transactional,
+             null,
+             null,
+             null,
+             null
+         ));
+    }
+
+       #region SubscriberNotes
     /// <summary>
     /// Save Notes
     /// </summary>
