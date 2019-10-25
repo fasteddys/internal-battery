@@ -65,7 +65,7 @@ namespace UpDiddyApi.Controllers
         [Route("/V2/[controller]/random")]
         public async Task<IActionResult> Random(Guid JobGuid)
         {
-            return Ok(await _courseService.GetCoursesForJob(JobGuid, Request.Query));
+            return Ok(await _courseService.GetCoursesRandom(Request.Query));
         }
 
 

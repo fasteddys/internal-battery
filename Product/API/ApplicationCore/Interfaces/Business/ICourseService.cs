@@ -16,5 +16,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         Task<List<CourseDetailDto>> GetCoursesForJob(Guid jobGuid, IQueryCollection Query);
         Task<List<CourseDetailDto>> GetCoursesBySkillHistogram(Dictionary<string, int> SkillHistogram, IQueryCollection query);
+        Task<List<CourseDetailDto>> GetCoursesRandom(IQueryCollection query);
     }
 }

@@ -19,5 +19,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 
         Task<List<CourseDetailDto>> GetCoursesForJob(Guid JobGuid, int NumCourses);
         Task<List<CourseDetailDto>> GetCoursesBySkillHistogram(Dictionary<string, int> SkillHistogram, int NumCourses);
+        Task<List<CourseDetailDto>> GetCoursesRandom(int NumCourses);
     }
 }

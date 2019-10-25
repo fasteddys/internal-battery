@@ -27,6 +27,19 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
+
+        public async Task<List<CourseDetailDto>> GetCoursesRandom(IQueryCollection query)
+        {
+
+            int MaxResults = 3;
+            int.TryParse(_config["APIGateway:DefaultMaxLimit"], out MaxResults);
+            string limit = query["limit"];
+            if (limit != null)
+                int.TryParse(limit, out MaxResults);
+            return await _repositoryWrapper.StoredProcedureRepository.GetCoursesRandom(MaxResults);
+        }
+
+
         public async Task<List<CourseDetailDto>> GetCoursesForJob(Guid jobGuid,IQueryCollection query )
         {
  

@@ -19,6 +19,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
         // todo jab add migrations for sprocs and data type 
+
+
+
+
         public async Task<List<CourseDetailDto>> GetCoursesBySkillHistogram(Dictionary<string,int> SkillHistogram, int NumCourses)
         {
             List<CourseDetailDto> rval = null;
@@ -43,6 +47,19 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var spParams = new object[] { Skills, new SqlParameter("@MaxResults", NumCourses) }; 
             rval = await _dbContext.CourseDetails.FromSql<CourseDetailDto>("System_Get_RelatedCoursesBySkills @SkillHistogram,@MaxResults", spParams).ToListAsync();
              
+            return rval;
+        }
+
+
+
+        public async Task<List<CourseDetailDto>> GetCoursesRandom(int NumCourses)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@MaxResults", NumCourses)
+                };
+
+            List<CourseDetailDto> rval = null;
+            rval = await _dbContext.CourseDetails.FromSql<CourseDetailDto>("System_Get_CoursesRandom @MaxResults", spParams).ToListAsync();
             return rval;
         }
 
