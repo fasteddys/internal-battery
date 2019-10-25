@@ -93,6 +93,7 @@ namespace UpDiddyApi.Controllers
             {
 
             }
+            return null;
         }
 
         [HttpGet]
@@ -114,6 +115,7 @@ namespace UpDiddyApi.Controllers
             {
 
             }
+            return null;
         }
 
         [HttpDelete]
@@ -124,7 +126,7 @@ namespace UpDiddyApi.Controllers
             try
             {
                 Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                await _jobAlertService.DeleteJobAlert(jobAlertGuid);
+                await _jobAlertService.DeleteJobAlert(subscriberGuid, jobAlertGuid);
                 return StatusCode(204);
             }
             catch (UnauthorizedAccessException)
@@ -139,6 +141,7 @@ namespace UpDiddyApi.Controllers
             {
 
             }
+            return null;
         }
 
         #endregion
