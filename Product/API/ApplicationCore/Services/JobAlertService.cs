@@ -55,10 +55,16 @@ namespace UpDiddyApi.ApplicationCore.Services
                 }
 
                 DateTime utcDate = DateTime.UtcNow;
+                DayOfWeek dayOfWeek;
+                bool isValid = DayOfWeek.TryParse(jobAlertDto.ExecutionDayOfWeek, out dayOfWeek);
+                if (!isValid)
+                {
+                    throw new NotSupportedException($"Unrecognized value for 'ExecutionDayOfWeek' parameter: {jobAlertDto.ExecutionDayOfWeek}");
+                }
                 DateTime localExecutionDate = new DateTime(
                     utcDate.Year,
                     utcDate.Month,
-                    jobAlertDto.Frequency == "Weekly" ? utcDate.Next(jobAlertDto.ExecutionDayOfWeek.Value).Day : utcDate.Day,
+                    jobAlertDto.Frequency == "Weekly" ? utcDate.Next(dayOfWeek).Day : utcDate.Day,
                     utcDate.Hour,
                     utcDate.Minute,
                     0);
@@ -112,7 +118,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                    .Select(jpa => new JobAlertDto()
                    {
                        Description = jpa.Description,
-                       ExecutionDayOfWeek = jpa.ExecutionDayOfWeek,
+                       ExecutionDayOfWeek = jpa.ExecutionDayOfWeek.HasValue ? jpa.ExecutionDayOfWeek.Value.ToString() : null,
                        Frequency = jpa.Frequency.ToString(),
                        JobAlertGuid = jpa.JobPostingAlertGuid,
                        Keywords = JsonConvert.DeserializeObject<JobQueryDto>(jpa.JobQueryDto.ToString()).Keywords,
@@ -137,8 +143,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 throw new UnauthorizedAccessException();
             }
+
             alert.IsDeleted = 1;
+            _repositoryWrapper.JobPostingAlertRepository.Update(alert);
             await _repositoryWrapper.JobPostingAlertRepository.SaveAsync();
+            _hangfireService.RemoveIfExists($"jobPostingAlert:{jobAlertGuid}");
         }
     }
 }
