@@ -18,6 +18,51 @@ namespace UpDiddyApi.ApplicationCore.Repository
             _dbContext = dbContext;
         }
 
+        // todo jab add migrations for sprocs and data type 
+        public async Task<List<CourseDetailDto>> GetCoursesBySkillHistogram(Dictionary<string,int> SkillHistogram, int NumCourses)
+        {
+            List<CourseDetailDto> rval = null;
+
+            DataTable table = new DataTable();
+            table.Columns.Add("Skill", typeof(string));
+            table.Columns.Add("Occurences", typeof(int));
+                  
+            foreach ( KeyValuePair<string,int> SkillInfo in SkillHistogram)
+            {
+                DataRow row = table.NewRow();
+                row["Skill"] = SkillInfo.Key;
+                row["Occurences"] = SkillInfo.Value;
+                table.Rows.Add(row);
+            }
+    
+
+            var Skills = new SqlParameter("@SkillHistogram", table);
+            Skills.SqlDbType = SqlDbType.Structured;
+            Skills.TypeName = "dbo.SkillHistogram";
+
+            var spParams = new object[] { Skills, new SqlParameter("@MaxResults", NumCourses) }; 
+            rval = await _dbContext.CourseDetails.FromSql<CourseDetailDto>("System_Get_RelatedCoursesBySkills @SkillHistogram,@MaxResults", spParams).ToListAsync();
+             
+            return rval;
+        }
+
+
+
+        public async Task<List<CourseDetailDto>> GetCoursesForJob( Guid JobGuid, int NumCourses)
+        {
+            var spParams = new object[] {                
+                new SqlParameter("@JobGuid", JobGuid),
+                new SqlParameter("@MaxResults", NumCourses)
+                };
+
+            List<CourseDetailDto> rval = null;
+            rval = await _dbContext.CourseDetails.FromSql<CourseDetailDto>("System_Get_CoursesForJob @JobGuid,@MaxResults", spParams).ToListAsync();
+            return rval;
+        }
+
+
+
+
         public async Task<List<JobAbandonmentStatistics>> GetJobAbandonmentStatisticsAsync(DateTime startDate, DateTime endDate)
         {
             var spParams = new object[] {

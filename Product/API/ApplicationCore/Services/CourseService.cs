@@ -1,4 +1,7 @@
 ﻿using AutoMapper;
+ 
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -15,11 +18,43 @@ namespace UpDiddyApi.ApplicationCore.Services
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IMapper _mapper;
-        public CourseService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
+        private readonly IConfiguration _config;
+        public CourseService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IConfiguration configuration )
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
+            _config = configuration;
         }
+
+
+        public async Task<List<CourseDetailDto>> GetCoursesForJob(Guid jobGuid,IQueryCollection query )
+        {
+ 
+            int MaxResults = 3;
+            int.TryParse (_config["APIGateway:DefaultMaxLimit"], out MaxResults);
+            string limit = query["limit"];
+            if ( limit != null )        
+                int.TryParse(limit, out MaxResults);
+            return await _repositoryWrapper.StoredProcedureRepository.GetCoursesForJob(jobGuid, MaxResults);
+        }
+
+
+
+        public async Task<List<CourseDetailDto>> GetCoursesBySkillHistogram(Dictionary<string, int> SkillHistogram, IQueryCollection query)
+        {
+
+            int MaxResults = 3;
+            int.TryParse(_config["APIGateway:DefaultMaxLimit"], out MaxResults);
+            string limit = query["limit"];
+            if (limit != null)
+                int.TryParse(limit, out MaxResults);
+
+            return await _repositoryWrapper.StoredProcedureRepository.GetCoursesBySkillHistogram(SkillHistogram, MaxResults);
+        }
+
+
+
+
 
         /// <summary>
         /// Handles the creation of a course. 

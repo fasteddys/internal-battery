@@ -73,7 +73,8 @@ namespace UpDiddyApi.Controllers
         [Route("/V2/[controller]/search")]
         public async Task<IActionResult> Search()
         {
-            JobSearchSummaryResultDto rVal = await _jobService.SummaryJobSearch(Request.Query); 
+            JobSearchSummaryResultDto rVal = null;     
+            rVal  = await _jobService.SummaryJobSearch(Request.Query);                   
             return Ok(rVal); 
         }
 
