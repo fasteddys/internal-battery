@@ -97,13 +97,13 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpDelete]
-        [Route("/V2/[controller]/alert")]
+        [Route("/V2/[controller]/alert/{jobAlert}")]
         [Authorize]
-        public async Task<IActionResult> DeleteJobAlert(Guid jobAlertGuid)
+        public async Task<IActionResult> DeleteJobAlert(Guid jobAlert)
         {
 
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _jobAlertService.DeleteJobAlert(subscriberGuid, jobAlertGuid);
+            await _jobAlertService.DeleteJobAlert(subscriberGuid, jobAlert);
             return StatusCode(204);
         }
 
