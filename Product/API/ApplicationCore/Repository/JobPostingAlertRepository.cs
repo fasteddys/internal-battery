@@ -23,7 +23,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             return await jobPostingAlerts
                 .Include(a => a.Subscriber)
-                .Where(a => a.Subscriber.SubscriberGuid == subscriberGuid)
+                .Where(a => a.Subscriber.SubscriberGuid == subscriberGuid && a.IsDeleted == 0)
                 .ToListAsync();
         }
 

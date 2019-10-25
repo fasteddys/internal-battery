@@ -79,21 +79,10 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         public async Task<IActionResult> CreateJobAlert([FromBody] JobAlertDto jobPostingAlertDto)
         {
-            try
-            {
+
                 Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
                 await _jobAlertService.CreateJobAlert(subscriberGuid, jobPostingAlertDto);
                 return StatusCode(201);
-            }
-            catch (MaximumReachedException e)
-            {
-                return BadRequest(e);
-            }
-            catch (Exception e)
-            {
-
-            }
-            return null;
         }
 
         [HttpGet]

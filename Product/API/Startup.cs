@@ -311,6 +311,7 @@ namespace UpDiddyApi
 
             ScopeRead = Configuration["AzureAdB2C:ScopeRead"];
             ScopeWrite = Configuration["AzureAdB2C:ScopeWrite"];
+            app.UseExceptionMiddleware();
 
             app.UseAuthentication();
 
