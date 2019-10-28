@@ -204,7 +204,19 @@ namespace UpDiddyApi.ApplicationCore.Services
             return jobSearchResult;
         }
 
-        public async Task ShareJob(Guid job, Guid subscriberGuid, ShareJobDto shareJobDto)
+        private async Task AssignCompanyLogoUrlToJobs(List<JobViewDto> jobs)
+        {
+            var companies = await _companyService.GetCompaniesAsync();
+            foreach (var job in jobs)
+            {
+                var company = companies.Where(x => x.CompanyName == job.CompanyName).FirstOrDefault();
+
+                if (!string.IsNullOrWhiteSpace(company?.LogoUrl))
+                    job.CompanyLogoUrl = _configuration["StorageAccount:AssetBaseUrl"] + "Company/" + company.LogoUrl;
+            }
+        }
+
+        public async Task ShareJob(Guid job, Guid subscriber, ShareJobDto shareJobDto)
         {
             if (string.IsNullOrEmpty(shareJobDto.Email))
             {
@@ -219,7 +231,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new NotFoundException("job posting not found");
 
             //get ReferrerId from ReferrerGuid
-            var referrer = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+            var referrer = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriber);
 
             //get ReferrerId from ReferrerGuid
             var referee = await _repositoryWrapper.SubscriberRepository.GetSubscriberByEmailAsync(shareJobDto.Email);
@@ -242,17 +254,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _repositoryWrapper.JobReferralRepository.AddJobReferralAsync(jobReferral);
         }
 
-        private async Task AssignCompanyLogoUrlToJobs(List<JobViewDto> jobs)
-        {
-            var companies = await _companyService.GetCompaniesAsync();
-            foreach (var job in jobs)
-            {
-                var company = companies.Where(x => x.CompanyName == job.CompanyName).FirstOrDefault();
-
-                if (!string.IsNullOrWhiteSpace(company?.LogoUrl))
-                    job.CompanyLogoUrl = _configuration["StorageAccount:AssetBaseUrl"] + "Company/" + company.LogoUrl;
-            }
-        }
-
+      
     }
 }

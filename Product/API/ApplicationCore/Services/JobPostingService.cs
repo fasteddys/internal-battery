@@ -72,5 +72,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             return await _repositoryWrapper.StoredProcedureRepository.GetSubscriberJobFavorites(SubscriberId);
         }
+        
     }
 }
