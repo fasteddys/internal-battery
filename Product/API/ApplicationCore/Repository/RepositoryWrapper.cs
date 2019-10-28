@@ -63,7 +63,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ITraitifyRepository _traitifyRepository;
         private IFileDownloadTrackerRepository _fileDownloadTrackerRepository;
         private IPartnerTypeRepository _partnerTypeRepository;
- 
+        private ITraitifyCourseTopicBlendMappingRepository _traitifyCourseTopicBlendMappingRepository;
+
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
@@ -748,7 +749,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
-         public IFileDownloadTrackerRepository FileDownloadTrackerRepository
+        public IFileDownloadTrackerRepository FileDownloadTrackerRepository
         {
             get
             {
@@ -767,17 +768,23 @@ namespace UpDiddyApi.ApplicationCore.Repository
             {
                 if (_partnerTypeRepository == null)
                 {
-                    _partnerTypeRepository = new PartnerTypeRepository(_dbContext);        
+                    _partnerTypeRepository = new PartnerTypeRepository(_dbContext);
                 }
                 return _partnerTypeRepository;
             }
-               
+
         }
 
-
-
-
-
-
+        public ITraitifyCourseTopicBlendMappingRepository TraitifyCourseTopicBlendMappingRepository
+        {
+            get
+            {
+                if (_traitifyCourseTopicBlendMappingRepository == null)
+                {
+                    _traitifyCourseTopicBlendMappingRepository = new TraitifyCourseTopicBlendMappingRepository(_dbContext);
+                }
+                return _traitifyCourseTopicBlendMappingRepository;
+            }
+        }
     }
 }

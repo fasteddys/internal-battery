@@ -23,5 +23,6 @@ namespace UpDiddyLib.Dto.Marketing
         public string campaignSlug { get; set; }
         public Guid? subscriberGuid { get; set; }
         public string subscriberSource { get; set; }
+        public string traitifyAssessmentId { get; set; }
     }
 }

@@ -134,15 +134,22 @@ namespace UpDiddyApi.ApplicationCore.Services
             return rVal; ;
         }
 
+        public async Task<List<SearchTermDto>> GetKeywordSearchTermsAsync()
+        {
+            return await _repositoryWrapper.StoredProcedureRepository.GetKeywordSearchTermsAsync();
+        }
 
+        public async Task<List<SearchTermDto>> GetLocationSearchTermsAsync()
+        {
+            return await _repositoryWrapper.StoredProcedureRepository.GetLocationSearchTermsAsync();
+        }
 
         public async Task ReferJobToFriend(JobReferralDto jobReferralDto)
         {
             var jobReferralGuid = await SaveJobReferral(jobReferralDto);
             await SendReferralEmail(jobReferralDto, jobReferralGuid);
         }
-
-
+        
         public async Task UpdateJobReferral(string referrerCode, string subscriberGuid)
         {
             //get jobReferral instance to update

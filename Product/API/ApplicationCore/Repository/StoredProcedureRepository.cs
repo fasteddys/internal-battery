@@ -13,6 +13,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
     public class StoredProcedureRepository : IStoredProcedureRepository
     {
         private readonly UpDiddyDbContext _dbContext;
+
         public StoredProcedureRepository(UpDiddyDbContext dbContext)
         {
             _dbContext = dbContext;
@@ -80,6 +81,16 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
 
 
+        public async Task<List<SearchTermDto>> GetKeywordSearchTermsAsync()
+        {
+            return await _dbContext.KeywordSearchTerms.FromSql<SearchTermDto>("System_Get_KeywordSearchTerms").ToListAsync();
+        }
+
+        public async Task<List<SearchTermDto>> GetLocationSearchTermsAsync()
+        {
+            return await _dbContext.LocationSearchTerms.FromSql<SearchTermDto>("System_Get_LocationSearchTerms").ToListAsync();
+        }
+
         public async Task<List<JobAbandonmentStatistics>> GetJobAbandonmentStatisticsAsync(DateTime startDate, DateTime endDate)
         {
             var spParams = new object[] {
@@ -93,16 +104,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             return await _dbContext.JobCountPerProvince.FromSql<JobCountPerProvince>("System_JobCountPerProvince").ToListAsync();
         }
-
-      
+              
         public async Task<List<SubscriberInitialSourceDto>> GetNewSubscribers()
         {
             List<SubscriberInitialSourceDto> rval = null;     
             rval = await _dbContext.SubscriberInitialSource.FromSql<SubscriberInitialSourceDto>("System_Get_New_Subscribers").ToListAsync();     
             return rval;
         }
-     
-
 
         public async Task<List<SubscriberSourceDto>> GetSubscriberSources(int SubscriberId)
         {
