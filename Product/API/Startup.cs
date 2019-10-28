@@ -200,7 +200,7 @@ namespace UpDiddyApi
 
             // remove TinyIds from old CampaignPartnerContact records
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DeactivateCampaignPartnerContacts(), Cron.Daily());
-           
+
             if (_currentEnvironment.IsProduction())
             {
                 // run the job crawl in production Monday through Friday once per day at 15:00 UTC
@@ -212,7 +212,7 @@ namespace UpDiddyApi
             {
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.Weekly(DayOfWeek.Sunday, 4));
             }
-            
+
             // LOCAL TESTING ONLY - DO NOT UNCOMMENT THIS CODE!
             // BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
 
@@ -308,7 +308,7 @@ namespace UpDiddyApi
 
             ScopeRead = Configuration["AzureAdB2C:ScopeRead"];
             ScopeWrite = Configuration["AzureAdB2C:ScopeWrite"];
-
+            app.UseExceptionMiddleware();
             app.UseAuthentication();
 
             app.UseCors("Cors");

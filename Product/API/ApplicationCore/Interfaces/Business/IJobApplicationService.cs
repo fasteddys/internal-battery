@@ -6,11 +6,13 @@ using System.Threading.Tasks;
 using UpDiddyLib.Dto.Reporting;
 using Microsoft.AspNet.OData;
 using Microsoft.AspNet.OData.Query;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface IJobApplicationService
     {
         Task<bool> IsSubscriberAppliedToJobPosting(int subscriberId, int jobPostingId);
+        Task<bool> CreateJobApplication(Guid subscriberGuid, JobApplicationDto jobApplicationDto);
     }
 }

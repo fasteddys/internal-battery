@@ -8,6 +8,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     {
         Task CreateJobAlert(Guid subscriberGuid, JobAlertDto JobAlertDto);
         Task<List<JobAlertDto>> GetJobAlert(Guid subscriberGuid);
-      //  Task DeleteJobAlert(Guid jobAlertGuid);
+        Task DeleteJobAlert(Guid subscriberGuid, Guid jobAlertGuid);
     }
 }
