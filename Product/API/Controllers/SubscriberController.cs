@@ -62,7 +62,6 @@ public class SubscriberController : Controller
     private readonly IJobPostingService _jobPostingService;
     private readonly ManagementApiClient _managementApiClient;
     private readonly IUserService _userService;
-    private readonly ITraitifyService _traitifyService;
     private readonly IFileDownloadTrackerService _fileDownloadTrackerService;
 
     public SubscriberController(UpDiddyDbContext db,
@@ -82,8 +81,7 @@ public class SubscriberController : Controller
         IHangfireService hangfireService,
         IJobPostingService jobPostingService,
         IUserService userService,
-            IFileDownloadTrackerService fileDownloadTrackerService,
-            ITraitifyService traitifyService)
+        IFileDownloadTrackerService fileDownloadTrackerService)
     {
         _db = db;
         _mapper = mapper;
@@ -103,7 +101,6 @@ public class SubscriberController : Controller
         _jobPostingService = jobPostingService;
         _userService = userService;
         _fileDownloadTrackerService = fileDownloadTrackerService;
-        _traitifyService = traitifyService;
     }
 
     #region Basic Subscriber Endpoints

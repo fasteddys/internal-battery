@@ -161,7 +161,7 @@ namespace UpDiddyApi.Controllers
                     {
                         await _jobService.UpdateJobReferral(createUserDto.JobReferralCode, createUserDto.SubscriberGuid.ToString());
                     }
-                    return Ok(new BasicResponseDto() { StatusCode = 200, Description = createLoginResponse.Message });
+                    return Ok(new BasicResponseDto() { StatusCode = 200, Description = createLoginResponse.Message, Data = createLoginResponse.User });
                 }
             }
         }

@@ -73,10 +73,6 @@ namespace UpDiddy.Api
         Task<SubscriberEducationHistoryDto> DeleteEducationHistoryAsync(Guid subscriberGuid, Guid educationHistory);
         Task<IList<SubscriberWorkHistoryDto>> GetWorkHistoryAsync(Guid subscriberGuid);
         Task<IList<SubscriberEducationHistoryDto>> GetEducationHistoryAsync(Guid subscriberGuid);
-        Task<BasicResponseDto> UpdateSubscriberContactAsync(Guid partnerContactGuid, SignUpDto signUpDto);
-        Task<BasicResponseDto> ExpressUpdateSubscriberContactAsync(SignUpDto signUpDto);
-        Task<BasicResponseDto> ExistingUserGroupSignup (SignUpDto signUpDto);
-
         Task<CourseDto> GetCourseByCampaignGuidAsync(Guid CampaignGuid);
         Task<SubscriberEducationHistoryDto> AddEducationalHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto workHistory);
         Task<BasicResponseDto> AddJobPostingAsync(JobPostingDto jobPosting);
@@ -168,7 +164,7 @@ namespace UpDiddy.Api
         Task<TraitifyDto> StartNewTraitifyAssessment(TraitifyDto dto);
         Task<TraitifyDto> GetTraitifyByAssessmentId(string assessmentId);
         Task<TraitifyDto> CompleteAssessment(string assessmentId);
-        Task<BasicResponseDto> TraitifySignUp(string assessmentId); 
+        Task<BasicResponseDto> AssociateSubscriberWithAssessment(string assessmentId, Guid subscriberGuid);
         #endregion
 
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);

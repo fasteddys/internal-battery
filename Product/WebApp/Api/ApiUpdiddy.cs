@@ -39,7 +39,7 @@ namespace UpDiddy.Api
         public IMemoryCache _memoryCache { get; set; }
         public HttpContext _currentContext { get; set; }
         private readonly ILogger _syslog;
-        
+
         #region Constructor
         public ApiUpdiddy(IOptions<AzureAdB2COptions> azureAdB2COptions, IHttpContextAccessor contextAccessor, IConfiguration conifguration, IHttpClientFactory httpClientFactory, IDistributedCache cache, ILogger<ApiUpdiddy> sysLog, IMemoryCache memoryCache)
         {
@@ -788,9 +788,9 @@ namespace UpDiddy.Api
             }
         }
 
-         public async Task<FileDto> GetFile(Guid fileDownloadTrackerGuid)
-         {
-          try
+        public async Task<FileDto> GetFile(Guid fileDownloadTrackerGuid)
+        {
+            try
             {
                 FileDto retVal = await GetAsync<FileDto>($"file/gated/{fileDownloadTrackerGuid}");
                 return retVal;
@@ -800,7 +800,7 @@ namespace UpDiddy.Api
                 string temp = e.Message;
                 return null;
             }
-         }
+        }
 
 
         #endregion
@@ -868,27 +868,6 @@ namespace UpDiddy.Api
         public async Task<SubscriberDto> GetSubscriberByGuid(Guid subscriberGuid)
         {
             return await _SubscriberAsync(subscriberGuid);
-        }
-
-        public async Task<BasicResponseDto> UpdateSubscriberContactAsync(Guid partnerContactGuid, SignUpDto signUpDto)
-        {
-            // encrypt password before sending to API
-            signUpDto.password = Crypto.Encrypt(_configuration["Crypto:Key"], signUpDto.password);
-
-            return await PutAsync<BasicResponseDto>(string.Format("subscriber/contact/{0}", partnerContactGuid.ToString()), signUpDto);
-        }
-
-        public async Task<BasicResponseDto> ExistingUserGroupSignup(SignUpDto signUpDto)
-        {
-            return await PostAsync<BasicResponseDto>("subscriber/existing-user-signup", signUpDto);
-        }
-
-        public async Task<BasicResponseDto> ExpressUpdateSubscriberContactAsync(SignUpDto signUpDto)
-        {
-            // encrypt password before sending to API
-            signUpDto.password = Crypto.Encrypt(_configuration["Crypto:Key"], signUpDto.password);
-
-            return await PostAsync<BasicResponseDto>("subscriber/express-sign-up", signUpDto);
         }
 
         public async Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid)
@@ -976,7 +955,7 @@ namespace UpDiddy.Api
         {
             return await PutAsync<BasicResponseDto>("subscriber/onboard");
         }
-        
+
         public async Task<bool> DeleteSubscriberAsync(Guid subscriberGuid, Guid cloudIdentifier)
         {
             return await DeleteAsync<bool>($"subscriber/{subscriberGuid}/{cloudIdentifier}");
@@ -1126,19 +1105,19 @@ namespace UpDiddy.Api
             }
             return rval;
         }
-        
+
         public async Task<IList<ExperienceLevelDto>> _GetExperienceLevelAsync()
         {
 
             return await GetAsync<IList<ExperienceLevelDto>>("lookupdata/experience-level");
         }
-        
+
         public async Task<IList<EducationLevelDto>> _GetEducationLevelAsync()
         {
 
             return await GetAsync<IList<EducationLevelDto>>("lookupdata/education-level");
         }
-        
+
         public async Task<IList<SecurityClearanceDto>> _GetSecurityClearanceAsync()
         {
 
@@ -1150,7 +1129,7 @@ namespace UpDiddy.Api
 
             return await GetAsync<IList<RecruiterCompanyDto>>($"subscriber/{subscriberGuid}/company");
         }
-        
+
         public async Task<IList<EmploymentTypeDto>> _GetEmploymentTypeAsync()
         {
 
@@ -1210,7 +1189,7 @@ namespace UpDiddy.Api
         {
             return await GetAsync<IList<CompanyDto>>("companies/");
         }
-        
+
         private async Task<IList<CompanyDto>> _GetCompaniesAsync(string userQuery)
         {
             return await GetAsync<IList<CompanyDto>>("company/" + userQuery);
@@ -1225,17 +1204,17 @@ namespace UpDiddy.Api
         {
             return await GetAsync<IList<EducationalDegreeDto>>("educational-degree/" + userQuery);
         }
-        
+
         private async Task<IList<CompensationTypeDto>> _GetCompensationTypesAsync()
         {
             return await GetAsync<IList<CompensationTypeDto>>("compensation-types");
         }
-        
+
         private async Task<IList<EducationalDegreeTypeDto>> _GetEducationalDegreeTypesAsync()
         {
             return await GetAsync<IList<EducationalDegreeTypeDto>>("educational-degree-types");
         }
-        
+
         public async Task<IList<SkillDto>> GetSkillsBySubscriberAsync(Guid subscriberGuid)
         {
             return await GetAsync<IList<SkillDto>>("subscriber/" + subscriberGuid + "/skill");
@@ -1328,13 +1307,13 @@ namespace UpDiddy.Api
             return rval;
         }
 
-      
+
         public async Task<List<SubscriberInitialSourceDto>> NewSubscribersCSVAsync()
         {
             string endpoint = $"report/new-subscriber-csv";
-            return await GetAsync<List<SubscriberInitialSourceDto>>(endpoint);  
+            return await GetAsync<List<SubscriberInitialSourceDto>>(endpoint);
         }
-      
+
 
 
         public async Task<ProfileSearchResultDto> SubscriberSearchAsync(string searchFilter, string searchQuery, string searchLocationQuery, string sortOrder)
@@ -1478,7 +1457,7 @@ namespace UpDiddy.Api
             return null;
         }
 
-  
+
 
 
 
@@ -1682,7 +1661,7 @@ namespace UpDiddy.Api
             string cacheKey = $"GetKeywordSearchTerms";
             IList<SearchTermDto> rval = GetCachedValueAsync<IList<SearchTermDto>>(cacheKey);
 
-            if(rval == null)
+            if (rval == null)
             {
                 rval = await _GetKeywordSearchTermsAsync();
                 SetCachedValueAsync<IList<SearchTermDto>>(cacheKey, rval);
@@ -1825,7 +1804,7 @@ namespace UpDiddy.Api
         }
 
         #endregion
-        
+
         #region Traitify
 
         public async Task<TraitifyDto> StartNewTraitifyAssessment(TraitifyDto dto)
@@ -1843,11 +1822,10 @@ namespace UpDiddy.Api
             return await GetAsync<TraitifyDto>($"traitify/complete/{assessmentId}");
         }
 
-        public async  Task<BasicResponseDto> TraitifySignUp(string assessmentId)
+        public async Task<BasicResponseDto> AssociateSubscriberWithAssessment(string assessmentId, Guid subscriberGuid)
         {
-            return await PostAsync<BasicResponseDto>($"subscriber/traitify-signup/{assessmentId}");
+            return await PutAsync<BasicResponseDto>($"traitify/{assessmentId}/subscriber/{subscriberGuid}");
         }
-
 
         #endregion
     }

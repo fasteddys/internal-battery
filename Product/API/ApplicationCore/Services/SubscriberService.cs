@@ -70,7 +70,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await _repository.StoredProcedureRepository.GetSubscriberSources(subscriberId);
 
         }
-        
+
         public async Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numSubscribers, int indexVersion)
         {
             var querableSubscribers = _repository.SubscriberRepository.GetAllSubscribersAsync();
@@ -171,9 +171,12 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // add the user to the Google Talent Cloud
                 _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(createUserDto.SubscriberGuid));
 
-                // Use the new tagging service for attribution
-                await _taggingService.CreateGroup(createUserDto.ReferrerUrl, createUserDto.PartnerGuid, subscriber.SubscriberId);
-                
+                if (!string.IsNullOrWhiteSpace(createUserDto.ReferrerUrl) && createUserDto.PartnerGuid != null && createUserDto.PartnerGuid != Guid.Empty)
+                {
+                    // Use the new tagging service for attribution
+                    await _taggingService.CreateGroup(createUserDto.ReferrerUrl, createUserDto.PartnerGuid, subscriber.SubscriberId);
+                }
+
                 isSubscriberCreatedSuccessfully = true;
             }
             catch (Exception e)

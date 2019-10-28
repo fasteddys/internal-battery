@@ -276,7 +276,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             else
             {
                 //todo move to subscriber service 
-                if (serviceOfferingTransactionDto.SignUpDto == null)
+                if (serviceOfferingTransactionDto.CreateUserDto == null)
                 {
                     statusCode = 403;
                     msg = "Signup information required for non-authenticated requests.";
@@ -285,17 +285,17 @@ namespace UpDiddyApi.ApplicationCore.Services
                 }
 
                 // validate email
-                if (string.IsNullOrEmpty(serviceOfferingTransactionDto.SignUpDto.email) || Utils.ValidateEmail(serviceOfferingTransactionDto.SignUpDto.email) == false)
+                if (string.IsNullOrEmpty(serviceOfferingTransactionDto.CreateUserDto.Email) || Utils.ValidateEmail(serviceOfferingTransactionDto.CreateUserDto.Email) == false)
                 {
                     statusCode = 400;
-                    msg = $"'{serviceOfferingTransactionDto.SignUpDto.email}' is an invalid signup email";
+                    msg = $"'{serviceOfferingTransactionDto.CreateUserDto.Email}' is an invalid signup email";
                     _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     return false;
                 }
 
                 // validate password 
                 // todo enforce better password complexity - it appears that /api/[controller]/express-sign-up relies on the front-end validation 
-                if (string.IsNullOrEmpty(serviceOfferingTransactionDto.SignUpDto.password))
+                if (string.IsNullOrEmpty(serviceOfferingTransactionDto.CreateUserDto.Password))
                 {
                     statusCode = 400;
                     msg = $"Signup password is required";
@@ -305,28 +305,28 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
                 // validate the email is not an existing subscriber 
-                Subscriber existingSubscriber = _repositoryWrapper.SubscriberRepository.GetSubscriberByEmail(serviceOfferingTransactionDto.SignUpDto.email);
+                Subscriber existingSubscriber = _repositoryWrapper.SubscriberRepository.GetSubscriberByEmail(serviceOfferingTransactionDto.CreateUserDto.Email);
 
                 if (existingSubscriber != null)
                 {
                     statusCode = 400;
-                    msg = $"'{serviceOfferingTransactionDto.SignUpDto.email}' is an existing member, please login to complete your purchase";
+                    msg = $"'{serviceOfferingTransactionDto.CreateUserDto.Email}' is an existing member, please login to complete your purchase";
                     _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     return false;
                 }
 
                 Guid newSubscriberGuid = Guid.NewGuid();
-                GetUserResponse getUserResponse = _userService.GetUserByEmailAsync(serviceOfferingTransactionDto.SignUpDto.email).Result;
+                GetUserResponse getUserResponse = _userService.GetUserByEmailAsync(serviceOfferingTransactionDto.CreateUserDto.Email).Result;
                 if (!getUserResponse.Success)
                 {
                     try
                     {
                         var createUserResponse = _userService.CreateUserAsync(new User()
                         {
-                            Email = serviceOfferingTransactionDto.SignUpDto.email,
+                            Email = serviceOfferingTransactionDto.CreateUserDto.Email,
                             EmailVerified = false,
                             IsAgreeToMarketingEmails = false,
-                            Password = serviceOfferingTransactionDto.SignUpDto.password,
+                            Password = serviceOfferingTransactionDto.CreateUserDto.Password,
                             SubscriberGuid = newSubscriberGuid
                         },
                     true,
@@ -343,14 +343,14 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 var subscriberCreationResult = _subscriberService.CreateSubscriberAsync(new CreateUserDto()
                 {
-                    Email = serviceOfferingTransactionDto.SignUpDto.email,
-                    FirstName = serviceOfferingTransactionDto.SignUpDto.firstName,
+                    Email = serviceOfferingTransactionDto.CreateUserDto.Email,
+                    FirstName = serviceOfferingTransactionDto.CreateUserDto.FirstName,
                     IsAgreeToMarketingEmails = false,
                     JobReferralCode = null,
-                    LastName = serviceOfferingTransactionDto.SignUpDto.lastName,
+                    LastName = serviceOfferingTransactionDto.CreateUserDto.LastName,
                     PartnerGuid = Guid.Empty, // should we have a partner for career services?
-                    Password = serviceOfferingTransactionDto.SignUpDto.password,
-                    PhoneNumber = serviceOfferingTransactionDto.SignUpDto.phoneNumber,
+                    Password = serviceOfferingTransactionDto.CreateUserDto.Password,
+                    PhoneNumber = serviceOfferingTransactionDto.CreateUserDto.PhoneNumber,
                     ReferrerUrl = null, // what should this be?
                     SubscriberGuid = newSubscriberGuid
                 }).Result;
@@ -358,7 +358,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if(!subscriberCreationResult)
                 {
                     statusCode = 400;
-                    msg = $"Unable to locate newly created subscriber with email '{serviceOfferingTransactionDto.SignUpDto.email}'";
+                    msg = $"Unable to locate newly created subscriber with email '{serviceOfferingTransactionDto.CreateUserDto.Email}'";
                     _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     return false;
                 }

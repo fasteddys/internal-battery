@@ -48,5 +48,8 @@ namespace UpDiddy.ViewModels.ButterCMS
 
         [JsonProperty("result_footer_text")]
         public string ResultFooterText {get;set;}
+
+        [JsonProperty("partner.guid")]
+        public Guid PartnerGuid { get; set; }
     }
 }

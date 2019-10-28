@@ -27,7 +27,7 @@
                     })
                     .catch(function (err) {
                         // if I fail to get token then I must not be logged in
-                        window.location = '/Session/SignIn' + '?redirectUri=' + encodeURIComponent(window.location);
+                        window.location = '/Session/SignIn' + '?returnUrl=' + encodeURIComponent(window.location);
                         reject(err);
                     });
             })

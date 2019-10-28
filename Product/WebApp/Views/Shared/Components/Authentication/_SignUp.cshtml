@@ -3,10 +3,10 @@
 @model SignUpViewModel
 
 @{
-    var redirectUrl = "/";
+    var returnUrl = "/";
     if(!String.IsNullOrEmpty(Model.CampaignSlug))
     {
-        redirectUrl = "campaign/" + Model.CampaignSlug;
+        returnUrl = "campaign/" + Model.CampaignSlug;
     }
 }
 
@@ -64,7 +64,7 @@
             @if(!string.IsNullOrEmpty(Model.CampaignSlug))
             {
                    <div class="col-12 pt-4">
-                     <p>Existing User? Click here to @Html.ActionLink("log in", "signin","session", new { redirectUri = @redirectUrl, rel = "nofollow"  })</p>
+                     <p>Existing User? Click here to @Html.ActionLink("log in", "signin","session", new { returnUrl = returnUrl, rel = "nofollow"  })</p>
                    </div>
             }
          
