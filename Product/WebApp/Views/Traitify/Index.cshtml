@@ -20,7 +20,7 @@
                               <div class="col-12 col-lg-6 order-lg-2">
                                  <h1><strong>@Model.HeroHeader</strong></h1>
                                  <br>
-                                 <p>@Model.HeroDescription</p>
+                                 @Html.Raw(@Model.HeroDescription)
                               </div>
                               <div class="col-12 col-lg-6 order-lg-1">
                                     @Html.Partial("Partials/_SignUpForm",Model)                   
