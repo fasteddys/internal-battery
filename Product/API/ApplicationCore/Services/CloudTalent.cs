@@ -987,6 +987,58 @@ namespace UpDiddyApi.ApplicationCore.Services
         ///     refer to the documentation here: https://cloud.google.com/talent-solution/job-search/docs/email
         /// </param>
         /// <returns></returns>
+        public JobSearchSummaryResultDto JobSummarySearch(JobQueryDto jobQuery, bool isJobPostingAlertSearch = false)
+        {
+            // map jobquery to cloud talent search request 
+            DateTime startSearch = DateTime.Now;
+            CloudTalentSolution.SearchJobsRequest searchJobRequest = CreateJobSearchRequest(jobQuery);
+
+            // search the cloud talent
+            CloudTalentSolution.SearchJobsResponse searchJobsResponse;
+
+            try
+            {
+                if (isJobPostingAlertSearch)
+                {
+                    searchJobRequest.DiversificationLevel = "SIMPLE";
+                    searchJobsResponse = _jobServiceClient.Projects.Jobs.SearchForAlert(searchJobRequest, _projectPath).Execute();
+                }
+                else
+                    searchJobsResponse = _jobServiceClient.Projects.Jobs.Search(searchJobRequest, _projectPath).Execute();
+            }
+            catch (Exception e)
+            {
+                // We sent a query to Google that it doesn't understand (e.g. "laksdbf" as a state)
+                _syslog.LogWarning(e, "CloudTalent.Search Error: Google unable to resolve our search query.");
+                searchJobsResponse = null;
+            }
+
+            // map cloud talent results to cc search results 
+            DateTime startMap = DateTime.Now;
+            JobSearchSummaryResultDto rval = JobMappingHelper.MapSummarySearchResults(_syslog, _mapper, _configuration, searchJobsResponse, jobQuery);
+            DateTime stopMap = DateTime.Now;
+
+            // calculate search timing metrics 
+            TimeSpan intervalTotalSearch = stopMap - startSearch;
+            TimeSpan intervalSearchTime = startMap - startSearch;
+            TimeSpan intervalMapTime = stopMap - startMap;
+
+            // assign search metrics to search results 
+            rval.SearchTimeInMilliseconds = intervalTotalSearch.TotalMilliseconds;
+            rval.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
+            rval.SearchMappingTimeInTicks = intervalMapTime.Ticks;
+            return rval;
+        }
+
+
+        /// <summary>
+        /// Search the cloud talent solution for jobs 
+        /// </summary>
+        /// <param name="jobQuery"></param>
+        /// <param name="isJobPostingAlertSearch">If specified and set to TRUE, the search query is optimized for email alerts. For details, 
+        ///     refer to the documentation here: https://cloud.google.com/talent-solution/job-search/docs/email
+        /// </param>
+        /// <returns></returns>
         public JobSearchResultDto JobSearch(JobQueryDto jobQuery, bool isJobPostingAlertSearch = false)
         {
             // map jobquery to cloud talent search request 
@@ -1029,6 +1081,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             rval.SearchMappingTimeInTicks = intervalMapTime.Ticks;
             return rval;
         }
+
+
+
+
 
         #endregion
 

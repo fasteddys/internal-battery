@@ -10,5 +10,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
     public interface IMemoryCacheService
     {
         object GetCacheValue(string key);
+        void SetCacheValue<T>(string key, T value, int TTLInMinutes = 10);
     }
 }

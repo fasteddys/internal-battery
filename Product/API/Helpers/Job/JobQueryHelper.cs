@@ -7,6 +7,100 @@ namespace UpDiddyApi.Helpers.Job
     public class JobQueryHelper
     {
 
+
+
+        #region CC2020 
+
+ 
+
+        static public JobQueryDto CreateSummaryJobQuery(int PageSize, IQueryCollection query)
+        {
+            JobQueryDto jobQuery = new JobQueryDto();
+
+            PageSize = GetIntQueryParam(query, "limit", PageSize);
+            int PageNum = GetIntQueryParam(query, "offset"); 
+            jobQuery.IncludeCouseSkillsHistogram = GetIntQueryParam(query, "includeskillshistogram");
+
+
+            // map parameters that may have been specified via an url component 
+            jobQuery.Country = GetQueryParam(query, "country", "all");
+            jobQuery.Province = GetQueryParam(query, "province", "all");
+            jobQuery.City = GetQueryParam(query, "city", "all");
+            jobQuery.Industry = GetQueryParam(query, "industry", "all");
+            jobQuery.JobCategory = GetQueryParam(query, "jobcategory", "all");
+            jobQuery.Skill = GetQueryParam(query, "skill", "all");
+            // map parameters that can only be specied via a query string parameter 
+            jobQuery.Location = GetQueryParam(query, "location");
+            jobQuery.PostalCode = GetQueryParam(query, "postalcode");
+            jobQuery.StreetAddress = GetQueryParam(query, "streetaddress");
+            jobQuery.Keywords = GetQueryParam(query, "keyword");
+            jobQuery.DatePublished = GetQueryParam(query, "datepublished");
+            jobQuery.CompanyName = GetQueryParam(query, "companyname");
+            jobQuery.EmploymentType = GetQueryParam(query, "employmenttype");
+            jobQuery.ExperienceLevel = GetQueryParam(query, "experiencelevel");
+            jobQuery.EducationLevel = GetQueryParam(query, "educationlevel");
+            jobQuery.SearchRadius = GetIntQueryParam(query, "searchradius");
+
+            // Search options
+            jobQuery.ExcludeCustomProperties = GetIntQueryParam(query, "excludecustomproperties");
+            jobQuery.ExcludeFacets = GetIntQueryParam(query, "excludefacets");
+            if (string.IsNullOrWhiteSpace(jobQuery.Country)
+                && string.IsNullOrWhiteSpace(jobQuery.Province)
+                && string.IsNullOrWhiteSpace(jobQuery.City)
+                && string.IsNullOrWhiteSpace(jobQuery.Industry)
+                && string.IsNullOrWhiteSpace(jobQuery.JobCategory)
+                && string.IsNullOrWhiteSpace(jobQuery.Skill)
+                && string.IsNullOrWhiteSpace(jobQuery.Location)
+                && string.IsNullOrWhiteSpace(jobQuery.PostalCode)
+                && string.IsNullOrWhiteSpace(jobQuery.StreetAddress)
+                && string.IsNullOrWhiteSpace(jobQuery.Keywords)
+                && string.IsNullOrWhiteSpace(jobQuery.DatePublished)
+                && string.IsNullOrWhiteSpace(jobQuery.CompanyName)
+                && string.IsNullOrWhiteSpace(jobQuery.EmploymentType)
+                && string.IsNullOrWhiteSpace(jobQuery.ExperienceLevel)
+                && string.IsNullOrWhiteSpace(jobQuery.EducationLevel)
+                && jobQuery.SearchRadius == 0)
+            {
+                // override the sort order when no seach parameters have been defined (see work item 990 for the reasoning behind this decision)
+                jobQuery.OrderBy = "postingPublishTime desc";
+            }
+            else
+            {
+                string sort = GetQueryParam(query, "sort");
+                string order = GetQueryParam(query, "order");
+                if (string.IsNullOrEmpty(sort) == false && string.IsNullOrEmpty(order) == false)
+                    jobQuery.OrderBy = sort + " " + order;
+            }
+
+            // Commute search
+            jobQuery.Lat = GetDoubleQueryParam(query, "lat");
+            jobQuery.Lng = GetDoubleQueryParam(query, "lng");
+            jobQuery.CommuteTime = GetIntQueryParam(query, "commutetime");
+
+            jobQuery.PreciseAddress = GetBoolQueryParam(query, "preciseaddress");
+            jobQuery.PublicTransit = GetBoolQueryParam(query, "publictransit");
+            jobQuery.RushHour = GetBoolQueryParam(query, "rushhour");
+
+            // Set up pagination
+            jobQuery.PageNum = GetIntQueryParam(query, "pagenum", PageNum);
+            jobQuery.PageSize = GetIntQueryParam(query, "pagesize", PageSize);
+
+            return jobQuery;
+        }
+
+
+
+
+
+
+        #endregion
+
+
+
+
+
+
+
         static public JobQueryDto CreateJobQuery(string Country, string Province, string City, string Industry, string JobCategory, string Skill, int PageNum, int PageSize, IQueryCollection query)
         {
             JobQueryDto jobQuery = new JobQueryDto();

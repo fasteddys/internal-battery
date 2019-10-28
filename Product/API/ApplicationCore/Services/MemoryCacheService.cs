@@ -22,5 +22,12 @@ namespace UpDiddyApi.ApplicationCore.Services
        {
            return _memoryCache.Get(key);
        }
+
+       public void SetCacheValue<T>( string key, T value, int TTLInMinutes = 10 )
+       {
+            DateTimeOffset offset = new DateTimeOffset(DateTime.Now.AddMinutes(TTLInMinutes));
+            _memoryCache.Set<T>(key, value, offset);
+       }
+
     }
 }
