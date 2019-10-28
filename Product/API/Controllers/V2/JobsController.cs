@@ -39,7 +39,8 @@ namespace UpDiddyApi.Controllers
         private readonly IJobAlertService _jobAlertService;
 
         #region constructor 
-        public JobsController(IServiceProvider services, IHangfireService hangfireService, IJobAlertService jobAlertService)
+        public JobsController(IServiceProvider services, IHangfireService hangfireService)
+ 
 
         {
             _services = services;
@@ -58,20 +59,42 @@ namespace UpDiddyApi.Controllers
             _jobService = _services.GetService<IJobService>();
             _jobPostingService = _services.GetService<IJobPostingService>();
             _hangfireService = hangfireService;
-            _jobAlertService = jobAlertService;
+         //   _jobAlertService = jobAlertService;
         }
 
         #endregion
 
+        #region Job Search
+        [HttpGet]
+        [Route("/V2/[controller]/search/{JobGuid}")]
+        public async Task<IActionResult> GetJob(Guid JobGuid)
+        {
+            try
+            {
+                JobDetailDto rVal = await _jobService.GetJobDetail(JobGuid);
+                return Ok(rVal);
+            }
+            catch (NotFoundException e)
+            {
+                return NotFound();
+            }
+            catch 
+            {
+                return BadRequest();
+            }        
+        }
+
 
         [HttpGet]
         [Route("/V2/[controller]/search")]
-        public async Task<IActionResult> Search()
+        public async Task<IActionResult> SearchJobs()
         {
-            JobSearchSummaryResultDto rVal = null;     
-            rVal  = await _jobService.SummaryJobSearch(Request.Query);                   
-            return Ok(rVal); 
+            JobSearchSummaryResultDto rVal = null;
+            rVal = await _jobService.SummaryJobSearch(Request.Query);
+            return Ok(rVal);
         }
+
+        #endregion
 
         #region Job Alert
 

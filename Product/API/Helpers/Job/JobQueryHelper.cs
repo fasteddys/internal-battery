@@ -11,36 +11,7 @@ namespace UpDiddyApi.Helpers.Job
 
         #region CC2020 
 
-
-        /* Query parameters as defined by API gateway Job Search Query
-
-
-        limit               The number of jobs to return. Defaults to the maximum(100) if no value is specified.
-        offset              The number of jobs to skip before returning results.Defaults to zero if no value is specified.
-        sort                The field name on which to sort. Defaults to modifyDate if not specified.
-        modifyDate
-        order               The direction of the sort. Defaults to descending if not specified
-        keyword             The keyword(s) on which to base the job search.
-        location            A geographic location on which to base the job search.
-        datepublished       Filters the jobs based on when they were posted.
-        companyname         The company associated with the job.
-        city                The city in which the job exists.
-        province            The state in which the job exists.
-    
-*/
-
-        /*
-         *  TODO JAB implement 
-                public int ExcludeCouseSkillsHistogram { get; set; }
-
-                /// <summary>
-                /// 
-                /// Include related courses in search results 
-                /// </summary>
-                public int ExcludeRelatedCourses { get; set; }
-
-            */
-
+ 
 
         static public JobQueryDto CreateSummaryJobQuery(int PageSize, IQueryCollection query)
         {

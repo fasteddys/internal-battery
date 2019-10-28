@@ -14,5 +14,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task UpdateJobViewed(string referrerCode);
         Task<JobSearchResultDto> GetJobsByLocationAsync(string Country, string Province, string City, string Industry, string JobCategory, string Skill, int PageNum,IQueryCollection query);
         Task<JobSearchSummaryResultDto> SummaryJobSearch(IQueryCollection query);
+
+        Task<JobPostingDto> GetJob(Guid jobPostingGuid);
+
+        Task<JobDetailDto> GetJobDetail(Guid jobPostingGuid);
     }
 }

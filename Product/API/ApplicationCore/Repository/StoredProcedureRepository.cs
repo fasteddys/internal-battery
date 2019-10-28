@@ -18,7 +18,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             _dbContext = dbContext;
         }
 
-        // todo jab add migrations for sprocs and data type 
+ 
 
 
 

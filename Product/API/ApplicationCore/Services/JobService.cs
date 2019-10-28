@@ -20,6 +20,8 @@ using UpDiddyLib.Domain.Models;
 using Hangfire;
 using Newtonsoft.Json.Linq;
 using UpDiddyApi.Workflow;
+using UpDiddyApi.ApplicationCore.Factory;
+using UpDiddyApi.ApplicationCore.Exceptions;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -57,10 +59,65 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
+        public async Task<JobDetailDto> GetJobDetail(Guid jobPostingGuid)
+        {
+            JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuidWithRelatedObjectsAsync(_db, jobPostingGuid);
+            if (jobPosting == null)
+                throw new NotFoundException();
+      
+            JobDetailDto rVal = _mapper.Map<JobDetailDto>(jobPosting);
+            return rVal;
+        }
 
 
 
-        public async Task<JobSearchSummaryResultDto> SummaryJobSearch(IQueryCollection query)
+
+        public async Task<JobPostingDto> GetJob(Guid jobPostingGuid)
+        {
+            JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuidWithRelatedObjectsAsync(_db, jobPostingGuid);
+            if (jobPosting == null)
+                throw new NotFoundException();
+            JobPostingDto rVal = _mapper.Map<JobPostingDto>(jobPosting);
+
+            // set meta data for seo
+            JobPostingFactory.SetMetaData(jobPosting, rVal);
+
+            /* i would prefer to get the semantic url in automapper, but i ran into a blocker while trying to call the static util method
+             * in "MapFrom" while guarding against null refs: an expression tree lambda may not contain a null propagating operator
+             * .ForMember(jp => jp.SemanticUrl, opt => opt.MapFrom(src => Utils.GetSemanticJobUrlPath(src.Industry?.Name,"","","","","")))
+             */
+
+            rVal.SemanticJobPath = Utils.CreateSemanticJobPath(
+                jobPosting.Industry?.Name,
+                jobPosting.JobCategory?.Name,
+                jobPosting.Country,
+                jobPosting.Province,
+                jobPosting.City,
+                jobPostingGuid.ToString());
+
+            JobQueryDto jobQuery = JobQueryHelper.CreateJobQueryForSimilarJobs(jobPosting.Province, jobPosting.City, jobPosting.Title, Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]));
+            JobSearchResultDto jobSearchForSingleJob = _cloudTalent.JobSearch(jobQuery);
+
+            // If jobs in same city come back less than 6, broaden search to state.
+            if (jobSearchForSingleJob.JobCount < Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]))
+            {
+                jobQuery = JobQueryHelper.CreateJobQueryForSimilarJobs(jobPosting.Province, string.Empty, jobPosting.Title, Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]));
+                jobSearchForSingleJob = _cloudTalent.JobSearch(jobQuery);
+            }
+
+
+
+            rVal.SimilarJobs = jobSearchForSingleJob;
+
+            return rVal;
+        }
+
+
+
+
+
+
+    public async Task<JobSearchSummaryResultDto> SummaryJobSearch(IQueryCollection query)
         {
 
             string cacheKey = Utils.QueryParamsToCacheKey(query);
