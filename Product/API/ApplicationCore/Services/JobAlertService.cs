@@ -124,10 +124,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                        Keywords = JsonConvert.DeserializeObject<JobQueryDto>(jpa.JobQueryDto.ToString()).Keywords,
                        Location = JsonConvert.DeserializeObject<JobQueryDto>(jpa.JobQueryDto.ToString()).Location,
                    }).ToList();
-            if (jobPostingAlerts.Count == 0)
-            {
-                throw new NotFoundException("Job alerts could not be found");
-            }
+
             return jobPostingAlerts;
         }
 

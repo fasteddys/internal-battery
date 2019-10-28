@@ -33,6 +33,15 @@ public class ExceptionMiddleware
         {
             await CreateResponse(400, ex, context);
         }
+        catch (NullReferenceException ex)
+        {
+            await CreateResponse(400, ex, context);
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(LogLevel.Error, $"Unhandled exception thrown -> {ex.InnerException}");
+            throw;
+        }
     }
 
     private async Task CreateResponse(int statusCode, Exception ex, HttpContext context)

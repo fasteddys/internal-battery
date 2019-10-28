@@ -72,6 +72,19 @@ namespace UpDiddyApi.Controllers
             return Ok(rVal);
         }
 
+
+        [HttpPost]
+        [Route("/V2/[controller]/{job}/share")]
+        public async Task<IActionResult> Share([FromBody] ShareJobDto shareJobDto, Guid job)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _jobService.ShareJob(subscriberGuid, job, shareJobDto);
+            return StatusCode(201);
+        }
+
+        
+        
+
         #region Job Alert
 
         [HttpPost]
@@ -108,6 +121,8 @@ namespace UpDiddyApi.Controllers
         }
 
         #endregion
+
+
 
     }
 }
