@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,6 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto.User;
-
 namespace UpDiddyApi.ApplicationCore.Repository
 {
     public class JobPostingFavoriteRepository : UpDiddyRepositoryBase<JobPostingFavorite>, IJobPostingFavoriteRepository
@@ -36,13 +36,28 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return await _dbContext.JobPostingFavorite.Where(x => x.Subscriber.SubscriberGuid == Subscriber && x.JobPosting.JobPostingGuid == job).FirstOrDefaultAsync();
         }
 
-        public async Task<List<JobPostingFavorite>> GetBySubscriberGuid(Guid SubscriberGuid)
+        public async Task<List<JobFavoriteDto>> GetBySubscriberGuid(Guid SubscriberGuid)
         {
-            return await _dbContext.JobPostingFavorite.Where(x => x.Subscriber.SubscriberGuid == SubscriberGuid)
-            .AsNoTracking()
-            .Include(x => x.Subscriber)
-            .Include(x => x.JobPosting)
-            .ToListAsync();
+            return await (from jf in _dbContext.JobPostingFavorite
+                          join jp in _dbContext.JobPosting on jf.JobPostingId equals jp.JobPostingId
+                          join s in _dbContext.Subscriber on jf.SubscriberId equals s.SubscriberId
+                          join c in _dbContext.Company on jp.CompanyId equals c.CompanyId
+                          join ja in _dbContext.JobApplication
+                          on new { jf.JobPostingId, jf.SubscriberId } equals new { ja.JobPostingId, ja.SubscriberId } into tmp
+                          from ja in tmp.DefaultIfEmpty()
+                          where jf.IsDeleted == 0
+                          select new JobFavoriteDto
+                          {
+                              JobPostingGuid = jp.JobPostingGuid,
+                              PostingDateUTC = jp.PostingDateUTC,
+                              ExpirationDateUTC = jp.PostingExpirationDateUTC,
+                              HasApplied = ja == null ? false : true,
+                              CompanyLogoUrl = c.LogoUrl,
+                              CompanyName = c.CompanyName,
+                              Title = jp.Title,
+                              City = jp.City,
+                              Province = jp.Province
+                          }).ToListAsync();
         }
     }
 }

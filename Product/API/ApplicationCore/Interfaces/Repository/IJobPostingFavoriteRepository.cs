@@ -10,6 +10,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     {
         IQueryable<JobPostingFavorite> GetAllJobPostingFavoritesAsync();
         Task<JobPostingFavorite> GetBySubscriberAndJobPostingGuid(Guid SubscriberGuid, Guid jobPostingGuid);
-        Task<List<JobPostingFavorite>> GetBySubscriberGuid(Guid SubscriberGuid);
+        Task<List<JobFavoriteDto>> GetBySubscriberGuid(Guid SubscriberGuid);
     }
 }

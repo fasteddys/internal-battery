@@ -62,19 +62,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<List<JobFavoriteDto>> GetJobFavorites(Guid subscriberGuid)
         {
-            var result = await _repositoryWrapper.JobPostingFavorite.GetBySubscriberGuid(subscriberGuid);
-            var jobFavoritesDto = result.Select(jf => new JobFavoriteDto()
-            {
-                JobPostingGuid = jf.JobPosting.JobPostingGuid,
-                PostingDateUTC = jf.JobPosting.PostingDateUTC,
-                ExpirationDateUTC = jf.JobPosting.PostingExpirationDateUTC,
-                CompanyLogoUrl = jf.JobPosting.Company.LogoUrl,
-                CompanyName = jf.JobPosting.Company.CompanyName,
-                Title = jf.JobPosting.Title,
-                City = jf.JobPosting.City,
-                Province = jf.JobPosting.Province,
-            }).ToList();
-            return jobFavoritesDto;
+            return await _repositoryWrapper.JobPostingFavorite.GetBySubscriberGuid(subscriberGuid);
         }
     }
 }
