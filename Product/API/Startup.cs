@@ -273,6 +273,8 @@ namespace UpDiddyApi
             services.AddScoped<IServiceOfferingPromoCodeRedemptionService, ServiceOfferingPromoCodeRedemptionService>();
             services.AddScoped<IJobAlertService, JobAlertService>();
             services.AddScoped<IHangfireService, HangfireService>();
+            services.AddScoped<IJobPostingFavoriteService, JobPostingFavoriteService>();
+            services.AddScoped<IJobAlertService, JobAlertService>();
 
 
 

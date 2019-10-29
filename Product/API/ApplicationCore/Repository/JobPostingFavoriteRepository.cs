@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto.User;
+using UpDiddyLib.Helpers;
 namespace UpDiddyApi.ApplicationCore.Repository
 {
     public class JobPostingFavoriteRepository : UpDiddyRepositoryBase<JobPostingFavorite>, IJobPostingFavoriteRepository
@@ -31,12 +32,16 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return GetAll();
         }
 
-        public async Task<JobPostingFavorite> GetBySubscriberAndJobPostingGuid(Guid Subscriber, Guid job)
+        public async Task<JobPostingFavorite> GetBySubscriberAndJobPostingGuid(Guid subscriberGuid, Guid jobPostingGuid)
         {
-            return await _dbContext.JobPostingFavorite.Where(x => x.Subscriber.SubscriberGuid == Subscriber && x.JobPosting.JobPostingGuid == job).FirstOrDefaultAsync();
+            return await (from jf in _dbContext.JobPostingFavorite
+                          join jp in _dbContext.JobPosting on jf.JobPostingId equals jp.JobPostingId
+                          join s in _dbContext.Subscriber on jf.SubscriberId equals s.SubscriberId
+                          where s.SubscriberGuid == subscriberGuid && jp.JobPostingGuid == jobPostingGuid
+                          select jf).FirstOrDefaultAsync();
         }
 
-        public async Task<List<JobFavoriteDto>> GetBySubscriberGuid(Guid SubscriberGuid)
+        public async Task<List<JobFavoriteDto>> GetBySubscriberGuid(Guid subscriberGuid)
         {
             return await (from jf in _dbContext.JobPostingFavorite
                           join jp in _dbContext.JobPosting on jf.JobPostingId equals jp.JobPostingId
@@ -45,7 +50,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                           join ja in _dbContext.JobApplication
                           on new { jf.JobPostingId, jf.SubscriberId } equals new { ja.JobPostingId, ja.SubscriberId } into tmp
                           from ja in tmp.DefaultIfEmpty()
-                          where jf.IsDeleted == 0
+                          where jf.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid
                           select new JobFavoriteDto
                           {
                               JobPostingGuid = jp.JobPostingGuid,
@@ -56,7 +61,14 @@ namespace UpDiddyApi.ApplicationCore.Repository
                               CompanyName = c.CompanyName,
                               Title = jp.Title,
                               City = jp.City,
-                              Province = jp.Province
+                              Province = jp.Province,
+                              SemanticJobPath = Utils.CreateSemanticJobPath(
+                                                jp.Industry == null ? null : jp.Industry.Name,
+                                                jp.JobCategory == null ? null : jp.JobCategory.Name,
+                                                jp.Country,
+                                                jp.Province,
+                                                jp.City,
+                                                jp.JobPostingGuid.ToString())
                           }).ToListAsync();
         }
     }

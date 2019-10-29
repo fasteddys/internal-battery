@@ -37,9 +37,10 @@ namespace UpDiddyApi.Controllers
         private readonly ISubscriberService _subscriberService;
         private readonly IJobPostingService _jobPostingService;
         private readonly IJobAlertService _jobAlertService;
+        private readonly IJobPostingFavoriteService _jobPostingFavoriteService;
 
         #region constructor 
-        public JobsController(IServiceProvider services, IHangfireService hangfireService, IJobAlertService jobAlertService)
+        public JobsController(IServiceProvider services, IHangfireService hangfireService, IJobAlertService jobAlertService, IJobPostingFavoriteService jobPostingFavoriteService)
 
         {
             _services = services;
@@ -59,6 +60,7 @@ namespace UpDiddyApi.Controllers
             _jobPostingService = _services.GetService<IJobPostingService>();
             _hangfireService = hangfireService;
             _jobAlertService = jobAlertService;
+            _jobPostingFavoriteService = jobPostingFavoriteService;
         }
 
         #endregion
@@ -82,8 +84,8 @@ namespace UpDiddyApi.Controllers
             return StatusCode(201);
         }
 
-        
-        
+
+
 
         #region Job Alert
 
@@ -122,6 +124,42 @@ namespace UpDiddyApi.Controllers
 
         #endregion
 
+        #region Job Favorites
+
+        [HttpPost]
+        [Route("/V2/[controller]/{job}/favorites")]
+        [Authorize]
+        public async Task<IActionResult> CreateJobFavorite(Guid job)
+        {
+
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _jobPostingFavoriteService.AddJobToFavorite(subscriberGuid, job);
+            return StatusCode(201);
+        }
+
+        [HttpGet]
+        [Route("/V2/[controller]/favorites")]
+        [Authorize]
+        public async Task<IActionResult> GetJobFavorites()
+        {
+
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var favorites = await _jobPostingFavoriteService.GetJobFavorites(subscriberGuid);
+            return Ok(favorites);
+        }
+
+        [HttpDelete]
+        [Route("/V2/[controller]/{job}/favorites")]
+        [Authorize]
+        public async Task<IActionResult> DeleteJobFavorite(Guid job)
+        {
+
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _jobPostingFavoriteService.DeleteJobFavorite(subscriberGuid, job);
+            return StatusCode(204);
+        }
+
+        #endregion
 
 
     }
