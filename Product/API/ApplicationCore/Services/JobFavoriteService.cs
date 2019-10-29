@@ -8,10 +8,10 @@ using UpDiddyApi.ApplicationCore.Exceptions;
 using System.Collections.Generic;
 namespace UpDiddyApi.ApplicationCore.Services
 {
-    public class JobPostingFavoriteService : IJobPostingFavoriteService
+    public class JobFavoriteService : IJobFavoriteService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
-        public JobPostingFavoriteService(IRepositoryWrapper repositoryWrapper) => _repositoryWrapper = repositoryWrapper;
+        public JobFavoriteService(IRepositoryWrapper repositoryWrapper) => _repositoryWrapper = repositoryWrapper;
 
         public async Task AddJobToFavorite(Guid subscriberGuid, Guid jobPostingGuid)
         {

@@ -37,10 +37,15 @@ namespace UpDiddyApi.Controllers
         private readonly ISubscriberService _subscriberService;
         private readonly IJobPostingService _jobPostingService;
         private readonly IJobAlertService _jobAlertService;
-        private readonly IJobPostingFavoriteService _jobPostingFavoriteService;
+        private readonly IJobFavoriteService _jobFavoriteService;
+        private readonly IJobSearchService _jobSearchService;
 
         #region constructor 
-        public JobsController(IServiceProvider services, IHangfireService hangfireService, IJobAlertService jobAlertService, IJobPostingFavoriteService jobPostingFavoriteService)
+        public JobsController(IServiceProvider services
+        , IHangfireService hangfireService
+        , IJobAlertService jobAlertService
+        , IJobFavoriteService jobFavoriteService
+        , IJobSearchService jobSearchService)
 
         {
             _services = services;
@@ -60,7 +65,8 @@ namespace UpDiddyApi.Controllers
             _jobPostingService = _services.GetService<IJobPostingService>();
             _hangfireService = hangfireService;
             _jobAlertService = jobAlertService;
-            _jobPostingFavoriteService = jobPostingFavoriteService;
+            _jobFavoriteService = jobFavoriteService;
+            _jobSearchService = jobSearchService;
         }
 
         #endregion
@@ -84,8 +90,13 @@ namespace UpDiddyApi.Controllers
             return StatusCode(201);
         }
 
-
-
+        [HttpGet]
+        [Route("api/[controller]/search/count")]
+        public async Task<IActionResult> GetActiveJobCount()
+        {
+            var count = await _jobSearchService.GetActiveJobCount();
+            return Ok(count);
+        }
 
         #region Job Alert
 
@@ -133,7 +144,7 @@ namespace UpDiddyApi.Controllers
         {
 
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _jobPostingFavoriteService.AddJobToFavorite(subscriberGuid, job);
+            await _jobFavoriteService.AddJobToFavorite(subscriberGuid, job);
             return StatusCode(201);
         }
 
@@ -144,7 +155,7 @@ namespace UpDiddyApi.Controllers
         {
 
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var favorites = await _jobPostingFavoriteService.GetJobFavorites(subscriberGuid);
+            var favorites = await _jobFavoriteService.GetJobFavorites(subscriberGuid);
             return Ok(favorites);
         }
 
@@ -155,7 +166,7 @@ namespace UpDiddyApi.Controllers
         {
 
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _jobPostingFavoriteService.DeleteJobFavorite(subscriberGuid, job);
+            await _jobFavoriteService.DeleteJobFavorite(subscriberGuid, job);
             return StatusCode(204);
         }
 
