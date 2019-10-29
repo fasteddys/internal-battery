@@ -175,7 +175,7 @@ namespace UpDiddy.Controllers
 
         [HttpGet]
         [Route("job/{JobGuid}")]
-        public  async Task<bool> JobRedirect(Guid JobGuid)
+        public  async Task<IActionResult> JobRedirect(Guid JobGuid)
         {
 
             string url = string.Empty;
@@ -188,16 +188,18 @@ namespace UpDiddy.Controllers
                     url = job.SemanticJobPath;
                     string queryParams = Request.QueryString.ToString();
                     if (!string.IsNullOrEmpty(queryParams))
-                        url +=  queryParams;
+                        url += queryParams;
+                    return RedirectPermanent(url);
                 }
-                    
                 else
-                    return false;
+                {
+                    return RedirectPermanent("/jobs?JobExpired=" + JobGuid.ToString());
+                }
 
             }
             catch (ApiException e)
             {
-                return true;
+                return RedirectPermanent("/jobs?JobExpired=" + JobGuid.ToString()); 
             }
 
             //cookie the user with the source of the job detail Page view  
