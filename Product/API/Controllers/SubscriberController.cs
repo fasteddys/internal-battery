@@ -1091,21 +1091,4 @@ public class SubscriberController : Controller
             return StatusCode(500);
         }
     }
-
-    [HttpGet]
-    [Route("/api/[controller]/management")]
-    public async Task<IActionResult> testmanagement()
-    {
-        try
-        {
-            var users = await _managementApiClient.Users.GetUsersByEmailAsync("jyotiguin1@gmail.com");
-            var user = users.FirstOrDefault();
-            return View();
-        }
-        catch (Exception ex)
-        {
-            _syslog.Log(LogLevel.Error, $"SubscriberController.GetFailedSubscribersSummaryAsync : Error occured when retrieving recruiter with message={ex.Message}", ex);
-            return StatusCode(500);
-        }
-    }
 }

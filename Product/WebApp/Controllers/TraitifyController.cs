@@ -212,7 +212,9 @@ namespace UpDiddy.Controllers
             model.SignupHeroContent = landingPage.Data.Fields.SignupHeroContent;
             model.SignupHeroTitle = landingPage.Data.Fields.SignupHeroTitle;
             model.ResultFooterText = landingPage.Data.Fields.ResultFooterText;
-            model.PartnerGuid = landingPage.Data.Fields.PartnerGuid;
+            Guid partnerGuid;
+            if (Guid.TryParse(landingPage.Data.Fields.Partner.Guid, out partnerGuid))
+                model.PartnerGuid = partnerGuid;
             return model;
         }
 

@@ -73,7 +73,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             PromoCode promoCode = null;
             ServiceOffering serviceOffering = null;
             string AuthInfo = string.Empty;
-            
+
             // Validate basic aspects of the transaction such a valid service offering, valid promo etc. 
             if (ValidateTransaction(serviceOfferingOrderDto, ref serviceOffering, ref promoCode, ref statusCode, ref msg) == false)
                 return false;
@@ -81,10 +81,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (ValidateSubscriber(serviceOfferingTransactionDto, subscriberGuid, ref subscriber, ref statusCode, ref msg) == false)
                 return false;
 
-            //
+            // update subscriberGuid value if a valid value does not exist (a new user was created)
+            if (subscriberGuid == null || subscriberGuid == Guid.Empty)
+                subscriber = _repositoryWrapper.SubscriberRepository.GetSubscriberByEmail(serviceOfferingTransactionDto.CreateUserDto.Email);
+
             // At this point, subscriber should by hydrated with an existing or newly created subscriber.
             // At this point serviceOffering should also be hydrated 
-            //
 
             // Validate subscriber constraints such as max number of redemptions per subscriber
             if (ValidateSubscriberConstraints(promoCode, subscriber, serviceOffering, ref statusCode, ref msg) == false)
@@ -315,7 +317,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                     return false;
                 }
 
-                Guid newSubscriberGuid = Guid.NewGuid();
                 GetUserResponse getUserResponse = _userService.GetUserByEmailAsync(serviceOfferingTransactionDto.CreateUserDto.Email).Result;
                 if (!getUserResponse.Success)
                 {
@@ -326,11 +327,12 @@ namespace UpDiddyApi.ApplicationCore.Services
                             Email = serviceOfferingTransactionDto.CreateUserDto.Email,
                             EmailVerified = false,
                             IsAgreeToMarketingEmails = false,
-                            Password = serviceOfferingTransactionDto.CreateUserDto.Password,
-                            SubscriberGuid = newSubscriberGuid
+                            Password = serviceOfferingTransactionDto.CreateUserDto.Password
                         },
-                    true,
-                    null).Result;
+                        true,
+                        null).Result;
+                        if (createUserResponse.Success && createUserResponse?.User?.SubscriberGuid != null)
+                            subscriberGuid = createUserResponse.User.SubscriberGuid;
                     }
                     catch (Exception ex)
                     {
@@ -346,16 +348,13 @@ namespace UpDiddyApi.ApplicationCore.Services
                     Email = serviceOfferingTransactionDto.CreateUserDto.Email,
                     FirstName = serviceOfferingTransactionDto.CreateUserDto.FirstName,
                     IsAgreeToMarketingEmails = false,
-                    JobReferralCode = null,
                     LastName = serviceOfferingTransactionDto.CreateUserDto.LastName,
-                    PartnerGuid = Guid.Empty, // should we have a partner for career services?
                     Password = serviceOfferingTransactionDto.CreateUserDto.Password,
                     PhoneNumber = serviceOfferingTransactionDto.CreateUserDto.PhoneNumber,
-                    ReferrerUrl = null, // what should this be?
-                    SubscriberGuid = newSubscriberGuid
+                    SubscriberGuid = subscriberGuid
                 }).Result;
 
-                if(!subscriberCreationResult)
+                if (!subscriberCreationResult)
                 {
                     statusCode = 400;
                     msg = $"Unable to locate newly created subscriber with email '{serviceOfferingTransactionDto.CreateUserDto.Email}'";

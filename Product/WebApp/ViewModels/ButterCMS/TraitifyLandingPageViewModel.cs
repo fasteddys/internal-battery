@@ -47,9 +47,16 @@ namespace UpDiddy.ViewModels.ButterCMS
         public string SignupHeroContent { get; set; }
 
         [JsonProperty("result_footer_text")]
-        public string ResultFooterText {get;set;}
+        public string ResultFooterText { get; set; }
 
-        [JsonProperty("partner.guid")]
-        public Guid PartnerGuid { get; set; }
+        [JsonProperty("partner")]
+        public Partner Partner { get; set; }
+    }
+
+    public class Partner
+    {
+        public string Name { get; set; }
+        public string Guid { get; set; }
+        public string Description { get; set; }
     }
 }
