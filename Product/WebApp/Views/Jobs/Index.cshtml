@@ -229,8 +229,8 @@
                        industry= ViewContext.HttpContext.Request.Query["industry"],
                        companyname= ViewContext.HttpContext.Request.Query["companyname"]
                    }),new X.PagedList.Mvc.Common.PagedListRenderOptionsBase() { Display=X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                       LiElementClasses = new string[] { "page-item" },
-                       PageClasses = new string[] { "page-link" },
+                       LiElementClasses = new List<string> { "page-item" },
+                       PageClasses = new List<string> { "page-link" },
                        MaximumPageNumbersToDisplay=5,
                        DisplayLinkToFirstPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
                        DisplayLinkToLastPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
@@ -241,8 +241,8 @@
                        LinkToNextPageFormat = "»",
                        LinkToLastPageFormat = "»»",
                        DisplayEllipsesWhenNotShowingAllPageNumbers = true,
-                       ContainerDivClasses = new[] { "pagination-container" },
-                       UlElementClasses = new[] { "pagination" }
+                       ContainerDivClasses = new List<string> {  "pagination-container" },
+                       UlElementClasses = new List<string> { "pagination" }
                    })
                     </div>
                 </div>

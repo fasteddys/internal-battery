@@ -212,7 +212,7 @@ namespace UpDiddy.Controllers
             Response.StatusCode = 301;
             Response.Redirect(url,true);
 
-            return false;
+            return RedirectPermanent("/jobs?JobExpired=" + JobGuid.ToString());
         }
 
 
