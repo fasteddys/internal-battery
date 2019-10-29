@@ -26,7 +26,7 @@ namespace UpDiddyApi.Authorization
             if (!string.IsNullOrEmpty(userManagementAuthorizationHeader))
             {
                 string decryptedUserManagementAuthorization = Crypto.Decrypt(_configuration["Crypto:Key"], userManagementAuthorizationHeader);
-                string userManagementAuthorization = _configuration["Auth0:ManagementApi:client_secret"];
+                string userManagementAuthorization = _configuration["Auth0:ManagementApi:ClientSecret"];
                 if (decryptedUserManagementAuthorization == userManagementAuthorization)
                 {
                     await _next.Invoke(context);

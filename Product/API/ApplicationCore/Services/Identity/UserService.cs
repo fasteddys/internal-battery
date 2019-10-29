@@ -43,8 +43,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
         {
             var configuration = services.GetService<IConfiguration>();
             _tokenParameters = new Dictionary<string, string> {
-                { "client_id", configuration["Auth0:ManagementApi:client_id"] },
-                { "client_secret", configuration["Auth0:ManagementApi:client_secret"]},
+                { "client_id", configuration["Auth0:ManagementApi:ClientId"] },
+                { "client_secret", configuration["Auth0:ManagementApi:ClientSecret"]},
                 { "audience", configuration["Auth0:ManagementApi:audience"] },
                 { "grant_type", configuration["Auth0:ManagementApi:grant_type"]}
             };
