@@ -239,6 +239,7 @@ namespace UpDiddy
             services.AddScoped<ISysEmail, SysEmail>();
 
 
+
             services.AddDetection();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1).AddJsonOptions(options =>
