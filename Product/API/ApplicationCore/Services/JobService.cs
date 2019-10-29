@@ -16,6 +16,12 @@ using System.Net.Http;
 using Google.Apis.CloudTalentSolution.v3.Data;
 using UpDiddyLib.Shared.GoogleJobs;
 using Microsoft.AspNetCore.Http;
+using UpDiddyLib.Domain.Models;
+using Hangfire;
+using Newtonsoft.Json.Linq;
+using UpDiddyApi.Workflow;
+using UpDiddyApi.ApplicationCore.Factory;
+using UpDiddyApi.ApplicationCore.Exceptions;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -33,21 +39,99 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IHttpClientFactory _httpClientFactory = null;
         private readonly ICompanyService _companyService;
         private readonly ISubscriberService _subscriberService;
+        private readonly IMemoryCacheService _cache;
         public JobService(IServiceProvider services, IHangfireService hangfireService)
         {
             _services = services;
 
-             _db = _services.GetService<UpDiddyDbContext>();
+            _db = _services.GetService<UpDiddyDbContext>();
             _syslog = _services.GetService<ILogger<JobService>>();
             _httpClientFactory = _services.GetService<IHttpClientFactory>();
             _repositoryWrapper = _services.GetService<IRepositoryWrapper>();
             _mapper = _services.GetService<IMapper>();
             _sysEmail = _services.GetService<ISysEmail>();
             _configuration = _services.GetService<Microsoft.Extensions.Configuration.IConfiguration>();
-            _companyService=services.GetService<ICompanyService>();
+            _companyService = services.GetService<ICompanyService>();
             _subscriberService = services.GetService<ISubscriberService>();
+            _cache = services.GetService<IMemoryCacheService>();
             _hangfireService = hangfireService;
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper,_subscriberService);
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
+        }
+
+
+        public async Task<JobDetailDto> GetJobDetail(Guid jobPostingGuid)
+        {
+            JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuidWithRelatedObjectsAsync(_db, jobPostingGuid);
+            if (jobPosting == null)
+                throw new NotFoundException();
+      
+            JobDetailDto rVal = _mapper.Map<JobDetailDto>(jobPosting);
+            return rVal;
+        }
+
+
+
+
+        public async Task<JobPostingDto> GetJob(Guid jobPostingGuid)
+        {
+            JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuidWithRelatedObjectsAsync(_db, jobPostingGuid);
+            if (jobPosting == null)
+                throw new NotFoundException();
+            JobPostingDto rVal = _mapper.Map<JobPostingDto>(jobPosting);
+
+            // set meta data for seo
+            JobPostingFactory.SetMetaData(jobPosting, rVal);
+
+            /* i would prefer to get the semantic url in automapper, but i ran into a blocker while trying to call the static util method
+             * in "MapFrom" while guarding against null refs: an expression tree lambda may not contain a null propagating operator
+             * .ForMember(jp => jp.SemanticUrl, opt => opt.MapFrom(src => Utils.GetSemanticJobUrlPath(src.Industry?.Name,"","","","","")))
+             */
+
+            rVal.SemanticJobPath = Utils.CreateSemanticJobPath(
+                jobPosting.Industry?.Name,
+                jobPosting.JobCategory?.Name,
+                jobPosting.Country,
+                jobPosting.Province,
+                jobPosting.City,
+                jobPostingGuid.ToString());
+
+            JobQueryDto jobQuery = JobQueryHelper.CreateJobQueryForSimilarJobs(jobPosting.Province, jobPosting.City, jobPosting.Title, Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]));
+            JobSearchResultDto jobSearchForSingleJob = _cloudTalent.JobSearch(jobQuery);
+
+            // If jobs in same city come back less than 6, broaden search to state.
+            if (jobSearchForSingleJob.JobCount < Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]))
+            {
+                jobQuery = JobQueryHelper.CreateJobQueryForSimilarJobs(jobPosting.Province, string.Empty, jobPosting.Title, Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]));
+                jobSearchForSingleJob = _cloudTalent.JobSearch(jobQuery);
+            }
+
+
+
+            rVal.SimilarJobs = jobSearchForSingleJob;
+
+            return rVal;
+        }
+
+
+
+
+
+
+    public async Task<JobSearchSummaryResultDto> SummaryJobSearch(IQueryCollection query)
+        {
+
+            string cacheKey = Utils.QueryParamsToCacheKey(query);
+            JobSearchSummaryResultDto rVal = (JobSearchSummaryResultDto)_cache.GetCacheValue(cacheKey);
+            if (rVal == null)
+            {
+                int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
+                JobQueryDto jobQuery = JobQueryHelper.CreateSummaryJobQuery(PageSize, query);
+                rVal = _cloudTalent.JobSummarySearch(jobQuery);
+                _cache.SetCacheValue<JobSearchSummaryResultDto>(cacheKey, rVal);
+
+            }
+
+            return rVal; ;
         }
 
         public async Task<List<SearchTermDto>> GetKeywordSearchTermsAsync()
@@ -62,29 +146,29 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task ReferJobToFriend(JobReferralDto jobReferralDto)
         {
-            var jobReferralGuid=await SaveJobReferral(jobReferralDto);
+            var jobReferralGuid = await SaveJobReferral(jobReferralDto);
             await SendReferralEmail(jobReferralDto, jobReferralGuid);
         }
         
         public async Task UpdateJobReferral(string referrerCode, string subscriberGuid)
         {
             //get jobReferral instance to update
-            var jobReferral=await _repositoryWrapper.JobReferralRepository.GetJobReferralByGuid(Guid.Parse(referrerCode));
+            var jobReferral = await _repositoryWrapper.JobReferralRepository.GetJobReferralByGuid(Guid.Parse(referrerCode));
 
             //get subscriber using subscriberGuid
             var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(Guid.Parse(subscriberGuid));
 
-            if(jobReferral!=null)
+            if (jobReferral != null)
             {
                 jobReferral.RefereeId = subscriber.SubscriberId;
                 //update JobReferral
                 await _repositoryWrapper.JobReferralRepository.UpdateJobReferral(jobReferral);
-            }          
+            }
         }
 
         private async Task<Guid> SaveJobReferral(JobReferralDto jobReferralDto)
         {
-            Guid jobReferralGuid=Guid.Empty;
+            Guid jobReferralGuid = Guid.Empty;
             try
             {
                 //get JobPostingId from JobPositngGuid
@@ -111,9 +195,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                 BaseModelFactory.SetDefaultsForAddNew(jobReferral);
 
                 //update jobReferralGuid only if Referee is new subscriber, for old subscriber we do not jobReferralCode
-                     jobReferralGuid = await _repositoryWrapper.JobReferralRepository.AddJobReferralAsync(jobReferral);
+                jobReferralGuid = await _repositoryWrapper.JobReferralRepository.AddJobReferralAsync(jobReferral);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex);
             }
@@ -156,7 +240,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
-        public async Task<JobSearchResultDto> GetJobsByLocationAsync(string Country, string Province, string City, string Industry, string JobCategory, string Skill, int PageNum,IQueryCollection query)
+        public async Task<JobSearchResultDto> GetJobsByLocationAsync(string Country, string Province, string City, string Industry, string JobCategory, string Skill, int PageNum, IQueryCollection query)
         {
             int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
             JobQueryDto jobQuery = JobQueryHelper.CreateJobQuery(Country, Province, City, Industry, JobCategory, Skill, PageNum, PageSize, query);
@@ -174,7 +258,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             jobSearchResult.JobQueryForAlert = jobQuery;
 
             //ClientEvents are triggered only when there are jobs
-            if(jobSearchResult.Jobs!=null && jobSearchResult.Jobs.Count>0)
+            if (jobSearchResult.Jobs != null && jobSearchResult.Jobs.Count > 0)
             {
                 // don't let this stop job search from returning
                 ClientEvent ce = await _cloudTalent.CreateClientEventAsync(jobSearchResult.RequestId, ClientEventType.Impression, jobSearchResult.Jobs.Select(job => job.CloudTalentUri).ToList<string>());
@@ -194,6 +278,68 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (!string.IsNullOrWhiteSpace(company?.LogoUrl))
                     job.CompanyLogoUrl = _configuration["StorageAccount:AssetBaseUrl"] + "Company/" + company.LogoUrl;
             }
-        } 
+        }
+
+        public async Task SaveJobAlert(Guid subscriberGuid, JobAlertDto jobAlertDto)
+        {
+
+            try
+            {
+                var alerts = await _repositoryWrapper.JobPostingAlertRepository.GetAllJobPostingAlertsBySubscriber(subscriberGuid);
+                if (alerts.ToList().Count >= 4)
+                {
+                    throw new Exception("Subscriber has exceeded the maximum number of job exception");
+                }
+
+                DateTime utcDate = DateTime.UtcNow;
+
+                DateTime localExecutionDate = new DateTime(
+                    utcDate.Year,
+                    utcDate.Month,
+                    jobAlertDto.Frequency == "Weekly" ? utcDate.Next(jobAlertDto.ExecutionDayOfWeek.Value).Day : utcDate.Day,
+                    utcDate.Hour,
+                    utcDate.Minute,
+                    0);
+
+
+                string cronSchedule = null;
+
+                switch (jobAlertDto.Frequency)
+                {
+                    case "Daily":
+                        cronSchedule = Cron.Daily(localExecutionDate.Hour, localExecutionDate.Minute);
+                        break;
+                    case "Weekly":
+                        cronSchedule = Cron.Weekly(localExecutionDate.DayOfWeek, localExecutionDate.Hour, localExecutionDate.Minute);
+                        break;
+                    default:
+                        throw new NotSupportedException($"Unrecognized value for 'Frequency' parameter: {jobAlertDto.Frequency}");
+                }
+                var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+                int subscriberId = subscriber.SubscriberId;                
+                Guid jobPostingAlertGuid = Guid.NewGuid();
+                await _repositoryWrapper.JobPostingAlertRepository.Create(new JobPostingAlert()
+                {
+                    CreateDate = DateTime.UtcNow,
+                    CreateGuid = Guid.Empty,
+                    Description = jobAlertDto.Description,
+                    ExecutionDayOfWeek = jobAlertDto?.Frequency == "Weekly" ? (DayOfWeek?)localExecutionDate.DayOfWeek : null,
+                    ExecutionHour = localExecutionDate.Hour,
+                    ExecutionMinute = localExecutionDate.Minute,
+                    Frequency = (Frequency)Enum.Parse(typeof(Frequency), jobAlertDto.Frequency),
+                    IsDeleted = 0,
+                    JobPostingAlertGuid = jobPostingAlertGuid,
+                    JobQueryDto = new JObject(),
+                    SubscriberId = subscriberId
+                });
+                await _repositoryWrapper.JobPostingAlertRepository.SaveAsync();
+                _hangfireService.AddOrUpdate<ScheduledJobs>($"jobPostingAlert:{jobPostingAlertGuid}", sj => sj.ExecuteJobPostingAlert(jobPostingAlertGuid), cronSchedule);
+
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
     }
 }

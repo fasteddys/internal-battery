@@ -30,6 +30,8 @@ using DeviceDetectorNET;
 using UpDiddy.Services;
 using UpDiddy.Services.ButterCMS;
 using UpDiddy.ExceptionHandling;
+ 
+ 
 
 namespace UpDiddy
 {
@@ -192,6 +194,7 @@ namespace UpDiddy
             services.AddScoped<ICacheService, CacheService>();
             services.AddScoped<IButterCMSService, ButterCMSService>();
             services.AddScoped<ISysEmail, SysEmail>();
+
 
 
             services.AddDetection();

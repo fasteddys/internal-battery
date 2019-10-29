@@ -27,6 +27,15 @@ namespace UpDiddyLib.Dto
 
         #region Search Options
 
+
+        /// <summary>
+        /// 
+        /// Include related courses in search results 
+        /// </summary>
+        public int IncludeCouseSkillsHistogram { get; set; }
+
+   
+
         /// <summary>
         /// 
         /// Include facets in search results 

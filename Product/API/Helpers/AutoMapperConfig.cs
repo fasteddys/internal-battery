@@ -12,6 +12,7 @@ using CloudTalentSolution = Google.Apis.CloudTalentSolution.v3.Data;
 using UpDiddyLib.Helpers;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.Helpers
 {
@@ -90,6 +91,13 @@ namespace UpDiddyApi.Helpers
             CreateMap<JobPosting, JobPostingDto>()
                 .ForMember(x => x.MetaDescription, opt => opt.Ignore())
                 .ForMember(x => x.MetaTitle, opt => opt.Ignore())
+                .ReverseMap();
+
+
+
+
+            CreateMap<JobPosting, JobDetailDto>()
+                .ForMember(x => x.CommuteTime, opt => opt.Ignore())
                 .ReverseMap();
 
 
