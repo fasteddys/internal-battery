@@ -17,6 +17,7 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Exceptions;
+using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -57,7 +58,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await jobPosting.AnyAsync(x => x.SubscriberId == subscriberId && x.JobPostingId == jobPostingId);
         }
 
-        public async Task<bool> CreateJobApplication( Guid subscriberGuid, JobApplicationDto jobApplicationDto)
+        public async Task<bool> CreateJobApplication( Guid subscriberGuid, Guid jobGuid, ApplicationDto applicationDto)
         {
             
             try
@@ -67,9 +68,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 Subscriber subscriber = null;
                 string ErrorMsg = string.Empty;
                 int ErrorCode = 0;
-                if (JobApplicationFactory.ValidateJobApplication(_db, jobApplicationDto, ref subscriber, ref jobPosting, ref ErrorCode, ref ErrorMsg) == false)
-                    throw new FailedValidationException();
-
+                if (ValidateJobApplication(_db, applicationDto, subscriberGuid, jobGuid, ref subscriber, ref jobPosting,  ref ErrorMsg) == false)
+                    throw new FailedValidationException(ErrorMsg);
 
                 // create job application 
                 JobApplication jobApplication = new JobApplication();
@@ -77,13 +77,13 @@ namespace UpDiddyApi.ApplicationCore.Services
                 jobApplication.JobApplicationGuid = Guid.NewGuid();
                 jobApplication.JobPostingId = jobPosting.JobPostingId;
                 jobApplication.SubscriberId = subscriber.SubscriberId;
-                jobApplication.CoverLetter = jobApplicationDto.CoverLetter == null ? string.Empty : jobApplicationDto.CoverLetter;
+                jobApplication.CoverLetter = applicationDto.CoverLetter == null ? string.Empty : applicationDto.CoverLetter;
                 // Map Partner 
-                if (jobApplicationDto.Partner != null)
+                if (string.IsNullOrEmpty(applicationDto.PartnerName) == false )
                 {
                     PartnerType partnerType = await _repositoryWrapper.PartnerTypeRepository.GetPartnerTypeByName("ExternalSource");
                     // Get or create the referenced partner 
-                    Partner partner = await _repositoryWrapper.PartnerRepository.GetOrCreatePartnerByName(jobApplicationDto.Partner.Name, partnerType);
+                    Partner partner = await _repositoryWrapper.PartnerRepository.GetOrCreatePartnerByName(applicationDto.PartnerName, partnerType);
                     jobApplication.PartnerId = partner.PartnerId;
                 }
 
@@ -121,9 +121,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                             (EmailAddressesToSend[Email] == true ? "-External" : string.Empty)],
                         new
                         {
-                            ApplicantName = jobApplicationDto.Subscriber.FirstName + " " + jobApplicationDto.Subscriber.LastName,
-                            ApplicantFirstName = jobApplicationDto.Subscriber.FirstName,
-                            ApplicantLastName = jobApplicationDto.Subscriber.LastName,
+                            ApplicantName = applicationDto.FirstName + " " + applicationDto.LastName,
+                            ApplicantFirstName = applicationDto.FirstName,
+                            ApplicantLastName = applicationDto.LastName,
                             ApplicantEmail = subscriber.Email,
                             JobTitle = jobPosting.Title,
                             ApplicantUrl = SubscriberFactory.JobseekerUrl(_configuration, subscriber.SubscriberGuid.Value),
@@ -144,7 +144,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                             },
                             new Attachment
                             {
-                                Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(jobApplicationDto.CoverLetter)),
+                                Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(applicationDto.CoverLetter)),
                                 Filename = "CoverLetter.txt"
                             }
                         },
@@ -160,12 +160,79 @@ namespace UpDiddyApi.ApplicationCore.Services
             catch (Exception ex)
             {
                 _syslog.Log(LogLevel.Information, $"***** JobApplicationController:CreateJobApplication exception : {ex.Message}");
-                throw new Exception($"***** JobApplicationController:CreateJobApplication exception : {ex.Message}");
+                throw ex;
             }
         }
 
+
+
+
+        #region helper functions 
+
+        // TODO jab work out with foley the firstname and last name issues .
+        private bool ValidateJobApplication(UpDiddyDbContext db, ApplicationDto applicationDto, Guid subscriberGuid, Guid jobGuid, ref Subscriber subscriber, ref JobPosting jobPosting, ref string ErrorMsg)
+        {
+
+            if (applicationDto == null)
+            {
+                ErrorMsg = "Job application is required.";
+                return false;
+            }
  
- 
+            subscriber = SubscriberFactory.GetSubscriberWithSubscriberFiles(db, subscriberGuid);
+            if (subscriber == null)
+            {             
+                ErrorMsg = $"Subscriber {subscriberGuid} does not exist.";
+                return false;
+            }
+
+            //validate that resume and cover letter are present
+            if (subscriber.SubscriberFile.FirstOrDefault() == null )
+            {             
+                ErrorMsg = "Subscriber has not supplied a resume.";
+                return false;
+            }
+       
+            jobPosting = JobPostingFactory.GetJobPostingByGuid(db, jobGuid);
+
+            if (jobPosting == null)
+            {             
+                ErrorMsg = $"Job posting {jobGuid} does not exist.";
+                return false;
+            }
+
+            if (jobPosting.JobStatus != (int)JobPostingStatus.Active)
+            {             
+                ErrorMsg = $"Job {jobPosting.JobPostingGuid} is not active.";
+                return false;
+            }
+
+            // verify user has not already applied 
+            JobApplication jobApplication = GetJobApplication(db, subscriber.SubscriberId, jobPosting.JobPostingId);
+            if (jobApplication != null)
+            {             
+                ErrorMsg = "User has already applied.";
+                return false;
+            }
+
+            return true;
+        }
+
+
+
+        private  JobApplication GetJobApplication(UpDiddyDbContext db, int subscriberId, int jobPostingID)
+        {
+            return db.JobApplication
+                .Where(s => s.IsDeleted == 0 && s.JobPostingId == jobPostingID && s.SubscriberId == subscriberId)
+                .FirstOrDefault();
+        }
+
+
+
+
+        #endregion
+
+
     }
 
 

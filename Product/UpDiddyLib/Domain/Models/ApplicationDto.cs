@@ -6,9 +6,9 @@ namespace UpDiddyLib.Domain.Models
 {
     public class ApplicationDto
     {
-        string FirstName { get; set; }
-        string LasttName { get; set; }
-        string CoverLetter { get; set; }
-        string PartnerName { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string CoverLetter { get; set; }
+        public string PartnerName { get; set; }
     }
 }

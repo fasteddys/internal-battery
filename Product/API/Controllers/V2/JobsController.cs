@@ -73,11 +73,11 @@ namespace UpDiddyApi.Controllers
         [HttpPost]
         [Route("/V2/[controller]/{JobGuid}/applications")]
         [Authorize]
-        public async Task<IActionResult> CreateJobApplication([FromBody] JobApplicationDto jobApplicationDto, Guid JobGuid)
+        public async Task<IActionResult> CreateJobApplication([FromBody] ApplicationDto jobApplicationDto, Guid JobGuid)
         {
 
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _jobApplicationService.CreateJobApplication(subscriberGuid, jobApplicationDto);
+            await _jobApplicationService.CreateJobApplication(subscriberGuid, JobGuid, jobApplicationDto);
             return StatusCode(201);
         }
 
