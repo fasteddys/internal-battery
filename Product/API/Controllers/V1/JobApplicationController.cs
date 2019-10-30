@@ -33,7 +33,7 @@ namespace UpDiddyApi.Controllers
         private readonly ILogger _syslog;
         private readonly IHttpClientFactory _httpClientFactory = null;
         private readonly int _postingTTL = 30;
-        private readonly CloudTalent _cloudTalent = null;
+        private readonly ICloudTalentService _cloudTalentService;
         private ISysEmail _sysEmail;
         private ISubscriberService _subscriberService;
         private readonly IHangfireService _hangfireService;
@@ -50,7 +50,8 @@ namespace UpDiddyApi.Controllers
             ISysEmail sysEmail,
             ISubscriberService subscriberService,
             IHangfireService hangfireService,
-            IRepositoryWrapper repositoryWrapper )
+            IRepositoryWrapper repositoryWrapper,
+            ICloudTalentService cloundTalentService )
 
         {
             _db = db;
@@ -63,7 +64,7 @@ namespace UpDiddyApi.Controllers
             _sysEmail = sysEmail;
             _subscriberService = subscriberService;
             _hangfireService = hangfireService;
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, repositoryWrapper,_subscriberService);
+            _cloudTalentService = cloundTalentService;
         }
         #endregion
 
@@ -73,11 +74,11 @@ namespace UpDiddyApi.Controllers
         [HttpGet]
         [Authorize]
         [Route("api/[controller]/applicant/{subscriberGuid}")]
-        public IActionResult GetJobApplicationForSubscriber(Guid subscriberGuid)
+        public async Task<IActionResult> GetJobApplicationForSubscriber(Guid subscriberGuid)
         {
             _syslog.Log(LogLevel.Information, $"***** JobApplicationController:GetJobApplicationForSubscriber started at: {DateTime.UtcNow.ToLongDateString()}");
 
-            Subscriber subscriber= SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            Subscriber subscriber= await SubscriberFactory.GetSubscriberByGuid(_repositoryWrapper, subscriberGuid);
             if (subscriber == null)
                 return NotFound(new { code = 404, message = $"Subscriber {subscriberGuid} does not exist" });
 
@@ -87,7 +88,7 @@ namespace UpDiddyApi.Controllers
                 return BadRequest(new { code = 401, message = $"Job applications can only be viewed by applicant" });
 
 
-            List<JobApplication> applications = JobApplicationFactory.GetJobApplicationsForSubscriber(_db, subscriber.SubscriberId);
+            List<JobApplication> applications = await JobApplicationFactory.GetJobApplicationsForSubscriber(_repositoryWrapper, subscriber.SubscriberId);
             _syslog.Log(LogLevel.Information, $"***** JobApplicationController:GetJobApplicationForSubscriber completed at: {DateTime.UtcNow.ToLongDateString()}");
 
             List<JobApplicationApplicantViewDto> rVal = _mapper.Map<List<JobApplicationApplicantViewDto>>(applications); 
@@ -105,12 +106,12 @@ namespace UpDiddyApi.Controllers
         [HttpGet]
         [Authorize(Policy = "IsRecruiterOrAdmin")]
         [Route("api/[controller]/job/{jobPostingGuid}")]
-        public IActionResult GetJobApplicationForPosting(Guid jobPostingGuid)
+        public async Task<IActionResult> GetJobApplicationForPosting(Guid jobPostingGuid)
         {
 
             _syslog.Log(LogLevel.Information, $"***** JobApplicationController:GetJobApplicationForPosting started at: {DateTime.UtcNow.ToLongDateString()}");
 
-            JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuid(_db, jobPostingGuid);
+            JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuid(_repositoryWrapper, jobPostingGuid);
             if (jobPosting == null)
                 return NotFound(new { code = 404, message = $"Job posting {jobPostingGuid} does not exist" });
 
@@ -119,7 +120,7 @@ namespace UpDiddyApi.Controllers
             if (jobPosting.Recruiter.Subscriber.SubscriberGuid != subsriberGuidClaim )
                 return BadRequest(new { code = 401, message = $"Job applications can only be viewed by posting owner" });
  
-            List<JobApplication> applications = JobApplicationFactory.GetJobApplicationsForPosting(_db, jobPosting.JobPostingId);
+            List<JobApplication> applications = await JobApplicationFactory.GetJobApplicationsForPosting(_repositoryWrapper, jobPosting.JobPostingId);
             _syslog.Log(LogLevel.Information, $"***** JobApplicationController:GetJobApplicationForPosting completed at: {DateTime.UtcNow.ToLongDateString()}");            
             List<JobApplicationRecruiterViewDto> rVal = _mapper.Map<List<JobApplicationRecruiterViewDto>>(applications);
 
@@ -140,10 +141,10 @@ namespace UpDiddyApi.Controllers
         [HttpGet]
         [Authorize]
         [Route("api/[controller]/{jobApplicationGuid}")]
-        public IActionResult GetJobApplication(Guid jobApplicationGuid)
+        public async Task<IActionResult> GetJobApplication(Guid jobApplicationGuid)
         {
             _syslog.Log(LogLevel.Information, $"***** JobApplicationController:GetJobApplication started at: {DateTime.UtcNow.ToLongDateString()}");
-            JobApplication jobApplication = JobApplicationFactory.GetJobApplicationByGuid(_db, jobApplicationGuid);
+            JobApplication jobApplication = await JobApplicationFactory.GetJobApplicationByGuid(_repositoryWrapper, jobApplicationGuid);
             if (jobApplication == null)
                 return NotFound(new { code = 404, message = $"Job application {jobApplicationGuid} does not exist" });
 
@@ -169,13 +170,13 @@ namespace UpDiddyApi.Controllers
         [HttpDelete]
         [Authorize]
         [Route("api/[controller]/{jobApplicationGuid}")]
-        public IActionResult DeleteJobApplication(Guid jobApplicationGuid)
+        public async Task<IActionResult> DeleteJobApplication(Guid jobApplicationGuid)
         {
             try
             {
  
                 _syslog.Log(LogLevel.Information, $"***** JobApplicationController:DeleteJobApplication started at: {DateTime.UtcNow.ToLongDateString()}");
-                JobApplication jobApplication = JobApplicationFactory.GetJobApplicationByGuid(_db, jobApplicationGuid);
+                JobApplication jobApplication = await JobApplicationFactory.GetJobApplicationByGuid(_repositoryWrapper, jobApplicationGuid);
                 if ( jobApplication == null )
                     return NotFound(new { code = 404, message = $"Job application {jobApplicationGuid} does not exist" });
            
@@ -220,7 +221,7 @@ namespace UpDiddyApi.Controllers
                 Subscriber subscriber = null;
                 string ErrorMsg = string.Empty;
                 int ErrorCode = 0;
-                if (JobApplicationFactory.ValidateJobApplication(_db, jobApplicationDto, ref subscriber, ref jobPosting, ref ErrorCode, ref ErrorMsg) == false)
+                if (JobApplicationFactory.ValidateJobApplication(_repositoryWrapper, jobApplicationDto, ref subscriber, ref jobPosting, ref ErrorCode, ref ErrorMsg) == false)
                 {
                     return BadRequest(new BasicResponseDto() { StatusCode = ErrorCode, Description = ErrorMsg });
                 }

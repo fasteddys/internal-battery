@@ -9,6 +9,8 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Helpers;
+using UpDiddyLib.Domain.Models;
+
 namespace UpDiddyApi.ApplicationCore.Repository
 {
     public class JobPostingFavoriteRepository : UpDiddyRepositoryBase<JobPostingFavorite>, IJobPostingFavoriteRepository
@@ -41,7 +43,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                           select jf).FirstOrDefaultAsync();
         }
 
-        public async Task<List<JobFavoriteDto>> GetBySubscriberGuid(Guid subscriberGuid)
+        public async Task<List<JobPostingDto>> GetBySubscriberGuid(Guid subscriberGuid)
         {
             return await (from jf in _dbContext.JobPostingFavorite
                           join jp in _dbContext.JobPosting on jf.JobPostingId equals jp.JobPostingId
@@ -51,7 +53,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                           on new { jf.JobPostingId, jf.SubscriberId } equals new { ja.JobPostingId, ja.SubscriberId } into tmp
                           from ja in tmp.DefaultIfEmpty()
                           where jf.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid
-                          select new JobFavoriteDto
+                          select new JobPostingDto
                           {
                               JobPostingGuid = jp.JobPostingGuid,
                               PostingDateUTC = jp.PostingDateUTC,

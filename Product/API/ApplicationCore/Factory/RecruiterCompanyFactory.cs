@@ -4,21 +4,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class RecruiterCompanyFactory
     {
-        public static List<RecruiterCompany> GetRecruiterCompanyById(UpDiddyDbContext db, int subscriberId)
+        public static async Task<List<RecruiterCompany>> GetRecruiterCompanyById(IRepositoryWrapper repositoryWrapper, int subscriberId)
         {
-            return db.RecruiterCompany
+            return await repositoryWrapper.RecruiterCompanyRepository.GetAll()
                .Include(s => s.Company)
                .Include(s => s.Recruiter.Subscriber)
                .Where(rc => rc.IsDeleted == 0 && rc.Recruiter.SubscriberId == subscriberId)
-               .ToList();
+               .ToListAsync();
         }
 
-        public static RecruiterCompany CreateRecruiterCompany(UpDiddyDbContext db, int recruiterId, int companyId, bool isStaff)
+        public static RecruiterCompany CreateRecruiterCompany(int recruiterId, int companyId, bool isStaff)
         {
 
             RecruiterCompany recruiterCompany = new RecruiterCompany();
@@ -31,19 +32,19 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return recruiterCompany;
         }
 
-        public static RecruiterCompany GetOrAdd(UpDiddyDbContext db, int recruiterId, int companyId, bool isStaff)
+        public static async Task<RecruiterCompany> GetOrAdd(IRepositoryWrapper repositoryWrapper, int recruiterId, int companyId, bool isStaff)
         {
-            RecruiterCompany recruiterCompany = db.RecruiterCompany
+            RecruiterCompany recruiterCompany = await repositoryWrapper.RecruiterCompanyRepository.GetAll()
                 .Include(rc => rc.Recruiter)
                 .Include(rc => rc.Company)
                 .Where(rc => rc.IsDeleted == 0 && rc.Recruiter.RecruiterId == recruiterId && rc.Company.CompanyId == companyId)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             if (recruiterCompany == null)
             {
-                recruiterCompany = CreateRecruiterCompany(db, recruiterId, companyId, isStaff);
-                db.RecruiterCompany.Add(recruiterCompany);
-                db.SaveChanges();
+                recruiterCompany = CreateRecruiterCompany(recruiterId, companyId, isStaff);
+                await repositoryWrapper.RecruiterCompanyRepository.Create(recruiterCompany);
+                await repositoryWrapper.SaveAsync();
             }
             return recruiterCompany;
         }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Factory;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 
 namespace UpDiddyApi.ApplicationCore
 {
@@ -13,41 +14,41 @@ namespace UpDiddyApi.ApplicationCore
     {
 
 
-        public static List<JobApplication> GetJobApplicationsForSubscriber(UpDiddyDbContext db, int subscriberId)
+        public static async Task <List<JobApplication>> GetJobApplicationsForSubscriber(IRepositoryWrapper repositoryWrapper, int subscriberId)
         {
-            return db.JobApplication
+            return await repositoryWrapper.JobApplication.GetAll()
                 .Include( s => s.JobPosting)
                 .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
-                .ToList();
+                .ToListAsync();
         }
 
 
-        public static List<JobApplication> GetJobApplicationsForPosting(UpDiddyDbContext db, int jobPostingID)
+        public static async Task<List<JobApplication>> GetJobApplicationsForPosting(IRepositoryWrapper repositoryWrapper, int jobPostingID)
         {
-            return db.JobApplication                
+            return await repositoryWrapper.JobApplication.GetAll()             
                 .Where(s => s.IsDeleted == 0 && s.JobPostingId == jobPostingID)       
-                .ToList();
+                .ToListAsync();
         }
 
 
-        public static JobApplication GetJobApplicationByGuid(UpDiddyDbContext db, Guid jobApplicationGuid)
+        public static async Task<JobApplication> GetJobApplicationByGuid(IRepositoryWrapper repositoryWrapper, Guid jobApplicationGuid)
         {
-            return db.JobApplication
+            return await repositoryWrapper.JobApplication.GetAll()
                 .Include(s => s.JobPosting)
                 .Include(s => s.Subscriber)
                 .Where(s => s.IsDeleted == 0  && s.JobApplicationGuid == jobApplicationGuid)                   
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
 
-        public static JobApplication GetJobApplication(UpDiddyDbContext db, int subscriberId, int jobPostingID)
+        public static async Task<JobApplication> GetJobApplication(IRepositoryWrapper repositoryWrapper, int subscriberId, int jobPostingID)
         {
-            return db.JobApplication
+            return await repositoryWrapper.JobApplication.GetAll()
                 .Where(s => s.IsDeleted == 0 && s.JobPostingId == jobPostingID && s.SubscriberId == subscriberId)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
-        static public bool ValidateJobApplication(UpDiddyDbContext db, JobApplicationDto jobApplicationDto, ref Subscriber subscriber, ref JobPosting jobPosting, ref int ErrorCode, ref string ErrorMsg)
+        static public bool ValidateJobApplication(IRepositoryWrapper repositoryWrapper, JobApplicationDto jobApplicationDto, ref Subscriber subscriber, ref JobPosting jobPosting, ref int ErrorCode, ref string ErrorMsg)
         {
 
             if (jobApplicationDto == null )
@@ -67,7 +68,7 @@ namespace UpDiddyApi.ApplicationCore
                 return false;
             }
                         
-            subscriber = SubscriberFactory.GetSubscriberWithSubscriberFiles(db, jobApplicationDto.Subscriber.SubscriberGuid.Value);
+            subscriber = SubscriberFactory.GetSubscriberWithSubscriberFiles(repositoryWrapper, jobApplicationDto.Subscriber.SubscriberGuid.Value).Result;
             if (subscriber == null)
             {
                 ErrorCode = 404;
@@ -91,7 +92,7 @@ namespace UpDiddyApi.ApplicationCore
                 return false;
             }
                   
-           jobPosting = JobPostingFactory.GetJobPostingByGuid(db, jobApplicationDto.JobPosting.JobPostingGuid.Value);
+           jobPosting = JobPostingFactory.GetJobPostingByGuid(repositoryWrapper, jobApplicationDto.JobPosting.JobPostingGuid.Value).Result;
 
            if (jobPosting == null)
            {
@@ -109,7 +110,7 @@ namespace UpDiddyApi.ApplicationCore
             }
 
             // verify user has not already applied 
-            JobApplication jobApplication = GetJobApplication(db, subscriber.SubscriberId, jobPosting.JobPostingId);
+            JobApplication jobApplication = GetJobApplication(repositoryWrapper, subscriber.SubscriberId, jobPosting.JobPostingId).Result;
             if ( jobApplication != null )
             {
                 ErrorCode = 400;

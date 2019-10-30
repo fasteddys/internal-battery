@@ -4,45 +4,42 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class JobPostingSkillFactory
     {
 
-        public static List<JobPostingSkill> GetSkillsForPosting(UpDiddyDbContext db, int jobPostingId )
+        public static async Task<List<JobPostingSkill>> GetSkillsForPosting(IRepositoryWrapper repositoryWrapper, int jobPostingId)
         {
-            return  db.JobPostingSkill
-                   .Include( s => s.Skill )
+            return await repositoryWrapper.JobPostingSkillRepository.GetAll()
+                   .Include(s => s.Skill)
                    .Where(s => s.JobPostingId == jobPostingId)
-                   .ToList();
+                   .ToListAsync();
         }
 
-        public static void DeleteSkillsForPosting(UpDiddyDbContext db, int jobPostingId)
+        public static async Task DeleteSkillsForPosting(IRepositoryWrapper repositoryWrapper, int jobPostingId)
         {
-            List<JobPostingSkill> theList =  db.JobPostingSkill
+            List<JobPostingSkill> theList = await repositoryWrapper.JobPostingSkillRepository.GetAll()
                    .Where(s => s.JobPostingId == jobPostingId)
-                   .ToList();
+                   .ToListAsync();
 
-            foreach ( JobPostingSkill jps in theList)
-                 db.JobPostingSkill.Remove(jps);
-            db.SaveChanges();
+            foreach (JobPostingSkill jps in theList)
+                repositoryWrapper.JobPostingSkillRepository.Delete(jps);
+            await repositoryWrapper.JobPostingSkillRepository.SaveAsync();
         }
-
-
-
 
 
         /// <summary>
         /// Create a job posting skill 
         /// </summary>
-        /// <param name="db"></param>
+        /// <param name="repositoryWrapper"></param>
         /// <param name="jobPostingId"></param>
         /// <param name="skillGuid"></param>
         /// <returns></returns>
-        public static JobPostingSkill CreateJobPostingSkill(UpDiddyDbContext db, int jobPostingId, Guid skillGuid)
+        public static async Task<JobPostingSkill> CreateJobPostingSkill(IRepositoryWrapper repositoryWrapper, int jobPostingId, Guid skillGuid)
         {
-            Skill skill = SkillFactory.GetSkillByGuid(db, skillGuid);
+            Skill skill = await SkillFactory.GetSkillByGuid(repositoryWrapper, skillGuid);
             if (skill == null)
                 throw new Exception($"{skillGuid} is not a valid skill");
 
@@ -54,7 +51,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 CreateGuid = Guid.Empty,
                 ModifyGuid = Guid.Empty,
                 SkillId = skill.SkillId,
-                JobPostingId = jobPostingId ,
+                JobPostingId = jobPostingId,
                 JobPostingSkillGuid = skill.SkillGuid
             };
 
@@ -66,14 +63,14 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// <param name="jobPostingId"></param>
         /// <param name="skillGuid"></param>
         /// <returns></returns>
-        public static bool Add(UpDiddyDbContext db, int jobPostingId, Guid skillGuid)
+        public static async Task<bool> Add(IRepositoryWrapper repositoryWrapper, int jobPostingId, Guid skillGuid)
         {
             // todo make this more efficient 
             try
             {
-                JobPostingSkill postingSkill = CreateJobPostingSkill(db,jobPostingId,skillGuid);
-                db.JobPostingSkill.Add(postingSkill);
-                db.SaveChanges();
+                JobPostingSkill postingSkill = await CreateJobPostingSkill(repositoryWrapper, jobPostingId, skillGuid);
+                await repositoryWrapper.JobPostingSkillRepository.Create(postingSkill);
+                await repositoryWrapper.JobPostingSkillRepository.SaveAsync();
                 return true;
             }
             catch

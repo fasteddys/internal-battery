@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
-
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 namespace UpDiddyApi.ApplicationCore.Repository
 {
     public class UpDiddyRepositoryBase<TEntity> : IUpDiddyRepositoryBase<TEntity> where TEntity:class
@@ -47,6 +47,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
            await _dbContext.Database.ExecuteSqlCommandAsync(sql);
         }
 
+         public async Task ExecuteSQL(string sql, object[] parameters)
+        {
+           await _dbContext.Database.ExecuteSqlCommandAsync(sql, parameters);
+        }
+
         public async Task Create(TEntity entity)
         {
             await this._dbContext.Set<TEntity>().AddAsync(entity);
@@ -75,6 +80,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
         public async Task SaveAsync()
         {
             await this._dbContext.SaveChangesAsync();
+        }
+
+        public EntityEntry GetEntry(TEntity entity)
+        {
+           return this._dbContext.Entry(entity);
         }
     }
 }

@@ -6,6 +6,8 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using System.Collections.Generic;
+using UpDiddyLib.Domain.Models;
+
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class JobFavoriteService : IJobFavoriteService
@@ -19,7 +21,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             JobPosting jobPostingEntity = await _repositoryWrapper.JobPosting.GetJobPostingByGuid(jobPostingGuid);
             if (jobPostingEntity == null)
             {
-                throw new NotFoundException("Job Posting does not exist");
+                throw new NotFoundException("Job does not exist");
             }
             Subscriber subsciberEntity = await _repositoryWrapper.Subscriber.GetSubscriberByGuidAsync(subscriberGuid);
             JobPostingFavorite jobPostingFavorite = await _repositoryWrapper.JobPostingFavorite.GetBySubscriberAndJobPostingGuid(subscriberGuid, jobPostingGuid);
@@ -41,7 +43,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             else
             {
-                throw new AlreadyExistsException("Job Posting is already added to favorites");
+                throw new AlreadyExistsException("Job is already added to favorites");
             }
         }
 
@@ -50,7 +52,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             JobPostingFavorite jobPostingFavoriteEntity = await _repositoryWrapper.JobPostingFavorite.GetBySubscriberAndJobPostingGuid(subscriberGuid, jobPostingGuid);
             if (jobPostingFavoriteEntity == null)
             {
-                throw new NotFoundException("Job posting favorite not found");
+                throw new NotFoundException("Job favorite not found");
             }
             else
             {
@@ -60,7 +62,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
-        public async Task<List<JobFavoriteDto>> GetJobFavorites(Guid subscriberGuid)
+        public async Task<List<JobPostingDto>> GetJobFavorites(Guid subscriberGuid)
         {
             return await _repositoryWrapper.JobPostingFavorite.GetBySubscriberGuid(subscriberGuid);
         }

@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
-    public interface IUpDiddyRepositoryBase<TEntity> where TEntity: class
+    public interface IUpDiddyRepositoryBase<TEntity> where TEntity: class 
     {
         IQueryable<TEntity> GetAll();
         Task<IEnumerable<TEntity>> GetByConditionWithTrackingAsync(Expression<Func<TEntity,bool>> expression);
@@ -17,7 +18,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         void UpdateRange(TEntity[] entity);
         void Delete(TEntity entity);
         Task SaveAsync();
-
         Task ExecuteSQL(string sql);
+        Task ExecuteSQL(string sql, object[] parameter);
+        EntityEntry GetEntry(TEntity entity);
     }
 }

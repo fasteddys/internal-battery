@@ -3,20 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using Microsoft.EntityFrameworkCore;
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class SubscriberSkillFactory
     {
-        public static bool AddSkillForSubscriber(UpDiddyDbContext db, Subscriber subscriber, Skill skill)
+        public static async Task<bool> AddSkillForSubscriber(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, Skill skill)
         {
             bool rVal = true;
             try
             {
                 // check for a matching skill (either deleted or active )for this subscriber  
-                var existingSkill = db.SubscriberSkill
+                var existingSkill = await repositoryWrapper.SubscriberSkillRepository.GetAll()
                     .Where(ss => ss.SubscriberId == subscriber.SubscriberId && ss.SkillId == skill.SkillId)
-                    .FirstOrDefault();
+                    .FirstOrDefaultAsync();
 
 
                 if (existingSkill != null)
@@ -28,7 +29,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     // if the skill was logically deleted, remove that flag and mark it as modified
                     existingSkill.IsDeleted = 0;
                     existingSkill.ModifyDate = DateTime.UtcNow;
-                    db.SubscriberSkill.Update(existingSkill);
+                    await repositoryWrapper.SubscriberSkillRepository.Create(existingSkill);
                 }
                 else
                 {
@@ -43,9 +44,9 @@ namespace UpDiddyApi.ApplicationCore.Factory
                         IsDeleted = 0,
                         SubscriberSkillGuid = Guid.NewGuid()
                     };
-                    db.SubscriberSkill.Add(subscriberSkill);
+                    await repositoryWrapper.SubscriberSkillRepository.Create(existingSkill);
                 }
-                db.SaveChanges();
+                await repositoryWrapper.SubscriberSkillRepository.SaveAsync();
             }
             catch
             {
@@ -54,11 +55,11 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return rVal;
         }
 
-        public static SubscriberSkill GetSkillForSubscriber(UpDiddyDbContext db, Subscriber subscriber, Skill skill)
+        public static async Task<SubscriberSkill> GetSkillForSubscriber(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, Skill skill)
         {
-            return db.SubscriberSkill
+            return await repositoryWrapper.SubscriberSkillRepository.GetAll()
                 .Where(ss => ss.IsDeleted == 0 && ss.SkillId == skill.SkillId && ss.SubscriberId == subscriber.SubscriberId)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
     }
 }

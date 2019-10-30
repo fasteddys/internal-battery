@@ -57,7 +57,7 @@ namespace UpDiddyApi.Controllers
         private IJobService _jobService;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private ITaggingService _taggingService;
-        private readonly CloudTalent _cloudTalent = null;
+        private readonly ICloudTalentService _cloudTalent;
         private readonly IHangfireService _hangfireService;
         private readonly IJobPostingService _jobPostingService;
         private readonly IFileDownloadTrackerService _fileDownloadTrackerService;
@@ -80,7 +80,8 @@ namespace UpDiddyApi.Controllers
             IHttpClientFactory httpClientFactory,
             IHangfireService hangfireService,
             IJobPostingService jobPostingService,
-            IFileDownloadTrackerService fileDownloadTrackerService)
+            IFileDownloadTrackerService fileDownloadTrackerService,
+            ICloudTalentService cloudTalent)
         {
             _db = db;
             _mapper = mapper;
@@ -96,7 +97,7 @@ namespace UpDiddyApi.Controllers
             _subscriberNotificationService = subscriberNotificationService;
             _jobService = jobService;
             _taggingService = taggingService;
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory, repositoryWrapper, _subscriberService);
+            _cloudTalent = cloudTalent;
             _hangfireService = hangfireService;
             _jobPostingService = jobPostingService;
             _fileDownloadTrackerService = fileDownloadTrackerService;
@@ -106,19 +107,19 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet("{subscriberGuid}/company")]
         [Authorize]
-        public IActionResult GetCompanies(Guid subscriberGuid)
+        public async Task<IActionResult> GetCompanies(Guid subscriberGuid)
         {
             // Validate guid for GetSubscriber call
             if (Guid.Empty.Equals(subscriberGuid) || subscriberGuid == null)
                 return NotFound();
 
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repositoryWrapper, subscriberGuid);
             if (subscriber == null)
             {
                 return NotFound(new { code = 404, message = $"Subscriber {subscriberGuid} not found" });
             }
 
-            List<RecruiterCompany> companies = RecruiterCompanyFactory.GetRecruiterCompanyById(_db, subscriber.SubscriberId);
+            List<RecruiterCompany> companies = await RecruiterCompanyFactory.GetRecruiterCompanyById(_repositoryWrapper, subscriber.SubscriberId);
             return Ok(_mapper.Map<List<RecruiterCompanyDto>>(companies));
         }
 
@@ -136,7 +137,7 @@ namespace UpDiddyApi.Controllers
                 if (subscriberGuid == loggedInUserGuid || isAuth.Succeeded)
                 {
                     
-                    SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
+                    SubscriberDto subscriberDto = await SubscriberFactory.GetSubscriber(_repositoryWrapper, subscriberGuid, _syslog, _mapper);
 
                     if (subscriberDto == null)
                         return Ok(subscriberDto);
@@ -303,7 +304,7 @@ namespace UpDiddyApi.Controllers
             if (subscriberGuid != loggedInUserGuid && !isAuth.Succeeded)
                 return Unauthorized();
 
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repositoryWrapper, subscriberGuid);
             if (subscriber == null)
                 return BadRequest();
 
@@ -352,7 +353,7 @@ namespace UpDiddyApi.Controllers
         [HttpPost]
         [Route("/api/[controller]/{subscriberGuid}/work-history")]
         // TODO looking into consolidating Add and Update to reduce code redundancy
-        public IActionResult AddWorkHistory(Guid subscriberGuid, [FromBody] SubscriberWorkHistoryDto WorkHistoryDto)
+        public async Task<IActionResult> AddWorkHistory(Guid subscriberGuid, [FromBody] SubscriberWorkHistoryDto WorkHistoryDto)
         {
             // sanitize user inputs
             WorkHistoryDto.Company = HttpUtility.HtmlEncode(WorkHistoryDto.Company);
@@ -364,15 +365,15 @@ namespace UpDiddyApi.Controllers
             if (subscriberGuid != loggedInUserGuid)
                 return Unauthorized();
 
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repositoryWrapper, subscriberGuid);
             if (subscriber == null)
                 return BadRequest();
-            Company company = CompanyFactory.GetOrAdd(_db, WorkHistoryDto.Company).Result;
+            Company company = CompanyFactory.GetOrAdd(_repositoryWrapper, WorkHistoryDto.Company).Result;
             int companyId = company != null ? company.CompanyId : -1;
-            CompensationType compensationType = CompensationTypeFactory.GetCompensationTypeByName(_db, WorkHistoryDto.CompensationType);
+            CompensationType compensationType = await CompensationTypeFactory.GetCompensationTypeByName(_repositoryWrapper, WorkHistoryDto.CompensationType);
             int compensationTypeId = 0;
             if (compensationType == null)
-                compensationType = CompensationTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption);
+                compensationType = await CompensationTypeFactory.GetOrAdd(_repositoryWrapper, Constants.NotSpecifedOption);
             compensationTypeId = compensationType.CompensationTypeId;
 
             SubscriberWorkHistory WorkHistory = new SubscriberWorkHistory()
@@ -407,7 +408,7 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         [HttpPut]
         [Route("/api/[controller]/{subscriberGuid}/work-history")]
-        public IActionResult UpdateWorkHistory(Guid subscriberGuid, [FromBody] SubscriberWorkHistoryDto WorkHistoryDto)
+        public async Task<IActionResult> UpdateWorkHistory(Guid subscriberGuid, [FromBody] SubscriberWorkHistoryDto WorkHistoryDto)
         {
             // sanitize user inputs 
             WorkHistoryDto.Company = HttpUtility.HtmlEncode(WorkHistoryDto.Company);
@@ -419,23 +420,23 @@ namespace UpDiddyApi.Controllers
             if (subscriberGuid != loggedInUserGuid)
                 return Unauthorized();
 
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
-            Company company = CompanyFactory.GetOrAdd(_db, WorkHistoryDto.Company).Result;
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repositoryWrapper, subscriberGuid);
+            Company company = CompanyFactory.GetOrAdd(_repositoryWrapper, WorkHistoryDto.Company).Result;
             int companyId = company != null ? company.CompanyId : -1;
-            CompensationType compensationType = CompensationTypeFactory.GetCompensationTypeByName(_db, WorkHistoryDto.CompensationType);
+            CompensationType compensationType = await CompensationTypeFactory.GetCompensationTypeByName(_repositoryWrapper, WorkHistoryDto.CompensationType);
             int compensationTypeId = 0;
             if (compensationType != null)
                 compensationTypeId = compensationType.CompensationTypeId;
             else
             {
-                compensationType = CompensationTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption);
+                compensationType = await CompensationTypeFactory.GetOrAdd(_repositoryWrapper, Constants.NotSpecifedOption);
                 compensationTypeId = compensationType.CompensationTypeId;
             }
 
             if (subscriber == null)
                 return BadRequest();
 
-            SubscriberWorkHistory WorkHistory = SubscriberWorkHistoryFactory.GetWorkHistoryByGuid(_db, WorkHistoryDto.SubscriberWorkHistoryGuid);
+            SubscriberWorkHistory WorkHistory = await SubscriberWorkHistoryFactory.GetWorkHistoryByGuid(_repositoryWrapper, WorkHistoryDto.SubscriberWorkHistoryGuid);
             if (WorkHistory == null || WorkHistory.SubscriberId != subscriber.SubscriberId)
                 return BadRequest();
 
@@ -449,7 +450,7 @@ namespace UpDiddyApi.Controllers
             WorkHistory.IsCurrent = WorkHistoryDto.IsCurrent;
             WorkHistory.Compensation = WorkHistoryDto.Compensation;
             WorkHistory.CompensationTypeId = compensationTypeId;
-            _db.SaveChanges();
+            await _repositoryWrapper.SubscriberWorkHistoryRepository.SaveAsync();
 
             // update google profile 
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
@@ -460,15 +461,15 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         [HttpDelete]
         [Route("/api/[controller]/{subscriberGuid}/work-history/{WorkHistoryGuid}")]
-        public IActionResult DeleteWorkHistory(Guid subscriberGuid, Guid WorkHistoryGuid)
+        public async Task<IActionResult> DeleteWorkHistory(Guid subscriberGuid, Guid WorkHistoryGuid)
         {
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
             if (subscriberGuid != loggedInUserGuid)
                 return Unauthorized();
 
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
-            SubscriberWorkHistory WorkHistory = SubscriberWorkHistoryFactory.GetWorkHistoryByGuid(_db, WorkHistoryGuid);
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repositoryWrapper, subscriberGuid);
+            SubscriberWorkHistory WorkHistory = await SubscriberWorkHistoryFactory.GetWorkHistoryByGuid(_repositoryWrapper, WorkHistoryGuid);
             if (WorkHistory == null || WorkHistory.SubscriberId != subscriber.SubscriberId)
                 return BadRequest();
             // Soft delete of the workhistory item
@@ -491,11 +492,11 @@ namespace UpDiddyApi.Controllers
             if (subscriberGuid != loggedInUserGuid && !isAuth.Succeeded)
                 return Unauthorized();
 
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repositoryWrapper, subscriberGuid);
             if (subscriber == null)
                 return BadRequest();
 
-            var educationHistory = _db.SubscriberEducationHistory
+            var educationHistory = _repositoryWrapper.SubscriberEducationHistoryRepository.GetAll()
             .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriber.SubscriberId)
             .OrderByDescending(s => s.StartDate)
             .Select(eh => new SubscriberEducationHistory()
@@ -560,7 +561,7 @@ namespace UpDiddyApi.Controllers
         [HttpPost]
         [Route("/api/[controller]/{subscriberGuid}/education-history")]
         // TODO looking into consolidating Add and Update to reduce code redundancy
-        public IActionResult AddEducationalHistory(Guid subscriberGuid, [FromBody] SubscriberEducationHistoryDto EducationHistoryDto)
+        public async Task<IActionResult> AddEducationalHistory(Guid subscriberGuid, [FromBody] SubscriberEducationHistoryDto EducationHistoryDto)
         {
             // sanitize user inputs
             EducationHistoryDto.EducationalDegree = HttpUtility.HtmlEncode(EducationHistoryDto.EducationalDegree);
@@ -571,20 +572,20 @@ namespace UpDiddyApi.Controllers
             if (subscriberGuid != loggedInUserGuid)
                 return Unauthorized();
 
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repositoryWrapper, subscriberGuid);
             if (subscriber == null)
                 return BadRequest();
             // Find or create the institution 
-            EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(_db, EducationHistoryDto.EducationalInstitution).Result;
+            EducationalInstitution educationalInstitution = await EducationalInstitutionFactory.GetOrAdd(_repositoryWrapper, EducationHistoryDto.EducationalInstitution);
             int educationalInstitutionId = educationalInstitution.EducationalInstitutionId;
             // Find or create the degree major 
-            EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(_db, EducationHistoryDto.EducationalDegree).Result;
+            EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(_repositoryWrapper, EducationHistoryDto.EducationalDegree);
             int educationalDegreeId = educationalDegree.EducationalDegreeId;
             // Find or create the degree type 
-            EducationalDegreeType educationalDegreeType = EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_db, EducationHistoryDto.EducationalDegreeType);
+            EducationalDegreeType educationalDegreeType = await EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_repositoryWrapper, EducationHistoryDto.EducationalDegreeType);
             int educationalDegreeTypeId = 0;
             if (educationalDegreeType == null)
-                educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption).Result;
+                educationalDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(_repositoryWrapper, Constants.NotSpecifedOption);
             educationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
 
             SubscriberEducationHistory EducationHistory = new SubscriberEducationHistory()
@@ -616,7 +617,7 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         [HttpPut]
         [Route("/api/[controller]/{subscriberGuid}/education-history")]
-        public IActionResult UpdateEducationHistory(Guid subscriberGuid, [FromBody] SubscriberEducationHistoryDto EducationHistoryDto)
+        public async Task<IActionResult> UpdateEducationHistory(Guid subscriberGuid, [FromBody] SubscriberEducationHistoryDto EducationHistoryDto)
         {
             // sanitize user inputs
             EducationHistoryDto.EducationalDegree = HttpUtility.HtmlEncode(EducationHistoryDto.EducationalDegree);
@@ -627,24 +628,24 @@ namespace UpDiddyApi.Controllers
             if (subscriberGuid != loggedInUserGuid)
                 return Unauthorized();
 
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repositoryWrapper, subscriberGuid);
             if (subscriber == null)
                 return BadRequest();
 
-            SubscriberEducationHistory EducationHistory = SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(_db, EducationHistoryDto.SubscriberEducationHistoryGuid);
+            SubscriberEducationHistory EducationHistory = await SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(_repositoryWrapper, EducationHistoryDto.SubscriberEducationHistoryGuid);
             if (EducationHistory == null || EducationHistory.SubscriberId != subscriber.SubscriberId)
                 return BadRequest();
             // Find or create the institution 
-            EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(_db, EducationHistoryDto.EducationalInstitution).Result;
+            EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(_repositoryWrapper, EducationHistoryDto.EducationalInstitution).Result;
             int educationalInstitutionId = educationalInstitution.EducationalInstitutionId;
             // Find or create the degree major 
-            EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(_db, EducationHistoryDto.EducationalDegree).Result;
+            EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(_repositoryWrapper, EducationHistoryDto.EducationalDegree).Result;
             int educationalDegreeId = educationalDegree.EducationalDegreeId;
             // Find or create the degree type 
-            EducationalDegreeType educationalDegreeType = EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_db, EducationHistoryDto.EducationalDegreeType);
+            EducationalDegreeType educationalDegreeType = await EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_repositoryWrapper, EducationHistoryDto.EducationalDegreeType);
             int educationalDegreeTypeId = 0;
             if (educationalDegreeType == null)
-                educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption).Result;
+                educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_repositoryWrapper, Constants.NotSpecifedOption).Result;
             educationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
 
             EducationHistory.ModifyDate = DateTime.UtcNow;
@@ -654,7 +655,7 @@ namespace UpDiddyApi.Controllers
             EducationHistory.EducationalDegreeId = educationalDegreeId;
             EducationHistory.EducationalDegreeTypeId = educationalDegreeTypeId;
             EducationHistory.EducationalInstitutionId = educationalInstitutionId;
-            _db.SaveChanges();
+            await _repositoryWrapper.SubscriberEducationHistoryRepository.SaveAsync();
 
             // update google profile 
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
@@ -665,15 +666,15 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         [HttpDelete]
         [Route("/api/[controller]/{subscriberGuid}/education-history/{EducationHistoryGuid}")]
-        public IActionResult DeleteEducationHistory(Guid subscriberGuid, Guid EducationHistoryGuid)
+        public async Task<IActionResult> DeleteEducationHistory(Guid subscriberGuid, Guid EducationHistoryGuid)
         {
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
             if (subscriberGuid != loggedInUserGuid)
                 return Unauthorized();
 
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
-            SubscriberEducationHistory EducationHistory = SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(_db, EducationHistoryGuid);
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repositoryWrapper, subscriberGuid);
+            SubscriberEducationHistory EducationHistory = await SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(_repositoryWrapper, EducationHistoryGuid);
             if (EducationHistory == null || EducationHistory.SubscriberId != subscriber.SubscriberId)
                 return BadRequest();
             // Soft delete of the workhistory item
@@ -696,7 +697,7 @@ namespace UpDiddyApi.Controllers
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             string errorMsg = string.Empty;
 
-            if (SubscriberFactory.UpdateAvatar(_db, _configuration, avatar, subscriberGuid, ref errorMsg))
+            if (SubscriberFactory.UpdateAvatar(_repositoryWrapper, _configuration, avatar, subscriberGuid, ref errorMsg))
                 return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Avatar updated." });
             else
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = errorMsg });
@@ -712,7 +713,7 @@ namespace UpDiddyApi.Controllers
 
             string errorMsg = string.Empty;
 
-            if (SubscriberFactory.RemoveAvatar(_db, _configuration, subscriberGuid, ref errorMsg))
+            if (SubscriberFactory.RemoveAvatar(_repositoryWrapper, _configuration, subscriberGuid, ref errorMsg))
                 return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Avatar removed." });
             else
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = errorMsg });
@@ -1360,7 +1361,7 @@ namespace UpDiddyApi.Controllers
                 return BadRequest();
 
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, loggedInUserGuid, _syslog, _mapper);
+            SubscriberDto subscriberDto = await SubscriberFactory.GetSubscriber(_repositoryWrapper, loggedInUserGuid, _syslog, _mapper);
             Notification ExistingNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == ReadNotification.NotificationGuid).Result.FirstOrDefault();
 
             if (loggedInUserGuid == subscriberDto.SubscriberGuid)

@@ -29,7 +29,7 @@ namespace UpDiddyApi.Controllers
         private readonly ILogger _syslog;
         private readonly IHttpClientFactory _httpClientFactory = null;
         private readonly int _postingTTL = 30;
-        private readonly CloudTalent _cloudTalent = null;
+        private readonly ICloudTalentService _cloudTalent;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IServiceProvider _services;
         private readonly IJobService _jobService;
@@ -45,7 +45,8 @@ namespace UpDiddyApi.Controllers
         , IHangfireService hangfireService
         , IJobAlertService jobAlertService
         , IJobFavoriteService jobFavoriteService
-        , IJobSearchService jobSearchService)
+        , IJobSearchService jobSearchService
+        , ICloudTalentService cloudTalent)
 
         {
             _services = services;
@@ -58,7 +59,7 @@ namespace UpDiddyApi.Controllers
             _repositoryWrapper = _services.GetService<IRepositoryWrapper>();
             _subscriberService = _services.GetService<ISubscriberService>();
             _postingTTL = int.Parse(_configuration["JobPosting:PostingTTLInDays"]);
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
+            _cloudTalent = cloudTalent;
 
             //job Service to perform all business logic related to jobs
             _jobService = _services.GetService<IJobService>();
@@ -74,9 +75,9 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet]
         [Route("/V2/[controller]/search")]
-        public async Task<IActionResult> Search()
+        public ActionResult Search()
         {
-            JobSearchSummaryResultDto rVal = await _jobService.SummaryJobSearch(Request.Query);
+            JobSearchSummaryResultDto rVal = _jobService.SummaryJobSearch(Request.Query);
             return Ok(rVal);
         }
 
@@ -91,7 +92,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("api/[controller]/search/count")]
+        [Route("/V2/[controller]/search/count")]
         public async Task<IActionResult> GetActiveJobCount()
         {
             var count = await _jobSearchService.GetActiveJobCount();

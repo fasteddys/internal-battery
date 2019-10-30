@@ -132,7 +132,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 switch (info)
                 {
                     case "parsed":
-                        State state = StateFactory.GetStateByStateCode(db, resumeParseResult.ParsedValue.Trim());
+                        State state = await StateFactory.GetStateByStateCode(repositoryWrapper, resumeParseResult.ParsedValue.Trim());
                         if (state != null)
                         {
                             subscriber.StateId = state.StateId;
@@ -152,8 +152,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
             else if (resumeParseResult.TargetTypeName == "SubscriberEducationHistory.EducationalDegreeId")
             {
-                SubscriberEducationHistory subscriberEducationHistory = SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(db, resumeParseResult.ExistingObjectGuid);
-                EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(db, resumeParseResult.ParsedValue.Trim());
+                SubscriberEducationHistory subscriberEducationHistory = await SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(repositoryWrapper, resumeParseResult.ExistingObjectGuid);
+                EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(repositoryWrapper, resumeParseResult.ParsedValue.Trim());
 
                 switch (info)
                 {
@@ -176,7 +176,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
                         break;
                     case "neither":  
-                        educationalDegree =  await EducationalDegreeFactory.GetOrAdd(db, Constants.NotSpecifedOption );
+                        educationalDegree =  await EducationalDegreeFactory.GetOrAdd(repositoryWrapper, Constants.NotSpecifedOption );
                         subscriberEducationHistory.EducationalDegreeId = educationalDegree.EducationalDegreeId;
                         resumeParseResult.ParseStatus = (int)ResumeParseStatus.Declined;
                         break;
@@ -185,7 +185,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
             else if (resumeParseResult.TargetTypeName == "SubscriberEducationHistory.EducationalDegreeTypeId")
             {
-                SubscriberEducationHistory subscriberEducationHistory = subscriberEducationHistory = SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(db, resumeParseResult.ExistingObjectGuid);
+                SubscriberEducationHistory subscriberEducationHistory = subscriberEducationHistory = await SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(repositoryWrapper, resumeParseResult.ExistingObjectGuid);
                 if (subscriberEducationHistory == null)
                 {
                     resumeParseResult.ParseStatus = (int)ResumeParseStatus.Error;
@@ -200,7 +200,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 {
                     case "parsed":
                        
-                       educationalDegreeType = EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(db, resumeParseResult.ParsedValue.Trim());
+                       educationalDegreeType = await EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(repositoryWrapper, resumeParseResult.ParsedValue.Trim());
                         if (educationalDegreeType != null )
                         {
                             subscriberEducationHistory.EducationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
@@ -220,7 +220,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
                         break;
                     case "neither":
-                        educationalDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(db, Constants.NotSpecifedOption);
+                        educationalDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(repositoryWrapper, Constants.NotSpecifedOption);
                         subscriberEducationHistory.EducationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
                         resumeParseResult.ParseStatus = (int)ResumeParseStatus.Declined;
                         break;
@@ -253,12 +253,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 if (resumeParseResult.TargetTypeName == "SubscriberWorkHistory")
                 {
                     type = Type.GetType("UpDiddyApi.Models.SubscriberWorkHistory");
-                    obj = SubscriberWorkHistoryFactory.GetWorkHistoryByGuid(db, resumeParseResult.ExistingObjectGuid);
+                    obj = SubscriberWorkHistoryFactory.GetWorkHistoryByGuid(repositoryWrapper, resumeParseResult.ExistingObjectGuid);
                 }                    
                 else if (resumeParseResult.TargetTypeName == "SubscriberEducationHistory")
                 {
                     type = Type.GetType("UpDiddyApi.Models.SubscriberEducationHistory");
-                    obj = SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(db, resumeParseResult.ExistingObjectGuid);
+                    obj = SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(repositoryWrapper, resumeParseResult.ExistingObjectGuid);
                 }
                 
                 PropertyInfo propertyInfo = type.GetProperty(resumeParseResult.TargetProperty);
@@ -311,8 +311,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
                
                 if ( resumeParseResult.TargetTypeName == "SubscriberSkill" )
                 {
-                    Skill skill = SkillFactory.GetOrAdd(db, info);
-                    SubscriberSkillFactory.AddSkillForSubscriber(db, subscriber, skill);
+                    Skill skill = await SkillFactory.GetOrAdd(repositoryWrapper, info);
+                    await SubscriberSkillFactory.AddSkillForSubscriber(repositoryWrapper, subscriber, skill);
                 }
                 resumeParseResult.ParseStatus = (int) ResumeParseStatus.Merged;
                 int numUpdates = await db.SaveChangesAsync();

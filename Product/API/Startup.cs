@@ -276,7 +276,7 @@ namespace UpDiddyApi
             services.AddScoped<IJobFavoriteService, JobFavoriteService>();
             services.AddScoped<IJobAlertService, JobAlertService>();
             services.AddScoped<IJobSearchService, JobSearchService>();
-
+            services.AddScoped<ICloudTalentService, CloudTalentService>();
 
 
             #endregion

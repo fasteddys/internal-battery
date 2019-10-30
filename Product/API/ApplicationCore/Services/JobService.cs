@@ -31,14 +31,14 @@ namespace UpDiddyApi.ApplicationCore.Services
         private ISysEmail _sysEmail;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private IHangfireService _hangfireService;
-        private readonly CloudTalent _cloudTalent = null;
+        private readonly ICloudTalentService _cloudTalentService;
         private readonly UpDiddyDbContext _db = null;
         private readonly ILogger _syslog;
         private readonly IHttpClientFactory _httpClientFactory = null;
         private readonly ICompanyService _companyService;
         private readonly ISubscriberService _subscriberService;
         private readonly IMemoryCacheService _cache;
-        public JobService(IServiceProvider services, IHangfireService hangfireService)
+        public JobService(IServiceProvider services, IHangfireService hangfireService, ICloudTalentService cloudTalentService)
         {
             _services = services;
 
@@ -53,14 +53,14 @@ namespace UpDiddyApi.ApplicationCore.Services
             _subscriberService = services.GetService<ISubscriberService>();
             _cache = services.GetService<IMemoryCacheService>();
             _hangfireService = hangfireService;
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
+            _cloudTalentService = cloudTalentService;
         }
 
 
 
 
 
-        public async Task<JobSearchSummaryResultDto> SummaryJobSearch(IQueryCollection query)
+        public JobSearchSummaryResultDto SummaryJobSearch(IQueryCollection query)
         {
 
             string cacheKey = Utils.QueryParamsToCacheKey(query);
@@ -69,7 +69,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
                 JobQueryDto jobQuery = JobQueryHelper.CreateSummaryJobQuery(PageSize, query);
-                rVal = _cloudTalent.JobSummarySearch(jobQuery);
+                rVal = _cloudTalentService.JobSummarySearch(jobQuery);
                 _cache.SetCacheValue<JobSearchSummaryResultDto>(cacheKey, rVal);
 
             }
@@ -82,7 +82,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task ReferJobToFriend(JobReferralDto jobReferralDto)
         {
             var jobReferralGuid = await SaveJobReferral(jobReferralDto);
-            await SendReferralEmail(jobReferralDto, jobReferralGuid);
+            SendReferralEmail(jobReferralDto, jobReferralGuid);
         }
 
 
@@ -141,7 +141,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return jobReferralGuid;
         }
 
-        private async Task SendReferralEmail(JobReferralDto jobReferralDto, Guid jobReferralGuid)
+        private void SendReferralEmail(JobReferralDto jobReferralDto, Guid jobReferralGuid)
         {
             //generate jobUrl
             var referralUrl = jobReferralGuid == Guid.Empty ? jobReferralDto.ReferUrl : $"{jobReferralDto.ReferUrl}?referrerCode={jobReferralGuid}";
@@ -180,7 +180,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
             JobQueryDto jobQuery = JobQueryHelper.CreateJobQuery(Country, Province, City, Industry, JobCategory, Skill, PageNum, PageSize, query);
-            JobSearchResultDto jobSearchResult = _cloudTalent.JobSearch(jobQuery);
+            JobSearchResultDto jobSearchResult = _cloudTalentService.JobSearch(jobQuery);
 
             //assign company logo urls
             await AssignCompanyLogoUrlToJobs(jobSearchResult.Jobs);
@@ -197,7 +197,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (jobSearchResult.Jobs != null && jobSearchResult.Jobs.Count > 0)
             {
                 // don't let this stop job search from returning
-                ClientEvent ce = await _cloudTalent.CreateClientEventAsync(jobSearchResult.RequestId, ClientEventType.Impression, jobSearchResult.Jobs.Select(job => job.CloudTalentUri).ToList<string>());
+                ClientEvent ce = await _cloudTalentService.CreateClientEventAsync(jobSearchResult.RequestId, ClientEventType.Impression, jobSearchResult.Jobs.Select(job => job.CloudTalentUri).ToList<string>());
                 jobSearchResult.ClientEventId = ce.EventId;
             }
 

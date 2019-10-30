@@ -1,14 +1,10 @@
-﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
-using UpDiddyLib.Dto;
-using System.Linq;
  
 
 
@@ -45,13 +41,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
 
-        public IList<ServiceOffering> GetAllServiceOfferings()
+        public async Task<IList<ServiceOffering>> GetAllServiceOfferings()
         {  
      
-                var rVal = _dbContext.ServiceOffering
+                var rVal = await _dbContext.ServiceOffering
                     .Where(s => s.IsDeleted == 0)
                     .Include(s => s.ServiceOfferingItems)
-                    .ToList();
+                    .ToListAsync();
 
                 // order service offering items by their sort order 
                 foreach ( ServiceOffering so in rVal)

@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using Microsoft.EntityFrameworkCore;
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class IndustryFactory
     {
-        
-        static public Industry GetIndustryByGuid(UpDiddyDbContext db, Guid IndustryGuid)
+
+        static public async Task<Industry> GetIndustryByGuid(IRepositoryWrapper repositoryWrapper, Guid IndustryGuid)
         {
 
-            Industry industry = db.Industry
+            Industry industry = await repositoryWrapper.IndustryRepository.GetAll()
                 .Where(c => c.IsDeleted == 0 && c.IndustryGuid == IndustryGuid)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
             return industry;
         }
-       
     }
 }

@@ -4,51 +4,52 @@ using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using Microsoft.EntityFrameworkCore;
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class SubscriberEducationHistoryFactory
     {
 
-        public static SubscriberEducationHistory GetEducationHistoryByGuid(UpDiddyDbContext db, Guid SubscriberEducationHistoryGuid)
+        public static async Task<SubscriberEducationHistory> GetEducationHistoryByGuid(IRepositoryWrapper repositoryWrapper, Guid SubscriberEducationHistoryGuid)
         {
-            return db.SubscriberEducationHistory
+            return await repositoryWrapper.SubscriberEducationHistoryRepository.GetAll()
                 .Where(eh => eh.IsDeleted == 0 && eh.SubscriberEducationHistoryGuid == SubscriberEducationHistoryGuid)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
 
-        public static SubscriberEducationHistory GetEducationHistoryForSubscriber(UpDiddyDbContext db, Subscriber subscriber, EducationalInstitution educationalInstitution, EducationalDegree educationalDegree, DateTime? startDate, DateTime? endDate, DateTime? degreeDate)
+        public static async Task<SubscriberEducationHistory> GetEducationHistoryForSubscriber(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, EducationalInstitution educationalInstitution, EducationalDegree educationalDegree, DateTime? startDate, DateTime? endDate, DateTime? degreeDate)
         {
-            return db.SubscriberEducationHistory
+            return await repositoryWrapper.SubscriberEducationHistoryRepository.GetAll()
                 .Where(eh => eh.IsDeleted == 0 && eh.EducationalDegreeId == educationalDegree.EducationalDegreeId &&
                     eh.EducationalInstitutionId == educationalInstitution.EducationalInstitutionId && eh.SubscriberId == subscriber.SubscriberId &&
                     eh.StartDate == startDate && eh.EndDate == endDate && eh.DegreeDate == degreeDate)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
-        public static async Task<SubscriberEducationHistory> AddEducationHistoryForSubscriber(UpDiddyDbContext db, Subscriber subscriber, SubscriberEducationHistoryDto educationkHistory,
+        public static async Task<SubscriberEducationHistory> AddEducationHistoryForSubscriber(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, SubscriberEducationHistoryDto educationkHistory,
                 EducationalInstitution educationalInstitution, EducationalDegree educationalDegree, EducationalDegreeType educationalDegreeType)
-        {            
+        {
             SubscriberEducationHistory rVal = new SubscriberEducationHistory()
             {
-                    StartDate = educationkHistory.StartDate,
-                    EndDate = educationkHistory.EndDate,
-                    SubscriberId = subscriber.SubscriberId,
-                    CreateDate = DateTime.UtcNow,
-                    CreateGuid = Guid.Empty,
-                    ModifyDate = DateTime.UtcNow,
-                    ModifyGuid = Guid.Empty,
-                    SubscriberEducationHistoryGuid = Guid.NewGuid(),
-                    IsDeleted = 0,
-                    EducationalInstitutionId = educationalInstitution.EducationalInstitutionId,
-                    DegreeDate = educationkHistory.DegreeDate,
-                    EducationalDegreeId = educationalDegree.EducationalDegreeId,
-                    EducationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId
+                StartDate = educationkHistory.StartDate,
+                EndDate = educationkHistory.EndDate,
+                SubscriberId = subscriber.SubscriberId,
+                CreateDate = DateTime.UtcNow,
+                CreateGuid = Guid.Empty,
+                ModifyDate = DateTime.UtcNow,
+                ModifyGuid = Guid.Empty,
+                SubscriberEducationHistoryGuid = Guid.NewGuid(),
+                IsDeleted = 0,
+                EducationalInstitutionId = educationalInstitution.EducationalInstitutionId,
+                DegreeDate = educationkHistory.DegreeDate,
+                EducationalDegreeId = educationalDegree.EducationalDegreeId,
+                EducationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId
             };
-            db.SubscriberEducationHistory.Add(rVal);
-            await db.SaveChangesAsync();    
-            
+            await repositoryWrapper.SubscriberEducationHistoryRepository.Create(rVal);
+            await repositoryWrapper.SubscriberEducationHistoryRepository.SaveAsync();
+
             return rVal;
         }
     }

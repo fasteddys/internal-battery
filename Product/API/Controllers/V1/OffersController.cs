@@ -7,28 +7,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using UpDiddyApi.Authorization;
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
-using System.IO;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Factory;
-using System.Data.SqlClient;
 using AutoMapper.QueryableExtensions;
-using System.Data;
-using System.Web;
-using UpDiddyLib.Dto.Marketing;
-using UpDiddyLib.Shared;
-using Hangfire;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 
 namespace UpDiddyApi.Controllers
 {
@@ -45,7 +33,7 @@ namespace UpDiddyApi.Controllers
         private ICloudStorage _cloudStorage;
         private ISysEmail _sysEmail;
         private readonly IHangfireService _hangfireService;
-
+        private readonly IRepositoryWrapper _repositoryWrapper;
 
         public OffersController(UpDiddyDbContext db,
             IMapper mapper,
@@ -57,7 +45,8 @@ namespace UpDiddyApi.Controllers
             IAuthorizationService authorizationService,
             IDistributedCache cache,
             ISysEmail sysEmail,
-            IHangfireService hangfireService)
+            IHangfireService hangfireService,
+            IRepositoryWrapper repositoryWrapper)
         {
             _db = db;
             _mapper = mapper;
@@ -69,6 +58,7 @@ namespace UpDiddyApi.Controllers
             _sysEmail = sysEmail;
             _cache = cache;
             _hangfireService = hangfireService;
+            _repositoryWrapper = repositoryWrapper;
         }
 
         [HttpGet]
@@ -106,10 +96,11 @@ namespace UpDiddyApi.Controllers
                 return Unauthorized();
 
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (!SubscriberFactory.IsEligibleForOffers(_db, loggedInUserGuid, _syslog, _mapper, User.Identity))
+            var isEligible = await SubscriberFactory.IsEligibleForOffers(_repositoryWrapper, loggedInUserGuid, _syslog, _mapper, User.Identity);
+            if (!isEligible)
                 return Unauthorized();
 
-            OfferDto offer = await _db.Offer
+            OfferDto offer = await _repositoryWrapper.Offer.GetAll()
                 .Where(s => s.IsDeleted == 0 && s.OfferGuid == OfferGuid)
                 .ProjectTo<OfferDto>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync();
@@ -124,18 +115,19 @@ namespace UpDiddyApi.Controllers
                 return Unauthorized();
 
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, loggedInUserGuid);
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repositoryWrapper, loggedInUserGuid);
             if (subscriber == null)
                 return Unauthorized();
             
-            if (!SubscriberFactory.IsEligibleForOffers(_db, loggedInUserGuid, _syslog, _mapper, User.Identity))
+            var isEligible = await SubscriberFactory.IsEligibleForOffers(_repositoryWrapper, loggedInUserGuid, _syslog, _mapper, User.Identity);
+            if (!isEligible)
                 return Unauthorized();
 
-            OfferDto offer = _db.Offer
+            OfferDto offer = await _repositoryWrapper.Offer.GetAll()
                 .Where(s => s.IsDeleted == 0 && s.OfferGuid == OfferGuid)
                 .Include(s => s.Partner)
                 .ProjectTo<OfferDto>(_mapper.ConfigurationProvider)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             if (offer == null)
                 return NotFound();

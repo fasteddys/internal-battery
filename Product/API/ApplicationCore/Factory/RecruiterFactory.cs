@@ -4,32 +4,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class RecruiterFactory
     {
-        public static Recruiter GetRecruiterBySubscriberId(UpDiddyDbContext db, int subscriberId)
+        public static async Task<Recruiter> GetRecruiterBySubscriberId(IRepositoryWrapper repositoryWrapper, int subscriberId)
         {
-            return db.Recruiter
+            return await repositoryWrapper.RecruiterRepository.GetAll()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
-        public static Recruiter GetRecruiterBySubscriberGuid(UpDiddyDbContext db, Guid subscriberGuid)
+        public static async Task<Recruiter> GetRecruiterBySubscriberGuid(IRepositoryWrapper repositoryWrapper, Guid subscriberGuid)
         {
-            return db.Recruiter
+            return await repositoryWrapper.RecruiterRepository.GetAll()
                 .Include(s => s.Subscriber)
                 .Where(s => s.IsDeleted == 0 && s.Subscriber.SubscriberGuid == subscriberGuid)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
-        public static Recruiter GetRecruiterById(UpDiddyDbContext db, int recruiterId)
+        public static async Task<Recruiter> GetRecruiterById(IRepositoryWrapper repositoryWrapper, int recruiterId)
         {
-            return db.Recruiter
+            return await repositoryWrapper.RecruiterRepository.GetAll()
                 .Include(s => s.Subscriber)
                 .Where(s => s.IsDeleted == 0 && s.RecruiterId == recruiterId)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
         public static Recruiter CreateRecruiter(string email, string firstName, string lastName, string phoneNumber, Subscriber subscriber)
@@ -48,18 +48,18 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return recruiter;
         }
 
-        public static Recruiter GetAddOrUpdate(UpDiddyDbContext db, string email, string firstName, string lastName, string phoneNumber, Subscriber subscriber)
+        public static async Task<Recruiter> GetAddOrUpdate(IRepositoryWrapper repositoryWrapper, string email, string firstName, string lastName, string phoneNumber, Subscriber subscriber)
         {
             email = email.Trim();
-            Recruiter recruiter = db.Recruiter
+            Recruiter recruiter = await repositoryWrapper.RecruiterRepository.GetAll()
                 .Where(r => r.IsDeleted == 0 && r.Email == email)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             if (recruiter == null)
             {
                 recruiter = CreateRecruiter(email, firstName, lastName, phoneNumber, subscriber);
-                db.Recruiter.Add(recruiter);
-                db.SaveChanges();
+                await repositoryWrapper.RecruiterRepository.Create(recruiter);
+                await repositoryWrapper.SaveAsync();
             }
             else if ((!string.IsNullOrWhiteSpace(phoneNumber) && recruiter.PhoneNumber != phoneNumber)
                 || (!string.IsNullOrWhiteSpace(firstName) && recruiter.FirstName != firstName)
@@ -68,7 +68,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 recruiter.PhoneNumber = phoneNumber;
                 recruiter.FirstName = firstName;
                 recruiter.LastName = lastName;
-                db.SaveChanges();
+                await repositoryWrapper.SaveAsync();
             }
             return recruiter;
         }

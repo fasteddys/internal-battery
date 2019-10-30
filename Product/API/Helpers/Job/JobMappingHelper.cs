@@ -17,7 +17,7 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using System.Globalization;
 using System.Threading;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 namespace UpDiddyApi.Helpers.Job
 {
     /// <summary>
@@ -460,7 +460,7 @@ namespace UpDiddyApi.Helpers.Job
 
         /// <param name="jobPosting"></param>
         /// <returns></returns>
-        static public CloudTalentSolution.Job CreateGoogleJob(UpDiddyDbContext db, JobPosting jobPosting)
+        static public async Task<CloudTalentSolution.Job> CreateGoogleJob(IRepositoryWrapper repositoryWrapper, JobPosting jobPosting)
         {
             // Set default application instructions as required by Google
             CloudTalentSolution.ApplicationInfo applicationInfo = new CloudTalentSolution.ApplicationInfo()
@@ -469,7 +469,7 @@ namespace UpDiddyApi.Helpers.Job
             };
 
             // Create custom job posting attributes 
-            IDictionary<string, CloudTalentSolution.CustomAttribute> customAttributes = CreateGoogleJobCustomAttributes(db, jobPosting);
+            IDictionary<string, CloudTalentSolution.CustomAttribute> customAttributes = await CreateGoogleJobCustomAttributes(repositoryWrapper, jobPosting);
 
             // Set the jobs expire timestamp
             string ExpireTimestamp = Utils.GetTimestampAsString(jobPosting.PostingExpirationDateUTC);
@@ -568,7 +568,7 @@ namespace UpDiddyApi.Helpers.Job
         /// </summary>
         /// <param name="jobPosting"></param>
         /// <returns></returns>
-        static private IDictionary<string, CloudTalentSolution.CustomAttribute> CreateGoogleJobCustomAttributes(UpDiddyDbContext db, JobPosting jobPosting)
+        static private async Task<IDictionary<string, CloudTalentSolution.CustomAttribute>> CreateGoogleJobCustomAttributes(IRepositoryWrapper repositoryWrapper, JobPosting jobPosting)
         {
 
             IDictionary<string, CloudTalentSolution.CustomAttribute> rVal = new Dictionary<string, CloudTalentSolution.CustomAttribute>();
@@ -700,7 +700,7 @@ namespace UpDiddyApi.Helpers.Job
             };
             rVal.Add("TelecommutePercentage", TelecommutePercentage);
 
-            var jobSkills = JobPostingFactory.GetPostingSkills(db, jobPosting);
+            var jobSkills = await JobPostingFactory.GetPostingSkills(repositoryWrapper, jobPosting);
             List<string> skillsList = new List<string>();
             foreach (JobPostingSkill jps in jobSkills)
             {

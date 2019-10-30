@@ -40,6 +40,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IMapper _mapper;
         private ITaggingService _taggingService { get; set; }
         private IHangfireService _hangfireService { get; set; }
+        private readonly IRepositoryWrapper _repositoryWrapper;
 
         public SubscriberService(UpDiddyDbContext context, 
             IConfiguration configuration, 
@@ -49,7 +50,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             ILogger<SubscriberService> logger, 
             IMapper mapper,
             ITaggingService taggingService,
-            IHangfireService hangfireService)
+            IHangfireService hangfireService,
+            IRepositoryWrapper repositoryWrapper)
         {
             _db = context;
             _configuration = configuration;
@@ -60,6 +62,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _mapper = mapper;
             _taggingService = taggingService;
             _hangfireService = hangfireService;
+            _repositoryWrapper = repositoryWrapper;
         }
 
         public async Task<Subscriber> GetSubscriberByGuid(Guid subscriberGuid)
@@ -567,7 +570,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 bool requiresMerge = false;
                 List<SubscriberEducationHistoryDto> parsedEducationHistory = Utils.ParseEducationHistoryFromHrXml(resume);
-                IList<SubscriberEducationHistory> educationHistory = SubscriberFactory.GetSubscriberEducationHistoryById(_db, subscriber.SubscriberId);
+                IList<SubscriberEducationHistory> educationHistory = await SubscriberFactory.GetSubscriberEducationHistoryById(_repositoryWrapper, subscriber.SubscriberId);
                 foreach (SubscriberEducationHistoryDto eh in parsedEducationHistory)
                 {
                     string parsedInstitutionName = eh.EducationalInstitution.ToLower();
@@ -575,16 +578,16 @@ namespace UpDiddyApi.ApplicationCore.Services
                     string parsedEducationalDegreeType = eh.EducationalDegreeType.ToLower();
                     var ExistingInstitution = educationHistory.Where(s => s.EducationalInstitution.Name.ToLower() == parsedInstitutionName).FirstOrDefault();
                     // get or create the company specified by the work history 
-                    EducationalInstitution institution = await EducationalInstitutionFactory.GetOrAdd(_db, parsedInstitutionName);
-                    EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(_db, parsedEducationalDegree);
+                    EducationalInstitution institution = await EducationalInstitutionFactory.GetOrAdd(_repositoryWrapper, parsedInstitutionName);
+                    EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(_repositoryWrapper, parsedEducationalDegree);
                     // Do not allow user defined degree types so call GetOrDefault 
-                    EducationalDegreeType educationalDegreeType = await EducationalDegreeTypeFactory.GetOrDefault(_db, parsedEducationalDegreeType);
+                    EducationalDegreeType educationalDegreeType = await EducationalDegreeTypeFactory.GetOrDefault(_repositoryWrapper, parsedEducationalDegreeType);
                     // if its not an existing college just add it
 
                     if (ExistingInstitution == null)
                     {
 
-                        SubscriberEducationHistory newEducationHistory = await SubscriberEducationHistoryFactory.AddEducationHistoryForSubscriber(_db, subscriber, eh, institution, educationalDegree, educationalDegreeType);
+                        SubscriberEducationHistory newEducationHistory = await SubscriberEducationHistoryFactory.AddEducationHistoryForSubscriber(_repositoryWrapper, subscriber, eh, institution, educationalDegree, educationalDegreeType);
                         await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, string.Empty, "SubscriberEducationHistory", "Object", string.Empty, string.Empty, (int)ResumeParseStatus.Merged, newEducationHistory.SubscriberEducationHistoryGuid);
                     }
                     else // Check to see its an update to an existing work history 
@@ -669,14 +672,14 @@ namespace UpDiddyApi.ApplicationCore.Services
                     // case where current value is not specified but parsed value is 
                     if (string.IsNullOrWhiteSpace(degreeType) == true && string.IsNullOrWhiteSpace(parsedDegreeType) == false)
                     {
-                        EducationalDegreeType newDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(_db, parsedDegreeType);
+                        EducationalDegreeType newDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(_repositoryWrapper, parsedDegreeType);
                         educationHistory.EducationalDegreeTypeId = newDegreeType.EducationalDegreeTypeId;
                     }
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, string.Empty, "SubscriberEducationHistory.EducationalDegreeTypeId", "EducationalDegreeTypeId", degreeType, parsedDegreeType, (int)ResumeParseStatus.Merged, educationHistory.SubscriberEducationHistoryGuid);
                 }
                 else
                 {
-                    EducationalDegreeType educationalDegreeType = EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_db, parsedDegreeType);
+                    EducationalDegreeType educationalDegreeType = await EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_repositoryWrapper, parsedDegreeType);
                     // only add educational degree type if the parsed value is in the CC list of degree types since
                     // degree types is a lookup list curated by CC and user's cannot add new value to it
                     if (educationalDegreeType != null)
@@ -700,7 +703,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     // case where current value is not specified but parsed value is 
                     if (string.IsNullOrWhiteSpace(degree) == true && string.IsNullOrWhiteSpace(parsedDegree) == false)
                     {
-                        EducationalDegree newDegreeType = await EducationalDegreeFactory.GetOrAdd(_db, parsedDegree);
+                        EducationalDegree newDegreeType = await EducationalDegreeFactory.GetOrAdd(_repositoryWrapper, parsedDegree);
                         educationHistory.EducationalDegreeId = newDegreeType.EducationalDegreeId;
                     }
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, string.Empty, "SubscriberEducationHistory.EducationalDegreeId", "EducationalDegreeId", degree, parsedDegree, (int)ResumeParseStatus.Merged, educationHistory.SubscriberEducationHistoryGuid);
@@ -844,7 +847,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // get list of work histories parsed from resume 
                 List<SubscriberWorkHistoryDto> parsedWorkHistory = Utils.ParseWorkHistoryFromHrXml(resume);
                 // get list of work histories alreay associated with user 
-                IList<SubscriberWorkHistory> workHistory = SubscriberFactory.GetSubscriberWorkHistoryById(_db, subscriber.SubscriberId);
+                IList<SubscriberWorkHistory> workHistory = await SubscriberFactory.GetSubscriberWorkHistoryById(_repositoryWrapper, subscriber.SubscriberId);
                 foreach (SubscriberWorkHistoryDto parsedWorkHistoryItem in parsedWorkHistory)
                 {
                     // ignore jobs without job titles - some resumes such as Jon Foley's have a header section with a summary of their
@@ -861,12 +864,12 @@ namespace UpDiddyApi.ApplicationCore.Services
                     //  look for an existing position at the parsed company that overlaps in time with the parsed position 
                     var ExistingPosition = FindOverlappingWorkHistory(ExistingPositions, parsedWorkHistoryItem); 
                     // get or create the company specified by the work history 
-                    Company company = await CompanyFactory.GetOrAdd(_db, parsedCompanyName);
+                    Company company = await CompanyFactory.GetOrAdd(_repositoryWrapper, parsedCompanyName);
                     // if its not an existing company just add it
                     if (ExistingPosition == null)
                     {  
                         // easy case of adding new company to user 
-                        SubscriberWorkHistory newWorkHistory = await SubscriberWorkHistoryFactory.AddWorkHistoryForSubscriber(_db, subscriber, parsedWorkHistoryItem, company);
+                        SubscriberWorkHistory newWorkHistory = await SubscriberWorkHistoryFactory.AddWorkHistoryForSubscriber(_repositoryWrapper, subscriber, parsedWorkHistoryItem, company);
                         await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, string.Empty, "SubscriberWorkHistory", "Object", string.Empty, string.Empty, (int)ResumeParseStatus.Merged, newWorkHistory.SubscriberWorkHistoryGuid);
                         // add new work history to existing work histories 
                         workHistory.Add(newWorkHistory);
@@ -923,7 +926,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 bool requireMerge = false;
                 List<string> parsedSkills = Utils.ParseSkillsFromHrXML(resume);
-                IList<SubscriberSkill> skills = SubscriberFactory.GetSubscriberSkillsById(_db, subscriber.SubscriberId);
+                IList<SubscriberSkill> skills = await SubscriberFactory.GetSubscriberSkillsById(_repositoryWrapper, subscriber.SubscriberId);
                 HashSet<string> foundSkills = new HashSet<string>();
                 foreach (string skillName in parsedSkills)
                 {
@@ -1048,7 +1051,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-                State state = StateFactory.GetStateByStateCode(_db, contactInfo.State);
+                State state = await StateFactory.GetStateByStateCode(_repositoryWrapper, contactInfo.State);
                 if (state != null)
                 {
                     if (subscriber.StateId <= 0 || subscriber.State == null || state.StateId == subscriber.StateId)

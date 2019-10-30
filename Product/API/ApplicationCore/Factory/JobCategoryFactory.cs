@@ -1,19 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using Microsoft.EntityFrameworkCore;
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class JobCategoryFactory
     {
-        static public JobCategory GetJobCategoryByGuid(UpDiddyDbContext db, Guid jobCategoryGuid)
+        static public async Task<JobCategory> GetJobCategoryByGuid(IRepositoryWrapper repositoryWrapper, Guid jobCategoryGuid)
         {
-
-            JobCategory jobCategory = db.JobCategory
+            JobCategory jobCategory = await repositoryWrapper.JobCategoryRepository.GetAll()
                 .Where(c => c.IsDeleted == 0 && c.JobCategoryGuid == jobCategoryGuid)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
             return jobCategory;
         }
     }

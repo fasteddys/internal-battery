@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using Microsoft.EntityFrameworkCore;
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class SecurityClearanceFactory
     {
-        static public SecurityClearance GetSecurityClearanceByGuid(UpDiddyDbContext db, Guid SecurityClearanceGuid)
+        static public async Task<SecurityClearance> GetSecurityClearanceByGuid(IRepositoryWrapper repositoryWrapper, Guid SecurityClearanceGuid)
         {
-
-            SecurityClearance securityClearance = db.SecurityClearance
+            SecurityClearance securityClearance = await repositoryWrapper.SecurityClearanceRepository.GetAll()
                 .Where(c => c.IsDeleted == 0 && c.SecurityClearanceGuid == SecurityClearanceGuid)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
             return securityClearance;
         }
 

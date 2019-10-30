@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using Microsoft.EntityFrameworkCore;
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class EducationalInstitutionFactory
@@ -21,20 +22,20 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return rVal;
         }
 
-        static public async Task<EducationalInstitution> GetOrAdd(UpDiddyDbContext db, string institutionName)
+        static public async Task<EducationalInstitution> GetOrAdd(IRepositoryWrapper repositoryWrapper, string institutionName)
         {
 
             institutionName = institutionName.Trim();
 
-            EducationalInstitution educationalInstitution = db.EducationalInstitution
+            EducationalInstitution educationalInstitution = await repositoryWrapper.EducationalInstitutionRepository.GetAll()
                 .Where(s => s.IsDeleted == 0 && s.Name == institutionName)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             if (educationalInstitution == null)
             {
                 educationalInstitution = CreateEducationalInstitution(institutionName);
-                db.EducationalInstitution.Add(educationalInstitution);
-                await db.SaveChangesAsync();
+                await repositoryWrapper.EducationalInstitutionRepository.Create(educationalInstitution);
+                await repositoryWrapper.EducationalInstitutionRepository.SaveAsync();
             }
             return educationalInstitution;
         }

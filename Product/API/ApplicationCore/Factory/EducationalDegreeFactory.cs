@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
 using Microsoft.EntityFrameworkCore;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 
 namespace UpDiddyApi.ApplicationCore.Factory
 {
@@ -22,19 +23,19 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return rVal;
         }
 
-        public static async Task<EducationalDegree> GetOrAdd(UpDiddyDbContext db, string degree)
+        public static async Task<EducationalDegree> GetOrAdd(IRepositoryWrapper repositoryWrapper, string degree)
         {
             degree = degree.Trim();
 
-            EducationalDegree educationalDegree = await db.EducationalDegree
+            EducationalDegree educationalDegree = await repositoryWrapper.EducationalDegreeRepository.GetAll()
                 .Where(s => s.IsDeleted == 0 && s.Degree == degree)
                 .FirstOrDefaultAsync();
 
             if (educationalDegree == null)
             {
                 educationalDegree =  CreateEducationalDegree(degree);
-                db.EducationalDegree.Add(educationalDegree);
-                await db.SaveChangesAsync();
+                await repositoryWrapper.EducationalDegreeRepository.Create(educationalDegree);
+                await repositoryWrapper.EducationalDegreeRepository.SaveAsync();
             }
             return educationalDegree;
         }

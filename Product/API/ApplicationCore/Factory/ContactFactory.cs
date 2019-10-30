@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using Microsoft.EntityFrameworkCore;
 
 namespace UpDiddyApi.ApplicationCore.Factory
 {
@@ -23,37 +25,37 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return rVal;
         }
 
-        static public Contact GetOrAdd(UpDiddyDbContext db, string email, string firstName, string lastName, Subscriber subscriber)
+        static public async Task<Contact> GetOrAdd(IRepositoryWrapper repositoryWrapper, string email, string firstName, string lastName, Subscriber subscriber)
         {
             email = email.Trim();
-            Contact contact = db.Contact
+            Contact contact =  await repositoryWrapper.ContactRepository.GetAll()
                 .Where(c => c.IsDeleted == 0 && c.Email == email)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             if (contact == null)
             {
                 contact = CreateContact(email, firstName, lastName, subscriber);
-                db.Contact.Add(contact);
-                db.SaveChanges();
+                await repositoryWrapper.ContactRepository.Create(contact);
+                await repositoryWrapper.ContactRepository.SaveAsync();
             }
             return contact;
         }
 
-        public static Contact GetContactByEmail(UpDiddyDbContext db, string email)
+        public static async Task<Contact> GetContactByEmail(IRepositoryWrapper repositoryWrapper, string email)
         {
-            return db.Contact
+            return await repositoryWrapper.ContactRepository.GetAll()
                 .Where(s => s.IsDeleted == 0 && s.Email == email.Trim() )
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
-        public static void AssociateSubscriber(UpDiddyDbContext db, string email, int subscriberId)
+        public static async Task AssociateSubscriber(IRepositoryWrapper repositoryWrapper, string email, int subscriberId)
         {
-            Contact c = GetContactByEmail(db, email );
+            Contact c = await GetContactByEmail(repositoryWrapper, email );
 
             if ( c != null && c?.SubscriberId != subscriberId)
             {
                 c.SubscriberId = subscriberId;
-                db.SaveChanges();
+                await repositoryWrapper.ContactRepository.SaveAsync();
             }
         }
 

@@ -3,19 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using Microsoft.EntityFrameworkCore;
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class CompensationTypeFactory
     {
 
-        public static long AnnualCompensation( decimal compensation, CompensationType compensationType)
+        public static long AnnualCompensation(decimal compensation, CompensationType compensationType)
         {
             long rVal = (long)compensation;
 
-            switch ( compensationType.CompensationTypeName.ToLower() )
+            switch (compensationType.CompensationTypeName.ToLower())
             {
-                case "hourly" :
+                case "hourly":
                     rVal *= 2080;
                     break;
                 case "weekly":
@@ -26,22 +27,22 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     break;
                 default:
                     break;
-            }             
-            return rVal;            
+            }
+            return rVal;
         }
 
-        public static CompensationType GetCompensationTypeByGuid(UpDiddyDbContext db, Guid CompensationTypeGuid)
+        public static async Task<CompensationType> GetCompensationTypeByGuid(IRepositoryWrapper repositoryWrapper, Guid CompensationTypeGuid)
         {
-            return db.CompensationType
+            return await repositoryWrapper.CompensationTypeRepository.GetAll()
                 .Where(s => s.IsDeleted == 0 && s.CompensationTypeGuid == CompensationTypeGuid)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
-        public static CompensationType  GetCompensationTypeByName(UpDiddyDbContext db, string CompensationTypeName)
+        public static async Task<CompensationType> GetCompensationTypeByName(IRepositoryWrapper repositoryWrapper, string CompensationTypeName)
         {
-            return db.CompensationType
+            return await repositoryWrapper.CompensationTypeRepository.GetAll()
                 .Where(s => s.IsDeleted == 0 && s.CompensationTypeName == CompensationTypeName)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
         static public CompensationType CreateCompensationType(string CompensationTypeName)
@@ -58,18 +59,18 @@ namespace UpDiddyApi.ApplicationCore.Factory
         }
 
 
-        static public CompensationType GetOrAdd(UpDiddyDbContext db, string CompensationTypeName)
+        static public async Task<CompensationType> GetOrAdd(IRepositoryWrapper repositoryWrapper, string CompensationTypeName)
         {
             CompensationTypeName = CompensationTypeName.Trim();
-            CompensationType compensatopnType = db.CompensationType
+            CompensationType compensatopnType = await repositoryWrapper.CompensationTypeRepository.GetAll()
                 .Where(c => c.IsDeleted == 0 && c.CompensationTypeName == CompensationTypeName)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             if (compensatopnType == null)
             {
                 compensatopnType = CreateCompensationType(CompensationTypeName);
-                db.CompensationType.Add(compensatopnType);
-                db.SaveChanges();
+                await repositoryWrapper.CompensationTypeRepository.Create(compensatopnType);
+                await repositoryWrapper.CompensationTypeRepository.SaveAsync();
             }
             return compensatopnType;
         }
