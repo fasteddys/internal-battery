@@ -14,7 +14,6 @@ using UpDiddyApi.Workflow;
 using Hangfire.SqlServer;
 using System;
 using UpDiddyLib.Helpers;
-using System.Net.Http;
 using UpDiddyLib.Shared;
 using Microsoft.ApplicationInsights.SnapshotCollector;
 using Microsoft.Extensions.Options;
@@ -38,6 +37,8 @@ using UpDiddyApi.ApplicationCore.Repository;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore.StaticFiles;
 using UpDiddyApi.ApplicationCore.Services.CourseCrawling;
+using UpDiddyApi.ApplicationCore.Services.Identity.Interfaces;
+using UpDiddyApi.ApplicationCore.Services.Identity;
 
 namespace UpDiddyApi
 {
@@ -99,31 +100,28 @@ namespace UpDiddyApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<Serilog.ILogger>(Logger);
 
-            services.AddAuthentication(options =>
-            {
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(jwtOptions =>
-            {
-                jwtOptions.Authority = $"https://login.microsoftonline.com/tfp/{Configuration["AzureAdB2C:Tenant"]}/{Configuration["AzureAdB2C:Policy"]}/v2.0/";
-                jwtOptions.Audience = Configuration["AzureAdB2C:ClientId"];
-                jwtOptions.Events = new JwtBearerEvents
-                {
-                    OnAuthenticationFailed = AuthenticationFailed
-                };
-            })
-            .AddAPIGatewayAuth(options => { });
+            string domain = $"https://{Configuration["Auth0:Domain"]}/";
+            services.AddSingleton<Serilog.ILogger>(Logger);
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.Authority = domain;
+                options.Audience = Configuration["Auth0:ApiIdentifier"];
+            })
+            .AddAPIGatewayAuth(options => { });
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("IsRecruiterPolicy", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Recruiter" },domain)));
+                options.AddPolicy("IsCareerCircleAdmin", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Career Circle Administrator" },domain)));
+                options.AddPolicy("IsRecruiterOrAdmin", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Recruiter", "Career Circle Administrator" },domain)));          
+            });
 
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("IsRecruiterPolicy", policy => policy.AddRequirements(new GroupRequirement(new string[] { "Recruiter" })));
-                options.AddPolicy("IsCareerCircleAdmin", policy => policy.AddRequirements(new GroupRequirement(new string[] { "Career Circle Administrator" })));
-                options.AddPolicy("IsUserAdmin", policy => policy.AddRequirements(new GroupRequirement(new string[] { "Career Circle User Admin" })));
-                options.AddPolicy("IsRecruiterOrAdmin", policy => policy.AddRequirements(new GroupRequirement(new string[] { "Recruiter", "Career Circle Administrator" })));
-            });
-            services.AddSingleton<IAuthorizationHandler, GroupAuthorizationHandler>();
+            services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
 
             // Get the connection string from the Azure secret vault
             var SqlConnection = Configuration["CareerCircleSqlConnection"];
@@ -143,7 +141,6 @@ namespace UpDiddyApi
                        .AllowAnyMethod()
                        .AllowAnyHeader();
             }));
-
             //configure MimeTypeService
             var provider = new FileExtensionContentTypeProvider();
             services.AddSingleton<IMimeMappingService>(new MimeMappingService(provider));
@@ -261,6 +258,7 @@ namespace UpDiddyApi
             services.AddScoped<IServiceOfferingOrderService, ServiceOfferingOrderService>();
             services.AddScoped<IPromoCodeService, PromoCodeService>();
             services.AddScoped<IBraintreeService, BraintreeService>();
+            services.AddScoped<IUserService, UserService>();
 
             services.AddScoped<ICourseService, CourseService>();
             services.AddScoped<ICompanyService, CompanyService>();

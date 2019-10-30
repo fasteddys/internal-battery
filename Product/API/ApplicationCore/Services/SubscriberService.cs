@@ -17,7 +17,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
 using UpDiddyLib.Dto;
-using UpDiddyLib.Dto.Marketing;
+using UpDiddyLib.Dto.User;
 using UpDiddyLib.Shared;
 using UpDiddyLib.Helpers;
 using System.Text.RegularExpressions;
@@ -34,19 +34,17 @@ namespace UpDiddyApi.ApplicationCore.Services
         private UpDiddyDbContext _db { get; set; }
         private IConfiguration _configuration { get; set; }
         private ICloudStorage _cloudStorage { get; set; }
-        private IB2CGraph _graphClient { get; set; }
         private ILogger _logger { get; set; }
         private IRepositoryWrapper _repository { get; set; }
         private readonly IMapper _mapper;
         private ITaggingService _taggingService { get; set; }
         private IHangfireService _hangfireService { get; set; }
 
-        public SubscriberService(UpDiddyDbContext context, 
-            IConfiguration configuration, 
-            ICloudStorage cloudStorage, 
-            IB2CGraph graphClient, 
-            IRepositoryWrapper repository, 
-            ILogger<SubscriberService> logger, 
+        public SubscriberService(UpDiddyDbContext context,
+            IConfiguration configuration,
+            ICloudStorage cloudStorage,
+            IRepositoryWrapper repository,
+            ILogger<SubscriberService> logger,
             IMapper mapper,
             ITaggingService taggingService,
             IHangfireService hangfireService)
@@ -54,7 +52,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             _db = context;
             _configuration = configuration;
             _cloudStorage = cloudStorage;
-            _graphClient = graphClient;
             _repository = repository;
             _logger = logger;
             _mapper = mapper;
@@ -64,7 +61,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<Subscriber> GetSubscriberByGuid(Guid subscriberGuid)
         {
-            return await _repository.Subscriber.GetSubscriberByGuidAsync(subscriberGuid);
+            return await _repository.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
         }
 
 
@@ -73,8 +70,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await _repository.StoredProcedureRepository.GetSubscriberSources(subscriberId);
 
         }
-
-
 
         public async Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numSubscribers, int indexVersion)
         {
@@ -103,7 +98,6 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             return rVal;
         }
-
 
         public async Task<bool> ToggleSubscriberNotificationEmail(Guid subscriberGuid, bool isNotificationEmailsEnabled)
         {
@@ -134,7 +128,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 try
                 {
-                    SubscriberFile resume = await _AddResumeAsync(subscriber, resumeDoc.FileName, resumeDoc.OpenReadStream(),resumeDoc.ContentType);
+                    SubscriberFile resume = await _AddResumeAsync(subscriber, resumeDoc.FileName, resumeDoc.OpenReadStream(), resumeDoc.ContentType);
                     await _db.SaveChangesAsync();
                     transaction.Commit();
 
@@ -152,148 +146,51 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         }
 
-        public async Task<Subscriber> CreateSubscriberAsync(Guid partnerContactGuid, SignUpDto signUpDto)
+        public async Task<bool> CreateSubscriberAsync(CreateUserDto createUserDto)
         {
-            var partnerContact = await _db.PartnerContact
-                .Include(pc => pc.Contact)
-                .Where(pc => pc.PartnerContactGuid == partnerContactGuid && pc.IsDeleted == 0 && pc.Contact.IsDeleted == 0)
-                .FirstOrDefaultAsync();
+            bool isSubscriberCreatedSuccessfully = false;
 
-            Campaign campaign = await _db.Campaign
-                .Where(camp => camp.CampaignGuid.Equals(signUpDto.campaignGuid)
-                    && camp.IsDeleted == 0
-                    && camp.StartDate <= DateTime.UtcNow
-                    && (!camp.EndDate.HasValue || camp.EndDate.Value >= DateTime.UtcNow))
-                .FirstOrDefaultAsync();
-
-            #region Verify and Check Data
-            if (partnerContact == null)
-                throw new ArgumentException("Invalid PartnerContact guid.");
-
-            if (campaign == null)
-                throw new ArgumentException("Signing up through this campaign is not available at this time.");
-
-            // check email
-            if (partnerContact.Contact.Email != signUpDto.email)
-                throw new ArgumentException("This offer is only good for the recepient of this email campaign.");
-
-            // check if subscriber is in database
-            Subscriber subscriber = await _db.Subscriber.Where(s => s.Email == partnerContact.Contact.Email).FirstOrDefaultAsync();
-            if (subscriber != null)
-                throw new ArgumentException("Subscriber already exists, please login to continue.");
-            #endregion
-
-            User b2cUser = await _CreateB2CUser(signUpDto.email, signUpDto.password);
-
-            using (var transaction = _db.Database.BeginTransaction())
+            try
             {
-                try
+                // create the user in the CareerCircle database
+                _repository.SubscriberRepository.Create(new Subscriber()
                 {
-                    Guid subscriberGuid = Guid.Parse(b2cUser.AdditionalData["objectId"].ToString());
-                    Subscriber newSubscriber = new Subscriber()
-                    {
-                        SubscriberGuid = subscriberGuid,
-                        ModifyGuid = subscriberGuid,
-                        CreateGuid = subscriberGuid,
-                        CreateDate = DateTime.UtcNow,
-                        ModifyDate = DateTime.UtcNow,
-                        IsDeleted = 0,
-                        IsVerified = true,
-                        FirstName = partnerContact.Metadata["FirstName"].ToString(),
-                        LastName = partnerContact.Metadata["LastName"].ToString(),
-                        Email = partnerContact.Contact.Email,
-                        PhoneNumber = partnerContact.Metadata["MobilePhone"].ToString(),
-                        Address = string.Join(' ', partnerContact.Metadata["Address1"].ToString(), partnerContact.Metadata["Address2"].ToString()),
-                        City = partnerContact.Metadata["City"].ToString(),
-                        PostalCode = partnerContact.Metadata["PostalCode"].ToString(),
-                        State = _db.State.Where(s => s.Name == partnerContact.Metadata["State"].ToString()).FirstOrDefault()
-                    };
-                    _db.Subscriber.Add(newSubscriber);
-                    await _db.SaveChangesAsync();
+                    SubscriberGuid = createUserDto.SubscriberGuid,
+                    Auth0UserId = createUserDto.Auth0UserId,
+                    Email = createUserDto.Email,
+                    FirstName = !string.IsNullOrWhiteSpace(createUserDto.FirstName) ? createUserDto.FirstName : null,
+                    LastName = !string.IsNullOrWhiteSpace(createUserDto.LastName) ? createUserDto.LastName : null,
+                    PhoneNumber = !string.IsNullOrWhiteSpace(createUserDto.PhoneNumber) ? createUserDto.PhoneNumber : null,
+                    CreateDate = DateTime.UtcNow,
+                    CreateGuid = Guid.Empty,
+                    IsDeleted = 0
+                });
+                await _repository.SubscriberRepository.SaveAsync();
+                var subscriber = _repository.SubscriberRepository.GetSubscriberByGuid(createUserDto.SubscriberGuid);
 
-                    partnerContact.Contact.SubscriberId = newSubscriber.SubscriberId;
-                    await _db.SaveChangesAsync();
+                // add the user to the Google Talent Cloud
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(createUserDto.SubscriberGuid));
 
-                    await _taggingService.AddConvertedContactToGroupBasedOnPartnerAsync(newSubscriber.SubscriberId);
-
-                    CampaignPhase campaignPhase = CampaignPhaseFactory.GetCampaignPhaseByNameOrInitial(_db, campaign.CampaignId, signUpDto.campaignPhase);
-                    _db.PartnerContactAction.Add(new PartnerContactAction()
-                    {
-                        ActionId = 3, // todo: use constants or enum or something
-                        CampaignId = campaign.CampaignId,
-                        PartnerContactId = partnerContact.PartnerContactId,
-                        PartnerContactActionGuid = Guid.NewGuid(),
-                        CreateDate = DateTime.UtcNow,
-                        CreateGuid = Guid.Empty,
-                        IsDeleted = 0,
-                        ModifyDate = DateTime.UtcNow,
-                        ModifyGuid = Guid.Empty,
-                        OccurredDate = DateTime.UtcNow,
-                        CampaignPhaseId = campaignPhase.CampaignPhaseId
-                    });
-
-                    var file = await _db.PartnerContactFile.Where(e => e.PartnerContactId == partnerContact.PartnerContactId)
-                        .OrderByDescending(e => e.CreateDate)
-                        .FirstOrDefaultAsync();
-
-                    if (file != null)
-                    {
-                        var bytes = Convert.FromBase64String(file.Base64EncodedData);
-                        var contents = new MemoryStream(bytes);
-                        await _AddResumeAsync(newSubscriber, file.Name, contents,file.MimeType);
-                    }
-
-                    // associate the contact with the subscriber
-                    var contact = _db.Contact.Where(c => c.ContactId == partnerContact.ContactId).FirstOrDefault();
-                    contact.SubscriberId = partnerContact.Contact.SubscriberId;
-
-                    // assign subscriber source for campaigns
-                    SubscriberProfileStagingStore attribution = new SubscriberProfileStagingStore()
-                    {
-                        CreateDate = DateTime.UtcNow,
-                        ModifyDate = DateTime.UtcNow,
-                        ModifyGuid = Guid.Empty,
-                        CreateGuid = Guid.Empty,
-                        SubscriberId = partnerContact.Contact.SubscriberId.Value,
-                        ProfileSource = UpDiddyLib.Helpers.Constants.DataSource.CareerCircle,
-                        IsDeleted = 0,
-                        ProfileFormat = UpDiddyLib.Helpers.Constants.DataFormat.Json,
-                        ProfileData = JsonConvert.SerializeObject(new { source = "campaign-sign-up", referer = campaign.Name })
-                    };
-                    _db.SubscriberProfileStagingStore.Add(attribution);
-
-                    await _db.SaveChangesAsync();
-                    transaction.Commit();
-                }
-                catch (Exception ex)
+                if (!string.IsNullOrWhiteSpace(createUserDto.ReferrerUrl) && createUserDto.PartnerGuid != null && createUserDto.PartnerGuid != Guid.Empty)
                 {
-                    transaction.Rollback();
-                    throw ex;
+                    // Use the new tagging service for attribution
+                    await _taggingService.CreateGroup(createUserDto.ReferrerUrl, createUserDto.PartnerGuid, subscriber.SubscriberId);
                 }
 
-                return subscriber;
+                isSubscriberCreatedSuccessfully = true;
             }
+            catch (Exception e)
+            {
+                _logger.Log(LogLevel.Error, $"SubscriberService.CreateSubscriberAsync: An error occured while attempting to create a subscriber. Message: {e.Message}", e);
+            }
+
+            return isSubscriberCreatedSuccessfully;
         }
 
         public async Task UpdateSubscriber(Subscriber subscriber)
         {
-            _repository.Subscriber.Update(subscriber);
-            await _repository.Subscriber.SaveAsync();
-        }
-
-        /// <summary>
-        /// Creates B2C User if one doesn't exist already.
-        /// </summary>
-        /// <param name="email"></param>
-        /// <param name="password"></param>
-        /// <returns></returns>
-        private async Task<User> _CreateB2CUser(string email, string password)
-        {
-            Microsoft.Graph.User user = await _graphClient.GetUserBySignInEmail(email);
-            if (user == null)
-                user = await _graphClient.CreateUser(email, email, password);
-
-            return user;
+            _repository.SubscriberRepository.Update(subscriber);
+            await _repository.SubscriberRepository.SaveAsync();
         }
 
         /// <summary>
@@ -303,7 +200,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <param name="fileName"></param>
         /// <param name="fileStream"></param>
         /// <returns></returns>
-        private async Task<SubscriberFile> _AddResumeAsync(Subscriber subscriber, string fileName, Stream fileStream, string fileMimeType=null)
+        private async Task<SubscriberFile> _AddResumeAsync(Subscriber subscriber, string fileName, Stream fileStream, string fileMimeType = null)
         {
             string blobName = await _cloudStorage.UploadFileAsync(String.Format("{0}/{1}/", subscriber.SubscriberGuid, "resume"), fileName, fileStream);
             SubscriberFile subscriberFileResume = new SubscriberFile
@@ -364,7 +261,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<Dictionary<Guid, Guid>> GetSubscriberJobPostingFavoritesByJobGuid(Guid subscriberGuid, List<Guid> jobGuids)
         {
-            var subscribers = _repository.Subscriber.GetAllSubscribersAsync();
+            var subscribers = _repository.SubscriberRepository.GetAllSubscribersAsync();
             var jobPostingFavorites = _repository.JobPostingFavorite.GetAllJobPostingFavoritesAsync();
             var jobPostings = _repository.JobPosting.GetAllJobPostings();
             jobPostings = jobPostings.Where(jp => jobGuids.Contains(jp.JobPostingGuid));
@@ -384,13 +281,13 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<List<Subscriber>> GetFailedSubscribersSummaryAsync()
         {
-            var query = _repository.Subscriber.GetAll();
+            var query = _repository.SubscriberRepository.GetAll();
             return await query.Where(x => x.CloudTalentIndexStatus == 3 && x.IsDeleted == 0).ToListAsync();
         }
-        
+
         public async Task<Subscriber> GetBySubscriberGuid(Guid subscriberGuid)
         {
-            return await _repository.Subscriber.GetSubscriberByGuidAsync(subscriberGuid);
+            return await _repository.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
         }
         #region subscriber notes
         public async Task SaveSubscriberNotesAsync(SubscriberNotesDto subscriberNotesDto)
@@ -406,12 +303,12 @@ namespace UpDiddyApi.ApplicationCore.Services
                 subscriberNotes.SubscriberNotesGuid = Guid.NewGuid();
 
                 //get subscriber by subscriberGuid and assign SubscriberId
-                var subscriber = await _repository.Subscriber.GetSubscriberByGuidAsync(subscriberNotesDto.SubscriberGuid);
+                var subscriber = await _repository.SubscriberRepository.GetSubscriberByGuidAsync(subscriberNotesDto.SubscriberGuid);
                 subscriberNotes.SubscriberId = subscriber.SubscriberId;
 
                 //get subscriber by subscriberGuid  map to recruited and get recruiterId
                 //recruiter is also a subscriber
-                var recruiter = await _repository.Subscriber.GetSubscriberByGuidAsync(subscriberNotesDto.RecruiterGuid);
+                var recruiter = await _repository.SubscriberRepository.GetSubscriberByGuidAsync(subscriberNotesDto.RecruiterGuid);
                 var rec = await _repository.RecruiterRepository.GetRecruiterBySubscriberId(recruiter.SubscriberId);
                 subscriberNotes.RecruiterId = rec.RecruiterId;
 
@@ -442,16 +339,16 @@ namespace UpDiddyApi.ApplicationCore.Services
             //get recruiter record
             //get recruiter by subscriberGuid  map to recruiter and get recruiterId
             //recruiter is also a subscriber
-            var recruiterData = await _repository.Subscriber.GetSubscriberByGuidAsync(rGuid);
+            var recruiterData = await _repository.SubscriberRepository.GetSubscriberByGuidAsync(rGuid);
             var rec = await _repository.RecruiterRepository.GetRecruiterBySubscriberId(recruiterData.SubscriberId);
 
             List<SubscriberNotesDto> recruiterPrivateNotes;
             List<SubscriberNotesDto> subscriberPublicNotes;
 
             //get notes for subscriber that are private and visible to current logged in recruiter
-            var recruiterPrivateNotesQueryable = from subscriberNote in  _repository.SubscriberNotesRepository.GetAll()
-                                                 join recruiter in  _repository.RecruiterRepository.GetAll() on subscriberNote.RecruiterId equals recruiter.RecruiterId
-                                                 join subscriber in  _repository.SubscriberRepository.GetAll() on recruiter.SubscriberId equals subscriber.SubscriberId
+            var recruiterPrivateNotesQueryable = from subscriberNote in _repository.SubscriberNotesRepository.GetAll()
+                                                 join recruiter in _repository.RecruiterRepository.GetAll() on subscriberNote.RecruiterId equals recruiter.RecruiterId
+                                                 join subscriber in _repository.SubscriberRepository.GetAll() on recruiter.SubscriberId equals subscriber.SubscriberId
                                                  where subscriberNote.SubscriberId.Equals(subscriberData.SubscriberId) && subscriberNote.IsDeleted.Equals(0) && subscriberNote.RecruiterId.Equals(rec.RecruiterId) && subscriberNote.ViewableByOthersInRecruiterCompany.Equals(false)
                                                  select new SubscriberNotesDto()
                                                  {
@@ -468,10 +365,10 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
             //get notes for subscriber that are public and visible to recruiters of current logged in recruiter company
-            var subscriberPublicNotesQueryable = from subscriberNote in  _repository.SubscriberNotesRepository.GetAll()
-                                                 join recruiter in  _repository.RecruiterRepository.GetAll() on subscriberNote.RecruiterId equals recruiter.RecruiterId
-                                                 join company in  _repository.Company.GetAllCompanies() on recruiter.CompanyId equals company.CompanyId
-                                                 join subscriber in  _repository.SubscriberRepository.GetAll() on recruiter.SubscriberId equals subscriber.SubscriberId
+            var subscriberPublicNotesQueryable = from subscriberNote in _repository.SubscriberNotesRepository.GetAll()
+                                                 join recruiter in _repository.RecruiterRepository.GetAll() on subscriberNote.RecruiterId equals recruiter.RecruiterId
+                                                 join company in _repository.Company.GetAllCompanies() on recruiter.CompanyId equals company.CompanyId
+                                                 join subscriber in _repository.SubscriberRepository.GetAll() on recruiter.SubscriberId equals subscriber.SubscriberId
                                                  where subscriberNote.SubscriberId.Equals(subscriberData.SubscriberId) && subscriberNote.IsDeleted.Equals(0) && recruiter.CompanyId.Equals(rec.CompanyId) && subscriberNote.ViewableByOthersInRecruiterCompany.Equals(true)
                                                  select new SubscriberNotesDto()
                                                  {
@@ -533,7 +430,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 bool requiresMerge = false;
                 // Get the subscriber 
                 //                Subscriber subscriber = SubscriberFactory.GetSubscriberById(_db, resumeParse.SubscriberId);
-                Subscriber subscriber = await _repository.Subscriber.GetSubscriberByIdAsync(resumeParse.SubscriberId);
+                Subscriber subscriber = await _repository.SubscriberRepository.GetSubscriberByIdAsync(resumeParse.SubscriberId);
 
                 if (subscriber == null)
                 {
@@ -782,12 +679,12 @@ namespace UpDiddyApi.ApplicationCore.Services
                         question = $"While working at {existingWorkHistoryItem.Company.CompanyName} from {existingWorkHistoryItem.StartDate.Value.ToShortDateString()} to {existingWorkHistoryItem.EndDate.Value.ToShortDateString()}, what was your job title?";
                     else if (existingWorkHistoryItem.StartDate != null)
                         question = $"While working at {existingWorkHistoryItem.Company.CompanyName} starting on {existingWorkHistoryItem.StartDate.Value.ToShortDateString()}, what was your job title?";
-                    else if ( existingWorkHistoryItem.EndDate != null)
+                    else if (existingWorkHistoryItem.EndDate != null)
                         question = $"While working at {existingWorkHistoryItem.Company.CompanyName} ending on {existingWorkHistoryItem.EndDate.Value.ToShortDateString()}, what was your job title?";
                     else
                         question = $"While working at {existingWorkHistoryItem.Company.CompanyName}, what was your job title?";
 
-                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, question,  "SubscriberWorkHistory", "Title", jobTitle, parsedJobTitle, (int)ResumeParseStatus.MergeNeeded, existingWorkHistoryItem.SubscriberWorkHistoryGuid);
+                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, question, "SubscriberWorkHistory", "Title", jobTitle, parsedJobTitle, (int)ResumeParseStatus.MergeNeeded, existingWorkHistoryItem.SubscriberWorkHistoryGuid);
                     requireMerge = true;
                 }
 
@@ -859,12 +756,12 @@ namespace UpDiddyApi.ApplicationCore.Services
                     // get a list of existing work histories for the parsed company
                     var ExistingPositions = workHistory.Where(s => s.Company.CompanyName.ToLower() == parsedCompanyName).ToList();
                     //  look for an existing position at the parsed company that overlaps in time with the parsed position 
-                    var ExistingPosition = FindOverlappingWorkHistory(ExistingPositions, parsedWorkHistoryItem); 
+                    var ExistingPosition = FindOverlappingWorkHistory(ExistingPositions, parsedWorkHistoryItem);
                     // get or create the company specified by the work history 
                     Company company = await CompanyFactory.GetOrAdd(_db, parsedCompanyName);
                     // if its not an existing company just add it
                     if (ExistingPosition == null)
-                    {  
+                    {
                         // easy case of adding new company to user 
                         SubscriberWorkHistory newWorkHistory = await SubscriberWorkHistoryFactory.AddWorkHistoryForSubscriber(_db, subscriber, parsedWorkHistoryItem, company);
                         await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, string.Empty, "SubscriberWorkHistory", "Object", string.Empty, string.Empty, (int)ResumeParseStatus.Merged, newWorkHistory.SubscriberWorkHistoryGuid);
@@ -872,9 +769,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                         workHistory.Add(newWorkHistory);
                     }
                     else // check for conflicts with an existing position
-                    {                      
-                         if (await MergeWorkHistories(resumeParse, ExistingPosition, parsedWorkHistoryItem) == true)
-                             requireMerge = true;
+                    {
+                        if (await MergeWorkHistories(resumeParse, ExistingPosition, parsedWorkHistoryItem) == true)
+                            requireMerge = true;
                     }
                 }
                 await _repository.ResumeParseResultRepository.SaveResumeParseResultAsync();
@@ -895,14 +792,14 @@ namespace UpDiddyApi.ApplicationCore.Services
             DateTime startDate = parsedWorkHistoryForCompany.StartDate == null ? DateTime.MinValue : parsedWorkHistoryForCompany.StartDate.Value;
             DateTime endDate = parsedWorkHistoryForCompany.EndDate == null ? DateTime.MinValue : parsedWorkHistoryForCompany.EndDate.Value;
 
-            foreach ( SubscriberWorkHistory workHistory in existingWorkHistoriesForCompany)
+            foreach (SubscriberWorkHistory workHistory in existingWorkHistoriesForCompany)
             {
-                if ( startDate == workHistory.StartDate && 
-                     endDate == workHistory.EndDate && 
-                     workHistory.Title.Trim().ToLower() == parsedWorkHistoryForCompany.Title.Trim().ToLower() 
+                if (startDate == workHistory.StartDate &&
+                     endDate == workHistory.EndDate &&
+                     workHistory.Title.Trim().ToLower() == parsedWorkHistoryForCompany.Title.Trim().ToLower()
                     )
                 {
-                
+
                     return workHistory;
                 }
             }
@@ -1085,7 +982,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 }
 
                 // save the subscriber
-                await _repository.Subscriber.SaveAsync();
+                await _repository.SubscriberRepository.SaveAsync();
                 // save resume parse results 
                 await _repository.ResumeParseResultRepository.SaveResumeParseResultAsync();
 
@@ -1104,9 +1001,9 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<Subscriber> GetSubscriber(ODataQueryOptions<Subscriber> options)
         {
             var queryableSubscriber = options.ApplyTo(_repository.SubscriberRepository.GetAllSubscribersAsync());
-            var subscriberList=await queryableSubscriber.Cast<Subscriber>().Where(s=>s.IsDeleted==0).ToListAsync();
+            var subscriberList = await queryableSubscriber.Cast<Subscriber>().Where(s => s.IsDeleted == 0).ToListAsync();
 
-            return subscriberList.Count>0 ? subscriberList[0] :null;
+            return subscriberList.Count > 0 ? subscriberList[0] : null;
         }
 
 

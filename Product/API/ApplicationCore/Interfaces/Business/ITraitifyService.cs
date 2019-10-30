@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business
@@ -7,12 +8,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     {
         Task<TraitifyDto> GetByAssessmentId(string assessmentId);
         Task CreateNewAssessment(TraitifyDto dto);
-
-        Task CompleteSignup(string assessmentId, string email, int subscriberId);
+        Task CompleteSignup(string assessmentId, Guid subscriberGuid);
         Task<TraitifyDto> StartNewAssesment(TraitifyDto dto);
-
         Task<TraitifyDto> GetAssessment(string assessmentId);
-
         Task<TraitifyDto> CompleteAssessment(string assessmentId);
     }
 }

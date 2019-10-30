@@ -22,6 +22,7 @@ using System.Security.Claims;
 using UpDiddy.Authentication;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.AspNetCore.Authentication;
 
 namespace UpDiddy.Controllers
 {
@@ -54,7 +55,6 @@ namespace UpDiddy.Controllers
         {
             return Ok(Json(await _Api.GetStatesByCountryAsync(countryGuid)));
         }
-
         public async Task<IActionResult> Index()
         {
             try
@@ -68,7 +68,7 @@ namespace UpDiddy.Controllers
             {
                 Response.StatusCode = (int)ex.StatusCode;
                 return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
-            }          
+            }
         }
 
         public IActionResult TermsOfService()
@@ -131,15 +131,12 @@ namespace UpDiddy.Controllers
 
             if (User.Identity.IsAuthenticated)
             {
-                OffersViewModel.UserHasValidatedEmail = this.subscriber.IsVerified;
+                OffersViewModel.UserHasValidatedEmail = this.subscriber.IsEmailVerified;
                 OffersViewModel.UserHasUploadedResume = this.subscriber.Files.Count > 0;
                 OffersViewModel.UserIsEligibleForOffers = OffersViewModel.UserIsAuthenticated &&
                     OffersViewModel.UserHasValidatedEmail &&
                     OffersViewModel.UserHasUploadedResume;
-
-                if (!OffersViewModel.UserHasValidatedEmail)
-                    OffersViewModel.StepsRequired.Add("Validate your email. <button class='btn btn-link email-verification-btn p-0 align-baseline'>Resend Verification Email</button>");
-
+                
                 if (!OffersViewModel.UserHasUploadedResume)
                     OffersViewModel.StepsRequired.Add("Upload your resume (located at the top of your <a href=\"/Home/Profile\">profile</a>) to your CareerCircle account.");
 
@@ -190,12 +187,12 @@ namespace UpDiddy.Controllers
             // logic being determined in web app for managing API data
 
             await _Api.UpdateStudentCourseProgressAsync(true);
- 
+
             // Handle the case of MsalUiRequireRedirect 
-            var userId =  User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
             string CacheKey = $"{userId}MsalUiRequiredRedirect";
-            string MsalUiRequiredRedirect =  _memoryCache.Get<String>(CacheKey); 
-            if ( string.IsNullOrEmpty(MsalUiRequiredRedirect) == false )
+            string MsalUiRequiredRedirect = _memoryCache.Get<String>(CacheKey);
+            if (string.IsNullOrEmpty(MsalUiRequiredRedirect) == false)
             {
                 _memoryCache.Remove(CacheKey);
                 return Redirect(MsalUiRequiredRedirect);
@@ -224,8 +221,6 @@ namespace UpDiddy.Controllers
                 LastName = this.subscriber?.LastName,
                 FormattedPhone = this.subscriber?.PhoneNumber,
                 Email = this.subscriber?.Email,
-                IsVerified = this.subscriber.IsVerified,
-                HasVerificationEmail = this.subscriber.HasVerificationEmail,
                 Address = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.Address),
                 City = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.City),
                 PostalCode = this.subscriber?.PostalCode,
@@ -402,29 +397,7 @@ namespace UpDiddy.Controllers
                 return RedirectToAction("Profile");
             }
         }
-
-        [Authorize]
-        [HttpGet("/email/confirm-verification/{token}")]
-        public async Task<IActionResult> VerifyEmailAsync([FromQuery(Name = "returnUrl")] string returnUrl, Guid token)
-        {
-            try
-            {
-                await _Api.VerifyEmailAsync(token);
-                ViewBag.returnUrl = string.IsNullOrEmpty(returnUrl) ? "/Home/Profile" : returnUrl;
-            }
-            catch (ApiException ex)
-            {
-                ViewBag.Message = ex.ResponseDto?.Description;
-                if (ex.StatusCode.Equals(HttpStatusCode.Conflict))
-                    return View("EmailVerification/Conflict");
-
-                return View("EmailVerification/Error");
-            }
-
-            return View("EmailVerification/Success");
-        }
-
-
+        
         [HttpGet]
         public IActionResult MessageReceived()
         {
@@ -483,7 +456,7 @@ namespace UpDiddy.Controllers
              * the code below solves for this by adding the referenced file's last modified timestamp as a hash code to the query 
              * string for all static files referenced.
              */
-            ViewData["BlueBg"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\images\blue_background_login.jpg").GetHashCode());
+                ViewData["BlueBg"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\images\blue_background_login.jpg").GetHashCode());
             ViewData["Bootstrap"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\lib\boostrap\css\bootstrap.min.css").GetHashCode());
             ViewData["Bundle"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\css\Bundle.css").GetHashCode());
             ViewData["FontAwesome"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\lib\font-awesome\css\all.min.css").GetHashCode());
@@ -726,7 +699,7 @@ namespace UpDiddy.Controllers
         [Route("/Home/DisableEmailReminders/{subscriberGuid}")]
         public async Task<IActionResult> DisableEmailRemindersAsync(Guid subscriberGuid)
         {
-            var response  = await _Api.ToggleSubscriberNotificationEmailAsync(subscriberGuid, false);
+            var response = await _Api.ToggleSubscriberNotificationEmailAsync(subscriberGuid, false);
             ViewBag.Status = response.StatusCode == 200 ? "Your notification email reminders have been disabled." : "There was a problem processing your request; please login to disable your notification email reminders.";
             return View("DisableEmailReminders");
         }

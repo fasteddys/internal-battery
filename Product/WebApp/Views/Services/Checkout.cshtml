@@ -39,7 +39,7 @@
                             <div class="col-12 container-align-center">
                                 @Html.Raw(Html.PartialToHtmlMarkup("Components/Buttons/_Action", new ActionButtonViewModel {
                                     Text = "Login",
-                                    Hyperlink = "/session/signin?redirectUri=" + Context.Request.Path,
+                                    Hyperlink = "/session/signin?returnUrl=" + Context.Request.Path,
                                     FitToText = true,
                                     ChosenColorScheme = "cc-cscheme-white",
                                     ButtonAction = ActionButtonViewModel.Action.CTA,

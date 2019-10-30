@@ -40,7 +40,6 @@ namespace UpDiddyApi.Controllers
         private readonly IConfiguration _configuration;
         private readonly ILogger _syslog;
         private readonly IDistributedCache _cache;
-        private IB2CGraph _graphClient;
         private IAuthorizationService _authorizationService;
         private ICloudStorage _cloudStorage;
         private ISysEmail _sysEmail;
@@ -52,7 +51,6 @@ namespace UpDiddyApi.Controllers
             IConfiguration configuration,
             ILogger<SubscriberController> sysLog,
             IDistributedCache distributedCache,
-            IB2CGraph client,
             ICloudStorage cloudStorage,
             IAuthorizationService authorizationService,
             IDistributedCache cache,
@@ -63,7 +61,6 @@ namespace UpDiddyApi.Controllers
             _mapper = mapper;
             _configuration = configuration;
             _syslog = sysLog;
-            _graphClient = client;
             _cloudStorage = cloudStorage;
             _authorizationService = authorizationService;
             _sysEmail = sysEmail;
