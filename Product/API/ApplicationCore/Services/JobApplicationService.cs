@@ -169,7 +169,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         #region helper functions 
 
-        // TODO jab work out with foley the firstname and last name issues .
+        // per Foley the requirment for a cover letter has been removed
         private bool ValidateJobApplication(UpDiddyDbContext db, ApplicationDto applicationDto, Guid subscriberGuid, Guid jobGuid, ref Subscriber subscriber, ref JobPosting jobPosting, ref string ErrorMsg)
         {
 
