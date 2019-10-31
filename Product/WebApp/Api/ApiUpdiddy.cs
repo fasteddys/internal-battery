@@ -1324,9 +1324,13 @@ namespace UpDiddy.Api
                     {
                         rval = await CreateSubscriberAsync(source, referralCode);
                     }
+                    else
+                    {
+                        rval = await CreateSubscriberAsync(string.Empty, "legacyB2C");
+                    }
                 }
 
-                SetCachedValueAsync<SubscriberDto>(cacheKey, rval);
+                    SetCachedValueAsync<SubscriberDto>(cacheKey, rval);
             }
             return rval;
         }
