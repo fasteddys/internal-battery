@@ -1320,14 +1320,7 @@ namespace UpDiddy.Api
                     // check if there is any referralCode 
                     // not thrilled with the fact that a GET endpoint is capable of invoking a POST endpoint but not worth refactoring right now. 
                     // just adding an additional guard to ensure we don't call this except when we have a referralCode (which should be very rare)
-                    if (!string.IsNullOrWhiteSpace(referralCode))
-                    {
-                        rval = await CreateSubscriberAsync(source, referralCode);
-                    }
-                    else
-                    {
-                        rval = await CreateSubscriberAsync(string.Empty, "legacyB2C");
-                    }
+                    rval = await CreateSubscriberAsync(source, referralCode);
                 }
 
                     SetCachedValueAsync<SubscriberDto>(cacheKey, rval);
