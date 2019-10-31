@@ -51,8 +51,6 @@ namespace UpDiddy.Authentication
                     try
                     {
                         subscriber = await api.SubscriberAsync(subscriberGuid, this._isHardRefresh);
-                        if (subscriber == null)
-                            subscriber = await api.CreateSubscriberAsync(string.Empty, string.Empty);
                     }
                     catch (ApiException e) when (e.StatusCode == HttpStatusCode.Unauthorized)
                     {

@@ -105,8 +105,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                 jobSearchForSingleJob = _cloudTalent.JobSearch(jobQuery);
             }
 
-
-
             rVal.SimilarJobs = jobSearchForSingleJob;
 
             return rVal;
