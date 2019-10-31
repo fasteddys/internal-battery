@@ -6,7 +6,7 @@ namespace UpDiddyLib.Domain.Models
         public Guid JobPostingGuid { get; set; }
         public DateTime PostingDateUTC { get; set; }
         public DateTime ExpirationDateUTC { get; set; }
-        public bool HasApplied { get; set; }
+        public bool? HasApplied { get; set; }
         public string CompanyLogoUrl { get; set; }
         public string CompanyName { get; set; }
         public string Title { get; set; }

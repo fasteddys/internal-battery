@@ -97,7 +97,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (jobReferral != null)
             {
                 jobReferral.RefereeId = subscriber.SubscriberId;
-                //update JobReferral
+                //update JobReferralreferrerCode
                 await _repositoryWrapper.JobReferralRepository.UpdateJobReferral(jobReferral);
             }
         }

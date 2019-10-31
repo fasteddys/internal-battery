@@ -122,6 +122,9 @@ namespace UpDiddyApi.Helpers
               .ForPath(c => c.Job.PostingPublishTime, opt => opt.MapFrom(src => src.PostingDateUTC))
               .ReverseMap();
 
+            CreateMap<JobViewDto, UpDiddyLib.Domain.Models.JobPostingDto>().ReverseMap();
+
+
 
             // todo: had difficulty mapping JObject to Dictionary<string,string> via automapper for PartnerContact -> ContactDto, revisit later if time allows
             //CreateMap<Contact, ContactDto>().ReverseMap();

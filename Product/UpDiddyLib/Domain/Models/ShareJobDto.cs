@@ -1,7 +1,10 @@
-public class ShareJobDto
+namespace UpDiddyLib.Domain.Models
 {
-    public string Email { get; set; }
-    public string Name { get; set; }
-    public string Message { get; set; }
+    public class ShareJobDto
+    {
+        public string Email { get; set; }
+        public string Name { get; set; }
+        public string Message { get; set; }
 
+    }
 }

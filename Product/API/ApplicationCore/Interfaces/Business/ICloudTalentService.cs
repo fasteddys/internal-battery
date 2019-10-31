@@ -33,5 +33,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         JobSearchSummaryResultDto JobSummarySearch(JobQueryDto jobQuery, bool isJobPostingAlertSearch = false);
         JobSearchResultDto JobSearch(JobQueryDto jobQuery, bool isJobPostingAlertSearch = false);
         Task<ClientEvent> CreateClientEventAsync(string requestId, ClientEventType type, List<string> jobNames, string parentEventId = null);
+        Task TrackClientEventJobViewAction(Guid jobPostingGuid, string requestId, string clientEventId);
     }
 }
