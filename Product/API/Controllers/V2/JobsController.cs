@@ -64,6 +64,21 @@ namespace UpDiddyApi.Controllers
 
         #endregion
 
+
+        #region Job Browse 
+
+
+        [HttpGet]
+        [Route("/V2/[controller]/browse-location")]
+        public async Task<IActionResult> BrowseJobsByLocation()
+        {
+            JobBrowseResultDto rVal = null;
+            rVal = await _jobService.BrowseJobsByLocation(Request.Query);
+            return Ok(rVal);
+        }
+
+        #endregion
+
         #region Job Search
         [HttpGet]
         [Route("/V2/[controller]/search/{JobGuid}")]
