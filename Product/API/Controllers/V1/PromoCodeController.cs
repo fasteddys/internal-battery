@@ -363,7 +363,7 @@ namespace UpDiddyApi.Controllers
                 Subscriber subscriber = null;
                 if (subscriberGuid != Guid.Empty)
                 {
-                    subscriber = _repositoryWrapper.Subscriber.GetSubscriberByGuid(subscriberGuid);
+                    subscriber = _repositoryWrapper.SubscriberRepository.GetSubscriberByGuid(subscriberGuid);
                     if ( subscriber == null ) // todo: improve ghetto grace period date logic
                         return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Sorry we cannot find your account.", FinalCost = serviceOffering.Price });
 

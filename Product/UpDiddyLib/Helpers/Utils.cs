@@ -68,14 +68,46 @@ namespace UpDiddyLib.Helpers
         }
 
  
+        public static string GeneratePassword(bool requireNonAlphaNumeric, bool requireDigit, bool requireLowercase, bool requireUppercase, int requiredLength)
+        {
+            StringBuilder password = new StringBuilder();
+            Random random = new Random();
+
+            while (password.Length < requiredLength)
+            {
+                char c = (char)random.Next(32, 126);
+
+                password.Append(c);
+
+                if (char.IsDigit(c))
+                    requireDigit = false;
+                else if (char.IsLower(c))
+                    requireLowercase = false;
+                else if (char.IsUpper(c))
+                    requireUppercase = false;
+                else if (!char.IsLetterOrDigit(c))
+                    requireNonAlphaNumeric = false;
+            }
+
+            if (requireNonAlphaNumeric)
+                password.Append((char)random.Next(33, 48));
+            if (requireDigit)
+                password.Append((char)random.Next(48, 58));
+            if (requireLowercase)
+                password.Append((char)random.Next(97, 123));
+            if (requireUppercase)
+                password.Append((char)random.Next(65, 91));
+
+            return password.ToString();
+        }
 
         // quick and dirty email validation class 
         public static bool ValidateEmail(string emailaddress)
         {
-            return  Regex.IsMatch(emailaddress, @"\A(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)\Z", RegexOptions.IgnoreCase);
+            return Regex.IsMatch(emailaddress, @"\A(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)\Z", RegexOptions.IgnoreCase);
         }
 
-         
+
 
         public static bool validStartDate(DateTime? startDate, DateTime? endDate)
         {
@@ -194,7 +226,7 @@ namespace UpDiddyLib.Helpers
         public static string ToUrlSlug(this string value)
         {
             //First to lower case
-            value = value.ToLowerInvariant();            
+            value = value.ToLowerInvariant();
             //Remove all accents - removing this code for now; it worked once but having trouble getting the Cyrillic encoding to be recognized even after including System.Text.Encoding.CodePages
             //var bytes = Encoding.GetEncoding("Cyrillic").GetBytes(value);
             //value = Encoding.ASCII.GetString(bytes);
@@ -295,7 +327,7 @@ namespace UpDiddyLib.Helpers
 
             return obfuscatedEmail.ToString();
         }
-        
+
         /// <remarks>
         /// Shamelessly stolen from https://stackoverflow.com/questions/457676/check-if-a-class-is-derived-from-a-generic-class
         /// </remarks>
@@ -656,7 +688,7 @@ namespace UpDiddyLib.Helpers
                     rVal.Add(workHistory);
                 }
             }
-            return rVal;        
+            return rVal;
         }
 
 
@@ -707,7 +739,7 @@ namespace UpDiddyLib.Helpers
 
             isCurrent = false;
             string dateString = hrXMLDate.FirstChild.InnerText;
-            switch(hrXMLDate.FirstChild.Name)
+            switch (hrXMLDate.FirstChild.Name)
             {
                 case "YearMonth":
                     date = ParseDateFromHrXmlYearMonthTag(dateString);
@@ -829,7 +861,7 @@ namespace UpDiddyLib.Helpers
 
         static public string RemoveNewlines(string Str)
         {
-            string rVal =  Regex.Replace(Str, "\r\n", String.Empty);
+            string rVal = Regex.Replace(Str, "\r\n", String.Empty);
             return Regex.Replace(rVal, "\\n", String.Empty);
         }
 
@@ -877,11 +909,11 @@ namespace UpDiddyLib.Helpers
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static dynamic ToType(Type type , string val)
+        public static dynamic ToType(Type type, string val)
         {
             try
             {
-                if (type == typeof(int?) || type == typeof(int) )
+                if (type == typeof(int?) || type == typeof(int))
                 {
                     return int.Parse(val);
                 }
@@ -926,7 +958,7 @@ namespace UpDiddyLib.Helpers
             catch
             {
                 return null;
-            }           
+            }
         }
 
         public static dynamic ToTypeNullValue(Type type)
@@ -938,7 +970,7 @@ namespace UpDiddyLib.Helpers
                     )
                     return null;
 
-                if ( type == typeof(int))
+                if (type == typeof(int))
                 {
                     return 0;
                 }
@@ -948,9 +980,9 @@ namespace UpDiddyLib.Helpers
                 }
                 else if (type == typeof(double))
                 {
-                    return (double) 0;
+                    return (double)0;
                 }
-                else if ( type == typeof(DateTime))
+                else if (type == typeof(DateTime))
                 {
                     return DateTime.MinValue;
                 }
@@ -964,15 +996,15 @@ namespace UpDiddyLib.Helpers
                 }
                 else if (type == typeof(long))
                 {
-                    return (long) 0;
+                    return (long)0;
                 }
                 else if (type == typeof(float))
                 {
-                    return (float) 0;
+                    return (float)0;
                 }
                 else if (type == typeof(decimal))
                 {
-                    return (decimal) 0;
+                    return (decimal)0;
                 }
                 else
                 {
@@ -1268,7 +1300,7 @@ namespace UpDiddyLib.Helpers
 
             throw new Exception("Not Available");
         }
-    
+
 
 
         public static State GetStateByName(string name)

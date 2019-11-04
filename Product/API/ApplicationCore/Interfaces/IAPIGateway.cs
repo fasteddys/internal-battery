@@ -10,5 +10,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
     {
         Task<string> GetUserIdAsync(string subscriptionId, string key);
         Task<User> GetUserAsync(string userId);
+        Task<bool> CheckADB2CLogin(string username, string password);
     }
 }

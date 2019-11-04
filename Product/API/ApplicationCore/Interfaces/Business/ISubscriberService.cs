@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
+using UpDiddyApi.ApplicationCore.Services.Identity;
+using UpDiddyLib.Dto.User;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
@@ -35,14 +37,13 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<SubscriberFile> AddResumeAsync(Subscriber subscriber, IFormFile resumeDoc, bool parseResume);
         
         /// <summary>
-        /// Creates subscriber using Partner Contact Guid. Potential user must be associated with Campaign, have associated Contact and PartnerContact.
-        /// This will associate a resume with the subscriber upon creation if one is on file in PartnerContactFile.
+        /// Creates subscriber in the CareerCircle database using the subscriber guid provided, adds the subscriber to the 
+        /// Google Talent Cloud, and tracks the user's origin (partner and referrer).
         /// </summary>
-        /// <param name="partnerContactGuid">PartnerContact Guid</param>
-        /// <param name="signUpDto"></param>
-        /// <returns>Subscriber</returns>
-        Task<Subscriber> CreateSubscriberAsync(Guid partnerContactGuid, SignUpDto signUpDto);
-
+        /// <param name="createUserDto"></param>
+        /// <returns></returns>
+        Task<bool> CreateSubscriberAsync(CreateUserDto createUserDto);
+        
         /// <summary>
         ///  Updates existing subscriber info like first name, last name and phone number
         /// </summary>

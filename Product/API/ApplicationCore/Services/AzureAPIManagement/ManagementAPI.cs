@@ -26,6 +26,8 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureAPIManagement
         private string _version;
         private string _key;
         private string _identifier;
+        private string _migrationLoginUrl;
+        private string _migrationClientId;
 
         public ManagementAPI(HttpClient client, IConfiguration configuration, IDistributedCache distributedCache)
         {
@@ -36,6 +38,8 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureAPIManagement
             _version = configuration["APIGateway:Version"];
             _key = configuration["APIGateway:Key"];
             _identifier = configuration["APIGateway:Id"];
+            _migrationLoginUrl = configuration["AzureAdB2C:MigrationLoginUrl"];
+            _migrationClientId = configuration["AzureAdB2C:MigrationClientId"];
         }
 
         public async Task<string> GetUserIdAsync(string subscriptionId, string key)
@@ -50,6 +54,30 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureAPIManagement
         {
             User user = await GetRequest<User>(string.Format("/users/{0}?api-version={1}", userId, _version));
             return user;
+        }
+
+        public async Task<bool> CheckADB2CLogin(string username, string password)
+        {
+            bool isValidLogin = false;
+
+            using (HttpClient client = new HttpClient())
+            {
+                var content = new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("client_id", _migrationClientId),
+                    new KeyValuePair<string, string>("scope", "openid " + _migrationClientId + " offline_access"),
+                    new KeyValuePair<string, string>("username", username),
+                    new KeyValuePair<string, string>("password", password),
+                    new KeyValuePair<string, string>("grant_type", "password"),
+                    new KeyValuePair<string, string>("response_type", "token id_token")
+                });
+
+                var response = await client.PostAsync(_migrationLoginUrl, content);
+                if (response.StatusCode == HttpStatusCode.OK)
+                    isValidLogin = true;
+            }
+
+            return isValidLogin;
         }
 
         private async Task<T> GetRequest<T>(string apiMethod)

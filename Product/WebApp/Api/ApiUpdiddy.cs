@@ -22,6 +22,9 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Caching.Memory;
 using System.Net;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
+using UpDiddyLib.Dto.User;
 
 namespace UpDiddy.Api
 {
@@ -36,7 +39,7 @@ namespace UpDiddy.Api
         public IMemoryCache _memoryCache { get; set; }
         public HttpContext _currentContext { get; set; }
         private readonly ILogger _syslog;
-        
+
         #region Constructor
         public ApiUpdiddy(IOptions<AzureAdB2COptions> azureAdB2COptions, IHttpContextAccessor contextAccessor, IConfiguration conifguration, IHttpClientFactory httpClientFactory, IDistributedCache cache, ILogger<ApiUpdiddy> sysLog, IMemoryCache memoryCache)
         {
@@ -54,12 +57,15 @@ namespace UpDiddy.Api
         #endregion
 
         #region Request Methods
-        private async Task<HttpResponseMessage> RequestAsync(string clientName, HttpMethod method, string endpoint, object body = null)
+        private async Task<HttpResponseMessage> RequestAsync(string clientName, HttpMethod method, string endpoint, object body = null, bool isAddUserManagementAuthorizationHeader = false)
         {
             HttpClient client = _HttpClientFactory.CreateClient(clientName);
             client.BaseAddress = new Uri(_ApiBaseUri);
 
             client = await AddBearerTokenAsync(client);
+
+            if (isAddUserManagementAuthorizationHeader)
+                client = AddUserManagementAuthorizationHeader(client);
 
             HttpRequestMessage request = new HttpRequestMessage(method, endpoint);
 
@@ -72,9 +78,9 @@ namespace UpDiddy.Api
             return await client.SendAsync(request);
         }
 
-        private async Task<T> RequestAsync<T>(string clientName, HttpMethod method, string endpoint, object body = null)
+        private async Task<T> RequestAsync<T>(string clientName, HttpMethod method, string endpoint, object body = null, bool isAddUserManagementAuthorizationHeader = false)
         {
-            using (var response = await RequestAsync(clientName, method, endpoint, body))
+            using (var response = await RequestAsync(clientName, method, endpoint, body, isAddUserManagementAuthorizationHeader))
             {
                 if (response.IsSuccessStatusCode)
                     return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
@@ -83,73 +89,48 @@ namespace UpDiddy.Api
             }
         }
 
-        public async Task<T> GetAsync<T>(string endpoint)
+        public async Task<T> GetAsync<T>(string endpoint, bool isAddUserManagementAuthorizationHeader = false)
         {
-            return await RequestAsync<T>(Constants.HttpGetClientName, HttpMethod.Get, endpoint);
+            return await RequestAsync<T>(Constants.HttpGetClientName, HttpMethod.Get, endpoint, null, isAddUserManagementAuthorizationHeader);
         }
 
-        public async Task<T> PostAsync<T>(string endpoint, object body = null)
+        public async Task<T> PostAsync<T>(string endpoint, object body = null, bool isAddUserManagementAuthorizationHeader = false)
         {
-            return await RequestAsync<T>(Constants.HttpPostClientName, HttpMethod.Post, endpoint, body);
+            return await RequestAsync<T>(Constants.HttpPostClientName, HttpMethod.Post, endpoint, body, isAddUserManagementAuthorizationHeader);
         }
 
-        public async Task<T> PutAsync<T>(string endpoint, object body = null)
+        public async Task<T> PutAsync<T>(string endpoint, object body = null, bool isAddUserManagementAuthorizationHeader = false)
         {
-            return await RequestAsync<T>(Constants.HttpPutClientName, HttpMethod.Put, endpoint, body);
+            return await RequestAsync<T>(Constants.HttpPutClientName, HttpMethod.Put, endpoint, body, isAddUserManagementAuthorizationHeader);
         }
 
-        public async Task<T> DeleteAsync<T>(string endpoint)
+        public async Task<T> DeleteAsync<T>(string endpoint, bool isAddUserManagementAuthorizationHeader = false)
         {
-            return await RequestAsync<T>(Constants.HttpDeleteClientName, HttpMethod.Delete, endpoint);
+            return await RequestAsync<T>(Constants.HttpDeleteClientName, HttpMethod.Delete, endpoint, null, isAddUserManagementAuthorizationHeader);
         }
 
-        private async Task<AuthenticationResult> GetBearerTokenAsync()
+        private HttpClient AddUserManagementAuthorizationHeader(HttpClient client)
         {
-            AuthenticationResult result = null;
-            // Retrieve the token with the specified scopes
-            var scope = AzureOptions.ApiScopes.Split(' ');
-            string signedInUserID = _contextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            IConfidentialClientApplication app = ConfidentialClientApplicationBuilder
-                .Create(AzureOptions.ClientId)
-                .WithB2CAuthority(AzureOptions.Authority)
-                .WithClientSecret(AzureOptions.ClientSecret)
-                .Build();
+            var clientSecret = _configuration["Auth0:ClientSecret"];
 
-            new MSALSessionCache(signedInUserID, _cache, _memoryCache).EnablePersistence(app.UserTokenCache);
+            if (string.IsNullOrWhiteSpace(clientSecret))
+                throw new ApplicationException("User management authorization header could not be found.");
 
-            var accounts = await app.GetAccountsAsync();
-            if (accounts.Count() == 0)
-            {
-                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, "MSAL_ApiUpdiddy.GetBearerTokenAsync unable to locate account");
-            }
+            string encryptedClientSecret = Crypto.Encrypt(_configuration["Crypto:Key"], _configuration["Auth0:ClientSecret"]);
 
-            IAccount account = accounts.FirstOrDefault();
-            result = await app.AcquireTokenSilent(scope, account).ExecuteAsync();
+            client.DefaultRequestHeaders.Add("UserManagement", encryptedClientSecret);
 
-            // temp code to log jwt info, specifically expiration dates 
-            try
-            {
-                string scopes = string.Empty;
-                foreach (string s in result.Scopes)
-                    scopes += s + ";";
-                string LogInfo = $"MSAL_ApiUpdiddy.GetBearerTokenAsync Token ExpiresOn: {result.ExpiresOn} Token ExtendedExpiresOn: {result.ExtendedExpiresOn} Access Token Length: {result.AccessToken.Length}  Scopes: {scopes}  User: {result.UniqueId} )";
-                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, LogInfo);
-            }
-            catch (Exception ex)
-            {
-                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_ApiUpdiddy.GetBearerTokenAsync Error logging info {ex.Message}");
-            }
-
-            return result;
+            return client;
         }
 
         private async Task<HttpClient> AddBearerTokenAsync(HttpClient client)
         {
             if (_contextAccessor.HttpContext.User.Identity.IsAuthenticated)
             {
-                AuthenticationResult authResult = await GetBearerTokenAsync();
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult != null ? authResult.AccessToken : string.Empty);
+                string accessToken = _contextAccessor.HttpContext.User.FindFirst("access_token")?.Value;
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken != null ? accessToken : string.Empty);
             }
+
             return client;
         }
         #endregion
@@ -580,12 +561,14 @@ namespace UpDiddy.Api
             return rval;
         }
 
-        
-        public async Task<BasicResponseDto> SubmitServiceOfferingPayment(ServiceOfferingTransactionDto serviceOfferingTransactionDto){
+
+        public async Task<BasicResponseDto> SubmitServiceOfferingPayment(ServiceOfferingTransactionDto serviceOfferingTransactionDto)
+        {
             return await PostAsync<BasicResponseDto>("serviceOfferingOrder", serviceOfferingTransactionDto);
         }
 
-        public async Task<ServiceOfferingOrderDto> GetSubscriberOrder(Guid OrderGuid){
+        public async Task<ServiceOfferingOrderDto> GetSubscriberOrder(Guid OrderGuid)
+        {
             return await GetAsync<ServiceOfferingOrderDto>("serviceOfferingOrder/subscriber-order/" + OrderGuid);
         }
 
@@ -659,7 +642,7 @@ namespace UpDiddy.Api
         public async Task<JobSearchResultDto> GetJobsByLocation(string searchQueryParameterString)
         {
 
-            var searchFilter = $"all/all/all/all/all/all/0{(searchQueryParameterString.Equals("")? "?" :searchQueryParameterString+"&")}page-size=100";
+            var searchFilter = $"all/all/all/all/all/all/0{(searchQueryParameterString.Equals("") ? "?" : searchQueryParameterString + "&")}page-size=100";
             string cacheKey = $"job-{searchFilter}";
             JobSearchResultDto rval = GetCachedValueAsync<JobSearchResultDto>(cacheKey);
 
@@ -709,11 +692,57 @@ namespace UpDiddy.Api
 
         #region Public UnCached Methods
 
+        public async Task<BasicResponseDto> UpdateLastSignIn(Guid subscriberGuid)
+        {
+            return await PutAsync<BasicResponseDto>($"subscriber/{subscriberGuid}/update-last-sign-in");
+        }
+
         public async Task<List<ImportActionDto>> ImportContactsAsync(Guid partnerGuid, string cacheKey)
         {
             return await PutAsync<List<ImportActionDto>>("contact/import/" + partnerGuid + "/" + HttpUtility.UrlEncode(cacheKey));
         }
 
+        public async Task<bool> IsUserExistsInADB2CAsync(string email)
+        {
+            var basicResponseDto = await GetAsync<BasicResponseDto>($"identity/check-adb2c/{email}", true);
+            if (basicResponseDto.StatusCode == 200)
+                return true;
+            else
+                return false;
+        }
+
+        public async Task<bool> IsUserExistsInAuth0Async(string email)
+        {
+            var basicResponseDto = await GetAsync<BasicResponseDto>($"identity/check-auth0/{email}", true);
+            if (basicResponseDto.StatusCode == 200)
+                return true;
+            else
+                return false;
+        }
+
+        public async Task<bool> CheckADB2CLoginAsync(string email, string password)
+        {
+            var basicResponseDto = await PostAsync<BasicResponseDto>("identity/check-adb2c-login", new UserDto() { Email = email, Password = password }, true);
+            if (basicResponseDto.StatusCode == 200)
+                return true;
+            else
+                return false;
+        }
+
+        public async Task<BasicResponseDto> CreateUserAsync(CreateUserDto createUserDto)
+        {
+            var basicResponseDto = await PostAsync<BasicResponseDto>("identity/create-user", createUserDto, true);
+            return basicResponseDto;
+        }
+
+        public async Task<bool> MigrateUserAsync(CreateUserDto createUserDto)
+        {
+            var basicResponseDto = await PostAsync<BasicResponseDto>("identity/migrate-user", createUserDto, true);
+            if (basicResponseDto.StatusCode == 200)
+                return true;
+            else
+                return false;
+        }
 
         #region Resume Parse 
 
@@ -759,9 +788,9 @@ namespace UpDiddy.Api
             }
         }
 
-         public async Task<FileDto> GetFile(Guid fileDownloadTrackerGuid)
-         {
-          try
+        public async Task<FileDto> GetFile(Guid fileDownloadTrackerGuid)
+        {
+            try
             {
                 FileDto retVal = await GetAsync<FileDto>($"file/gated/{fileDownloadTrackerGuid}");
                 return retVal;
@@ -771,7 +800,7 @@ namespace UpDiddy.Api
                 string temp = e.Message;
                 return null;
             }
-         }
+        }
 
 
         #endregion
@@ -839,32 +868,6 @@ namespace UpDiddy.Api
         public async Task<SubscriberDto> GetSubscriberByGuid(Guid subscriberGuid)
         {
             return await _SubscriberAsync(subscriberGuid);
-        }
-
-        public async Task<BasicResponseDto> UpdateSubscriberContactAsync(Guid partnerContactGuid, SignUpDto signUpDto)
-        {
-            // encrypt password before sending to API
-            signUpDto.password = Crypto.Encrypt(_configuration["Crypto:Key"], signUpDto.password);
-
-            return await PutAsync<BasicResponseDto>(string.Format("subscriber/contact/{0}", partnerContactGuid.ToString()), signUpDto);
-        }
-
-        public async Task<BasicResponseDto> ExistingUserGroupSignup(SignUpDto signUpDto)
-        {
-            return await PostAsync<BasicResponseDto>("subscriber/existing-user-signup", signUpDto);
-        }
-
-        public async Task<BasicResponseDto> ExpressUpdateSubscriberContactAsync(SignUpDto signUpDto)
-        {
-            // encrypt password before sending to API
-            signUpDto.password = Crypto.Encrypt(_configuration["Crypto:Key"], signUpDto.password);
-
-            return await PostAsync<BasicResponseDto>("subscriber/express-sign-up", signUpDto);
-        }
-
-        public async Task<SubscriberADGroupsDto> MyGroupsAsync()
-        {
-            return await GetAsync<SubscriberADGroupsDto>("subscriber/me/group");
         }
 
         public async Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid)
@@ -953,10 +956,6 @@ namespace UpDiddy.Api
             return await PutAsync<BasicResponseDto>("subscriber/onboard");
         }
 
-        public async Task<SubscriberDto> CreateSubscriberAsync( string source, string referralCode = null)
-        {
-            return await PostAsync<SubscriberDto>("subscriber", new ReferralDto() { JobReferralCode = referralCode, SubscriberSource = source });
-        }
         public async Task<bool> DeleteSubscriberAsync(Guid subscriberGuid, Guid cloudIdentifier)
         {
             return await DeleteAsync<bool>($"subscriber/{subscriberGuid}/{cloudIdentifier}");
@@ -1038,13 +1037,6 @@ namespace UpDiddy.Api
         }
         #endregion
 
-        #region EmailVerification
-        public async Task<BasicResponseDto> VerifyEmailAsync(Guid token)
-        {
-            return await PostAsync<BasicResponseDto>($"subscriber/verify-email/{token}");
-        }
-        #endregion
-
         public async Task<BasicResponseDto> SyncLinkedInAccountAsync(string linkedInCode, string returnUrl)
         {
             return await PutAsync<BasicResponseDto>($"linkedin/sync-profile/{linkedInCode}?returnUrl={returnUrl}");
@@ -1113,19 +1105,19 @@ namespace UpDiddy.Api
             }
             return rval;
         }
-        
+
         public async Task<IList<ExperienceLevelDto>> _GetExperienceLevelAsync()
         {
 
             return await GetAsync<IList<ExperienceLevelDto>>("lookupdata/experience-level");
         }
-        
+
         public async Task<IList<EducationLevelDto>> _GetEducationLevelAsync()
         {
 
             return await GetAsync<IList<EducationLevelDto>>("lookupdata/education-level");
         }
-        
+
         public async Task<IList<SecurityClearanceDto>> _GetSecurityClearanceAsync()
         {
 
@@ -1137,7 +1129,7 @@ namespace UpDiddy.Api
 
             return await GetAsync<IList<RecruiterCompanyDto>>($"subscriber/{subscriberGuid}/company");
         }
-        
+
         public async Task<IList<EmploymentTypeDto>> _GetEmploymentTypeAsync()
         {
 
@@ -1197,7 +1189,7 @@ namespace UpDiddy.Api
         {
             return await GetAsync<IList<CompanyDto>>("companies/");
         }
-        
+
         private async Task<IList<CompanyDto>> _GetCompaniesAsync(string userQuery)
         {
             return await GetAsync<IList<CompanyDto>>("company/" + userQuery);
@@ -1212,17 +1204,17 @@ namespace UpDiddy.Api
         {
             return await GetAsync<IList<EducationalDegreeDto>>("educational-degree/" + userQuery);
         }
-        
+
         private async Task<IList<CompensationTypeDto>> _GetCompensationTypesAsync()
         {
             return await GetAsync<IList<CompensationTypeDto>>("compensation-types");
         }
-        
+
         private async Task<IList<EducationalDegreeTypeDto>> _GetEducationalDegreeTypesAsync()
         {
             return await GetAsync<IList<EducationalDegreeTypeDto>>("educational-degree-types");
         }
-        
+
         public async Task<IList<SkillDto>> GetSkillsBySubscriberAsync(Guid subscriberGuid)
         {
             return await GetAsync<IList<SkillDto>>("subscriber/" + subscriberGuid + "/skill");
@@ -1310,34 +1302,18 @@ namespace UpDiddy.Api
             else
             {
                 rval = await _SubscriberAsync(subscriberGuid);
-                if (rval == null)
-                {
-                    int MaxCookieLength = int.Parse(_configuration["CareerCircle:MaxCookieLength"]);
-                    //check if there is any referralCode
-                    var referralCode = _contextAccessor.HttpContext.Request.Cookies["referrerCode"] == null ? null : Utils.AlphaNumeric(_contextAccessor.HttpContext.Request.Cookies["referrerCode"].ToString(), MaxCookieLength);
-                    string source = string.Empty;
-                    source = _contextAccessor.HttpContext.Request.Cookies["source"] == null ? null : Utils.AlphaNumeric(_contextAccessor.HttpContext.Request.Cookies["source"].ToString(),MaxCookieLength);
-                    // check if there is any referralCode 
-                    // not thrilled with the fact that a GET endpoint is capable of invoking a POST endpoint but not worth refactoring right now. 
-                    // just adding an additional guard to ensure we don't call this except when we have a referralCode (which should be very rare)
-                    if (!string.IsNullOrWhiteSpace(referralCode))
-                    {
-                        rval = await CreateSubscriberAsync(source, referralCode);
-                    }
-                }
-
                 SetCachedValueAsync<SubscriberDto>(cacheKey, rval);
             }
             return rval;
         }
 
-      
+
         public async Task<List<SubscriberInitialSourceDto>> NewSubscribersCSVAsync()
         {
             string endpoint = $"report/new-subscriber-csv";
-            return await GetAsync<List<SubscriberInitialSourceDto>>(endpoint);  
+            return await GetAsync<List<SubscriberInitialSourceDto>>(endpoint);
         }
-      
+
 
 
         public async Task<ProfileSearchResultDto> SubscriberSearchAsync(string searchFilter, string searchQuery, string searchLocationQuery, string sortOrder)
@@ -1347,10 +1323,10 @@ namespace UpDiddy.Api
                 endpoint += $"&searchQuery={searchQuery}";
             if (searchLocationQuery != string.Empty)
                 endpoint += $"&searchLocationQuery={searchLocationQuery}";
-            if (sortOrder != string.Empty)                
+            if (sortOrder != string.Empty)
                 endpoint += $"&sortOrder={WebUtility.UrlEncode(sortOrder)}";
-           
-                
+
+
 
             return await GetAsync<ProfileSearchResultDto>(endpoint);
         }
@@ -1481,7 +1457,7 @@ namespace UpDiddy.Api
             return null;
         }
 
-  
+
 
 
 
@@ -1685,7 +1661,7 @@ namespace UpDiddy.Api
             string cacheKey = $"GetKeywordSearchTerms";
             IList<SearchTermDto> rval = GetCachedValueAsync<IList<SearchTermDto>>(cacheKey);
 
-            if(rval == null)
+            if (rval == null)
             {
                 rval = await _GetKeywordSearchTermsAsync();
                 SetCachedValueAsync<IList<SearchTermDto>>(cacheKey, rval);
@@ -1761,7 +1737,8 @@ namespace UpDiddy.Api
                 }
             }
         }
-        
+
+
         public async Task<IList<JobCategoryDto>> GetJobCategories()
         {
             string cacheKey = $"JobCategories";
@@ -1827,27 +1804,28 @@ namespace UpDiddy.Api
         }
 
         #endregion
-        
+
         #region Traitify
-        
+
         public async Task<TraitifyDto> StartNewTraitifyAssessment(TraitifyDto dto)
         {
             return await PostAsync<TraitifyDto>("traitify/new", dto);
         }
 
-        public async Task<TraitifyDto> GetTraitifyByAssessmentId(string assessmentId) {
+        public async Task<TraitifyDto> GetTraitifyByAssessmentId(string assessmentId)
+        {
             return await GetAsync<TraitifyDto>($"traitify/{assessmentId}");
         }
 
-          public async Task<TraitifyDto> CompleteAssessment(string assessmentId) {
+        public async Task<TraitifyDto> CompleteAssessment(string assessmentId)
+        {
             return await GetAsync<TraitifyDto>($"traitify/complete/{assessmentId}");
         }
 
-        public async  Task<BasicResponseDto> TraitifySignUp(string assessmentId)
+        public async Task<BasicResponseDto> AssociateSubscriberWithAssessment(string assessmentId, Guid subscriberGuid)
         {
-            return await PostAsync<BasicResponseDto>($"subscriber/traitify-signup/{assessmentId}");
+            return await PutAsync<BasicResponseDto>($"traitify/{assessmentId}/subscriber/{subscriberGuid}");
         }
-
 
         #endregion
     }
