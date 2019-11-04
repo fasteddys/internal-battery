@@ -17,6 +17,7 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
 using System.Security.Claims;
 using System;
+using UpDiddyLib.Dto.User;
 
 namespace WebApp.Controllers
 {
@@ -226,20 +227,17 @@ namespace WebApp.Controllers
 
             ServiceOfferingTransactionDto serviceOfferingTransactionDto = new ServiceOfferingTransactionDto();
 
-            SignUpDto signUpDto = null;
+            CreateUserDto createUserDto = null;
 
             if(IsNewSubscriberCheckout){
-                signUpDto = new SignUpDto{
-                    email = serviceCheckoutViewModel.NewSubscriberEmail,
-                    password = serviceCheckoutViewModel.NewSubscriberPassword,
-                    verifyUrl = _configuration["Environment:BaseUrl"].TrimEnd('/') + "/email/confirm-verification/",
+                createUserDto = new CreateUserDto{
+                    Email = serviceCheckoutViewModel.NewSubscriberEmail,
+                    Password = serviceCheckoutViewModel.NewSubscriberPassword                    
                 };
             }
 
-            serviceOfferingTransactionDto.SignUpDto = signUpDto;
+            serviceOfferingTransactionDto.CreateUserDto = createUserDto;
             
-
-
             PromoCodeDto promoCodeDto = null;
             
             if(serviceCheckoutViewModel.PromoCodeEntered != null && !serviceCheckoutViewModel.PromoCodeEntered.Equals(string.Empty)){

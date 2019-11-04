@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using UpDiddyLib.Dto;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using System.Threading.Tasks;
+using System;
 
 namespace UpDiddyApi.Controllers
 {
@@ -33,6 +34,22 @@ namespace UpDiddyApi.Controllers
         public async Task<TraitifyDto> CompleteAssessment(string assessmentId)
         {
             return await _traitifyService.CompleteAssessment(assessmentId);
+        }
+
+        [HttpPut]
+        [Route("api/[controller]/{assessmentId}/subscriber/{subscriberGuid}")]
+        public async Task<BasicResponseDto> AssociateSubscriberWithAssessmentAsync(string assessmentId, Guid subscriberGuid)
+        {
+            try
+            {
+                await _traitifyService.CompleteSignup(assessmentId, subscriberGuid);
+            }
+            catch (Exception e)
+            {
+                return new BasicResponseDto() { StatusCode = 500, Description = e.Message };
+            }
+
+            return new BasicResponseDto() { StatusCode = 200, Description = "The assessment was associated with the subscriber successfully." };
         }
     }
 }
