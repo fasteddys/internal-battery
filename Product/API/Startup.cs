@@ -251,6 +251,7 @@ namespace UpDiddyApi
             services.AddHttpClient<IB2CGraph, B2CGraphClient>();
 
             services.AddScoped<ISubscriberService, SubscriberService>();
+            services.AddScoped<ISubscriberEducationalHistoryService, SubscriberEducationalHistoryService>();            
             services.AddScoped<IReportingService, ReportingService>();
             services.AddScoped<IJobService, JobService>();
             services.AddScoped<ITrackingService, TrackingService>();
