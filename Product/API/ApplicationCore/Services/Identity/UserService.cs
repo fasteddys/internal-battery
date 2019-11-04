@@ -50,7 +50,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             };
             _domain = configuration["Auth0:Domain"];
             _managementApiUrl = new Uri(configuration["Auth0:ManagementApi:url"]);
-            _auth0CryptoKey = configuration["Auth0:CryptoKey"];
+            _auth0CryptoKey = configuration["Crypto:Key"];
             _memoryCache = services.GetService<IMemoryCache>();
             _repositoryWrapper = services.GetService<IRepositoryWrapper>();
             _logger = services.GetService<ILogger<UserService>>();
