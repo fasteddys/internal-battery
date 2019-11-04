@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using UpDiddyLib.Dto.Marketing;
+﻿using UpDiddyLib.Dto.User;
 
 namespace UpDiddyLib.Dto
 {
     public class ServiceOfferingTransactionDto
     {
-
-        public ServiceOfferingOrderDto  ServiceOfferingOrderDto { get; set; }
+        public ServiceOfferingOrderDto ServiceOfferingOrderDto { get; set; }
         public BraintreePaymentDto BraintreePaymentDto { get; set; }
-        public SignUpDto SignUpDto { get; set; }
-
+        public CreateUserDto CreateUserDto { get; set; }
     }
 }

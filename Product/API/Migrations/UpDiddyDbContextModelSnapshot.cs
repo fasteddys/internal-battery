@@ -3244,6 +3244,9 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("Address");
 
+                    b.Property<string>("Auth0UserId")
+                        .HasMaxLength(100);
+
                     b.Property<string>("AvatarUrl");
 
                     b.Property<string>("City");
@@ -3279,9 +3282,12 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsDeleted");
 
-                    b.Property<bool>("IsVerified");
+                    b.Property<bool>("IsVerified")
+                        .HasColumnName("IsEmailVerifiedLegacy");
 
                     b.Property<string>("LastName");
+
+                    b.Property<DateTime?>("LastSignIn");
 
                     b.Property<string>("LinkedInAvatarUrl");
 

@@ -4,34 +4,34 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @model TraitifyViewModel
 <div class="traitify-container">
-   <div class="cc-traitify row" style="background-image: url(@Model.HeroImage)">
-      <div class="col-12">
-         <div class="container no-padding">
-            <div class="row">
-               <div class="col-12 no-padding">
-                  <div class="row">
-                     <div class="col-12 d-flex justify-content-center no-padding">
-                        <div class="cc-traitify-header font-bold">                            
+    <div class="cc-traitify row" style="background-image: url(@Model.HeroImage)">
+        <div class="col-12">
+            <div class="container no-padding">
+                <div class="row">
+                    <div class="col-12 no-padding">
+                        <div class="row">
+                            <div class="col-12 d-flex justify-content-center no-padding">
+                                <div class="cc-traitify-header font-bold">
+                                </div>
+                            </div>
+                            <div class="col-12 no-padding">
+                                <div class="cc-traitify-content">
+                                    <div class="row">
+                                        <div class="col-12 col-lg-6 order-lg-2">
+                                            <h1><strong>@Model.HeroHeader</strong></h1>
+                                            <br>
+                                            @Html.Raw(@Model.HeroDescription)
+                                        </div>
+                                        <div class="col-12 col-lg-6 order-lg-1">
+                                            @Html.Partial("Partials/_SignUpForm", Model)
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                     </div>
-                     <div class="col-12 no-padding">
-                        <div class="cc-traitify-content">
-                           <div class="row">
-                              <div class="col-12 col-lg-6 order-lg-2">
-                                 <h1><strong>@Model.HeroHeader</strong></h1>
-                                 <br>
-                                 <p>@Model.HeroDescription</p>
-                              </div>
-                              <div class="col-12 col-lg-6 order-lg-1">
-                                    @Html.Partial("Partials/_SignUpForm",Model)                   
-                              </div>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
+                    </div>
+                </div>
             </div>
-         </div>
-      </div>
-   </div>
+        </div>
+    </div>
 </div>

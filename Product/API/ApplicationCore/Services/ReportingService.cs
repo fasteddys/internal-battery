@@ -184,7 +184,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 totalsByDate.Add(basicCountReport);
 
-                prevDate = startDate.AddDays(-1);
+                prevDate = startDate;
             }
 
             return new SubscriberReportDto()
