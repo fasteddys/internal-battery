@@ -20,7 +20,7 @@
                                 @foreach (var r in ViewBag.subscriberReport.Report)
                                 {
                                     <tr>
-                                        <td>@r.StartDate.ToShortDateString() -  @( r.EndDate == null ? "Present" : r.EndDate.AddDays(-0.4).ToShortDateString() )</td>
+                                        <td>@r.StartDate.ToShortDateString() -  @( r.EndDate == null ? "Present" : r.EndDate.AddDays(-0.1).ToShortDateString() )</td>
                                         <td class="text-right">@r.SubscriberCount</td>
                                         <td class="text-right">@r.EnrollmentCount</td>
                                     </tr>
