@@ -67,17 +67,7 @@ namespace UpDiddyApi.Controllers.V2
         #endregion
 
 
-
-        [HttpPost]
-        [Authorize]
-        [Route("/V2/[controller]")]
-        public async Task<IActionResult> CreateSubscriber([FromBody] SignUpDto signUpDto)
-        {
-            // TODO JAB complete once auth0 has been integrated 
  
-            return StatusCode(400);
-        }
-
 
 
 
