@@ -437,6 +437,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     string province = urlParts[0].Split("=")[1];
                     facetInfo.Url = $"/browse-jobs-location/us/{province}";
+                    Enum.TryParse(facetInfo.UrlParam.ToUpper(), out UpDiddyLib.Helpers.Utils.State state);
+                    facetInfo.Label = Utils.ToTitleCase(Utils.GetState(state));
                 }
             }
         }
