@@ -704,7 +704,7 @@ namespace UpDiddy.Api
 
         public async Task<bool> IsUserExistsInADB2CAsync(string email)
         {
-            var basicResponseDto = await GetAsync<BasicResponseDto>($"identity/check-adb2c/{email}", true);
+            var basicResponseDto = await PostAsync<BasicResponseDto>($"identity/is-user-exists-adb2c", new UserDto() { Email = email, Password = string.Empty }, true);
             if (basicResponseDto.StatusCode == 200)
                 return true;
             else
@@ -713,7 +713,7 @@ namespace UpDiddy.Api
 
         public async Task<bool> IsUserExistsInAuth0Async(string email)
         {
-            var basicResponseDto = await GetAsync<BasicResponseDto>($"identity/check-auth0/{email}", true);
+            var basicResponseDto = await PostAsync<BasicResponseDto>($"identity/is-user-exists-auth0", new UserDto() { Email = email, Password = string.Empty }, true);
             if (basicResponseDto.StatusCode == 200)
                 return true;
             else
