@@ -358,6 +358,30 @@ namespace UpDiddyApi.Controllers
         #region job search 
 
         /// <summary>
+        /// Retrieves unique values for the autocomplete feature of the keyword job search box.
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("/api/[controller]/keyword-search-terms")]
+        public async Task<IActionResult> GetKeywordSearchTerms()
+        {
+            var keywordSearchTerms = await _jobService.GetKeywordSearchTermsAsync();
+            return Ok(keywordSearchTerms);
+        }
+
+        /// <summary>
+        /// Retrieves unique values for the autocomplete feature of the location job search box.
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("/api/[controller]/location-search-terms")]
+        public async Task<IActionResult> GetLocationSearchTerms()
+        {
+            var locationSearchTerms = await _jobService.GetLocationSearchTermsAsync();
+            return Ok(locationSearchTerms);
+        }
+
+        /// <summary>
         /// Get a specific job posting 
         /// </summary>
         /// <param name="jobPostingGuid"></param>

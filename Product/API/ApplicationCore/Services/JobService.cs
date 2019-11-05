@@ -21,6 +21,8 @@ using Hangfire;
 using Newtonsoft.Json.Linq;
 using UpDiddyApi.Workflow;
 using UpDiddyApi.ApplicationCore.Exceptions;
+using UpDiddyApi.ApplicationCore.Factory;
+
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class JobService : IJobService
@@ -57,6 +59,61 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
+        public async Task<JobDetailDto> GetJobDetail(Guid jobPostingGuid)
+        {
+            JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuidWithRelatedObjectsAsync(_repositoryWrapper, jobPostingGuid);
+            if (jobPosting == null)
+                throw new NotFoundException();
+
+            JobDetailDto rVal = _mapper.Map<JobDetailDto>(jobPosting);
+            return rVal;
+        }
+
+
+
+
+        public async Task<UpDiddyLib.Dto.JobPostingDto> GetJob(Guid jobPostingGuid)
+        {
+            JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuidWithRelatedObjectsAsync(_repositoryWrapper, jobPostingGuid);
+            if (jobPosting == null)
+                throw new NotFoundException();
+            UpDiddyLib.Dto.JobPostingDto rVal = _mapper.Map<UpDiddyLib.Dto.JobPostingDto>(jobPosting);
+
+            // set meta data for seo
+            JobPostingFactory.SetMetaData(jobPosting, rVal);
+
+            /* i would prefer to get the semantic url in automapper, but i ran into a blocker while trying to call the static util method
+             * in "MapFrom" while guarding against null refs: an expression tree lambda may not contain a null propagating operator
+             * .ForMember(jp => jp.SemanticUrl, opt => opt.MapFrom(src => Utils.GetSemanticJobUrlPath(src.Industry?.Name,"","","","","")))
+             */
+
+            rVal.SemanticJobPath = Utils.CreateSemanticJobPath(
+                jobPosting.Industry?.Name,
+                jobPosting.JobCategory?.Name,
+                jobPosting.Country,
+                jobPosting.Province,
+                jobPosting.City,
+                jobPostingGuid.ToString());
+
+            JobQueryDto jobQuery = JobQueryHelper.CreateJobQueryForSimilarJobs(jobPosting.Province, jobPosting.City, jobPosting.Title, Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]));
+            JobSearchResultDto jobSearchForSingleJob = _cloudTalentService.JobSearch(jobQuery);
+
+            // If jobs in same city come back less than 6, broaden search to state.
+            if (jobSearchForSingleJob.JobCount < Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]))
+            {
+                jobQuery = JobQueryHelper.CreateJobQueryForSimilarJobs(jobPosting.Province, string.Empty, jobPosting.Title, Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]));
+                jobSearchForSingleJob = _cloudTalentService.JobSearch(jobQuery);
+            }
+
+
+
+            rVal.SimilarJobs = jobSearchForSingleJob;
+
+            return rVal;
+        }
+
+
+
 
 
 
@@ -77,14 +134,21 @@ namespace UpDiddyApi.ApplicationCore.Services
             return rVal; ;
         }
 
+        public async Task<List<SearchTermDto>> GetKeywordSearchTermsAsync()
+        {
+            return await _repositoryWrapper.StoredProcedureRepository.GetKeywordSearchTermsAsync();
+        }
 
+        public async Task<List<SearchTermDto>> GetLocationSearchTermsAsync()
+        {
+            return await _repositoryWrapper.StoredProcedureRepository.GetLocationSearchTermsAsync();
+        }
 
         public async Task ReferJobToFriend(JobReferralDto jobReferralDto)
         {
             var jobReferralGuid = await SaveJobReferral(jobReferralDto);
             SendReferralEmail(jobReferralDto, jobReferralGuid);
         }
-
 
         public async Task UpdateJobReferral(string referrerCode, string subscriberGuid)
         {
@@ -224,7 +288,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
             Guid jobReferralGuid = Guid.Empty;
-            
+
             //get JobPostingId from JobPositngGuid
             var jobPosting = await _repositoryWrapper.JobPosting.GetJobPostingByGuid(job);
             if (jobPosting == null)
@@ -254,6 +318,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _repositoryWrapper.JobReferralRepository.AddJobReferralAsync(jobReferral);
         }
 
-      
+
     }
 }

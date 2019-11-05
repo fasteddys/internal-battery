@@ -81,6 +81,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IExperienceLevelRepository _experienceLevelRepository;
         private ICompensationTypeRepository _compensationTypeRepository;
         private IRecruiterCompanyRepository _recruiterCompanyRepository;
+        private ITraitifyCourseTopicBlendMappingRepository _traitifyCourseTopicBlendMappingRepository;
+
+
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
             _dbContext = dbContext;
@@ -204,18 +207,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _recruiterActionRepository = new RecruiterActionRepository(_dbContext);
                 }
                 return _recruiterActionRepository;
-            }
-        }
-
-        public ISubscriberRepository Subscriber
-        {
-            get
-            {
-                if (_subscriberRepository == null)
-                {
-                    _subscriberRepository = new SubscriberRepository(_dbContext, SubscriberGroupRepository, GroupPartnerRepository, PartnerRepository);
-                }
-                return _subscriberRepository;
             }
         }
 
@@ -985,7 +976,19 @@ namespace UpDiddyApi.ApplicationCore.Repository
         public async Task SaveAsync()
         {
             await _dbContext.SaveChangesAsync();
+
         }
 
+        public ITraitifyCourseTopicBlendMappingRepository TraitifyCourseTopicBlendMappingRepository
+        {
+            get
+            {
+                if (_traitifyCourseTopicBlendMappingRepository == null)
+                {
+                    _traitifyCourseTopicBlendMappingRepository = new TraitifyCourseTopicBlendMappingRepository(_dbContext);
+                }
+                return _traitifyCourseTopicBlendMappingRepository;
+            }
+        }
     }
 }

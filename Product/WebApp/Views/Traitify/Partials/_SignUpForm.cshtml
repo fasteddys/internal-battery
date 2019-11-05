@@ -6,10 +6,31 @@
    {
       _readOnly = true;
    }
+   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+   <script type="text/javascript">
+    function validateRecaptcha()
+            {
+               var isReadOnly = "@_readOnly";
+               if(isReadOnly != "True")
+               {
+                  var response = grecaptcha.getResponse();
+                  if (response.length === 0)
+                  {
+                     ToastService.warning('Please confirm you are not a robot');
+                     return false;
+                  }
+                  else
+                     return true;
+               }else
+               {
+                  return true;
+               }
+            }
+   </script>
 }
 <div class="traitify-form-container ">
    <div class="d-flex justify-content-center">
-      <form class="traitify-signup-form p-4"id="AssessmentForm" asp-controller="Traitify" asp-action="Index">
+      <form class="traitify-signup-form p-4"id="AssessmentForm" asp-controller="Traitify" asp-action="Index"  onsubmit="return validateRecaptcha();">
          <div class="col-12  sub-header font-bold d-flex justify-content-center">
             @Html.Raw(Model.FormHeader)
          </div>
@@ -46,15 +67,24 @@
                <span asp-validation-for="Email" class="text-danger"></span>
             </div>
          </div>
+         @if(!_readOnly)
+         {
+            <div class="d-flex justify-content-center form-group g-recaptcha" data-sitekey="6LfyG6YUAAAAACnUU2wHebNKpTqaOnuQOuMG3OU4"></div>
+         }
          <div class="col-12 " style="width:100%">
             @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
             Text = @Model.FormButtonText,
             ChosenColorScheme = "cc-cscheme-primary",
             Form = "AssessmentForm",
-            
             ButtonAction = ActionButtonViewModel.Action.SUBMIT
             })
          </div>
+         @if(!_readOnly)
+         {
+            <div class="col-12 pt-4 d-flex justify-content-center">
+               <p>Existing User? Click here to @Html.ActionLink("log in", "signin","session", new { returnUrl = "/traitify", rel = "nofollow"  })</p>
+            </div>
+         }
          @Html.HiddenFor(x => x.SubscriberGuid)
          @Html.HiddenFor(x => x.FirstName)
          @Html.HiddenFor(x => x.LastName)
@@ -62,3 +92,4 @@
       </form>
    </div>
 </div>
+

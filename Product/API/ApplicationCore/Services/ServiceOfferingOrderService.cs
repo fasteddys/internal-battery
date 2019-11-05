@@ -1,15 +1,27 @@
 ﻿using AutoMapper;
+using Google.Apis.CloudTalentSolution.v3.Data;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
+using UpDiddyApi.ApplicationCore.Factory;
+using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
-using UpDiddyLib.Dto;
-using Microsoft.Extensions.DependencyInjection;
+using UpDiddyApi.ApplicationCore.Services.Identity.Communication;
+using UpDiddyApi.ApplicationCore.Services.Identity.Interfaces;
+using UpDiddyApi.Helpers.Job;
 using UpDiddyApi.Models;
+using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
-using UpDiddyApi.ApplicationCore.Interfaces;
-using Microsoft.Extensions.Logging;
+using UpDiddyLib.Shared;
+using UpDiddyLib.Shared.GoogleJobs;
+using UpDiddyApi.ApplicationCore.Services.Identity;
+using UpDiddyLib.Dto.User;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -25,10 +37,13 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly ILogger _syslog;
         private readonly IPromoCodeService _promoCodeService;
         private IB2CGraph _graphClient;
+        private readonly ISubscriberService _subscriberService;
         private IBraintreeService _braintreeService;
         private readonly IServiceOfferingPromoCodeRedemptionService _serviceOfferingPromoCodeRedemptionService;
+        private readonly IUserService _userService;
+        private readonly ICloudTalentService _cloudTalentService;
 
-        public ServiceOfferingOrderService(IServiceProvider services, IHangfireService hangfireService)
+        public ServiceOfferingOrderService(IServiceProvider services, IHangfireService hangfireService, ICloudTalentService cloudTalentService)
         {
             _services = services;
             _db = _services.GetService<UpDiddyDbContext>();
@@ -39,16 +54,14 @@ namespace UpDiddyApi.ApplicationCore.Services
             _configuration = _services.GetService<Microsoft.Extensions.Configuration.IConfiguration>();
             _promoCodeService = services.GetService<IPromoCodeService>();
             _hangfireService = hangfireService;
-            _graphClient = services.GetService<IB2CGraph>();
             _braintreeService = services.GetService<IBraintreeService>();
             _serviceOfferingPromoCodeRedemptionService = services.GetService<IServiceOfferingPromoCodeRedemptionService>();
+            _cloudTalentService = cloudTalentService;
+            _userService = services.GetService<IUserService>();
         }
-
-   
 
         public bool ProcessOrder(ServiceOfferingTransactionDto serviceOfferingTransactionDto, Guid subscriberGuid, ref int statusCode, ref string msg)
         {
-
             _syslog.LogInformation("ServiceOfferingService.ProcessOrder starting", serviceOfferingTransactionDto);
             ServiceOfferingOrderDto serviceOfferingOrderDto = serviceOfferingTransactionDto.ServiceOfferingOrderDto;
             Subscriber subscriber = null;
@@ -56,7 +69,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             ServiceOffering serviceOffering = null;
             string AuthInfo = string.Empty;
 
- 
             // Validate basic aspects of the transaction such a valid service offering, valid promo etc. 
             if (ValidateTransaction(serviceOfferingOrderDto, ref serviceOffering, ref promoCode, ref statusCode, ref msg) == false)
                 return false;
@@ -64,20 +76,21 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (ValidateSubscriber(serviceOfferingTransactionDto, subscriberGuid, ref subscriber, ref statusCode, ref msg) == false)
                 return false;
 
-            //
+            // update subscriberGuid value if a valid value does not exist (a new user was created)
+            if (subscriberGuid == null || subscriberGuid == Guid.Empty)
+                subscriber = _repositoryWrapper.SubscriberRepository.GetSubscriberByEmail(serviceOfferingTransactionDto.CreateUserDto.Email);
+
             // At this point, subscriber should by hydrated with an existing or newly created subscriber.
             // At this point serviceOffering should also be hydrated 
-            //
 
             // Validate subscriber constraints such as max number of redemptions per subscriber
             if (ValidateSubscriberConstraints(promoCode, subscriber, serviceOffering, ref statusCode, ref msg) == false)
                 return false;
 
             // validate the payment with braintree
-            if (ValidatePayment(serviceOfferingTransactionDto, subscriberGuid,ref AuthInfo, ref subscriber, ref statusCode, ref msg) == false)
+            if (ValidatePayment(serviceOfferingTransactionDto, subscriberGuid, ref AuthInfo, ref subscriber, ref statusCode, ref msg) == false)
                 return false;
 
-       
             // create service offering order record 
             ServiceOfferingOrder order = new ServiceOfferingOrder()
             {
@@ -94,13 +107,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                 AuthorizationInfo = AuthInfo
             };
 
-
-
             string SubscriberEmail = subscriber.Email;
-            decimal PromoDiscount = serviceOfferingTransactionDto.ServiceOfferingOrderDto.PromoCode?.Discount != null ? 
+            decimal PromoDiscount = serviceOfferingTransactionDto.ServiceOfferingOrderDto.PromoCode?.Discount != null ?
                 serviceOfferingTransactionDto.ServiceOfferingOrderDto.PromoCode.Discount : 0;
-            decimal FinalCost = serviceOfferingTransactionDto.ServiceOfferingOrderDto.PromoCode?.FinalCost != null ? 
-                serviceOfferingTransactionDto.ServiceOfferingOrderDto.PromoCode.FinalCost : 
+            decimal FinalCost = serviceOfferingTransactionDto.ServiceOfferingOrderDto.PromoCode?.FinalCost != null ?
+                serviceOfferingTransactionDto.ServiceOfferingOrderDto.PromoCode.FinalCost :
                 serviceOfferingTransactionDto.ServiceOfferingOrderDto.ServiceOffering.Price;
 
 
@@ -144,12 +155,13 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 order.PromoCodeId = promoCode.PromoCodeId;
                 //create or convert in flight promo code redemption row
-                _serviceOfferingPromoCodeRedemptionService.ClaimServiceOfferingPromoCode(promoCode, serviceOffering, subscriber, order.PricePaid);                
-                // increment the number of redemptions of the coupon.            
+                _serviceOfferingPromoCodeRedemptionService.ClaimServiceOfferingPromoCode(promoCode, serviceOffering, subscriber, order.PricePaid);
+                // increment the number of redemptions of the coupon.
+                // todo jab makse sure ef catches this update                
                 promoCode.ModifyDate = DateTime.Now;
                 promoCode.NumberOfRedemptions += 1;
             }
-            
+
             _db.ServiceOfferingOrder.Add(order);
             _db.SaveChanges();
             _syslog.LogInformation("ServiceOfferingService.ProcessOrder finished returning true", serviceOfferingTransactionDto);
@@ -179,17 +191,17 @@ namespace UpDiddyApi.ApplicationCore.Services
                 _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriberConstraints returning false: {msg} ");
                 return false;
             }
-                
+
             return true;
         }
 
-            public bool ValidatePayment(ServiceOfferingTransactionDto serviceOfferingTransactionDto, Guid subscriberGuid,ref string authInfo, ref Subscriber subscriber, ref int statusCode, ref string msg)
+        public bool ValidatePayment(ServiceOfferingTransactionDto serviceOfferingTransactionDto, Guid subscriberGuid, ref string authInfo, ref Subscriber subscriber, ref int statusCode, ref string msg)
         {
             _syslog.LogInformation("ServiceOfferingService.ValidatePayment starting", serviceOfferingTransactionDto);
             ServiceOfferingOrderDto serviceOfferingOrderDto = serviceOfferingTransactionDto.ServiceOfferingOrderDto;
-            if ( serviceOfferingOrderDto.PricePaid > 0 )
+            if (serviceOfferingOrderDto.PricePaid > 0)
             {
-                if (serviceOfferingTransactionDto.BraintreePaymentDto == null )
+                if (serviceOfferingTransactionDto.BraintreePaymentDto == null)
                 {
                     msg = "Braintree payment information is missing";
                     statusCode = 400;
@@ -202,15 +214,13 @@ namespace UpDiddyApi.ApplicationCore.Services
                     _syslog.LogInformation($"ServiceOfferingService.ValidatePayment returning false: {msg} ");
                     return false;
                 }
-                    
-                
+
+
             }
 
             _syslog.LogInformation("ServiceOfferingService.ValidatePayment finished returning trie");
             return true;
         }
-
-
 
         /// <summary>
         /// Validate the subscriber.  This method MUST return either a valid subscriber or return false since other code assumes it does.
@@ -228,20 +238,19 @@ namespace UpDiddyApi.ApplicationCore.Services
             ServiceOfferingOrderDto serviceOfferingOrderDto = serviceOfferingTransactionDto.ServiceOfferingOrderDto;
 
             // validate that the subscriber is logged in 
-            if ( subscriberGuid != Guid.Empty)
+            if (subscriberGuid != Guid.Empty)
             {
-
                 // validate that a subscriber has been specified by the front end 
                 if (serviceOfferingOrderDto.Subscriber == null || serviceOfferingOrderDto.Subscriber?.SubscriberGuid == null)
                 {
                     statusCode = 404;
-                    msg = "For authenticated requests, subscriber must be supplied by front-en";
+                    msg = "For authenticated requests, subscriber must be supplied by front-end";
                     _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     return false;
 
                 }
 
-                // validate that the subscriber passed from the front end is the same as that from the JTW - Not sure if this is 
+                // validate that the subscriber passed from the front end is the same as that from the JWT - Not sure if this is 
                 // necessary but better safe that sorry 
                 if (serviceOfferingOrderDto.Subscriber?.SubscriberGuid.Value != subscriberGuid)
                 {
@@ -260,13 +269,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                     msg = "Unable to locate subscriber specified by JWT";
                     return false;
                 }
-
-
             }
             else
-            {             
+            {
                 //todo move to subscriber service 
-                if (serviceOfferingTransactionDto.SignUpDto == null )
+                if (serviceOfferingTransactionDto.CreateUserDto == null)
                 {
                     statusCode = 403;
                     msg = "Signup information required for non-authenticated requests.";
@@ -274,19 +281,18 @@ namespace UpDiddyApi.ApplicationCore.Services
                     return false;
                 }
 
-                
                 // validate email
-                if ( string.IsNullOrEmpty(serviceOfferingTransactionDto.SignUpDto.email) || Utils.ValidateEmail(serviceOfferingTransactionDto.SignUpDto.email) == false  )
+                if (string.IsNullOrEmpty(serviceOfferingTransactionDto.CreateUserDto.Email) || Utils.ValidateEmail(serviceOfferingTransactionDto.CreateUserDto.Email) == false)
                 {
                     statusCode = 400;
-                    msg = $"'{serviceOfferingTransactionDto.SignUpDto.email}' is an invalid signup email";
+                    msg = $"'{serviceOfferingTransactionDto.CreateUserDto.Email}' is an invalid signup email";
                     _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     return false;
                 }
 
                 // validate password 
                 // todo enforce better password complexity - it appears that /api/[controller]/express-sign-up relies on the front-end validation 
-                if (string.IsNullOrEmpty(serviceOfferingTransactionDto.SignUpDto.password) )
+                if (string.IsNullOrEmpty(serviceOfferingTransactionDto.CreateUserDto.Password))
                 {
                     statusCode = 400;
                     msg = $"Signup password is required";
@@ -296,26 +302,32 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
                 // validate the email is not an existing subscriber 
-                Subscriber existingSubscriber = _repositoryWrapper.SubscriberRepository.GetSubscriberByEmail(serviceOfferingTransactionDto.SignUpDto.email);
+                Subscriber existingSubscriber = _repositoryWrapper.SubscriberRepository.GetSubscriberByEmail(serviceOfferingTransactionDto.CreateUserDto.Email);
 
-                if ( existingSubscriber != null)
+                if (existingSubscriber != null)
                 {
                     statusCode = 400;
-                    msg = $"'{serviceOfferingTransactionDto.SignUpDto.email}' is an existing member, please login to complete your purchase";
+                    msg = $"'{serviceOfferingTransactionDto.CreateUserDto.Email}' is an existing member, please login to complete your purchase";
                     _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     return false;
                 }
 
-
-                // check if user exits in AD if the user does then we skip this step
-                Microsoft.Graph.User user = _graphClient.GetUserBySignInEmail(serviceOfferingTransactionDto.SignUpDto.email).Result;
- 
-                if (user == null)
+                GetUserResponse getUserResponse = _userService.GetUserByEmailAsync(serviceOfferingTransactionDto.CreateUserDto.Email).Result;
+                if (!getUserResponse.Success)
                 {
                     try
                     {
-                        user =  _graphClient.CreateUser(serviceOfferingTransactionDto.SignUpDto.email, serviceOfferingTransactionDto.SignUpDto.email, serviceOfferingTransactionDto.SignUpDto.password).Result;
-           
+                        var createUserResponse = _userService.CreateUserAsync(new User()
+                        {
+                            Email = serviceOfferingTransactionDto.CreateUserDto.Email,
+                            EmailVerified = false,
+                            IsAgreeToMarketingEmails = false,
+                            Password = serviceOfferingTransactionDto.CreateUserDto.Password
+                        },
+                        true,
+                        null).Result;
+                        if (createUserResponse.Success && createUserResponse?.User?.SubscriberGuid != null)
+                            subscriberGuid = createUserResponse.User.SubscriberGuid;
                     }
                     catch (Exception ex)
                     {
@@ -326,56 +338,30 @@ namespace UpDiddyApi.ApplicationCore.Services
                     }
                 }
 
-                // create subscriber for user
-                subscriber = new Subscriber();
-                subscriber.SubscriberGuid = Guid.Parse(user.AdditionalData["objectId"].ToString());
-                subscriber.Email = serviceOfferingTransactionDto.SignUpDto.email;
-                subscriber.CreateDate = DateTime.UtcNow;
-                subscriber.ModifyDate = DateTime.UtcNow;
-                subscriber.IsDeleted = 0;
-                subscriber.ModifyGuid = Guid.Empty;
-                subscriber.CreateGuid = Guid.Empty;
-                subscriber.IsVerified = false;
-                _db.Add(subscriber);
-                _db.SaveChanges();
+                var subscriberCreationResult = _subscriberService.CreateSubscriberAsync(new CreateUserDto()
+                {
+                    Email = serviceOfferingTransactionDto.CreateUserDto.Email,
+                    FirstName = serviceOfferingTransactionDto.CreateUserDto.FirstName,
+                    IsAgreeToMarketingEmails = false,
+                    LastName = serviceOfferingTransactionDto.CreateUserDto.LastName,
+                    Password = serviceOfferingTransactionDto.CreateUserDto.Password,
+                    PhoneNumber = serviceOfferingTransactionDto.CreateUserDto.PhoneNumber,
+                    SubscriberGuid = subscriberGuid
+                }).Result;
 
-        
-                // load the newly created subscriber 
-                 existingSubscriber = _repositoryWrapper.SubscriberRepository.GetSubscriberByEmail(serviceOfferingTransactionDto.SignUpDto.email);
-                if (existingSubscriber == null)
+                if (!subscriberCreationResult)
                 {
                     statusCode = 400;
-                    msg = $"Unable to locate newly created subscriber with email '{serviceOfferingTransactionDto.SignUpDto.email}'";
+                    msg = $"Unable to locate newly created subscriber with email '{serviceOfferingTransactionDto.CreateUserDto.Email}'";
                     _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     return false;
                 }
-                //send validation welcome email.  
-                int tokenTtlMinutes = int.Parse(_configuration["EmailVerification:TokenExpirationInMinutes"]);
-                EmailVerification.SetSubscriberEmailVerification(existingSubscriber, tokenTtlMinutes);
-
-                _hangfireService.Enqueue(() =>
-                _sysEmail.SendTemplatedEmailAsync(
-                    serviceOfferingTransactionDto.SignUpDto.email,
-                    _configuration["SysEmail:Transactional:TemplateIds:EmailVerification-LinkEmail"],
-                    new
-                    {
-                        verificationLink = serviceOfferingTransactionDto.SignUpDto.verifyUrl + existingSubscriber.EmailVerification.Token
-                    },
-                    Constants.SendGridAccount.Transactional,
-                    null,
-                    null,
-                    null,
-                    null
-                ));
             }
 
             _syslog.LogInformation("ServiceOfferingService.ValidateSubscriber finished returning true");
             return true;
-
         }
 
-
-    
         /// <summary>
         /// This function must either return a serviceOffering object or an error.  Other code assumes this
         /// to be the case.
@@ -386,16 +372,12 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <param name="statusCode"></param>
         /// <param name="msg"></param>
         /// <returns></returns>
-
-
-
-     
         public bool ValidateTransaction(ServiceOfferingOrderDto serviceOfferingOrderDto, ref ServiceOffering serviceOffering, ref PromoCode promoCode, ref int statusCode, ref string msg)
         {
             _syslog.LogInformation("ServiceOfferingService.ValidateTransaction starting", serviceOfferingOrderDto);
 
             // validate that a subscriber has been specified 
-            if (serviceOfferingOrderDto == null )
+            if (serviceOfferingOrderDto == null)
             {
                 statusCode = 400;
                 _syslog.LogInformation($"ServiceOfferingService.ValidateTransaction returning false: {msg} ");
@@ -422,9 +404,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
             // validate case of no promo code 
-            if (serviceOfferingOrderDto.PromoCode == null ||  string.IsNullOrEmpty(serviceOfferingOrderDto.PromoCode.PromoName ) )
+            if (serviceOfferingOrderDto.PromoCode == null || string.IsNullOrEmpty(serviceOfferingOrderDto.PromoCode.PromoName))
             {
-                if ( serviceOfferingOrderDto.PricePaid != serviceOffering.Price)
+                if (serviceOfferingOrderDto.PricePaid != serviceOffering.Price)
                 {
                     statusCode = 400;
                     msg = $"Passed price of {serviceOfferingOrderDto.PricePaid} does not match system price of {serviceOffering.Price}";
@@ -454,7 +436,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 }
 
                 // Validate the the promo end date
-                if ( _promoCodeService.ValidateEndDate(promoCode) == false )
+                if (_promoCodeService.ValidateEndDate(promoCode) == false)
                 {
                     statusCode = 400;
                     msg = $"Promo code {serviceOfferingOrderDto.PromoCode.PromoName} ended on {promoCode.PromoEndDate.ToShortDateString()}";
@@ -469,7 +451,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 // Find service offering promo code object 
                 List<ServiceOfferingPromoCode> serviceOfferingPromoCodes = _repositoryWrapper.ServiceOfferingPromoCodeRepository.GetByPromoCodesId(promoCode.PromoCodeId);
-                if (serviceOfferingPromoCodes.Count <= 0 )                    
+                if (serviceOfferingPromoCodes.Count <= 0)
                 {
                     statusCode = 400;
                     msg = $"Promo code {serviceOfferingOrderDto.PromoCode.PromoName} is not a valid for service offerings";
@@ -482,7 +464,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 bool isPromoValid = false;
                 foreach (ServiceOfferingPromoCode s in serviceOfferingPromoCodes)
                 {
-                    if ( s.ServiceOfferingId == -1 || s.ServiceOfferingId == serviceOffering.ServiceOfferingId)
+                    if (s.ServiceOfferingId == -1 || s.ServiceOfferingId == serviceOffering.ServiceOfferingId)
                     {
                         isPromoValid = true;
                         break;
@@ -499,7 +481,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 // Make sure the numbers add up 
                 decimal adjustedPrice = _promoCodeService.CalculatePrice(promoCode, serviceOffering.Price);
-                if ( adjustedPrice != serviceOfferingOrderDto.PricePaid)
+                if (adjustedPrice != serviceOfferingOrderDto.PricePaid)
                 {
                     statusCode = 400;
                     msg = $"The price paid {serviceOfferingOrderDto.PricePaid} does not match the calulated promo price of {adjustedPrice}";
@@ -508,14 +490,15 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
                 }
-           
+
             }
 
             _syslog.LogInformation("ServiceOfferingService.ValidateTransaction finished returning true");
             return true;
         }
-        
-        public async Task<ServiceOfferingOrderDto> GetSubscriberOrder(Guid ServiceOfferingOrderGuid){
+
+        public async Task<ServiceOfferingOrderDto> GetSubscriberOrder(Guid ServiceOfferingOrderGuid)
+        {
             ServiceOfferingOrder serviceOfferingOrder = await _repositoryWrapper.ServiceOfferingOrderRepository.GetByGuidAsync(ServiceOfferingOrderGuid);
             ServiceOfferingOrderDto serviceOfferingOrderDto = _mapper.Map<ServiceOfferingOrderDto>(serviceOfferingOrder);
             return serviceOfferingOrderDto;

@@ -218,7 +218,7 @@
                     @{ await Html.RenderPartialAsync("Partials/_JobResultsPartial", Model);}
 
                     <div class="row job-pagination container-align-center">
-                        @Html.PagedListPager(Model.JobsSearchResult, page => Url.Action("Index", new
+                        @Html.PagedListPager(Model.JobsSearchResult, page => Url.Action("Index", new 
                    { page,
                        keywords= Model.Keywords,
                        location= Model.Location,
@@ -228,9 +228,9 @@
                        jobcategory= ViewContext.HttpContext.Request.Query["jobcategory"],
                        industry= ViewContext.HttpContext.Request.Query["industry"],
                        companyname= ViewContext.HttpContext.Request.Query["companyname"]
-                   }),new X.PagedList.Mvc.Common.PagedListRenderOptionsBase() { Display=X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                       LiElementClasses = new string[] { "page-item" },
-                       PageClasses = new string[] { "page-link" },
+                   }),new X.PagedList.Mvc.Common.PagedListRenderOptions() { Display=X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                       LiElementClasses = new List<string> { "page-item" },
+                       PageClasses = new List<string> { "page-link" },
                        MaximumPageNumbersToDisplay=5,
                        DisplayLinkToFirstPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
                        DisplayLinkToLastPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
@@ -241,8 +241,8 @@
                        LinkToNextPageFormat = "»",
                        LinkToLastPageFormat = "»»",
                        DisplayEllipsesWhenNotShowingAllPageNumbers = true,
-                       ContainerDivClasses = new[] { "pagination-container" },
-                       UlElementClasses = new[] { "pagination" }
+                       ContainerDivClasses = new List<string> {  "pagination-container" },
+                       UlElementClasses = new List<string> { "pagination" }
                    })
                     </div>
                 </div>
@@ -305,7 +305,7 @@
                                     type:"GET",
                                     dataType:'json',
                                     data:{
-                                        keyword:request.term
+                                        value:request.term
                                     },
                                     error: function error(res) {
                                         console.log(res);
@@ -340,7 +340,7 @@
                                         type:"GET",
                                         dataType:'json',
                                         data:{
-                                            location:request.term
+                                            value:request.term
                                         },
                                         error: function error(res) {
                                             console.log(res);

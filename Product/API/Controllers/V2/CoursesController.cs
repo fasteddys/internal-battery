@@ -21,6 +21,8 @@ using System.Security.Claims;
 using Hangfire;
 using UpDiddyApi.Workflow;
 using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
 
 namespace UpDiddyApi.Controllers
 {
@@ -38,8 +40,11 @@ namespace UpDiddyApi.Controllers
         private readonly ISysEmail _sysemail;
         private readonly IDistributedCache _distributedCache;
         private readonly IHangfireService _hangfireService;
+        private readonly IRepositoryWrapper _repositoryWrapper;
+        private readonly ICourseService _courseService;
 
-        public CoursesController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, ILogger<CourseController> syslog, IDistributedCache distributedCache, IHangfireService hangfireService)
+
+        public CoursesController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, ILogger<CourseController> syslog, IDistributedCache distributedCache, IHangfireService hangfireService, IRepositoryWrapper repositoryWrapper, ICourseService courseService)
         {
             _db = db;
             _mapper = mapper;
@@ -50,15 +55,35 @@ namespace UpDiddyApi.Controllers
             _wozInterface = new WozInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
             _sysemail = sysemail;
             _distributedCache = distributedCache;
+            _repositoryWrapper = repositoryWrapper;
+            _courseService = courseService;
         }
 
 
-        
+
+        [HttpGet]
+        [Route("/V2/[controller]/random")]
+        public async Task<IActionResult> Random(Guid JobGuid)
+        {
+            return Ok(await _courseService.GetCoursesRandom(Request.Query));
+        }
+
+
+
         [HttpGet]
         [Route("/V2/[controller]/job/{JobGuid}/related")]
         public async Task<IActionResult> Search(Guid JobGuid)
         {
-            return Ok("Hello World!");
+            return Ok(await _courseService.GetCoursesForJob(JobGuid,Request.Query)  );
+        }
+
+
+
+        [HttpPost]
+        [Route("/V2/[controller]/skill/related")]
+        public async Task<IActionResult> SearchBySkills([FromBody] Dictionary<string,int> SkillHistogram)
+        {       
+           return Ok(await _courseService.GetCoursesBySkillHistogram(SkillHistogram, Request.Query));
         }
 
 

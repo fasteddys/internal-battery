@@ -37,6 +37,8 @@ using UpDiddyApi.ApplicationCore.Repository;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore.StaticFiles;
 using UpDiddyApi.ApplicationCore.Services.CourseCrawling;
+using UpDiddyApi.ApplicationCore.Services.Identity.Interfaces;
+using UpDiddyApi.ApplicationCore.Services.Identity;
 
 namespace UpDiddyApi
 {
@@ -195,26 +197,19 @@ namespace UpDiddyApi
 
             // remove TinyIds from old CampaignPartnerContact records
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DeactivateCampaignPartnerContacts(), Cron.Daily());
-
-            // Run this job once to initially get the keyword and location search
-            BackgroundJob.Enqueue<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo());
-
+           
             if (_currentEnvironment.IsProduction())
             {
                 // run the job crawl in production Monday through Friday once per day at 15:00 UTC
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), "0 15 * * Mon,Tue,Wed,Thu,Fri");
-                //Keyword and Location Search Intellisense Job
             }
 
             // run the process in staging once a week on the weekend (Sunday 4 UTC)
             if (_currentEnvironment.IsStaging())
             {
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.Weekly(DayOfWeek.Sunday, 4));
-                //Keyword and Location Search Intellisense Job
             }
-
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(), Cron.Hourly(55));
-
+            
             // LOCAL TESTING ONLY - DO NOT UNCOMMENT THIS CODE!
             // BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
 
@@ -261,6 +256,7 @@ namespace UpDiddyApi
             services.AddScoped<IServiceOfferingOrderService, ServiceOfferingOrderService>();
             services.AddScoped<IPromoCodeService, PromoCodeService>();
             services.AddScoped<IBraintreeService, BraintreeService>();
+            services.AddScoped<IUserService, UserService>();
 
             services.AddScoped<ICourseService, CourseService>();
             services.AddScoped<ICompanyService, CompanyService>();
@@ -279,6 +275,8 @@ namespace UpDiddyApi
             services.AddScoped<ICloudTalentService, CloudTalentService>();
 
 
+            services.AddScoped<IFileDownloadTrackerService, FileDownloadTrackerService>();
+            services.AddScoped<IJobAlertService, JobAlertService>();
             #endregion
 
             // Configure SnapshotCollector from application settings

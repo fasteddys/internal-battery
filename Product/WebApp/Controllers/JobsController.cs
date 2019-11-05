@@ -175,7 +175,7 @@ namespace UpDiddy.Controllers
 
         [HttpGet]
         [Route("job/{JobGuid}")]
-        public  async Task<bool> JobRedirect(Guid JobGuid)
+        public  async Task<IActionResult> JobRedirect(Guid JobGuid)
         {
 
             string url = string.Empty;
@@ -188,16 +188,18 @@ namespace UpDiddy.Controllers
                     url = job.SemanticJobPath;
                     string queryParams = Request.QueryString.ToString();
                     if (!string.IsNullOrEmpty(queryParams))
-                        url +=  queryParams;
+                        url += queryParams;
+                    return RedirectPermanent(url);
                 }
-                    
                 else
-                    return false;
+                {
+                    return RedirectPermanent("/jobs?JobExpired=" + JobGuid.ToString());
+                }
 
             }
             catch (ApiException e)
             {
-                return true;
+                return RedirectPermanent("/jobs?JobExpired=" + JobGuid.ToString()); 
             }
 
             //cookie the user with the source of the job detail Page view  
@@ -210,7 +212,7 @@ namespace UpDiddy.Controllers
             Response.StatusCode = 301;
             Response.Redirect(url,true);
 
-            return false;
+            return RedirectPermanent("/jobs?JobExpired=" + JobGuid.ToString());
         }
 
 
@@ -1628,18 +1630,30 @@ namespace UpDiddy.Controllers
         #region Keyword and location Search
         [HttpGet]
         [Route("[controller]/SearchKeyword")]
-        public async Task<IActionResult> KeywordSearch(string keyword)
+        public async Task<IActionResult> KeywordSearch(string value)
         {
-            var keywordSearchList = await _Api.GetKeywordSearchList(keyword);
-            return Ok(keywordSearchList);
+            var keywordSearchList = await _Api.GetKeywordSearchTermsAsync(value);
+
+            // consider modifying the front end to include the type information next to each intellisense result
+            // it will be easy to support this by returning the keywordSearchList instead of valuesOnly
+            // https://jqueryui.com/autocomplete/#categories
+            var valuesOnly = keywordSearchList.Select(k => k.Value).ToList();
+
+            return Ok(valuesOnly);
         }
 
         [HttpGet]
         [Route("[controller]/LocationKeyword")]
-        public async Task<IActionResult> LocationSearch(string location)
+        public async Task<IActionResult> LocationSearch(string value)
         {
-            var locationSearchList = await _Api.GetLocationSearchList(location);
-            return Ok(locationSearchList);
+            var locationSearchList = await _Api.GetLocationSearchTermsAsync(value);
+
+            // consider modifying the front end to include the type information next to each intellisense result
+            // it will be easy to support this by returning the locationSearchList instead of valuesOnly
+            // https://jqueryui.com/autocomplete/#categories
+            var valuesOnly = locationSearchList.Select(l => l.Value).ToList();
+
+            return Ok(valuesOnly);
         }
         #endregion
     }

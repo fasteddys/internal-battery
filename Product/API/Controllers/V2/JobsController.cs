@@ -76,16 +76,6 @@ namespace UpDiddyApi.Controllers
         #endregion
 
 
-        [HttpPost]
-        [Route("/V2/[controller]/{job}/share")]
-        public async Task<IActionResult> Share([FromBody] ShareJobDto shareJobDto, Guid job)
-        {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _jobService.ShareJob(subscriberGuid, job, shareJobDto);
-            return StatusCode(201);
-        }
-
-
         #region CloudTalentTracking
 
         [HttpPost]
@@ -99,8 +89,26 @@ namespace UpDiddyApi.Controllers
 
         #endregion
 
-
         #region Job Search
+
+        [HttpGet]
+        [Route("/V2/[controller]/search/{JobGuid}")]
+        public async Task<IActionResult> GetJob(Guid JobGuid)
+        {
+
+                JobDetailDto rVal = await _jobService.GetJobDetail(JobGuid);
+                return Ok(rVal);
+        }
+
+
+        [HttpPost]
+        [Route("/V2/[controller]/{job}/share")]
+        public async Task<IActionResult> Share([FromBody] ShareJobDto shareJobDto, Guid job)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _jobService.ShareJob(subscriberGuid, job, shareJobDto);
+            return StatusCode(201);
+        }
 
         [HttpGet]
         [Route("/V2/[controller]/search")]

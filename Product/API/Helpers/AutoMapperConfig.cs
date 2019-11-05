@@ -12,6 +12,9 @@ using CloudTalentSolution = Google.Apis.CloudTalentSolution.v3.Data;
 using UpDiddyLib.Helpers;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using UpDiddyApi.ApplicationCore.Services.Identity;
+using UpDiddyLib.Dto.User;
+using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.Helpers
 {
@@ -30,6 +33,16 @@ namespace UpDiddyApi.Helpers
     {
         public ApiProfile()
         {
+            CreateMap<User, CreateUserDto>()
+                .ForMember(cud => cud.FirstName, u => u.Ignore())
+                .ForMember(cud => cud.JobReferralCode, u => u.Ignore())
+                .ForMember(cud => cud.LastName, u => u.Ignore())
+                .ForMember(cud => cud.PartnerGuid, u => u.Ignore())
+                .ForMember(cud => cud.PhoneNumber, u => u.Ignore())
+                .ForMember(cud => cud.ReferrerUrl, u => u.Ignore())
+                .ForMember(cud => cud.SubscriberGuid, u => u.Ignore())
+                .ReverseMap();
+
             CreateMap<Topic, TopicDto>().ReverseMap();
             CreateMap<Vendor, VendorDto>().ReverseMap();
             CreateMap<Enrollment, EnrollmentDto>().ReverseMap();
@@ -90,6 +103,13 @@ namespace UpDiddyApi.Helpers
             CreateMap<JobPosting, JobPostingDto>()
                 .ForMember(x => x.MetaDescription, opt => opt.Ignore())
                 .ForMember(x => x.MetaTitle, opt => opt.Ignore())
+                .ReverseMap();
+
+
+
+
+            CreateMap<JobPosting, JobDetailDto>()
+                .ForMember(x => x.CommuteTime, opt => opt.Ignore())
                 .ReverseMap();
 
 

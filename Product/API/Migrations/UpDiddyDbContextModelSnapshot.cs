@@ -15,7 +15,7 @@ namespace UpDiddyApi.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
+                .HasAnnotation("ProductVersion", "2.2.3-servicing-35854")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -3244,6 +3244,9 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("Address");
 
+                    b.Property<string>("Auth0UserId")
+                        .HasMaxLength(100);
+
                     b.Property<string>("AvatarUrl");
 
                     b.Property<string>("City");
@@ -3279,9 +3282,12 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsDeleted");
 
-                    b.Property<bool>("IsVerified");
+                    b.Property<bool>("IsVerified")
+                        .HasColumnName("IsEmailVerifiedLegacy");
 
                     b.Property<string>("LastName");
+
+                    b.Property<DateTime?>("LastSignIn");
 
                     b.Property<string>("LinkedInAvatarUrl");
 
@@ -3837,6 +3843,51 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("SubscriberId");
 
                     b.ToTable("Traitify");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.TraitifyCourseTopicBlendMapping", b =>
+                {
+                    b.Property<int>("TraitifyCourseTopicBlendMappingId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("PersonalityTypeOne");
+
+                    b.Property<string>("PersonalityTypeTwo");
+
+                    b.Property<string>("TopicOneImgUrl");
+
+                    b.Property<string>("TopicOneName");
+
+                    b.Property<string>("TopicOneUrl");
+
+                    b.Property<string>("TopicThreeImgUrl");
+
+                    b.Property<string>("TopicThreeName");
+
+                    b.Property<string>("TopicThreeUrl");
+
+                    b.Property<string>("TopicTwoImgUrl");
+
+                    b.Property<string>("TopicTwoName");
+
+                    b.Property<string>("TopicTwoUrl");
+
+                    b.Property<Guid>("TraitifyCourseTopicBlendMappingGuid");
+
+                    b.HasKey("TraitifyCourseTopicBlendMappingId");
+
+                    b.ToTable("TraitifyBlendCourseTopicMapping");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Vendor", b =>

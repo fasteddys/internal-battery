@@ -45,7 +45,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 foreach (int sub in subscribers)
                 {
                     List<SubscriberAction> actions = todaysActions.Where(x => x.SubscriberId == sub).ToList();
-                    Subscriber subscriber = await _repositoryWrapper.Subscriber.GetSubscriberByIdAsync(sub);
+                    Subscriber subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByIdAsync(sub);
                     List<JobPosting> jobPostingList = new List<JobPosting>();
                     foreach (SubscriberAction action in actions)
                     {
@@ -78,7 +78,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             JobPosting jobPosting = await _repositoryWrapper.JobPosting.GetJobPostingByGuid(jobGuid);
             Models.Action action = await _repositoryWrapper.ActionRepository.GetByNameAsync(UpDiddyLib.Helpers.Constants.Action.ApplyJob);
             EntityType entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync(EntityTypeConst.JobPosting);
-            Subscriber subscriber = await _repositoryWrapper.Subscriber.GetSubscriberByGuidAsync(subscriberGuid);
+            Subscriber subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
             SubscriberAction subAction = new SubscriberAction()
             {
                 IsDeleted = 0,
@@ -113,7 +113,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             Models.Action action = await _repositoryWrapper.ActionRepository.GetByNameAsync(UpDiddyLib.Helpers.Constants.Action.DownloadGatedFile);
             EntityType entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync(EntityTypeConst.FileDownloadTracker);
-            Subscriber subscriber = await _repositoryWrapper.Subscriber.GetSubscriberByIdAsync(subscriberId);
+            Subscriber subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByIdAsync(subscriberId);
             SubscriberAction subAction = new SubscriberAction()
             {
                 IsDeleted = 0,
@@ -125,6 +125,27 @@ namespace UpDiddyApi.ApplicationCore.Services
                 SubscriberActionGuid = Guid.NewGuid(),
                 EntityType = entityType,
                 EntityId = fileDownloadTrackerId,
+                ModifyGuid = null,
+                OccurredDate = DateTime.UtcNow
+            };
+            await _repositoryWrapper.SubscriberActionRepository.Create(subAction);
+            await _repositoryWrapper.SubscriberActionRepository.SaveAsync();
+        }
+
+        public async Task TrackSubscriberAction(int subscriberId, Models.Action action, EntityType entityType, int entityId)
+        {
+            Subscriber subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByIdAsync(subscriberId);
+            SubscriberAction subAction = new SubscriberAction()
+            {
+                IsDeleted = 0,
+                CreateDate = DateTime.UtcNow,
+                ModifyDate = null,
+                Action = action,
+                CreateGuid = Guid.Empty,
+                Subscriber = subscriber,
+                SubscriberActionGuid = Guid.NewGuid(),
+                EntityType = entityType,
+                EntityId = entityId,
                 ModifyGuid = null,
                 OccurredDate = DateTime.UtcNow
             };

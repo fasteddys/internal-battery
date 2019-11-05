@@ -9,11 +9,17 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface IJobService
     {
+        Task<List<SearchTermDto>> GetKeywordSearchTermsAsync();
+        Task<List<SearchTermDto>> GetLocationSearchTermsAsync();
         Task ReferJobToFriend(JobReferralDto jobReferralDto);
         Task UpdateJobReferral(string referrerCode, string subscriberGuid);
         Task UpdateJobViewed(string referrerCode);
         Task<JobSearchResultDto> GetJobsByLocationAsync(string Country, string Province, string City, string Industry, string JobCategory, string Skill, int PageNum,IQueryCollection query);
-        JobSearchSummaryResultDto SummaryJobSearch(IQueryCollection query);
         Task ShareJob(Guid subscriber, Guid job, ShareJobDto shareJobDto);
+        JobSearchSummaryResultDto SummaryJobSearch(IQueryCollection query);
+
+        Task<UpDiddyLib.Dto.JobPostingDto> GetJob(Guid jobPostingGuid);
+
+        Task<JobDetailDto> GetJobDetail(Guid jobPostingGuid);
     }
 }

@@ -24,12 +24,11 @@ namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class SubscriberFactory
     {
-
         // Can we get rid of this function given the one below it?
         // JAB - It is being used by the resume parse methods.  Refactor rquired for removal
         public static async Task<Subscriber> GetSubscriberById(IRepositoryWrapper repositoryWrapper, int subscriberId)
         {
-            return await repositoryWrapper.Subscriber.GetAll()
+            return await repositoryWrapper.SubscriberRepository.GetAll()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
                 .FirstOrDefaultAsync();
         }
@@ -39,7 +38,29 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             return config["CareerCircle:ViewTalentUrl"] + subscriberGuid;
         }
+        
+        /// <summary>
+        /// Updates the subscriber to indicate the last time they signed in. We could add a computed column 
+        /// to infer whether or not they are verified based on this data, since users may not sign in without
+        /// verifying their email address via Auth0.
+        /// </summary>
+        /// <param name="_db"></param>
+        /// <param name="subscriberGuid"></param>
+        public static void UpdateLastSignIn(UpDiddyDbContext _db, Guid subscriberGuid)
+        {
+            Subscriber subscriber = _db.Subscriber
+                .Where(s => s.SubscriberGuid == subscriberGuid)
+                .FirstOrDefault();
 
+            if(subscriber != null)
+            {
+                var currentTime = DateTime.UtcNow;
+                subscriber.ModifyDate = currentTime;
+                subscriber.LastSignIn = currentTime;
+                subscriber.ModifyGuid = Guid.Empty;
+                _db.SaveChanges();
+            }
+        }
 
         public static async Task<SubscriberDto> GetSubscriber(IRepositoryWrapper repositoryWrapper, Guid subscriberGuid, ILogger _syslog, IMapper _mapper)
         {
@@ -50,7 +71,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
 
 
-            Subscriber subscriber = await repositoryWrapper.Subscriber.GetAll()
+            Subscriber subscriber = await repositoryWrapper.SubscriberRepository.GetAll()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
                 .Include(s => s.EmailVerification)
                 .Include(s => s.State).ThenInclude(c => c.Country)
@@ -111,14 +132,14 @@ namespace UpDiddyApi.ApplicationCore.Factory
         }
         public static async Task<Subscriber> GetSubscriberByGuid(IRepositoryWrapper repositoryWrapper, Guid subscriberGuid)
         {
-            return await repositoryWrapper.Subscriber.GetAll()
+            return await repositoryWrapper.SubscriberRepository.GetAll()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
                 .FirstOrDefaultAsync();
         }
 
         public static async Task<Subscriber> GetSubscriberProfileByGuid(IRepositoryWrapper repositoryWrapper, Guid subscriberGuid)
         {
-            Subscriber subscriber = await repositoryWrapper.Subscriber.GetAll()
+            Subscriber subscriber = await repositoryWrapper.SubscriberRepository.GetAll()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
                 .Include(s => s.SubscriberWorkHistory).ThenInclude(e => e.Company)
                 .Include(s => s.SubscriberEducationHistory).ThenInclude(i => i.EducationalInstitution)
@@ -126,12 +147,14 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Include(s => s.SubscriberEducationHistory).ThenInclude(i => i.EducationalDegreeType)
                 .Include(s => s.State)
                 .FirstOrDefaultAsync();
+
+
             return subscriber;
         }
 
         public static async Task<Subscriber> GetDeletedSubscriberProfileByGuid(IRepositoryWrapper repositoryWrapper, Guid subscriberGuid)
         {
-            Subscriber subscriber = await repositoryWrapper.Subscriber.GetAll()
+            Subscriber subscriber = await repositoryWrapper.SubscriberRepository.GetAll()
                 .Where(s => s.SubscriberGuid == subscriberGuid)
                 .Include(s => s.SubscriberWorkHistory).ThenInclude(e => e.Company)
                 .Include(s => s.SubscriberEducationHistory).ThenInclude(i => i.EducationalInstitution)
@@ -144,7 +167,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<Subscriber> GetSubscriberWithSubscriberFiles(IRepositoryWrapper repositoryWrapper, Guid subscriberGuid)
         {
-            return await repositoryWrapper.Subscriber.GetAll()
+            return await repositoryWrapper.SubscriberRepository.GetAll()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
                 .Include(s => s.SubscriberFile)
                 .FirstOrDefaultAsync();
@@ -163,7 +186,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
             subscriber.AvatarUrl = string.Empty;
             subscriber.ModifyDate = DateTime.Now;
-            repositoryWrapper.Subscriber.SaveAsync();
+            repositoryWrapper.SubscriberRepository.SaveAsync();
 
             return true;
 
@@ -194,7 +217,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             abs.UploadBlobAsync(blobFilePath, imageBytes).Wait();
             subscriber.AvatarUrl = blobFilePath;
             subscriber.ModifyDate = DateTime.Now;
-            repositoryWrapper.Subscriber.SaveAsync();
+            repositoryWrapper.SubscriberRepository.SaveAsync();
 
             return true;
         }
@@ -230,7 +253,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 msg = $"SubscriberFactory.ImportLinkedInImage: subsscriber {subscriberGuid} has an avatar that is too large";
 
             subscriber.LinkedInSyncDate = DateTime.Now;
-            repositoryWrapper.Subscriber.SaveAsync();
+            repositoryWrapper.SubscriberRepository.SaveAsync();
 
             return true;
         }
@@ -303,7 +326,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             SubscriberDto subscriber = await GetSubscriber(repositoryWrapper, SubscriberGuid, _syslog, _mapper);
             if (subscriber == null)
                 return false;
-            return Identity.IsAuthenticated && subscriber.IsVerified && subscriber.Files.Count > 0;
+            return Identity.IsAuthenticated && subscriber.Files.Count > 0;
         }
 
         #region Skills

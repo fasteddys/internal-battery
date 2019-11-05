@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -7,17 +7,25 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using UpDiddyApi.Authorization;
 using AutoMapper;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
+using System.IO;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Factory;
+using System.Data.SqlClient;
 using AutoMapper.QueryableExtensions;
+using System.Data;
+using System.Web;
+using UpDiddyLib.Dto.Marketing;
+using UpDiddyLib.Shared;
+using Hangfire;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
-
 namespace UpDiddyApi.Controllers
 {
     [Route("api/[controller]")]
@@ -28,19 +36,18 @@ namespace UpDiddyApi.Controllers
         private readonly IConfiguration _configuration;
         private readonly ILogger _syslog;
         private readonly IDistributedCache _cache;
-        private IB2CGraph _graphClient;
         private IAuthorizationService _authorizationService;
         private ICloudStorage _cloudStorage;
         private ISysEmail _sysEmail;
         private readonly IHangfireService _hangfireService;
         private readonly IRepositoryWrapper _repositoryWrapper;
 
+
         public OffersController(UpDiddyDbContext db,
             IMapper mapper,
             IConfiguration configuration,
             ILogger<SubscriberController> sysLog,
             IDistributedCache distributedCache,
-            IB2CGraph client,
             ICloudStorage cloudStorage,
             IAuthorizationService authorizationService,
             IDistributedCache cache,
@@ -52,7 +59,6 @@ namespace UpDiddyApi.Controllers
             _mapper = mapper;
             _configuration = configuration;
             _syslog = sysLog;
-            _graphClient = client;
             _cloudStorage = cloudStorage;
             _authorizationService = authorizationService;
             _sysEmail = sysEmail;
@@ -100,7 +106,7 @@ namespace UpDiddyApi.Controllers
             if (!isEligible)
                 return Unauthorized();
 
-            OfferDto offer = await _repositoryWrapper.Offer.GetAll()
+            OfferDto offer = await _db.Offer
                 .Where(s => s.IsDeleted == 0 && s.OfferGuid == OfferGuid)
                 .ProjectTo<OfferDto>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync();
@@ -118,16 +124,15 @@ namespace UpDiddyApi.Controllers
             Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repositoryWrapper, loggedInUserGuid);
             if (subscriber == null)
                 return Unauthorized();
-            
             var isEligible = await SubscriberFactory.IsEligibleForOffers(_repositoryWrapper, loggedInUserGuid, _syslog, _mapper, User.Identity);
             if (!isEligible)
                 return Unauthorized();
 
-            OfferDto offer = await _repositoryWrapper.Offer.GetAll()
+            OfferDto offer = _db.Offer
                 .Where(s => s.IsDeleted == 0 && s.OfferGuid == OfferGuid)
                 .Include(s => s.Partner)
                 .ProjectTo<OfferDto>(_mapper.ConfigurationProvider)
-                .FirstOrDefaultAsync();
+                .FirstOrDefault();
 
             if (offer == null)
                 return NotFound();

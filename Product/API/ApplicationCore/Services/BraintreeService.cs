@@ -37,7 +37,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly ICompanyService _companyService;
         private readonly IPromoCodeService _promoCodeService;
         private readonly ISubscriberService _subscriberService;
-        private IB2CGraph _graphClient;
         private IBraintreeConfiguration _braintreeConfiguration = null;
 
         public BraintreeService(IServiceProvider services, IHangfireService hangfireService, ICloudTalentService cloudTalentService)
@@ -55,7 +54,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             _promoCodeService = services.GetService<IPromoCodeService>();
             _subscriberService = services.GetService<ISubscriberService>();
             _hangfireService = hangfireService;
-            _graphClient = services.GetService<IB2CGraph>();
             _braintreeConfiguration = new BraintreeConfiguration(_configuration);
             _cloudTalentService = cloudTalentService;
         }

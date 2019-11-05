@@ -14,7 +14,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IJobApplicationRepository JobApplication { get; }
         ICompanyRepository Company { get; }
         IRecruiterActionRepository RecruiterActionRepository { get; }
-        ISubscriberRepository Subscriber { get; }
         IZeroBounceRepository ZeroBounceRepository { get; }
         IPartnerContactLeadStatusRepository PartnerContactLeadStatusRepository { get; }
         ISubscriberRepository SubscriberRepository { get; }
@@ -78,5 +77,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         ICompensationTypeRepository CompensationTypeRepository {get;}
         IRecruiterCompanyRepository RecruiterCompanyRepository {get;}
         Task SaveAsync();
+        ITraitifyCourseTopicBlendMappingRepository TraitifyCourseTopicBlendMappingRepository { get; }
     }
 }

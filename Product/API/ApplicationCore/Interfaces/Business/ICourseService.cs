@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,5 +13,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<int> AddCourseAsync(CourseDto courseDto);
         Task<int> EditCourseAsync(CourseDto courseDto);
         Task DeleteCourseAsync(Guid courseGuid);
+
+        Task<List<CourseDetailDto>> GetCoursesForJob(Guid jobGuid, IQueryCollection Query);
+        Task<List<CourseDetailDto>> GetCoursesBySkillHistogram(Dictionary<string, int> SkillHistogram, IQueryCollection query);
+        Task<List<CourseDetailDto>> GetCoursesRandom(IQueryCollection query);
     }
 }
