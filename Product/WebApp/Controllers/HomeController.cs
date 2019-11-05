@@ -43,8 +43,8 @@ namespace UpDiddy.Controllers
             IHostingEnvironment env,
             ISysEmail sysEmail,
             IMemoryCache memoryCache)
-            
-            : base(api,configuration)
+
+            : base(api, configuration)
         {
             _env = env;
             _sysEmail = sysEmail;
@@ -123,7 +123,6 @@ namespace UpDiddy.Controllers
             {
                 Offers = Offers,
                 UserIsAuthenticated = User.Identity.IsAuthenticated,
-                UserHasValidatedEmail = false,
                 UserHasUploadedResume = false,
                 UserIsEligibleForOffers = false,
                 CtaText = "Please <a href=\"/session/signup\">create a CareerCircle account</a>, verify the email associated with the account, and upload your resume to gain access to offers. Feel free to <a href=\"/Home/Contact\">contact us</a> at any time if you're experiencing issues, or have any questions."
@@ -131,12 +130,9 @@ namespace UpDiddy.Controllers
 
             if (User.Identity.IsAuthenticated)
             {
-                OffersViewModel.UserHasValidatedEmail = this.subscriber.IsEmailVerified;
                 OffersViewModel.UserHasUploadedResume = this.subscriber.Files.Count > 0;
-                OffersViewModel.UserIsEligibleForOffers = OffersViewModel.UserIsAuthenticated &&
-                    OffersViewModel.UserHasValidatedEmail &&
-                    OffersViewModel.UserHasUploadedResume;
-                
+                OffersViewModel.UserIsEligibleForOffers = OffersViewModel.UserIsAuthenticated && OffersViewModel.UserHasUploadedResume;
+
                 if (!OffersViewModel.UserHasUploadedResume)
                     OffersViewModel.StepsRequired.Add("Upload your resume (located at the top of your <a href=\"/Home/Profile\">profile</a>) to your CareerCircle account.");
 
@@ -397,7 +393,7 @@ namespace UpDiddy.Controllers
                 return RedirectToAction("Profile");
             }
         }
-        
+
         [HttpGet]
         public IActionResult MessageReceived()
         {
@@ -456,7 +452,7 @@ namespace UpDiddy.Controllers
              * the code below solves for this by adding the referenced file's last modified timestamp as a hash code to the query 
              * string for all static files referenced.
              */
-                ViewData["BlueBg"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\images\blue_background_login.jpg").GetHashCode());
+            ViewData["BlueBg"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\images\blue_background_login.jpg").GetHashCode());
             ViewData["Bootstrap"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\lib\boostrap\css\bootstrap.min.css").GetHashCode());
             ViewData["Bundle"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\css\Bundle.css").GetHashCode());
             ViewData["FontAwesome"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\lib\font-awesome\css\all.min.css").GetHashCode());
