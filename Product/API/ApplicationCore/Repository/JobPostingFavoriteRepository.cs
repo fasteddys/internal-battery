@@ -10,15 +10,18 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Helpers;
 using UpDiddyLib.Domain.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
     public class JobPostingFavoriteRepository : UpDiddyRepositoryBase<JobPostingFavorite>, IJobPostingFavoriteRepository
     {
         private readonly UpDiddyDbContext _dbContext;
-        public JobPostingFavoriteRepository(UpDiddyDbContext dbContext) : base(dbContext)
+        private readonly IConfiguration _configuration;
+        public JobPostingFavoriteRepository(UpDiddyDbContext dbContext, IConfiguration configuration) : base(dbContext)
         {
             _dbContext = dbContext;
+            _configuration = configuration;
         }
 
         public async Task<List<JobDto>> GetSubscriberJobFavorites(int SubscriberId)
@@ -59,11 +62,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
                               PostingDateUTC = jp.PostingDateUTC,
                               ExpirationDateUTC = jp.PostingExpirationDateUTC,
                               HasApplied = ja == null ? false : true,
-                              CompanyLogoUrl = c.LogoUrl,
                               CompanyName = c.CompanyName,
                               Title = jp.Title,
                               City = jp.City,
                               Province = jp.Province,
+                              CompanyLogoUrl = _configuration["StorageAccount:AssetBaseUrl"] + "Company/" + c.LogoUrl,
                               SemanticJobPath = Utils.CreateSemanticJobPath(
                                                 jp.Industry == null ? null : jp.Industry.Name,
                                                 jp.JobCategory == null ? null : jp.JobCategory.Name,

@@ -7,7 +7,6 @@ using UpDiddyApi.Models;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using System.Collections.Generic;
 using UpDiddyLib.Domain.Models;
-
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class JobFavoriteService : IJobFavoriteService

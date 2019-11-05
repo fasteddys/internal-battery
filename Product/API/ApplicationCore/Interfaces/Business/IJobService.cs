@@ -16,7 +16,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task UpdateJobViewed(string referrerCode);
         Task<JobSearchResultDto> GetJobsByLocationAsync(string Country, string Province, string City, string Industry, string JobCategory, string Skill, int PageNum,IQueryCollection query);
         Task ShareJob(Guid subscriber, Guid job, ShareJobDto shareJobDto);
-        JobSearchSummaryResultDto SummaryJobSearch(IQueryCollection query);
+        Task<JobSearchSummaryResultDto> SummaryJobSearch(IQueryCollection query);
 
         Task<UpDiddyLib.Dto.JobPostingDto> GetJob(Guid jobPostingGuid);
 

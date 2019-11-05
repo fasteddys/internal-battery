@@ -64,6 +64,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuidWithRelatedObjectsAsync(_repositoryWrapper, jobPostingGuid);
             if (jobPosting == null)
                 throw new NotFoundException();
+            if (jobPosting.IsDeleted == 1)
+                throw new ExpiredJobException();
 
             JobDetailDto rVal = _mapper.Map<JobDetailDto>(jobPosting);
             return rVal;
@@ -77,6 +79,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuidWithRelatedObjectsAsync(_repositoryWrapper, jobPostingGuid);
             if (jobPosting == null)
                 throw new NotFoundException();
+            if (jobPosting.IsDeleted == 1)
+                throw new ExpiredJobException();
             UpDiddyLib.Dto.JobPostingDto rVal = _mapper.Map<UpDiddyLib.Dto.JobPostingDto>(jobPosting);
 
             // set meta data for seo
@@ -117,7 +121,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-        public JobSearchSummaryResultDto SummaryJobSearch(IQueryCollection query)
+        public async Task<JobSearchSummaryResultDto> SummaryJobSearch(IQueryCollection query)
         {
 
             string cacheKey = Utils.QueryParamsToCacheKey(query);
@@ -127,6 +131,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
                 JobQueryDto jobQuery = JobQueryHelper.CreateSummaryJobQuery(PageSize, query);
                 rVal = _cloudTalentService.JobSummarySearch(jobQuery);
+                  await AssignCompanyLogoUrlToJobs(rVal.Jobs);
                 _cache.SetCacheValue<JobSearchSummaryResultDto>(cacheKey, rVal);
 
             }
@@ -266,6 +271,18 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
             return jobSearchResult;
+        }
+
+        private async Task AssignCompanyLogoUrlToJobs(List<JobSummaryViewDto> jobs)
+        {
+            var companies = await _companyService.GetCompaniesAsync();
+            foreach (var job in jobs)
+            {
+                var company = companies.Where(x => x.CompanyName == job.CompanyName).FirstOrDefault();
+
+                if (!string.IsNullOrWhiteSpace(company?.LogoUrl))
+                    job.CompanyLogoUrl = _configuration["StorageAccount:AssetBaseUrl"] + "Company/" + company.LogoUrl;
+            }
         }
 
         private async Task AssignCompanyLogoUrlToJobs(List<JobViewDto> jobs)

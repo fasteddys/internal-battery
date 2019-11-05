@@ -1030,6 +1030,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             rval.SearchTimeInMilliseconds = intervalTotalSearch.TotalMilliseconds;
             rval.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
             rval.SearchMappingTimeInTicks = intervalMapTime.Ticks;
+            
             return rval;
         }
 

@@ -132,7 +132,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 try
                 {
                     SubscriberFile resume = await _AddResumeAsync(subscriber, resumeDoc.FileName, resumeDoc.OpenReadStream(), resumeDoc.ContentType);
-                    await _db.SaveChangesAsync();
+                    await _repositoryWrapper.SubscriberFileRepository.Create(resume);
+                    await _repositoryWrapper.SaveAsync();
                     transaction.Commit();
 
                     if (parseResume)
@@ -156,7 +157,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             try
             {
                 // create the user in the CareerCircle database
-                _repository.SubscriberRepository.Create(new Subscriber()
+                await _repository.SubscriberRepository.Create(new Subscriber()
                 {
                     SubscriberGuid = createUserDto.SubscriberGuid,
                     Auth0UserId = createUserDto.Auth0UserId,

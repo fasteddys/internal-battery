@@ -312,7 +312,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Include(c => c.JobCategory)
                 .Include(c => c.Recruiter.Subscriber)
                 .Include(c => c.JobPostingSkills).ThenInclude(ss => ss.Skill)
-                .Where(s => s.IsDeleted == 0 && s.JobPostingGuid == guid)
+                .Where(s => s.JobPostingGuid == guid)
                 .FirstOrDefaultAsync();
         }
 

@@ -167,7 +167,7 @@ public class SubscriberController : Controller
 
     [Authorize(Policy = "IsCareerCircleAdmin")]
     [HttpDelete("{subscriberGuid}/{cloudIdentifier}")]
-    public IActionResult DeleteSubscriber(Guid subscriberGuid, Guid cloudIdentifier)
+    public async Task<IActionResult> DeleteSubscriber(Guid subscriberGuid, Guid cloudIdentifier)
     {
         try
         {
@@ -180,13 +180,14 @@ public class SubscriberController : Controller
 
             // delete the Auth0 account associated with the subscriber
             var getUserResponse = _userService.GetUserByEmailAsync(subscriber.Email).Result;
-            _userService.DeleteUserAsync(getUserResponse.User.UserId);
+            await _userService.DeleteUserAsync(getUserResponse.User.UserId);
 
             // perform logical delete on the subscriber entity only
             subscriber.IsDeleted = 1;
             subscriber.ModifyDate = DateTime.UtcNow;
             subscriber.ModifyGuid = Guid.Empty;
-            _db.SaveChanges();
+            _repositoryWrapper.SubscriberRepository.Update(subscriber);
+            await _repositoryWrapper.SaveAsync();
 
             // write audit information to the database
             var deleteUserAuditInformation = new JObject();
@@ -372,8 +373,8 @@ public class SubscriberController : Controller
             CompanyId = companyId
         };
 
-        _db.SubscriberWorkHistory.Add(WorkHistory);
-        _db.SaveChanges();
+        await _repositoryWrapper.SubscriberWorkHistoryRepository.Create(WorkHistory);
+        await _repositoryWrapper.SaveAsync();
 
         // update google profile 
         _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
@@ -398,7 +399,7 @@ public class SubscriberController : Controller
             return Unauthorized();
 
         Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repositoryWrapper, subscriberGuid);
-        Company company = CompanyFactory.GetOrAdd(_repositoryWrapper, WorkHistoryDto.Company).Result;
+        Company company = await CompanyFactory.GetOrAdd(_repositoryWrapper, WorkHistoryDto.Company);
         int companyId = company != null ? company.CompanyId : -1;
         CompensationType compensationType = await CompensationTypeFactory.GetCompensationTypeByName(_repositoryWrapper, WorkHistoryDto.CompensationType);
         int compensationTypeId = 0;
@@ -427,7 +428,9 @@ public class SubscriberController : Controller
         WorkHistory.IsCurrent = WorkHistoryDto.IsCurrent;
         WorkHistory.Compensation = WorkHistoryDto.Compensation;
         WorkHistory.CompensationTypeId = compensationTypeId;
-        _db.SaveChanges();
+        WorkHistory.Company = company;
+        _repositoryWrapper.SubscriberWorkHistoryRepository.Update(WorkHistory);
+        await _repositoryWrapper.SaveAsync();
 
         // update google profile 
         _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
@@ -451,7 +454,8 @@ public class SubscriberController : Controller
             return BadRequest();
         // Soft delete of the workhistory item
         WorkHistory.IsDeleted = 1;
-        _db.SaveChanges();
+         _repositoryWrapper.SubscriberWorkHistoryRepository.Update(WorkHistory);
+        await _repositoryWrapper.SaveAsync();
 
         return Ok(_mapper.Map<SubscriberWorkHistoryDto>(WorkHistory));
     }
@@ -473,7 +477,7 @@ public class SubscriberController : Controller
         if (subscriber == null)
             return BadRequest();
 
-        var educationHistory = _repositoryWrapper.SubscriberEducationHistoryRepository.GetAll()
+        var educationHistory = await _repositoryWrapper.SubscriberEducationHistoryRepository.GetAll()
         .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriber.SubscriberId)
         .OrderByDescending(s => s.StartDate)
         .Select(eh => new SubscriberEducationHistory()
@@ -613,18 +617,17 @@ public class SubscriberController : Controller
         if (EducationHistory == null || EducationHistory.SubscriberId != subscriber.SubscriberId)
             return BadRequest();
         // Find or create the institution 
-        EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(_repositoryWrapper, EducationHistoryDto.EducationalInstitution).Result;
+        EducationalInstitution educationalInstitution = await EducationalInstitutionFactory.GetOrAdd(_repositoryWrapper, EducationHistoryDto.EducationalInstitution);
         int educationalInstitutionId = educationalInstitution.EducationalInstitutionId;
         // Find or create the degree major 
-        EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(_repositoryWrapper, EducationHistoryDto.EducationalDegree).Result;
+        EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(_repositoryWrapper, EducationHistoryDto.EducationalDegree);
         int educationalDegreeId = educationalDegree.EducationalDegreeId;
         // Find or create the degree type 
         EducationalDegreeType educationalDegreeType = await EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_repositoryWrapper, EducationHistoryDto.EducationalDegreeType);
         int educationalDegreeTypeId = 0;
         if (educationalDegreeType == null)
-            educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_repositoryWrapper, Constants.NotSpecifedOption).Result;
+            educationalDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(_repositoryWrapper, Constants.NotSpecifedOption);
         educationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
-
         EducationHistory.ModifyDate = DateTime.UtcNow;
         EducationHistory.StartDate = EducationHistoryDto.StartDate;
         EducationHistory.EndDate = EducationHistoryDto.EndDate;
@@ -632,6 +635,10 @@ public class SubscriberController : Controller
         EducationHistory.EducationalDegreeId = educationalDegreeId;
         EducationHistory.EducationalDegreeTypeId = educationalDegreeTypeId;
         EducationHistory.EducationalInstitutionId = educationalInstitutionId;
+        EducationHistory.EducationalDegree = educationalDegree;
+        EducationHistory.EducationalDegreeType = educationalDegreeType;
+        EducationHistory.EducationalInstitution = educationalInstitution;
+        _repositoryWrapper.SubscriberEducationHistoryRepository.Update(EducationHistory);
         await _repositoryWrapper.SaveAsync();
 
         // update google profile 
@@ -656,6 +663,7 @@ public class SubscriberController : Controller
             return BadRequest();
         // Soft delete of the workhistory item
         EducationHistory.IsDeleted = 1;
+        _repositoryWrapper.SubscriberEducationHistoryRepository.Update(EducationHistory);
         await _repositoryWrapper.SaveAsync();
 
         return Ok(_mapper.Map<SubscriberEducationHistory>(EducationHistory));
@@ -827,8 +835,8 @@ public class SubscriberController : Controller
             return BadRequest();
 
         file.IsDeleted = 1;
-        _db.SubscriberFile.Update(file);
-        await _db.SaveChangesAsync();
+        _repositoryWrapper.SubscriberFileRepository.Update(file);
+        await _repositoryWrapper.SaveAsync();
 
         return Ok();
     }

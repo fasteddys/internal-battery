@@ -1,6 +1,7 @@
 ﻿using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -83,10 +84,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IRecruiterCompanyRepository _recruiterCompanyRepository;
         private ITraitifyCourseTopicBlendMappingRepository _traitifyCourseTopicBlendMappingRepository;
 
-
-        public RepositoryWrapper(UpDiddyDbContext dbContext)
+        private readonly IConfiguration _configuration;
+        public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
+            _configuration = configuration;
         }
 
         public ICountryRepository Country
@@ -167,7 +169,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             {
                 if (_jobPostingFavoriteRepository == null)
                 {
-                    _jobPostingFavoriteRepository = new JobPostingFavoriteRepository(_dbContext);
+                    _jobPostingFavoriteRepository = new JobPostingFavoriteRepository(_dbContext, _configuration);
                 }
                 return _jobPostingFavoriteRepository;
             }
