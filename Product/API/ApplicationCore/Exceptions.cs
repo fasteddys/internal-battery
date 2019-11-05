@@ -31,4 +31,15 @@ namespace UpDiddyApi.ApplicationCore.Exceptions
         public AlreadyExistsException(string message, Exception innerException)
         : base(message, innerException) { }
     }
+
+    public class ExpiredJobException : Exception
+    {
+        public ExpiredJobException() : base() { }
+        public ExpiredJobException(string message) : base(message)
+        {
+
+        }
+        public ExpiredJobException(string message, Exception innerException)
+        : base(message, innerException) { }
+    }
 }

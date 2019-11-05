@@ -41,6 +41,10 @@ public class ExceptionMiddleware
         {
             await CreateResponse(400, ex, context);
         }
+        catch (ExpiredJobException ex)
+        {
+            await CreateResponse(410, ex, context);
+        }
         catch (Exception ex)
         {
             await CreateResponse(400, ex, context);

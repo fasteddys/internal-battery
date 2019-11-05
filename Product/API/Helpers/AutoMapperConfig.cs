@@ -100,7 +100,7 @@ namespace UpDiddyApi.Helpers
                .ForAllOtherMembers(opts => opts.Ignore());
 
 
-            CreateMap<JobPosting, JobPostingDto>()
+            CreateMap<JobPosting, UpDiddyLib.Dto.JobPostingDto>()
                 .ForMember(x => x.MetaDescription, opt => opt.Ignore())
                 .ForMember(x => x.MetaTitle, opt => opt.Ignore())
                 .ReverseMap();

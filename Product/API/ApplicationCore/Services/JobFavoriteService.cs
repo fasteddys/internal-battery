@@ -23,7 +23,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 throw new NotFoundException("Job does not exist");
             }
-            Subscriber subsciberEntity = await _repositoryWrapper.Subscriber.GetSubscriberByGuidAsync(subscriberGuid);
+            Subscriber subsciberEntity = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
             JobPostingFavorite jobPostingFavorite = await _repositoryWrapper.JobPostingFavorite.GetBySubscriberAndJobPostingGuid(subscriberGuid, jobPostingGuid);
             if (jobPostingFavorite == null)
             {

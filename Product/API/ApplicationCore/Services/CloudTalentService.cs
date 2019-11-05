@@ -214,7 +214,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     subscriber.CloudTalentIndexInfo = "Indexed on " + Utils.ISO8601DateString(DateTime.Now);
                     subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.Indexed;
                     step = 4;
-                    await _repositoryWrapper.Subscriber.SaveAsync();
+                    await _repositoryWrapper.SubscriberRepository.SaveAsync();
 
                     return true;
                 }
@@ -227,7 +227,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // Update job posting with index error
                 subscriber.CloudTalentIndexInfo = Utils.ISO8601DateString(DateTime.Now) + ": " + e.Message + " Step = " + step;
                 subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.IndexError;
-                 await _repositoryWrapper.Subscriber.SaveAsync();
+                 await _repositoryWrapper.SubscriberRepository.SaveAsync();
                 _syslog.LogError(e, $"CloudTalent.IndexProfile Error: {e.Message} at step {step} ", e, subscriber);
                 return false;
             }
@@ -245,7 +245,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     subscriber.CloudTalentIndexInfo = "ReIndexed on " + Utils.ISO8601DateString(DateTime.Now);
                     subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.Indexed;
-                    await _repositoryWrapper.Subscriber.SaveAsync();
+                    await _repositoryWrapper.SubscriberRepository.SaveAsync();
                 }
                 else
                     throw new Exception(errorMsg);
@@ -257,7 +257,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // Update job posting with index error
                 subscriber.CloudTalentIndexInfo = Utils.ISO8601DateString(DateTime.Now) + ": " + e.Message;
                 subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.IndexError;
-                 await _repositoryWrapper.Subscriber.SaveAsync();
+                 await _repositoryWrapper.SubscriberRepository.SaveAsync();
                 _syslog.LogError(e, "CloudTalent.ReIndexProfile Error", e, subscriber);
                 throw e;
             }
