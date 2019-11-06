@@ -512,10 +512,9 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
             foreach (SubscriberEducationHistoryDto eh in educationHistoryList)
             {
-                EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(repositoryWrapper, eh.EducationalInstitution).Result;
-                EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(repositoryWrapper, eh.EducationalDegree).Result;
-                EducationalDegreeType educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(repositoryWrapper, eh.EducationalDegreeType).Result;
-
+                EducationalInstitution educationalInstitution = await EducationalInstitutionFactory.GetOrAdd(repositoryWrapper, eh.EducationalInstitution);
+                EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(repositoryWrapper, eh.EducationalDegree);
+                EducationalDegreeType educationalDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(repositoryWrapper, eh.EducationalDegreeType);
                 SubscriberEducationHistory educationHistory = await SubscriberEducationHistoryFactory.GetEducationHistoryForSubscriber(repositoryWrapper, subscriber, educationalInstitution, educationalDegree, eh.StartDate, eh.EndDate, eh.DegreeDate);
                 if (educationHistory == null)
                     await SubscriberEducationHistoryFactory.AddEducationHistoryForSubscriber(repositoryWrapper, subscriber, eh, educationalInstitution, educationalDegree, educationalDegreeType);

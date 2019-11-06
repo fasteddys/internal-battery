@@ -76,16 +76,16 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (subscriber == null)
                 throw new NotFoundException($"Subscriber {subscriberGuid} does not exist");
             // Find or create the institution 
-            EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(_repository, EducationHistoryDto.EducationalInstitution).Result;
+            EducationalInstitution educationalInstitution = await EducationalInstitutionFactory.GetOrAdd(_repository, EducationHistoryDto.EducationalInstitution);
             int educationalInstitutionId = educationalInstitution.EducationalInstitutionId;
             // Find or create the degree major 
-            EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(_repository, EducationHistoryDto.EducationalDegree).Result;
+            EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(_repository, EducationHistoryDto.EducationalDegree);
             int educationalDegreeId = educationalDegree.EducationalDegreeId;
             // Find or create the degree type 
             EducationalDegreeType educationalDegreeType = await EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_repository, EducationHistoryDto.EducationalDegreeType);
             int educationalDegreeTypeId = 0;
             if (educationalDegreeType == null)
-                educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_repository, UpDiddyLib.Helpers.Constants.NotSpecifedOption).Result;
+                educationalDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(_repository, UpDiddyLib.Helpers.Constants.NotSpecifedOption);
             educationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
 
             SubscriberEducationHistory EducationHistory = new SubscriberEducationHistory()
