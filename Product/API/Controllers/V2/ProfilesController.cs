@@ -16,13 +16,14 @@ using Microsoft.AspNetCore.Http;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyLib.Domain.Models;
 using UpDiddyApi.ApplicationCore.Exceptions;
-namespace UpDiddyApi.Controllers
+using UpDiddyLib.Dto.Marketing;
+
+namespace UpDiddyApi.Controllers.V2
 {
-
+    [Route("api/[controller]")]
     [ApiController]
-    public class JobsController : ControllerBase
+    public class ProfilesController : ControllerBase
     {
-
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
@@ -35,13 +36,14 @@ namespace UpDiddyApi.Controllers
         private readonly IJobService _jobService;
         private readonly IHangfireService _hangfireService;
         private readonly ISubscriberService _subscriberService;
+        private readonly ISubscriberEducationalHistoryService _subscriberEducationalHistoryService;
         private readonly IJobPostingService _jobPostingService;
         private readonly IJobAlertService _jobAlertService;
-        private readonly IJobApplicationService _jobApplicationService;
+
 
         #region constructor 
-        public JobsController(IServiceProvider services, IHangfireService hangfireService)
- 
+        public ProfilesController(IServiceProvider services, IHangfireService hangfireService)
+
 
         {
             _services = services;
@@ -53,124 +55,68 @@ namespace UpDiddyApi.Controllers
             _httpClientFactory = _services.GetService<IHttpClientFactory>();
             _repositoryWrapper = _services.GetService<IRepositoryWrapper>();
             _subscriberService = _services.GetService<ISubscriberService>();
-            _jobApplicationService = _services.GetService<IJobApplicationService>();
+            _subscriberEducationalHistoryService = _services.GetService<ISubscriberEducationalHistoryService>();
             _postingTTL = int.Parse(_configuration["JobPosting:PostingTTLInDays"]);
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
-
             //job Service to perform all business logic related to jobs
             _jobService = _services.GetService<IJobService>();
             _jobPostingService = _services.GetService<IJobPostingService>();
             _hangfireService = hangfireService;
-     
         }
 
         #endregion
 
 
-        #region Job Applications
+ 
+
 
 
         [HttpPost]
-        [Route("/V2/[controller]/{JobGuid}/applications")]
         [Authorize]
-        public async Task<IActionResult> CreateJobApplication([FromBody] ApplicationDto jobApplicationDto, Guid JobGuid)
+        [Route("/V2/[controller]/education-histories")]
+        public async Task<IActionResult> AddProfileEducationHistory([FromBody] SubscriberEducationHistoryDto subscriberEducationHistoryDto)
         {
-
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _jobApplicationService.CreateJobApplication(subscriberGuid, JobGuid, jobApplicationDto);
+            await _subscriberEducationalHistoryService.CreateEducationalHistory(subscriberEducationHistoryDto,subscriberGuid);
             return StatusCode(201);
         }
 
 
-        #endregion
-
-
-
-        #region Job Browse 
-
-
-        [HttpGet]
-        [Route("/V2/[controller]/browse-location")]
-        public async Task<IActionResult> BrowseJobsByLocation()
-        {
-            JobBrowseResultDto rVal = null;
-            rVal = await _jobService.BrowseJobsByLocation(Request.Query);
-            return Ok(rVal);
-        }
-
-        #endregion
-
-        #region Job Search
-        [HttpGet]
-        [Route("/V2/[controller]/search/{JobGuid}")]
-        public async Task<IActionResult> GetJob(Guid JobGuid)
-        {          
-            JobDetailDto rVal = await _jobService.GetJobDetail(JobGuid);
-            return Ok(rVal);
-       
-        }
-
-
-        [HttpGet]
-        [Route("/V2/[controller]/search")]
-        public async Task<IActionResult> SearchJobs()
-        {
-            JobSearchSummaryResultDto rVal = null;
-            rVal = await _jobService.SummaryJobSearch(Request.Query);
-            return Ok(rVal);
-        }
-
-
-        [HttpPost]
-        [Route("/V2/[controller]/{job}/share")]
-        public async Task<IActionResult> Share([FromBody] ShareJobDto shareJobDto, Guid job)
-        {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _jobService.ShareJob(subscriberGuid, job, shareJobDto);
-            return StatusCode(201);
-        }
-
-
-        #endregion
-
-        #region Job Alert
-
-        [HttpPost]
-        [Route("/V2/[controller]/alert")]
+        [HttpPut]
         [Authorize]
-        public async Task<IActionResult> CreateJobAlert([FromBody] JobAlertDto jobPostingAlertDto)
+        [Route("/V2/[controller]/education-histories/{educationalHistoryGuid}")]
+        public async Task<IActionResult> UpdateProfileEducationHistory([FromBody] SubscriberEducationHistoryDto subscriberEducationHistoryDto, Guid educationalHistoryGuid)
         {
-
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _jobAlertService.CreateJobAlert(subscriberGuid, jobPostingAlertDto);
-            return StatusCode(201);
+            await _subscriberEducationalHistoryService.UpdateEducationalHistory(subscriberEducationHistoryDto, subscriberGuid, educationalHistoryGuid);
+            return StatusCode(200);
         }
 
-        [HttpGet]
-        [Route("/V2/[controller]/alert")]
-        [Authorize]
-        public async Task<IActionResult> GetJobAlerts()
-        {
-
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var jobAlerts = await _jobAlertService.GetJobAlert(subscriberGuid);
-            return Ok(jobAlerts);
-        }
 
         [HttpDelete]
-        [Route("/V2/[controller]/alert/{jobAlert}")]
         [Authorize]
-        public async Task<IActionResult> DeleteJobAlert(Guid jobAlert)
+        [Route("/V2/[controller]/education-histories/{educationalHistoryGuid}")]
+        public async Task<IActionResult> DeleteProfileEducationHistory(Guid educationalHistoryGuid)
         {
-
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _jobAlertService.DeleteJobAlert(subscriberGuid, jobAlert);
-            return StatusCode(204);
+            await _subscriberEducationalHistoryService.DeleteEducationalHistory(subscriberGuid, educationalHistoryGuid);
+            return StatusCode(200);
         }
 
-        #endregion
+
+
+        [HttpGet]
+        [Authorize]
+        [Route("/V2/[controller]/education-histories")]
+        public async Task<IActionResult> GetProfileEducationHistory(Guid educationalHistoryGuid)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var rVal = await _subscriberEducationalHistoryService.GetEducationalHistory(subscriberGuid);
+            return Ok(rVal);
+        }
+
 
 
 
     }
-}
+} 

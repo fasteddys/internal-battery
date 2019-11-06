@@ -61,5 +61,14 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Where(s => s.IsDeleted == 0 && s.DegreeType == degreeType)
                 .FirstOrDefault();
         }
+
+
+        public static async Task<EducationalDegreeType> GetEducationalDegreeTypeByDegreeTypeAsync(UpDiddyDbContext db, string degreeType)
+        {
+            return db.EducationalDegreeType
+                .Where(s => s.IsDeleted == 0 && s.DegreeType == degreeType)
+                .FirstOrDefault();
+        }
+
     }
 }
