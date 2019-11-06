@@ -137,6 +137,7 @@ namespace UpDiddyApi.Controllers
 
         [HttpPost]
         [Route("/V2/[controller]/{job}/share")]
+        [Authorize]
         public async Task<IActionResult> Share([FromBody] ShareJobDto shareJobDto, Guid job)
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);

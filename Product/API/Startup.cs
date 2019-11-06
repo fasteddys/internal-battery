@@ -277,6 +277,7 @@ namespace UpDiddyApi
             services.AddScoped<IJobAlertService, JobAlertService>();
             services.AddScoped<IJobSearchService, JobSearchService>();
             services.AddScoped<ICloudTalentService, CloudTalentService>();
+            services.AddScoped<ISkillService, SkillService>();
 
 
             services.AddScoped<IFileDownloadTrackerService, FileDownloadTrackerService>();

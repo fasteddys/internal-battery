@@ -10,5 +10,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     {
         IQueryable<Skill> GetAllSkillsQueryable();
         Task<List<Skill>> GetAllSkillsForJobPostings();
+        Task<List<Skill>> GetBySubscriberGuid(Guid subscriberGuid);
     }
 }
