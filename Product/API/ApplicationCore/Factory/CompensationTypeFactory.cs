@@ -45,6 +45,16 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .FirstOrDefaultAsync();
         }
 
+
+        public static async Task<CompensationType> GetCompensationTypeByNameAsync(IRepositoryWrapper repositoryWrapper, string CompensationTypeName)
+        {
+            return repositoryWrapper.CompensationTypeRepository.GetAllWithTracking()
+                .Where(s => s.IsDeleted == 0 && s.CompensationTypeName == CompensationTypeName)
+                .FirstOrDefault();
+        }
+
+
+
         static public CompensationType CreateCompensationType(string CompensationTypeName)
         {
             CompensationType rVal = new CompensationType();

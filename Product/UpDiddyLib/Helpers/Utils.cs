@@ -21,11 +21,35 @@ namespace UpDiddyLib.Helpers
     static public class Utils
     {
 
-        public static string QueryParamsToCacheKey( IQueryCollection query)
+
+        public static int GetIntQueryParam(IQueryCollection queryInfo, string ParamName, int defaultValue = 0)
+        {
+            int rVal = defaultValue;
+            // first check to see if the param was specified in the query string.  Highest priority 
+            if (queryInfo.Keys.Contains(ParamName) && string.IsNullOrEmpty(queryInfo[ParamName]) == false && queryInfo[ParamName] != "all")
+                int.TryParse(WebUtility.UrlDecode(queryInfo[ParamName]).Trim(), out rVal);
+
+            return rVal;
+        }
+
+
+
+        public static string GetQueryParam(IQueryCollection queryInfo, string ParamName, string defaultValue = "")
+        {
+            string rVal = defaultValue;
+            // first check to see if the param was specified in the query string.  Highest priority 
+            if (queryInfo.Keys.Contains(ParamName) && string.IsNullOrEmpty(queryInfo[ParamName]) == false && queryInfo[ParamName] != "all")
+                return WebUtility.UrlDecode(queryInfo[ParamName]).Trim();
+
+            return defaultValue;
+        }
+
+
+        public static string QueryParamsToCacheKey(string keyBase,  IQueryCollection query)
         {
             var sortedQuery = query.OrderBy(q => q.Key);
             string cacheKey = string.Join("", sortedQuery.Select(q => q.Key + q.Value));
-            return cacheKey;
+            return keyBase + cacheKey;
         }
 
         public static string  AlphaNumeric(string input, int maxLen)

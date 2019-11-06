@@ -175,15 +175,8 @@ namespace UpDiddyApi.Helpers.Job
         static public List<JobQueryFacetDto> MapFacetsAsQueryStrings(IConfiguration config, JobQueryDto jobQuery, CloudTalentSolution.SearchJobsResponse searchJobsResponse)
         {
             List<JobQueryFacetDto> rVal = new List<JobQueryFacetDto>();
-
-
-
             
-            string JobNavigatorUrl = config["CloudTalent:JobNavigatorUrl"].ToString(); 
- 
- 
-
-
+            string JobNavigatorUrl = config["CloudTalent:JobNavigatorUrl"].ToString();   
             //Culture Info for facets
             CultureInfo cultureInfo = Thread.CurrentThread.CurrentCulture;
             TextInfo textInfo = cultureInfo.TextInfo;
@@ -533,6 +526,9 @@ namespace UpDiddyApi.Helpers.Job
         #endregion
 
         #region Helper functions 
+
+
+       
 
         static private long MapCustomLongAttribute(IDictionary<string, CloudTalentSolution.CustomAttribute> attributes, string attributeName)
         {

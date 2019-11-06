@@ -42,4 +42,15 @@ namespace UpDiddyApi.ApplicationCore.Exceptions
         public ExpiredJobException(string message, Exception innerException)
         : base(message, innerException) { }
     }
+    public class FailedValidationException : Exception
+    {
+        public FailedValidationException() : base() { }
+        public FailedValidationException(string message) : base(message)
+        {
+
+        }
+        public FailedValidationException(string message, Exception innerException)
+            : base(message, innerException) { }
+    }
+
 }

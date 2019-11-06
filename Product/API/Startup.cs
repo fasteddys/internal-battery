@@ -197,7 +197,7 @@ namespace UpDiddyApi
 
             // remove TinyIds from old CampaignPartnerContact records
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DeactivateCampaignPartnerContacts(), Cron.Daily());
-           
+
             if (_currentEnvironment.IsProduction())
             {
                 // run the job crawl in production Monday through Friday once per day at 15:00 UTC
@@ -209,7 +209,7 @@ namespace UpDiddyApi
             {
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.Weekly(DayOfWeek.Sunday, 4));
             }
-            
+
             // LOCAL TESTING ONLY - DO NOT UNCOMMENT THIS CODE!
             // BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
 
@@ -226,7 +226,9 @@ namespace UpDiddyApi
 
             // kick off the subscriber notification email reminder process every day at 12 UTC 
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.SubscriberNotificationEmailReminder(), Cron.Daily(12));
-            
+
+            // sync job posting alerts between Hangfire and our database
+            BackgroundJob.Enqueue<ScheduledJobs>(x => x.SyncJobPostingAlertsBetweenDbAndHangfire());
             #endregion
 
             services.AddHttpClient(Constants.HttpGetClientName);
@@ -246,6 +248,8 @@ namespace UpDiddyApi
             services.AddHttpClient<IB2CGraph, B2CGraphClient>();
 
             services.AddScoped<ISubscriberService, SubscriberService>();
+            services.AddScoped<ISubscriberEducationalHistoryService, SubscriberEducationalHistoryService>();
+            services.AddScoped<ISubscriberWorkHistoryService, SubscriberWorkHistoryService>();
             services.AddScoped<IReportingService, ReportingService>();
             services.AddScoped<IJobService, JobService>();
             services.AddScoped<ITrackingService, TrackingService>();
@@ -313,7 +317,6 @@ namespace UpDiddyApi
             ScopeRead = Configuration["AzureAdB2C:ScopeRead"];
             ScopeWrite = Configuration["AzureAdB2C:ScopeWrite"];
             app.UseExceptionMiddleware();
-
             app.UseAuthentication();
 
             app.UseCors("Cors");
@@ -338,6 +341,8 @@ namespace UpDiddyApi
                 routes.Filter().OrderBy().Count();
                 routes.EnableDependencyInjection();
             });
+
+        
 
             // Added for SignalR
             app.UseSignalR(routes =>

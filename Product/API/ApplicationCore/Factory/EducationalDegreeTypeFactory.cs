@@ -62,5 +62,14 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Where(s => s.IsDeleted == 0 && s.DegreeType == degreeType)
                 .FirstOrDefaultAsync();
         }
+
+
+        public static async Task<EducationalDegreeType> GetEducationalDegreeTypeByDegreeTypeAsync(IRepositoryWrapper repositoryWrapper, string degreeType)
+        {
+            return await repositoryWrapper.EducationalDegreeTypeRepository.GetAllWithTracking()
+                .Where(s => s.IsDeleted == 0 && s.DegreeType == degreeType)
+                .FirstOrDefaultAsync();
+        }
+
     }
 }

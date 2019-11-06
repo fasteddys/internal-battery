@@ -41,6 +41,7 @@ namespace UpDiddyApi.Controllers
         private readonly IJobFavoriteService _jobFavoriteService;
         private readonly IJobSearchService _jobSearchService;
         private readonly ITrackingService _trackingService;
+        private readonly IJobApplicationService _jobApplicationService;
 
         #region constructor 
         public JobsController(IServiceProvider services
@@ -61,6 +62,7 @@ namespace UpDiddyApi.Controllers
             _httpClientFactory = _services.GetService<IHttpClientFactory>();
             _repositoryWrapper = _services.GetService<IRepositoryWrapper>();
             _subscriberService = _services.GetService<ISubscriberService>();
+            _jobApplicationService = _services.GetService<IJobApplicationService>();
             _postingTTL = int.Parse(_configuration["JobPosting:PostingTTLInDays"]);
             _cloudTalentService = cloudTalentService;
 
@@ -86,6 +88,38 @@ namespace UpDiddyApi.Controllers
             await _cloudTalentService.TrackClientEventJobViewAction(job, requestId, clientEventId);
             return StatusCode(202);
         }
+        #endregion
+
+        #region Job Applications
+
+
+        [HttpPost]
+        [Route("/V2/[controller]/{JobGuid}/applications")]
+        [Authorize]
+        public async Task<IActionResult> CreateJobApplication([FromBody] ApplicationDto jobApplicationDto, Guid JobGuid)
+        {
+
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _jobApplicationService.CreateJobApplication(subscriberGuid, JobGuid, jobApplicationDto);
+            return StatusCode(201);
+        }
+
+
+        #endregion
+
+
+
+        #region Job Browse 
+
+
+        [HttpGet]
+        [Route("/V2/[controller]/browse-location")]
+        public async Task<IActionResult> BrowseJobsByLocation()
+        {
+            JobBrowseResultDto rVal = null;
+            rVal = await _jobService.BrowseJobsByLocation(Request.Query);
+            return Ok(rVal);
+        }
 
         #endregion
 
@@ -96,8 +130,8 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> GetJob(Guid JobGuid)
         {
 
-                JobDetailDto rVal = await _jobService.GetJobDetail(JobGuid);
-                return Ok(rVal);
+            JobDetailDto rVal = await _jobService.GetJobDetail(JobGuid);
+            return Ok(rVal);
         }
 
 

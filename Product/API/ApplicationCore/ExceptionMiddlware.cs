@@ -25,6 +25,10 @@ public class ExceptionMiddleware
         {
             await CreateResponse(400, ex, context);
         }
+        catch (FailedValidationException ex)
+        {
+            await CreateResponse(400, ex, context);
+        }
         catch (MaximumReachedException ex)
         {
             await CreateResponse(400, ex, context);

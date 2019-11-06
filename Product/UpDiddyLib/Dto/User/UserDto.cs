@@ -2,13 +2,8 @@
 
 namespace UpDiddyLib.Dto.User
 {
-    public class UserDto
+    public class UserDto : EmailDto
     {
-        [Required]
-        [EmailAddress]
-        [StringLength(255)]
-        public string Email { get; set; }
-
         [Required]
         [StringLength(32)]
         public string Password { get; set; }

@@ -109,22 +109,57 @@ namespace UpDiddyApi.ApplicationCore.Services
                 jobSearchForSingleJob = _cloudTalentService.JobSearch(jobQuery);
             }
 
-
-
             rVal.SimilarJobs = jobSearchForSingleJob;
 
             return rVal;
         }
 
+    
 
 
 
+        public async Task<JobBrowseResultDto> BrowseJobsByLocation(IQueryCollection query)
+        {
 
+            string cacheKey = Utils.QueryParamsToCacheKey("BrowseJobsByLocation", query);
+            JobBrowseResultDto rVal = (JobBrowseResultDto)_cache.GetCacheValue(cacheKey);
+            if (rVal == null)
+            {
+                // Get all of the query string parameters        
+                int excludeJobs = Utils.GetIntQueryParam(query, "excludeJobs", 0);
+                int excludeFacets = Utils.GetIntQueryParam(query, "excludeFacets", 0);
+
+                // try and get  the page size from the query params
+                string pageSizeStr = Utils.GetQueryParam(query, "pagesize", "-1");
+                int PageSize = -1;
+                if (pageSizeStr != "-1")
+                    int.TryParse(pageSizeStr, out PageSize);
+                // if the page size was not specified used the default page size 
+                if ( PageSize == -1)
+                    PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
+
+
+                // try and get the page number from the query params
+                string pageNumStr = Utils.GetQueryParam(query, "pagenym", "-1");
+                int PageNum = 0;
+                // use the page num from the query parameter if it was specified 
+                if (pageNumStr != "-1")
+                    int.TryParse(pageNumStr, out PageNum);
+                        
+                JobQueryDto jobQuery = JobQueryHelper.CreateSummaryJobQuery(PageSize, query);
+                JobSearchSummaryResultDto jobSearchResult = _cloudTalentService.JobSummarySearch(jobQuery);
+                rVal =  CreateJobBrowseResultDto(jobSearchResult, excludeJobs, excludeFacets);
+                _cache.SetCacheValue<JobBrowseResultDto>(cacheKey, rVal);
+   
+            }
+
+            return rVal;
+        }
 
         public async Task<JobSearchSummaryResultDto> SummaryJobSearch(IQueryCollection query)
         {
 
-            string cacheKey = Utils.QueryParamsToCacheKey(query);
+            string cacheKey = Utils.QueryParamsToCacheKey("SummaryJobSearch",query);
             JobSearchSummaryResultDto rVal = (JobSearchSummaryResultDto)_cache.GetCacheValue(cacheKey);
             if (rVal == null)
             {
@@ -136,7 +171,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             }
 
-            return rVal; ;
+            return rVal;
         }
 
         public async Task<List<SearchTermDto>> GetKeywordSearchTermsAsync()
@@ -334,6 +369,75 @@ namespace UpDiddyApi.ApplicationCore.Services
             //update jobReferralGuid only if Referee is new subscriber, for old subscriber we do not jobReferralCode
             await _repositoryWrapper.JobReferralRepository.AddJobReferralAsync(jobReferral);
         }
+
+
+        #region Helper functions
+        private JobBrowseResultDto CreateJobBrowseResultDto(JobSearchSummaryResultDto searchResults, int excludeJobs, int excludeFacets)
+        {
+
+            JobBrowseResultDto rVal = new JobBrowseResultDto()
+            {
+                RequestId = searchResults.RequestId,
+                ClientEventId = searchResults.ClientEventId,
+                PageSize = searchResults.PageSize,
+                PageNum = searchResults.PageNum,
+                JobCount = searchResults.JobCount,
+                TotalHits = searchResults.TotalHits,
+                NumPages = searchResults.NumPages,
+                SearchMappingTimeInTicks = searchResults.SearchMappingTimeInTicks,
+                SearchQueryTimeInTicks = searchResults.SearchQueryTimeInTicks,
+                SearchTimeInMilliseconds = searchResults.SearchTimeInMilliseconds                
+            };
+        
+            if (excludeJobs == 0)
+                rVal.Jobs = searchResults.Jobs;
+
+            if (excludeFacets == 0)
+            {
+                rVal.Facets = new List<JobQueryFacetDto>();
+
+                foreach (JobQueryFacetDto facet in searchResults.Facets)
+                {
+                    if (facet.Name == "CITY" || facet.Name == "ADMIN_1")
+                    {
+                        rVal.Facets.Add(facet);
+                    }
+                }
+
+            }
+            // map from a job search facet url to a browse facet url 
+            foreach (JobQueryFacetDto facet in rVal.Facets)            
+                MapSearchFacetToBrowseFacet(facet);
+            
+
+            return rVal;     
+        }
+
+        private void MapSearchFacetToBrowseFacet (JobQueryFacetDto facet)
+        {
+            foreach ( JobQueryFacetItemDto facetInfo in facet.Facets )
+            {
+
+                string [] urlParts = facetInfo.Url.Split("&");
+                if ( facet.Name == "CITY")
+                {
+                    string city = urlParts[0].Split("=")[1];
+                    string province = urlParts[1].Split("=")[1];
+                    facetInfo.Url = $"/browse-jobs-location/us/{province}/{city}";
+                }
+                else if (facet.Name == "ADMIN_1" )
+                {
+                    string province = urlParts[0].Split("=")[1];
+                    facetInfo.Url = $"/browse-jobs-location/us/{province}";
+                    Enum.TryParse(facetInfo.UrlParam.ToUpper(), out UpDiddyLib.Helpers.Utils.State state);
+                    facetInfo.Label = Utils.ToTitleCase(Utils.GetState(state));
+                }
+            }
+        }
+
+        #endregion
+
+
 
 
     }
