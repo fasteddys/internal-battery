@@ -21,5 +21,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         Task<JobDetailDto> GetJobDetail(Guid jobPostingGuid);
         Task ShareJob(Guid subscriberGuid, Guid job, ShareJobDto shareJobDto);
+
+        Task<JobBrowseResultDto> BrowseJobsByLocation(IQueryCollection query);
+ 
     }
 }
