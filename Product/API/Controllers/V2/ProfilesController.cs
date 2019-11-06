@@ -37,6 +37,7 @@ namespace UpDiddyApi.Controllers.V2
         private readonly IHangfireService _hangfireService;
         private readonly ISubscriberService _subscriberService;
         private readonly ISubscriberEducationalHistoryService _subscriberEducationalHistoryService;
+        private readonly ISubscriberWorkHistoryService _subscriberWorkHistoryService;
         private readonly IJobPostingService _jobPostingService;
         private readonly IJobAlertService _jobAlertService;
 
@@ -55,6 +56,7 @@ namespace UpDiddyApi.Controllers.V2
             _httpClientFactory = _services.GetService<IHttpClientFactory>();
             _repositoryWrapper = _services.GetService<IRepositoryWrapper>();
             _subscriberService = _services.GetService<ISubscriberService>();
+            _subscriberWorkHistoryService = _services.GetService<ISubscriberWorkHistoryService>();
             _subscriberEducationalHistoryService = _services.GetService<ISubscriberEducationalHistoryService>();
             _postingTTL = int.Parse(_configuration["JobPosting:PostingTTLInDays"]);
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
@@ -67,9 +69,9 @@ namespace UpDiddyApi.Controllers.V2
         #endregion
 
 
- 
 
 
+        #region educational history
 
         [HttpPost]
         [Authorize]
@@ -108,14 +110,61 @@ namespace UpDiddyApi.Controllers.V2
         [HttpGet]
         [Authorize]
         [Route("/V2/[controller]/education-histories")]
-        public async Task<IActionResult> GetProfileEducationHistory(Guid educationalHistoryGuid)
+        public async Task<IActionResult> GetProfileEducationHistory()
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             var rVal = await _subscriberEducationalHistoryService.GetEducationalHistory(subscriberGuid);
             return Ok(rVal);
         }
 
+        #endregion
 
+        #region work history
+
+        [HttpPost]
+        [Authorize]
+        [Route("/V2/[controller]/work-histories")]
+        public async Task<IActionResult> AddWorkHistory([FromBody] SubscriberWorkHistoryDto subscriberEducationHistoryDto)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _subscriberWorkHistoryService.AddWorkHistory(subscriberEducationHistoryDto, subscriberGuid);
+            return StatusCode(201);
+        }
+
+        [HttpPut]
+        [Authorize]
+        [Route("/V2/[controller]/work-histories/{workHistoryGuid}")]
+        public async Task<IActionResult> UpdateWorkHistory([FromBody] SubscriberWorkHistoryDto subscriberEducationHistoryDto, Guid workHistoryGuid)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _subscriberWorkHistoryService.UpdateEducationalHistory(subscriberEducationHistoryDto, subscriberGuid, workHistoryGuid);
+            return StatusCode(200);
+        }
+
+
+        [HttpDelete]
+        [Authorize]
+        [Route("/V2/[controller]/work-histories/{workHistoryGuid}")]
+        public async Task<IActionResult> DeleteWorkHistory(Guid workHistoryGuid)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _subscriberWorkHistoryService.DeleteWorklHistory(subscriberGuid, workHistoryGuid);
+            return StatusCode(204);
+        }
+
+
+        [HttpGet]
+        [Authorize]
+        [Route("/V2/[controller]/work-histories")]
+        public async Task<IActionResult> GetWorkHistory()
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var rVal = await _subscriberWorkHistoryService.GetWorkHistory(subscriberGuid);
+            return Ok(rVal);
+        }
+
+
+        #endregion
 
 
     }
