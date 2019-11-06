@@ -37,7 +37,7 @@ namespace UpDiddyApi.Helpers.Job
             rVal.JobPostingGuid = postingGuid; 
             rVal.CompanyName = matchingJob.Job.CompanyDisplayName;
             rVal.Title = matchingJob.Job.Title; 
-            rVal.PostingDateUTC = DateTime.Parse(matchingJob.Job.PostingCreateTime.ToString());
+            rVal.PostingDateUTC = DateTime.Parse(matchingJob.Job.PostingCreateTime.ToString());            
             // map location that was indexed into google -- do not use a foreach loop since it's sloooooow (might be string concat0
    
 
@@ -774,6 +774,8 @@ namespace UpDiddyApi.Helpers.Job
 
             return rVal;
         }
+        
+        
 
     }
 

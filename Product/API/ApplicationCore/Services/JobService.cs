@@ -17,12 +17,8 @@ using Google.Apis.CloudTalentSolution.v3.Data;
 using UpDiddyLib.Shared.GoogleJobs;
 using Microsoft.AspNetCore.Http;
 using UpDiddyLib.Domain.Models;
-using Hangfire;
-using Newtonsoft.Json.Linq;
-using UpDiddyApi.Workflow;
 using UpDiddyApi.ApplicationCore.Factory;
 using UpDiddyApi.ApplicationCore.Exceptions;
-
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class JobService : IJobService
@@ -58,19 +54,16 @@ namespace UpDiddyApi.ApplicationCore.Services
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
         }
 
-
         public async Task<JobDetailDto> GetJobDetail(Guid jobPostingGuid)
         {
             JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuidWithRelatedObjectsAsync(_db, jobPostingGuid);
             if (jobPosting == null)
                 throw new NotFoundException();
-      
+
             JobDetailDto rVal = _mapper.Map<JobDetailDto>(jobPosting);
+            rVal.CompanyLogoUrl = JobUrlHelper.SetCompanyLogoUrl(rVal.CompanyLogoUrl,_configuration);
             return rVal;
         }
-
-
-
 
         public async Task<JobPostingDto> GetJob(Guid jobPostingGuid)
         {
@@ -106,7 +99,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
 
-
             rVal.SimilarJobs = jobSearchForSingleJob;
 
             return rVal;
@@ -117,7 +109,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-    public async Task<JobSearchSummaryResultDto> SummaryJobSearch(IQueryCollection query)
+        public async Task<JobSearchSummaryResultDto> SummaryJobSearch(IQueryCollection query)
         {
 
             string cacheKey = Utils.QueryParamsToCacheKey(query);
@@ -127,6 +119,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
                 JobQueryDto jobQuery = JobQueryHelper.CreateSummaryJobQuery(PageSize, query);
                 rVal = _cloudTalent.JobSummarySearch(jobQuery);
+                await JobUrlHelper.AssignCompanyLogoUrlToJobsList(rVal.Jobs, _configuration, _companyService);
                 _cache.SetCacheValue<JobSearchSummaryResultDto>(cacheKey, rVal);
 
             }
@@ -149,7 +142,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var jobReferralGuid = await SaveJobReferral(jobReferralDto);
             await SendReferralEmail(jobReferralDto, jobReferralGuid);
         }
-        
+
         public async Task UpdateJobReferral(string referrerCode, string subscriberGuid)
         {
             //get jobReferral instance to update
@@ -247,7 +240,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             JobSearchResultDto jobSearchResult = _cloudTalent.JobSearch(jobQuery);
 
             //assign company logo urls
-            await AssignCompanyLogoUrlToJobs(jobSearchResult.Jobs);
+            await JobUrlHelper.AssignCompanyLogoUrlToJobsList(jobSearchResult.Jobs, _configuration, _companyService);
 
             // set common properties for an alert jobQuery and include this in the response
             jobQuery.DatePublished = null;
@@ -276,7 +269,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
             Guid jobReferralGuid = Guid.Empty;
-            
+
             //get JobPostingId from JobPositngGuid
             var jobPosting = await _repositoryWrapper.JobPosting.GetJobPostingByGuid(job);
             if (jobPosting == null)
@@ -317,6 +310,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                     job.CompanyLogoUrl = _configuration["StorageAccount:AssetBaseUrl"] + "Company/" + company.LogoUrl;
             }
         }
+
+      
 
     }
 }
