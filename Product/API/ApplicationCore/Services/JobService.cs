@@ -305,6 +305,44 @@ namespace UpDiddyApi.ApplicationCore.Services
             return jobSearchResult;
         }
 
+        public async Task ShareJob(Guid job, Guid subscriberGuid, ShareJobDto shareJobDto)
+        {
+            if (string.IsNullOrEmpty(shareJobDto.Email))
+            {
+                throw new NullReferenceException("Email cannot be empty");
+            }
+
+            Guid jobReferralGuid = Guid.Empty;
+            
+            //get JobPostingId from JobPositngGuid
+            var jobPosting = await _repositoryWrapper.JobPosting.GetJobPostingByGuid(job);
+            if (jobPosting == null)
+                throw new NotFoundException("job posting not found");
+
+            //get ReferrerId from ReferrerGuid
+            var referrer = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+
+            //get ReferrerId from ReferrerGuid
+            var referee = await _repositoryWrapper.SubscriberRepository.GetSubscriberByEmailAsync(shareJobDto.Email);
+
+            //create JobReferral
+            JobReferral jobReferral = new JobReferral()
+            {
+                JobReferralGuid = Guid.NewGuid(),
+                JobPostingId = jobPosting.JobPostingId,
+                ReferralId = referrer.SubscriberId,
+                RefereeId = referee?.SubscriberId,
+                RefereeEmailId = shareJobDto.Email,
+                IsJobViewed = false
+            };
+
+            //set defaults
+            BaseModelFactory.SetDefaultsForAddNew(jobReferral);
+
+            //update jobReferralGuid only if Referee is new subscriber, for old subscriber we do not jobReferralCode
+            await _repositoryWrapper.JobReferralRepository.AddJobReferralAsync(jobReferral);
+        }
+
         private async Task AssignCompanyLogoUrlToJobs(List<JobViewDto> jobs)
         {
             var companies = await _companyService.GetCompaniesAsync();
@@ -314,68 +352,6 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 if (!string.IsNullOrWhiteSpace(company?.LogoUrl))
                     job.CompanyLogoUrl = _configuration["StorageAccount:AssetBaseUrl"] + "Company/" + company.LogoUrl;
-            }
-        }
-
-        public async Task SaveJobAlert(Guid subscriberGuid, JobAlertDto jobAlertDto)
-        {
-
-            try
-            {
-                var alerts = await _repositoryWrapper.JobPostingAlertRepository.GetAllJobPostingAlertsBySubscriber(subscriberGuid);
-                if (alerts.ToList().Count >= 4)
-                {
-                    throw new Exception("Subscriber has exceeded the maximum number of job exception");
-                }
-
-                DateTime utcDate = DateTime.UtcNow;
-
-                DateTime localExecutionDate = new DateTime(
-                    utcDate.Year,
-                    utcDate.Month,
-                    jobAlertDto.Frequency == "Weekly" ? utcDate.Next(jobAlertDto.ExecutionDayOfWeek.Value).Day : utcDate.Day,
-                    utcDate.Hour,
-                    utcDate.Minute,
-                    0);
-
-
-                string cronSchedule = null;
-
-                switch (jobAlertDto.Frequency)
-                {
-                    case "Daily":
-                        cronSchedule = Cron.Daily(localExecutionDate.Hour, localExecutionDate.Minute);
-                        break;
-                    case "Weekly":
-                        cronSchedule = Cron.Weekly(localExecutionDate.DayOfWeek, localExecutionDate.Hour, localExecutionDate.Minute);
-                        break;
-                    default:
-                        throw new NotSupportedException($"Unrecognized value for 'Frequency' parameter: {jobAlertDto.Frequency}");
-                }
-                var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
-                int subscriberId = subscriber.SubscriberId;                
-                Guid jobPostingAlertGuid = Guid.NewGuid();
-                await _repositoryWrapper.JobPostingAlertRepository.Create(new JobPostingAlert()
-                {
-                    CreateDate = DateTime.UtcNow,
-                    CreateGuid = Guid.Empty,
-                    Description = jobAlertDto.Description,
-                    ExecutionDayOfWeek = jobAlertDto?.Frequency == "Weekly" ? (DayOfWeek?)localExecutionDate.DayOfWeek : null,
-                    ExecutionHour = localExecutionDate.Hour,
-                    ExecutionMinute = localExecutionDate.Minute,
-                    Frequency = (Frequency)Enum.Parse(typeof(Frequency), jobAlertDto.Frequency),
-                    IsDeleted = 0,
-                    JobPostingAlertGuid = jobPostingAlertGuid,
-                    JobQueryDto = new JObject(),
-                    SubscriberId = subscriberId
-                });
-                await _repositoryWrapper.JobPostingAlertRepository.SaveAsync();
-                _hangfireService.AddOrUpdate<ScheduledJobs>($"jobPostingAlert:{jobPostingAlertGuid}", sj => sj.ExecuteJobPostingAlert(jobPostingAlertGuid), cronSchedule);
-
-            }
-            catch (Exception e)
-            {
-                throw e;
             }
         }
 

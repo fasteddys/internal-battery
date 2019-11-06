@@ -157,6 +157,7 @@ namespace UpDiddy.Controllers
                 ExistingUserSuccessHeader = LandingPage.Data.Fields.existing_user_success_header,
                 ExistingUserSuccessText = LandingPage.Data.Fields.existing_user_success_text,
                 IsWaitList = LandingPage.Data.Fields.iswaitlist,
+                PartnerGuid = LandingPage.Data.Fields.partner.PartnerGuid
             };
 
             var CampaignLandingPageViewModel = new CampaignLandingPageViewModel
