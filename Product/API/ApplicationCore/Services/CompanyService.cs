@@ -65,5 +65,17 @@ namespace UpDiddyApi.ApplicationCore.Services
             //get only non deleted records
             return _mapper.Map<List<CompanyDto>>(await queryableCompanies.Where(c=>c.IsDeleted==0 && c.CompanyGuid!=Guid.Empty).ToListAsync());
         }
+
+        public async Task<CompanyDto> GetById(int id)
+        {
+            var entity =  await _repositoryWrapper.Company.GetById(id);
+            return _mapper.Map<CompanyDto>(entity);
+        }
+
+        public async Task<CompanyDto> GetByCompanyName(string companyName)
+        {
+            var context = _repositoryWrapper.Company.GetAll();
+            return _mapper.Map<CompanyDto>(await context.Where(x => x.CompanyName == companyName).FirstOrDefaultAsync());
+        }
     }
 }

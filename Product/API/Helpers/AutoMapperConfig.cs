@@ -15,7 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using UpDiddyApi.ApplicationCore.Services.Identity;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Domain.Models;
-
+using Microsoft.Extensions.Configuration;
 namespace UpDiddyApi.Helpers
 {
     public class AutoMapperConfiguration
@@ -235,6 +235,10 @@ namespace UpDiddyApi.Helpers
                 .ForMember(x => x.DeleteCount, opt => opt.MapFrom(src => src.CoursePages.Count(cp => cp.CoursePageStatus.Name == "Delete")))
                 .ForMember(x => x.ErrorCount, opt => opt.MapFrom(src => src.CoursePages.Count(cp => cp.CoursePageStatus.Name == "Error")))
                 .ReverseMap();
+
+
         }
+
+
     }
 }
