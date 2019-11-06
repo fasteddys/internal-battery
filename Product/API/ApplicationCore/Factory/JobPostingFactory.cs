@@ -99,7 +99,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         public static async Task<List<JobPosting>> GetAllJobPostingsForSitemap(IRepositoryWrapper repositoryWrapper)
         {
             // note that this doesn't include all related entities; only those that we need to build the semantic url
-            return await repositoryWrapper.JobPosting.GetAll()
+            return await repositoryWrapper.JobPosting.GetAllWithTracking()
                 .Include(jp => jp.Industry)
                 .Include(jp => jp.JobCategory)
                 .Where(s => s.IsDeleted == 0)
@@ -233,7 +233,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<JobPosting> GetJobPostingById(IRepositoryWrapper repositoryWrapper, int jobPostingId)
         {
-            return await repositoryWrapper.JobPosting.GetAll()
+            return await repositoryWrapper.JobPosting.GetAllWithTracking()
                 .Include(c => c.Company)
                 .Include(c => c.Industry)
                 .Include(c => c.SecurityClearance)
@@ -256,7 +256,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// <returns></returns>        
         public static async Task<List<JobPosting>> GetJobPostingsForSubscriber(IRepositoryWrapper repositoryWrapper, Guid guid)
         {
-            return await repositoryWrapper.JobPosting.GetAll()
+            return await repositoryWrapper.JobPosting.GetAllWithTracking()
                 .Include(c => c.Company)
                 .Include(c => c.Industry)
                 .Include(c => c.SecurityClearance)
@@ -280,7 +280,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// <returns></returns>        
         public static async Task<JobPosting> GetJobPostingByGuidWithRelatedObjects(IRepositoryWrapper repositoryWrapper, Guid guid)
         {
-            return await repositoryWrapper.JobPosting.GetAll()
+            return await repositoryWrapper.JobPosting.GetAllWithTracking()
                 .Include(c => c.Company)
                 .Include(c => c.Industry)
                 .Include(c => c.SecurityClearance)
@@ -301,7 +301,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// <returns></returns>        
         public static async Task<JobPosting> GetJobPostingByGuidWithRelatedObjectsAsync(IRepositoryWrapper repositoryWrapper, Guid guid)
         {
-            return await repositoryWrapper.JobPosting.GetAll()
+            return await repositoryWrapper.JobPosting.GetAllWithTracking()
                 .Include(c => c.Company)
                 .Include(c => c.Industry)
                 .Include(c => c.SecurityClearance)
@@ -325,7 +325,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// <returns></returns>        
         public static async Task<JobPosting> GetJobPostingByGuid(IRepositoryWrapper repositoryWrapper, Guid guid)
         {
-            return await repositoryWrapper.JobPosting.GetAll()
+            return await repositoryWrapper.JobPosting.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.JobPostingGuid == guid)
                 .Include(s => s.Recruiter).ThenInclude(r => r.Subscriber)
                 .Include(s => s.Company)
@@ -338,7 +338,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// <returns></returns>        
         public static async Task<JobPosting> GetExpiredJobPostingByGuid(IRepositoryWrapper repositoryWrapper, Guid guid)
         {
-            return await repositoryWrapper.JobPosting.GetAll()
+            return await repositoryWrapper.JobPosting.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 1 && s.JobPostingGuid == guid)
                 .FirstOrDefaultAsync();
         }
@@ -371,7 +371,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         }
         public static async Task<List<JobPostingSkill>> GetPostingSkills(IRepositoryWrapper repositoryWrapper, JobPosting jobPosting)
         {
-             return await repositoryWrapper.JobPostingSkillRepository.GetAll()
+             return await repositoryWrapper.JobPostingSkillRepository.GetAllWithTracking()
                 .Include(c => c.Skill)
                 .Where(s => s.IsDeleted == 0 && s.JobPostingId == jobPosting.JobPostingId)
                 .ToListAsync();

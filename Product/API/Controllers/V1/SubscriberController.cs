@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -429,7 +429,6 @@ public class SubscriberController : Controller
         WorkHistory.Compensation = WorkHistoryDto.Compensation;
         WorkHistory.CompensationTypeId = compensationTypeId;
         WorkHistory.Company = company;
-        _repositoryWrapper.SubscriberWorkHistoryRepository.Update(WorkHistory);
         await _repositoryWrapper.SaveAsync();
 
         // update google profile 
@@ -454,7 +453,6 @@ public class SubscriberController : Controller
             return BadRequest();
         // Soft delete of the workhistory item
         WorkHistory.IsDeleted = 1;
-         _repositoryWrapper.SubscriberWorkHistoryRepository.Update(WorkHistory);
         await _repositoryWrapper.SaveAsync();
 
         return Ok(_mapper.Map<SubscriberWorkHistoryDto>(WorkHistory));
@@ -585,8 +583,6 @@ public class SubscriberController : Controller
             EducationalDegreeTypeId = educationalDegreeTypeId,
             EducationalInstitutionId = educationalInstitutionId
         };
-
-        await _repositoryWrapper.SubscriberEducationHistoryRepository.Create(EducationHistory);
         await _repositoryWrapper.SaveAsync();
 
         // update google profile 
@@ -635,10 +631,6 @@ public class SubscriberController : Controller
         EducationHistory.EducationalDegreeId = educationalDegreeId;
         EducationHistory.EducationalDegreeTypeId = educationalDegreeTypeId;
         EducationHistory.EducationalInstitutionId = educationalInstitutionId;
-        EducationHistory.EducationalDegree = educationalDegree;
-        EducationHistory.EducationalDegreeType = educationalDegreeType;
-        EducationHistory.EducationalInstitution = educationalInstitution;
-        _repositoryWrapper.SubscriberEducationHistoryRepository.Update(EducationHistory);
         await _repositoryWrapper.SaveAsync();
 
         // update google profile 
@@ -663,7 +655,6 @@ public class SubscriberController : Controller
             return BadRequest();
         // Soft delete of the workhistory item
         EducationHistory.IsDeleted = 1;
-        _repositoryWrapper.SubscriberEducationHistoryRepository.Update(EducationHistory);
         await _repositoryWrapper.SaveAsync();
 
         return Ok(_mapper.Map<SubscriberEducationHistory>(EducationHistory));

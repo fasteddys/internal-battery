@@ -27,7 +27,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
             degreeType = degreeType.Trim();
 
-            EducationalDegreeType educationalDegreeType = await repositoryWrapper.EducationalDegreeTypeRepository.GetAll()
+            EducationalDegreeType educationalDegreeType = await repositoryWrapper.EducationalDegreeTypeRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.DegreeType == degreeType)
                 .FirstOrDefaultAsync();
 
@@ -43,7 +43,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
             degreeType = degreeType.Trim();
 
-            EducationalDegreeType educationalDegreeType = await repositoryWrapper.EducationalDegreeTypeRepository.GetAll()
+            EducationalDegreeType educationalDegreeType = await repositoryWrapper.EducationalDegreeTypeRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.DegreeType == degreeType)
                 .FirstOrDefaultAsync();
 
@@ -58,7 +58,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<EducationalDegreeType> GetEducationalDegreeTypeByDegreeType(IRepositoryWrapper repositoryWrapper, string degreeType)
         {
-            return await repositoryWrapper.EducationalDegreeTypeRepository.GetAll()
+            return await repositoryWrapper.EducationalDegreeTypeRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.DegreeType == degreeType)
                 .FirstOrDefaultAsync();
         }

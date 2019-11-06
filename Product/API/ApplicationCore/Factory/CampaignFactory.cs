@@ -15,7 +15,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<Campaign> GetCampaignByGuid(IRepositoryWrapper repositoryWrapper, Guid campaignGuid)
         {
-            return await repositoryWrapper.CampaignRepository.GetAll()
+            return await repositoryWrapper.CampaignRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.CampaignGuid == campaignGuid)
                 .FirstOrDefaultAsync();
         }

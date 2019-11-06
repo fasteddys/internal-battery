@@ -11,7 +11,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
     {
         static public async Task<ExperienceLevel> GetExperienceLevelByGuid(IRepositoryWrapper repositoryWrapper, Guid ExperienceLevelGuid)
         {
-            ExperienceLevel experienceLevel = await repositoryWrapper.ExperienceLevelRepository.GetAll()
+            ExperienceLevel experienceLevel = await repositoryWrapper.ExperienceLevelRepository.GetAllWithTracking()
            .Where(c => c.IsDeleted == 0 && c.ExperienceLevelGuid == ExperienceLevelGuid)
            .FirstOrDefaultAsync();
             return experienceLevel;

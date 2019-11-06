@@ -26,7 +26,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         static public async Task<Company> GetOrAdd(IRepositoryWrapper repositoryWrapper, string companyName)
         {            
             companyName = companyName.Trim();
-            Company company = repositoryWrapper.Company.GetAll()
+            Company company = repositoryWrapper.Company.GetAllWithTracking()
                 .Where(c => c.IsDeleted == 0 && c.CompanyName == companyName)
                 .FirstOrDefault();
 
@@ -42,7 +42,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         static public async Task<Company>GetCompanyByGuid(IRepositoryWrapper repositoryWrapper, Guid CompanyGuid)
         {
  
-            Company company = await repositoryWrapper.Company.GetAll()
+            Company company = await repositoryWrapper.Company.GetAllWithTracking()
                 .Where(c => c.IsDeleted == 0 && c.CompanyGuid == CompanyGuid)
                 .FirstOrDefaultAsync();    
             return company;
@@ -51,7 +51,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         static public async Task<Company> GetCompanyByCompanyName(IRepositoryWrapper repositoryWrapper, string  CompanyName)
         {
 
-            Company company = await repositoryWrapper.Company.GetAll()
+            Company company = await repositoryWrapper.Company.GetAllWithTracking()
                 .Where(c => c.IsDeleted == 0 && c.CompanyName == CompanyName)
                 .FirstOrDefaultAsync();
             return company;

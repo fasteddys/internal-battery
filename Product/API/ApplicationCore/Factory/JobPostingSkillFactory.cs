@@ -12,7 +12,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<List<JobPostingSkill>> GetSkillsForPosting(IRepositoryWrapper repositoryWrapper, int jobPostingId)
         {
-            return await repositoryWrapper.JobPostingSkillRepository.GetAll()
+            return await repositoryWrapper.JobPostingSkillRepository.GetAllWithTracking()
                    .Include(s => s.Skill)
                    .Where(s => s.JobPostingId == jobPostingId)
                    .ToListAsync();
@@ -20,7 +20,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task DeleteSkillsForPosting(IRepositoryWrapper repositoryWrapper, int jobPostingId)
         {
-            List<JobPostingSkill> theList = await repositoryWrapper.JobPostingSkillRepository.GetAll()
+            List<JobPostingSkill> theList = await repositoryWrapper.JobPostingSkillRepository.GetAllWithTracking()
                    .Where(s => s.JobPostingId == jobPostingId)
                    .ToListAsync();
 

@@ -12,7 +12,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
     {
         public static async Task<List<RecruiterCompany>> GetRecruiterCompanyById(IRepositoryWrapper repositoryWrapper, int subscriberId)
         {
-            return await repositoryWrapper.RecruiterCompanyRepository.GetAll()
+            return await repositoryWrapper.RecruiterCompanyRepository.GetAllWithTracking()
                .Include(s => s.Company)
                .Include(s => s.Recruiter.Subscriber)
                .Where(rc => rc.IsDeleted == 0 && rc.Recruiter.SubscriberId == subscriberId)
@@ -34,7 +34,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<RecruiterCompany> GetOrAdd(IRepositoryWrapper repositoryWrapper, int recruiterId, int companyId, bool isStaff)
         {
-            RecruiterCompany recruiterCompany = await repositoryWrapper.RecruiterCompanyRepository.GetAll()
+            RecruiterCompany recruiterCompany = await repositoryWrapper.RecruiterCompanyRepository.GetAllWithTracking()
                 .Include(rc => rc.Recruiter)
                 .Include(rc => rc.Company)
                 .Where(rc => rc.IsDeleted == 0 && rc.Recruiter.RecruiterId == recruiterId && rc.Company.CompanyId == companyId)

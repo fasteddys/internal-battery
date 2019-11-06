@@ -11,7 +11,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
     {
         static public async Task<EmploymentType> GetEmploymentTypeByGuid(IRepositoryWrapper repositoryWrapper, Guid EmploymentTypeGuid)
         {
-            EmploymentType employmentType = await repositoryWrapper.EmploymentTypeRepository.GetAll()
+            EmploymentType employmentType = await repositoryWrapper.EmploymentTypeRepository.GetAllWithTracking()
                 .Where(c => c.IsDeleted == 0 && c.EmploymentTypeGuid == EmploymentTypeGuid)
                 .FirstOrDefaultAsync();
             return employmentType;

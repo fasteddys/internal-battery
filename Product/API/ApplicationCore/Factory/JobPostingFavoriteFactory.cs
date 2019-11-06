@@ -41,7 +41,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<List<JobPosting>> GetJobPostingFavoritesForSubscriber(IRepositoryWrapper repositoryWrapper, Guid guid)
         {
-            return await repositoryWrapper.JobPostingFavorite.GetAll()
+            return await repositoryWrapper.JobPostingFavorite.GetAllWithTracking()
                 .Include(c => c.Subscriber)
                 .Include(c => c.JobPosting)
                 .Where(s => s.IsDeleted == 0 && s.Subscriber.SubscriberGuid == guid)
@@ -54,7 +54,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<JobPostingFavorite> GetJobPostingFavoriteByGuidWithRelatedObjects(IRepositoryWrapper repositoryWrapper, Guid guid)
         {
-            return await repositoryWrapper.JobPostingFavorite.GetAll()
+            return await repositoryWrapper.JobPostingFavorite.GetAllWithTracking()
            .Include(c => c.Subscriber)
            .Include(c => c.JobPosting)
            .Where(c => c.IsDeleted == 0 && c.JobPostingFavoriteGuid == guid)
@@ -64,7 +64,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<JobPostingFavorite> GetJobPostingFavoriteByGuid(IRepositoryWrapper repositoryWrapper, Guid guid)
         {
-            return await repositoryWrapper.JobPostingFavorite.GetAll()
+            return await repositoryWrapper.JobPostingFavorite.GetAllWithTracking()
            .Where(c => c.IsDeleted == 0 && c.JobPostingFavoriteGuid == guid)
            .FirstOrDefaultAsync();
 

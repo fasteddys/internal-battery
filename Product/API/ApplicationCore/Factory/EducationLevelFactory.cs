@@ -11,7 +11,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
     {
         static public async Task<EducationLevel> GetEducationLevelByGuid(IRepositoryWrapper repositoryWrapper, Guid EducationLevelGuid)
         {
-             EducationLevel educationLevel = await repositoryWrapper.EducationLevelRepository.GetAll()
+             EducationLevel educationLevel = await repositoryWrapper.EducationLevelRepository.GetAllWithTracking()
             .Where(c => c.IsDeleted == 0 && c.EducationLevelGuid == EducationLevelGuid)
             .FirstOrDefaultAsync();
             return educationLevel;

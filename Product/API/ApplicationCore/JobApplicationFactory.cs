@@ -16,7 +16,7 @@ namespace UpDiddyApi.ApplicationCore
 
         public static async Task <List<JobApplication>> GetJobApplicationsForSubscriber(IRepositoryWrapper repositoryWrapper, int subscriberId)
         {
-            return await repositoryWrapper.JobApplication.GetAll()
+            return await repositoryWrapper.JobApplication.GetAllWithTracking()
                 .Include( s => s.JobPosting)
                 .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
                 .ToListAsync();
@@ -25,7 +25,7 @@ namespace UpDiddyApi.ApplicationCore
 
         public static async Task<List<JobApplication>> GetJobApplicationsForPosting(IRepositoryWrapper repositoryWrapper, int jobPostingID)
         {
-            return await repositoryWrapper.JobApplication.GetAll()             
+            return await repositoryWrapper.JobApplication.GetAllWithTracking()             
                 .Where(s => s.IsDeleted == 0 && s.JobPostingId == jobPostingID)       
                 .ToListAsync();
         }
@@ -33,7 +33,7 @@ namespace UpDiddyApi.ApplicationCore
 
         public static async Task<JobApplication> GetJobApplicationByGuid(IRepositoryWrapper repositoryWrapper, Guid jobApplicationGuid)
         {
-            return await repositoryWrapper.JobApplication.GetAll()
+            return await repositoryWrapper.JobApplication.GetAllWithTracking()
                 .Include(s => s.JobPosting)
                 .Include(s => s.Subscriber)
                 .Where(s => s.IsDeleted == 0  && s.JobApplicationGuid == jobApplicationGuid)                   
@@ -43,7 +43,7 @@ namespace UpDiddyApi.ApplicationCore
 
         public static async Task<JobApplication> GetJobApplication(IRepositoryWrapper repositoryWrapper, int subscriberId, int jobPostingID)
         {
-            return await repositoryWrapper.JobApplication.GetAll()
+            return await repositoryWrapper.JobApplication.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.JobPostingId == jobPostingID && s.SubscriberId == subscriberId)
                 .FirstOrDefaultAsync();
         }

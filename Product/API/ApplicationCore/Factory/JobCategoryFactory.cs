@@ -10,7 +10,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
     {
         static public async Task<JobCategory> GetJobCategoryByGuid(IRepositoryWrapper repositoryWrapper, Guid jobCategoryGuid)
         {
-            JobCategory jobCategory = await repositoryWrapper.JobCategoryRepository.GetAll()
+            JobCategory jobCategory = await repositoryWrapper.JobCategoryRepository.GetAllWithTracking()
                 .Where(c => c.IsDeleted == 0 && c.JobCategoryGuid == jobCategoryGuid)
                 .FirstOrDefaultAsync();
             return jobCategory;

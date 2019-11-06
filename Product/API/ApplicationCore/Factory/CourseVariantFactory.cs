@@ -12,7 +12,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<CourseVariant> GetCourseVariantById(IRepositoryWrapper repositoryWrapper, int courseVariantId)
         {
-            return await repositoryWrapper.CourseVariant.GetAll()
+            return await repositoryWrapper.CourseVariant.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.CourseVariantId == courseVariantId)
                 .FirstOrDefaultAsync();
         }
@@ -20,8 +20,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
         public static async Task<string> GetCourseVariantCourseSlug(IRepositoryWrapper repositoryWrapper, int courseVariantId)
         {
 
-            var newObj = repositoryWrapper.CourseVariant.GetAll()
-               .Join(repositoryWrapper.Course.GetAll(),
+            var newObj = repositoryWrapper.CourseVariant.GetAllWithTracking()
+               .Join(repositoryWrapper.Course.GetAllWithTracking(),
                    courseVariant => courseVariant.CourseId,
                    course => course.CourseId,
                    (courseVariant, course) => new { course, courseVariant })

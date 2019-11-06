@@ -27,7 +27,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             institutionName = institutionName.Trim();
 
-            EducationalInstitution educationalInstitution = await repositoryWrapper.EducationalInstitutionRepository.GetAll()
+            EducationalInstitution educationalInstitution = await repositoryWrapper.EducationalInstitutionRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.Name == institutionName)
                 .FirstOrDefaultAsync();
 

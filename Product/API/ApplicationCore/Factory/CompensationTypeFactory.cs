@@ -33,14 +33,14 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<CompensationType> GetCompensationTypeByGuid(IRepositoryWrapper repositoryWrapper, Guid CompensationTypeGuid)
         {
-            return await repositoryWrapper.CompensationTypeRepository.GetAll()
+            return await repositoryWrapper.CompensationTypeRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.CompensationTypeGuid == CompensationTypeGuid)
                 .FirstOrDefaultAsync();
         }
 
         public static async Task<CompensationType> GetCompensationTypeByName(IRepositoryWrapper repositoryWrapper, string CompensationTypeName)
         {
-            return await repositoryWrapper.CompensationTypeRepository.GetAll()
+            return await repositoryWrapper.CompensationTypeRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.CompensationTypeName == CompensationTypeName)
                 .FirstOrDefaultAsync();
         }
@@ -62,7 +62,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         static public async Task<CompensationType> GetOrAdd(IRepositoryWrapper repositoryWrapper, string CompensationTypeName)
         {
             CompensationTypeName = CompensationTypeName.Trim();
-            CompensationType compensatopnType = await repositoryWrapper.CompensationTypeRepository.GetAll()
+            CompensationType compensatopnType = await repositoryWrapper.CompensationTypeRepository.GetAllWithTracking()
                 .Where(c => c.IsDeleted == 0 && c.CompensationTypeName == CompensationTypeName)
                 .FirstOrDefaultAsync();
 

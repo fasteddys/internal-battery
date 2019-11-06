@@ -28,7 +28,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
             skillName = skillName.Trim().ToLower();
 
-            Skill skill = repositoryWrapper.SkillRepository.GetAll()
+            Skill skill = repositoryWrapper.SkillRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.SkillName == skillName)
                 .FirstOrDefault();
 
@@ -44,7 +44,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         static public async Task<Skill> GetSkillByGuid(IRepositoryWrapper repositoryWrapper, Guid skillGuid)
         {
-            return await repositoryWrapper.SkillRepository.GetAll()
+            return await repositoryWrapper.SkillRepository.GetAllWithTracking()
                .Where(s => s.IsDeleted == 0 && s.SkillGuid == skillGuid)
                .FirstOrDefaultAsync();
         }

@@ -13,7 +13,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<SubscriberEducationHistory> GetEducationHistoryByGuid(IRepositoryWrapper repositoryWrapper, Guid SubscriberEducationHistoryGuid)
         {
-            return await repositoryWrapper.SubscriberEducationHistoryRepository.GetAll()
+            return await repositoryWrapper.SubscriberEducationHistoryRepository.GetAllWithTracking()
                 .Where(eh => eh.IsDeleted == 0 && eh.SubscriberEducationHistoryGuid == SubscriberEducationHistoryGuid)
                 .FirstOrDefaultAsync();
         }
@@ -21,7 +21,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<SubscriberEducationHistory> GetEducationHistoryForSubscriber(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, EducationalInstitution educationalInstitution, EducationalDegree educationalDegree, DateTime? startDate, DateTime? endDate, DateTime? degreeDate)
         {
-            return await repositoryWrapper.SubscriberEducationHistoryRepository.GetAll()
+            return await repositoryWrapper.SubscriberEducationHistoryRepository.GetAllWithTracking()
                 .Where(eh => eh.IsDeleted == 0 && eh.EducationalDegreeId == educationalDegree.EducationalDegreeId &&
                     eh.EducationalInstitutionId == educationalInstitution.EducationalInstitutionId && eh.SubscriberId == subscriber.SubscriberId &&
                     eh.StartDate == startDate && eh.EndDate == endDate && eh.DegreeDate == degreeDate)

@@ -11,7 +11,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
     {
         static public async Task<SecurityClearance> GetSecurityClearanceByGuid(IRepositoryWrapper repositoryWrapper, Guid SecurityClearanceGuid)
         {
-            SecurityClearance securityClearance = await repositoryWrapper.SecurityClearanceRepository.GetAll()
+            SecurityClearance securityClearance = await repositoryWrapper.SecurityClearanceRepository.GetAllWithTracking()
                 .Where(c => c.IsDeleted == 0 && c.SecurityClearanceGuid == SecurityClearanceGuid)
                 .FirstOrDefaultAsync();
             return securityClearance;

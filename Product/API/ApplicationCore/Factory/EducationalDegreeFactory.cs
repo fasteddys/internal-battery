@@ -27,7 +27,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
             degree = degree.Trim();
 
-            EducationalDegree educationalDegree = await repositoryWrapper.EducationalDegreeRepository.GetAll()
+            EducationalDegree educationalDegree = await repositoryWrapper.EducationalDegreeRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.Degree == degree)
                 .FirstOrDefaultAsync();
 

@@ -28,7 +28,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         static public async Task<Contact> GetOrAdd(IRepositoryWrapper repositoryWrapper, string email, string firstName, string lastName, Subscriber subscriber)
         {
             email = email.Trim();
-            Contact contact =  await repositoryWrapper.ContactRepository.GetAll()
+            Contact contact =  await repositoryWrapper.ContactRepository.GetAllWithTracking()
                 .Where(c => c.IsDeleted == 0 && c.Email == email)
                 .FirstOrDefaultAsync();
 
@@ -43,7 +43,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<Contact> GetContactByEmail(IRepositoryWrapper repositoryWrapper, string email)
         {
-            return await repositoryWrapper.ContactRepository.GetAll()
+            return await repositoryWrapper.ContactRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.Email == email.Trim() )
                 .FirstOrDefaultAsync();
         }

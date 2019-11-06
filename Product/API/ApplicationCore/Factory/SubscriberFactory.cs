@@ -28,7 +28,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         // JAB - It is being used by the resume parse methods.  Refactor rquired for removal
         public static async Task<Subscriber> GetSubscriberById(IRepositoryWrapper repositoryWrapper, int subscriberId)
         {
-            return await repositoryWrapper.SubscriberRepository.GetAll()
+            return await repositoryWrapper.SubscriberRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
                 .FirstOrDefaultAsync();
         }
@@ -71,7 +71,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
 
 
-            Subscriber subscriber = await repositoryWrapper.SubscriberRepository.GetAll()
+            Subscriber subscriber = await repositoryWrapper.SubscriberRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
                 .Include(s => s.EmailVerification)
                 .Include(s => s.State).ThenInclude(c => c.Country)
@@ -93,15 +93,15 @@ namespace UpDiddyApi.ApplicationCore.Factory
             if (subscriber != null)
             {
                 var eligibleCampaigns =
-                   await repositoryWrapper.PartnerContactRepository.GetAll()
+                   await repositoryWrapper.PartnerContactRepository.GetAllWithTracking()
                     .Where(pc => pc.IsDeleted == 0 && pc.Contact.Subscriber.SubscriberId == subscriber.SubscriberId)
                     .Join(
-                        repositoryWrapper.CampaignPartnerContactRepository.GetAll().Where(cpc => cpc.IsDeleted == 0),
+                        repositoryWrapper.CampaignPartnerContactRepository.GetAllWithTracking().Where(cpc => cpc.IsDeleted == 0),
                         pc => pc.PartnerContactId,
                         cpc => cpc.PartnerContactId,
                         (pc, cpc) => cpc)
                     .Join(
-                        repositoryWrapper.CampaignRepository.GetAll().Where(ca => ca.IsDeleted == 0),
+                        repositoryWrapper.CampaignRepository.GetAllWithTracking().Where(ca => ca.IsDeleted == 0),
                         cpc => cpc.CampaignId,
                         ca => ca.CampaignId,
                         (cpc, ca) => ca)
@@ -132,14 +132,14 @@ namespace UpDiddyApi.ApplicationCore.Factory
         }
         public static async Task<Subscriber> GetSubscriberByGuid(IRepositoryWrapper repositoryWrapper, Guid subscriberGuid)
         {
-            return await repositoryWrapper.SubscriberRepository.GetAll()
+            return await repositoryWrapper.SubscriberRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
                 .FirstOrDefaultAsync();
         }
 
         public static async Task<Subscriber> GetSubscriberProfileByGuid(IRepositoryWrapper repositoryWrapper, Guid subscriberGuid)
         {
-            Subscriber subscriber = await repositoryWrapper.SubscriberRepository.GetAll()
+            Subscriber subscriber = await repositoryWrapper.SubscriberRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
                 .Include(s => s.SubscriberWorkHistory).ThenInclude(e => e.Company)
                 .Include(s => s.SubscriberEducationHistory).ThenInclude(i => i.EducationalInstitution)
@@ -154,7 +154,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<Subscriber> GetDeletedSubscriberProfileByGuid(IRepositoryWrapper repositoryWrapper, Guid subscriberGuid)
         {
-            Subscriber subscriber = await repositoryWrapper.SubscriberRepository.GetAll()
+            Subscriber subscriber = await repositoryWrapper.SubscriberRepository.GetAllWithTracking()
                 .Where(s => s.SubscriberGuid == subscriberGuid)
                 .Include(s => s.SubscriberWorkHistory).ThenInclude(e => e.Company)
                 .Include(s => s.SubscriberEducationHistory).ThenInclude(i => i.EducationalInstitution)
@@ -167,7 +167,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<Subscriber> GetSubscriberWithSubscriberFiles(IRepositoryWrapper repositoryWrapper, Guid subscriberGuid)
         {
-            return await repositoryWrapper.SubscriberRepository.GetAll()
+            return await repositoryWrapper.SubscriberRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
                 .Include(s => s.SubscriberFile)
                 .FirstOrDefaultAsync();
@@ -333,7 +333,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<IList<SubscriberSkill>> GetSubscriberSkillsById(IRepositoryWrapper repositoryWrapper, int subscriberId)
         {
-            return await repositoryWrapper.SubscriberSkillRepository.GetAll()
+            return await repositoryWrapper.SubscriberSkillRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
                 .Include(s => s.Skill)
                 .ToListAsync();
@@ -345,7 +345,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<IList<SubscriberWorkHistory>> GetSubscriberWorkHistoryById(IRepositoryWrapper repositoryWrapper, int subscriberId)
         {
-            return await repositoryWrapper.SubscriberWorkHistoryRepository.GetAll()
+            return await repositoryWrapper.SubscriberWorkHistoryRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
                 .Include(s => s.Company)
                 .ToListAsync();
@@ -358,7 +358,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<IList<SubscriberEducationHistory>> GetSubscriberEducationHistoryById(IRepositoryWrapper repositoryWrapper, int subscriberId)
         {
-            return await repositoryWrapper.SubscriberEducationHistoryRepository.GetAll()
+            return await repositoryWrapper.SubscriberEducationHistoryRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
                 .Include(s => s.EducationalInstitution)
                 .Include(s => s.EducationalDegree)

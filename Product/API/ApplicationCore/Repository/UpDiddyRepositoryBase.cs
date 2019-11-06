@@ -9,7 +9,7 @@ using UpDiddyApi.Models;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 namespace UpDiddyApi.ApplicationCore.Repository
 {
-    public class UpDiddyRepositoryBase<TEntity> : IUpDiddyRepositoryBase<TEntity> where TEntity:class
+    public class UpDiddyRepositoryBase<TEntity> : IUpDiddyRepositoryBase<TEntity> where TEntity : class
     {
         private readonly UpDiddyDbContext _dbContext;
 
@@ -20,9 +20,15 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public IQueryable<TEntity> GetAll()
         {
-                return this._dbContext
-                            .Set<TEntity>()
-                            .AsNoTracking();                         
+            return this._dbContext
+                        .Set<TEntity>()
+                        .AsNoTracking();
+        }
+
+        public IQueryable<TEntity> GetAllWithTracking()
+        {
+            return this._dbContext
+                        .Set<TEntity>();
         }
 
         public async Task<IEnumerable<TEntity>> GetByConditionWithTrackingAsync(Expression<Func<TEntity, bool>> expression)
@@ -44,12 +50,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task ExecuteSQL(string sql)
         {
-           await _dbContext.Database.ExecuteSqlCommandAsync(sql);
+            await _dbContext.Database.ExecuteSqlCommandAsync(sql);
         }
 
-         public async Task ExecuteSQL(string sql, object[] parameters)
+        public async Task ExecuteSQL(string sql, object[] parameters)
         {
-           await _dbContext.Database.ExecuteSqlCommandAsync(sql, parameters);
+            await _dbContext.Database.ExecuteSqlCommandAsync(sql, parameters);
         }
 
         public async Task Create(TEntity entity)
@@ -64,7 +70,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public void Update(TEntity entity)
         {
-             this._dbContext.Set<TEntity>().Update(entity);
+            this._dbContext.Set<TEntity>().Update(entity);
         }
 
         public void UpdateRange(TEntity[] entity)
@@ -84,7 +90,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public EntityEntry GetEntry(TEntity entity)
         {
-           return this._dbContext.Entry(entity);
+            return this._dbContext.Entry(entity);
         }
     }
 }

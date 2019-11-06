@@ -12,7 +12,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
  
         public static async Task<State> GetStateByStateCode(IRepositoryWrapper repositoryWrapper, string stateCode)
         {
-            return await repositoryWrapper.State.GetAll()
+            return await repositoryWrapper.State.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.Code == stateCode.Trim())
                 .FirstOrDefaultAsync();
         }

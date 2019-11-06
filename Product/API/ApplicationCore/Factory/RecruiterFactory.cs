@@ -11,14 +11,14 @@ namespace UpDiddyApi.ApplicationCore.Factory
     {
         public static async Task<Recruiter> GetRecruiterBySubscriberId(IRepositoryWrapper repositoryWrapper, int subscriberId)
         {
-            return await repositoryWrapper.RecruiterRepository.GetAll()
+            return await repositoryWrapper.RecruiterRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
                 .FirstOrDefaultAsync();
         }
 
         public static async Task<Recruiter> GetRecruiterBySubscriberGuid(IRepositoryWrapper repositoryWrapper, Guid subscriberGuid)
         {
-            return await repositoryWrapper.RecruiterRepository.GetAll()
+            return await repositoryWrapper.RecruiterRepository.GetAllWithTracking()
                 .Include(s => s.Subscriber)
                 .Where(s => s.IsDeleted == 0 && s.Subscriber.SubscriberGuid == subscriberGuid)
                 .FirstOrDefaultAsync();
@@ -26,7 +26,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<Recruiter> GetRecruiterById(IRepositoryWrapper repositoryWrapper, int recruiterId)
         {
-            return await repositoryWrapper.RecruiterRepository.GetAll()
+            return await repositoryWrapper.RecruiterRepository.GetAllWithTracking()
                 .Include(s => s.Subscriber)
                 .Where(s => s.IsDeleted == 0 && s.RecruiterId == recruiterId)
                 .FirstOrDefaultAsync();
@@ -51,7 +51,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         public static async Task<Recruiter> GetAddOrUpdate(IRepositoryWrapper repositoryWrapper, string email, string firstName, string lastName, string phoneNumber, Subscriber subscriber)
         {
             email = email.Trim();
-            Recruiter recruiter = await repositoryWrapper.RecruiterRepository.GetAll()
+            Recruiter recruiter = await repositoryWrapper.RecruiterRepository.GetAllWithTracking()
                 .Where(r => r.IsDeleted == 0 && r.Email == email)
                 .FirstOrDefaultAsync();
 

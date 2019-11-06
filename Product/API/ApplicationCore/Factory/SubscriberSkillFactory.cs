@@ -15,7 +15,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             try
             {
                 // check for a matching skill (either deleted or active )for this subscriber  
-                var existingSkill = await repositoryWrapper.SubscriberSkillRepository.GetAll()
+                var existingSkill = await repositoryWrapper.SubscriberSkillRepository.GetAllWithTracking()
                     .Where(ss => ss.SubscriberId == subscriber.SubscriberId && ss.SkillId == skill.SkillId)
                     .FirstOrDefaultAsync();
 
@@ -57,7 +57,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<SubscriberSkill> GetSkillForSubscriber(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, Skill skill)
         {
-            return await repositoryWrapper.SubscriberSkillRepository.GetAll()
+            return await repositoryWrapper.SubscriberSkillRepository.GetAllWithTracking()
                 .Where(ss => ss.IsDeleted == 0 && ss.SkillId == skill.SkillId && ss.SubscriberId == subscriber.SubscriberId)
                 .FirstOrDefaultAsync();
         }

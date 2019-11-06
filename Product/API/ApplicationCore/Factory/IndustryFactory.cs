@@ -13,7 +13,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         static public async Task<Industry> GetIndustryByGuid(IRepositoryWrapper repositoryWrapper, Guid IndustryGuid)
         {
 
-            Industry industry = await repositoryWrapper.IndustryRepository.GetAll()
+            Industry industry = await repositoryWrapper.IndustryRepository.GetAllWithTracking()
                 .Where(c => c.IsDeleted == 0 && c.IndustryGuid == IndustryGuid)
                 .FirstOrDefaultAsync();
             return industry;

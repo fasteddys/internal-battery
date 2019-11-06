@@ -14,14 +14,14 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static async Task<SubscriberWorkHistory> GetWorkHistoryByGuid(IRepositoryWrapper repositoryWrapper, Guid SubcriberWorkHistoryGuid)
         {
-            return await repositoryWrapper.SubscriberWorkHistoryRepository.GetAll()
+            return await repositoryWrapper.SubscriberWorkHistoryRepository.GetAllWithTracking()
                 .Where(wh => wh.IsDeleted == 0 && wh.SubscriberWorkHistoryGuid == SubcriberWorkHistoryGuid )
                 .FirstOrDefaultAsync();
         }
 
         public static async Task<SubscriberWorkHistory> GetWorkHistoryForSubscriber(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, Company company, DateTime? startDate, DateTime? endDate)
         {
-            return await repositoryWrapper.SubscriberWorkHistoryRepository.GetAll()
+            return await repositoryWrapper.SubscriberWorkHistoryRepository.GetAllWithTracking()
                 .Where(wh => wh.IsDeleted == 0 && wh.CompanyId == company.CompanyId && wh.SubscriberId == subscriber.SubscriberId && wh.StartDate == startDate && wh.EndDate == endDate)
                 .FirstOrDefaultAsync();
         }
