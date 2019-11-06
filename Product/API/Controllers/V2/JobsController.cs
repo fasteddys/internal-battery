@@ -37,6 +37,7 @@ namespace UpDiddyApi.Controllers
         private readonly ISubscriberService _subscriberService;
         private readonly IJobPostingService _jobPostingService;
         private readonly IJobAlertService _jobAlertService;
+        private readonly IJobApplicationService _jobApplicationService;
 
         #region constructor 
         public JobsController(IServiceProvider services, IHangfireService hangfireService)
@@ -52,6 +53,7 @@ namespace UpDiddyApi.Controllers
             _httpClientFactory = _services.GetService<IHttpClientFactory>();
             _repositoryWrapper = _services.GetService<IRepositoryWrapper>();
             _subscriberService = _services.GetService<ISubscriberService>();
+            _jobApplicationService = _services.GetService<IJobApplicationService>();
             _postingTTL = int.Parse(_configuration["JobPosting:PostingTTLInDays"]);
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
 
@@ -59,10 +61,29 @@ namespace UpDiddyApi.Controllers
             _jobService = _services.GetService<IJobService>();
             _jobPostingService = _services.GetService<IJobPostingService>();
             _hangfireService = hangfireService;
-         //   _jobAlertService = jobAlertService;
+     
         }
 
         #endregion
+
+
+        #region Job Applications
+
+
+        [HttpPost]
+        [Route("/V2/[controller]/{JobGuid}/applications")]
+        [Authorize]
+        public async Task<IActionResult> CreateJobApplication([FromBody] ApplicationDto jobApplicationDto, Guid JobGuid)
+        {
+
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _jobApplicationService.CreateJobApplication(subscriberGuid, JobGuid, jobApplicationDto);
+            return StatusCode(201);
+        }
+
+
+        #endregion
+
 
 
         #region Job Browse 
@@ -83,20 +104,10 @@ namespace UpDiddyApi.Controllers
         [HttpGet]
         [Route("/V2/[controller]/search/{JobGuid}")]
         public async Task<IActionResult> GetJob(Guid JobGuid)
-        {
-            try
-            {
-                JobDetailDto rVal = await _jobService.GetJobDetail(JobGuid);
-                return Ok(rVal);
-            }
-            catch (NotFoundException e)
-            {
-                return NotFound();
-            }
-            catch 
-            {
-                return BadRequest();
-            }        
+        {          
+            JobDetailDto rVal = await _jobService.GetJobDetail(JobGuid);
+            return Ok(rVal);
+       
         }
 
 
@@ -109,6 +120,17 @@ namespace UpDiddyApi.Controllers
             return Ok(rVal);
         }
 
+
+        [HttpPost]
+        [Route("/V2/[controller]/{job}/share")]
+        public async Task<IActionResult> Share([FromBody] ShareJobDto shareJobDto, Guid job)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _jobService.ShareJob(subscriberGuid, job, shareJobDto);
+            return StatusCode(201);
+        }
+
+
         #endregion
 
         #region Job Alert
@@ -118,21 +140,10 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         public async Task<IActionResult> CreateJobAlert([FromBody] JobAlertDto jobPostingAlertDto)
         {
-            try
-            {
-                Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                await _jobAlertService.CreateJobAlert(subscriberGuid, jobPostingAlertDto);
-                return StatusCode(201);
-            }
-            catch (MaximumReachedException e)
-            {
-                return BadRequest(e);
-            }
-            catch (Exception e)
-            {
 
-            }
-            return Ok();
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _jobAlertService.CreateJobAlert(subscriberGuid, jobPostingAlertDto);
+            return StatusCode(201);
         }
 
         [HttpGet]
@@ -140,52 +151,26 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         public async Task<IActionResult> GetJobAlerts()
         {
-            try
-            {
-                Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                var jobAlerts = await _jobAlertService.GetJobAlert(subscriberGuid);
-                return Ok(jobAlerts);
-            }
-            catch (NotFoundException e)
-            {
-                return BadRequest(e);
-            }
-            catch (Exception e)
-            {
 
-            }
-
-            return Ok();
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var jobAlerts = await _jobAlertService.GetJobAlert(subscriberGuid);
+            return Ok(jobAlerts);
         }
 
         [HttpDelete]
-        [Route("/V2/[controller]/alert")]
+        [Route("/V2/[controller]/alert/{jobAlert}")]
         [Authorize]
-        public async Task<IActionResult> DeleteJobAlert(Guid jobAlertGuid)
+        public async Task<IActionResult> DeleteJobAlert(Guid jobAlert)
         {
-            try
-            {
-                Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-             //   await _jobAlertService.DeleteJobAlert(jobAlertGuid);
-                return StatusCode(204);
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Forbid();
-            }
-            catch (NotFoundException e)
-            {
-                return BadRequest(e);
-            }
-            catch (Exception e)
-            {
 
-            }
-
-            return Ok();
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _jobAlertService.DeleteJobAlert(subscriberGuid, jobAlert);
+            return StatusCode(204);
         }
 
         #endregion
+
+
 
     }
 }

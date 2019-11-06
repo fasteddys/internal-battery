@@ -37,17 +37,14 @@ namespace UpDiddyApi.Controllers
             _graphClient = services.GetService<IB2CGraph>();
             _adb2cApi = services.GetService<IAPIGateway>();
         }
-                
-        [HttpGet("check-auth0/{email}")]
-        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
-        public async Task<IActionResult> IsUserInAuth0(string email)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
 
-            var result = await _userService.GetUserByEmailAsync(email);
+        // intentionally using HttpPost rather than HttpGet because of how IIS treats certain special characters in routes even if they are escaped (such as +)
+        // https://stackoverflow.com/questions/7739233/double-escape-sequence-inside-a-url-the-request-filtering-module-is-configured
+        [HttpPost("is-user-exists-auth0")]
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
+        public async Task<IActionResult> IsUserInAuth0([FromBody] EmailDto emailDto)
+        {
+            var result = await _userService.GetUserByEmailAsync(emailDto.Email);
 
             if (result != null && result.Success)
             {
@@ -59,17 +56,14 @@ namespace UpDiddyApi.Controllers
             }
         }
 
-        [HttpGet("check-adb2c/{email}")]
+        // intentionally using HttpPost rather than HttpGet because of how IIS treats certain special characters in routes even if they are escaped (such as +)
+        // https://stackoverflow.com/questions/7739233/double-escape-sequence-inside-a-url-the-request-filtering-module-is-configured
+        [HttpPost("is-user-exists-adb2c")]
         [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
-        public async Task<IActionResult> IsUserInADB2C(string email)
+        public async Task<IActionResult> IsUserInADB2C([FromBody] EmailDto emailDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
-
             // check if user exits in ADB2C (the account must also be enabled)
-            Microsoft.Graph.User user = await _graphClient.GetUserBySignInEmail(email);
+            Microsoft.Graph.User user = await _graphClient.GetUserBySignInEmail(emailDto.Email);
 
             if (user != null && user.AccountEnabled.HasValue && user.AccountEnabled.Value)
             {
@@ -83,7 +77,7 @@ namespace UpDiddyApi.Controllers
 
         [HttpPost("check-adb2c-login")]
         [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
-        public async Task<IActionResult> CheckADB2CLogin(UserDto userDto)
+        public async Task<IActionResult> CheckADB2CLogin([FromBody] UserDto userDto)
         {
             if (!ModelState.IsValid)
             {

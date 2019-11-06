@@ -41,7 +41,7 @@ namespace UpDiddyApi.Helpers.GoogleProfile
                 },
                 updateTime = new Timestamp()
                 {
-                    Seconds = Utils.ToUnixTimeInSeconds(subscriber.ModifyDate.Value),
+                    Seconds = Utils.ToUnixTimeInSeconds(subscriber.ModifyDate.HasValue ? subscriber.ModifyDate.Value : subscriber.CreateDate),
                     Nanos = 0
                 },
                 personNames = MapPersonName(subscriber),

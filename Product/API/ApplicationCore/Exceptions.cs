@@ -13,10 +13,9 @@ namespace UpDiddyApi.ApplicationCore.Exceptions
     public class MaximumReachedException : Exception
     {
         public MaximumReachedException() : base() { }
-        public MaximumReachedException(string message) : base(message)
-        {
+        public MaximumReachedException(string message) : base(message) {
 
-        }
+         }
         public MaximumReachedException(string message, Exception innerException)
             : base(message, innerException) { }
     }
