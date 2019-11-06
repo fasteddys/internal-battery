@@ -39,6 +39,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
         private readonly IB2CGraph _graphClient;
         private readonly string _acceptedTermsOfServiceKeyName = null;
         private readonly string _isOptInToMarketingEmailsKeyName = null;
+
         public UserService(IServiceProvider services)
         {
             var configuration = services.GetService<IConfiguration>();
@@ -50,7 +51,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             };
             _domain = configuration["Auth0:Domain"];
             _managementApiUrl = new Uri(configuration["Auth0:ManagementApi:url"]);
-            _auth0CryptoKey = configuration["Auth0:CryptoKey"];
+            _auth0CryptoKey = configuration["Crypto:Key"];
             _memoryCache = services.GetService<IMemoryCache>();
             _repositoryWrapper = services.GetService<IRepositoryWrapper>();
             _logger = services.GetService<ILogger<UserService>>();
@@ -184,6 +185,10 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
 
         public async Task<CreateUserResponse> CreateUserAsync(User user, bool requireEmailVerification, params Role[] userRoles)
         {
+            // create an ADB2C account - this can be removed once WozU has switched to Auth0 for SSO (client id and secret)
+            var adb2cUser = await _graphClient.CreateUser(user.Email, user.Email, user.Password);
+            Guid subscriberGuid = Guid.Parse(adb2cUser.AdditionalData["objectId"].ToString());
+            
             Auth0.ManagementApi.Models.User userCreationResponse = null;
             var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByEmailAsync(user.Email);
 
@@ -203,7 +208,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                 VerifyEmail = requireEmailVerification,
                 AppMetadata = new JObject()
             };
-            Guid subscriberGuid = Guid.NewGuid();
+
             userCreationRequest.AppMetadata.subscriberGuid = subscriberGuid;
             userCreationRequest.AppMetadata.acceptedTermsOfService = "October 16, 2018, version 1.0"; // may need to make this dynamic later
             userCreationRequest.AppMetadata.isOptInToMarketingEmails = user.IsAgreeToMarketingEmails;
@@ -308,7 +313,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
 
             return new GetUsersResponse(true, $"Successfully retrieved users in role: {role.ToString()}", usersInRole);
         }
-        
+
         public async Task<CreateUserResponse> MigrateUserAsync(User user)
         {
             Auth0.ManagementApi.Models.User userCreationResponse = null;
@@ -360,7 +365,9 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                         if (newRoles.Count() > 0)
                             await managementApiClient.Users.AssignRolesAsync(userCreationResponse.UserId, new AssignRolesRequest() { Roles = newRoles.ToArray() });
                     }
-                    _graphClient.DisableUser(user.SubscriberGuid);
+
+                    // cannot do this because we need the person to be active for WozU
+                    // _graphClient.DisableUser(user.SubscriberGuid);
 
                     subscriber.Auth0UserId = userCreationResponse.UserId;
                     subscriber.ModifyDate = DateTime.UtcNow;

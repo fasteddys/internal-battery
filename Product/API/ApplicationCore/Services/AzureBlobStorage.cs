@@ -31,12 +31,13 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
         public async Task<Stream> GetStreamAsync(string blobName)
-        {
+        {         
             return await GetBlob(blobName).OpenReadAsync();
+                
         }
 
         public async Task<Stream> OpenReadAsync(string blobName)
-        {
+        {    
             return await GetBlob(blobName).OpenReadAsync();
         }
 
