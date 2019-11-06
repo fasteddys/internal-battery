@@ -21,6 +21,10 @@ public class ExceptionMiddleware
         {
             await _next(context);
         }
+        catch (AlreadyExistsException ex)
+        {
+            await CreateResponse(400, ex, context);
+        }
         catch (FailedValidationException ex)
         {
             await CreateResponse(400, ex, context);
@@ -41,8 +45,17 @@ public class ExceptionMiddleware
         {
             await CreateResponse(400, ex, context);
         }
+        catch (ExpiredJobException ex)
+        {
+            await CreateResponse(410, ex, context);
+        }
+        catch (InvalidOperationException ex)
+        {
+            await CreateResponse(401, ex, context);
+        }
         catch (Exception ex)
         {
+            await CreateResponse(400, ex, context);
             _logger.Log(LogLevel.Error, $"Unhandled exception thrown -> {ex.InnerException}");
             throw;
         }

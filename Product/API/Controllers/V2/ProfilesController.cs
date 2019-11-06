@@ -17,6 +17,7 @@ using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyLib.Domain.Models;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyLib.Dto.Marketing;
+using UpDiddyLib.Dto.User;
 
 namespace UpDiddyApi.Controllers.V2
 {
@@ -69,6 +70,42 @@ namespace UpDiddyApi.Controllers.V2
         #endregion
 
 
+        #region profiles
+
+        [HttpPost]
+        [Authorize]
+        [Route("/V2/[controller]")]
+        public async Task<IActionResult> AddProfile([FromBody] SubscribeProfileBasicDto subscribeProfileBasicDto )
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _subscriberService.CreateNewSubscriberAsync(subscribeProfileBasicDto); 
+            return StatusCode(201);
+        }
+
+
+        [HttpPut]
+        [Authorize]
+        [Route("/V2/[controller]")]
+        public async Task<IActionResult> UpdateProfile([FromBody] SubscribeProfileBasicDto subscribeProfileBasicDto)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _subscriberService.UpdateSubscriberProfileBasicAsync(subscribeProfileBasicDto, subscriberGuid);
+            return StatusCode(200);
+        }
+
+
+        [HttpGet]
+        [Authorize]
+        [Route("/V2/[controller]/{subscriberGuid}")]
+        public async Task<SubscribeProfileBasicDto> GetProfile(Guid subscriberGuid)
+        {
+            return ( await _subscriberService.GetSubscriberProfileBasicAsync(subscriberGuid));
+            
+        }
+
+
+
+        #endregion
 
 
         #region educational history

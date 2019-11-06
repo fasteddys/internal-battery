@@ -26,6 +26,7 @@ using AutoMapper;
 using System.Security.Claims;
 using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNetCore.Http;
+using UpDiddyApi.ApplicationCore.Exceptions;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -58,6 +59,14 @@ namespace UpDiddyApi.ApplicationCore.Services
             _taggingService = taggingService;
             _hangfireService = hangfireService;
         }
+
+        public async Task<Subscriber> GetSubscriberByEmail(string email)
+        {
+            return  _repository.SubscriberRepository.GetSubscriberByEmail(email);
+        }
+
+
+
 
         public async Task<Subscriber> GetSubscriberByGuid(Guid subscriberGuid)
         {
@@ -146,6 +155,53 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         }
 
+        public async Task<bool> CreateNewSubscriberAsync(SubscribeProfileBasicDto subscribeProfileBasicDto)
+        {
+            bool isSubscriberCreatedSuccessfully = false;
+
+            try
+            {
+
+                var Subscriber = await GetSubscriberByGuid(subscribeProfileBasicDto.SubscriberGuid);
+                if (Subscriber != null)
+                    throw new AlreadyExistsException($"SubscriberGuid {subscribeProfileBasicDto.SubscriberGuid} already exists");
+
+                Subscriber = await GetSubscriberByEmail(subscribeProfileBasicDto.Email);
+                if (Subscriber != null)
+                    throw new AlreadyExistsException($"A subscriber already exists with {subscribeProfileBasicDto.Email} as their email");
+
+                // create the user in the CareerCircle database
+                _repository.SubscriberRepository.Create(new Subscriber()
+                {
+                    SubscriberGuid = subscribeProfileBasicDto.SubscriberGuid,
+                    Auth0UserId = subscribeProfileBasicDto.Auth0UserId,
+                    Email = subscribeProfileBasicDto.Email,
+                    FirstName = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.FirstName) ? subscribeProfileBasicDto.FirstName : null,
+                    LastName = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.LastName) ? subscribeProfileBasicDto.LastName : null,
+                    PhoneNumber = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.PhoneNumber) ? subscribeProfileBasicDto.PhoneNumber : null,
+                    CreateDate = DateTime.UtcNow,
+                    CreateGuid = Guid.Empty,
+                    IsDeleted = 0
+                });
+                await _repository.SubscriberRepository.SaveAsync();
+                var subscriber = _repository.SubscriberRepository.GetSubscriberByGuid(subscribeProfileBasicDto.SubscriberGuid);
+
+                // add the user to the Google Talent Cloud
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscribeProfileBasicDto.SubscriberGuid));
+ 
+
+                isSubscriberCreatedSuccessfully = true;
+            }
+            catch (Exception e)
+            {
+                _logger.Log(LogLevel.Error, $"SubscriberService.CreateNewSubscriberAsync: An error occured while attempting to create a subscriber. Message: {e.Message}", e);
+            }
+
+            return isSubscriberCreatedSuccessfully;
+
+        }
+
+
         public async Task<bool> CreateSubscriberAsync(CreateUserDto createUserDto)
         {
             bool isSubscriberCreatedSuccessfully = false;
@@ -186,6 +242,68 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             return isSubscriberCreatedSuccessfully;
         }
+
+
+
+        public async Task<bool> UpdateSubscriberProfileBasicAsync(SubscribeProfileBasicDto subscribeProfileBasicDto, Guid subscriberGuid)
+        {            
+            try
+            {
+                var Subscriber = await GetSubscriberByGuid(subscribeProfileBasicDto.SubscriberGuid);
+                if (Subscriber == null)
+                    throw new NotFoundException($"SubscriberGuid {subscribeProfileBasicDto.SubscriberGuid} does not exist exist");
+                
+                if (Subscriber.Email != subscribeProfileBasicDto.Email)
+                    throw new InvalidOperationException($"This operation cannot be used to change a subscriber's email address");
+
+
+                if (Subscriber.SubscriberGuid != subscriberGuid)
+                    throw new InvalidOperationException($"Not owner of profile");
+
+                // update the user in the CareerCircle database
+                Subscriber.SubscriberGuid = subscribeProfileBasicDto.SubscriberGuid;
+                Subscriber.Auth0UserId = subscribeProfileBasicDto.Auth0UserId;
+                Subscriber.FirstName = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.FirstName) ? subscribeProfileBasicDto.FirstName : null;
+                Subscriber.LastName = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.LastName) ? subscribeProfileBasicDto.LastName : null;
+                Subscriber.PhoneNumber = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.PhoneNumber) ? subscribeProfileBasicDto.PhoneNumber : null;
+                Subscriber.ModifyDate = DateTime.UtcNow;
+         
+                await _repository.SubscriberRepository.SaveAsync();
+     
+                // add the user to the Google Talent Cloud
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscribeProfileBasicDto.SubscriberGuid));
+
+            }
+            catch (Exception e)
+            {
+                _logger.Log(LogLevel.Error, $"SubscriberService.UpdateSubscriberProfileBasicAsync: An error occured while attempting to create a subscriber. Message: {e.Message}", e);
+            }
+            return true;
+        }
+
+
+        public async Task<SubscribeProfileBasicDto> GetSubscriberProfileBasicAsync(Guid subscriberGuid)
+        {
+ 
+            SubscribeProfileBasicDto rVal = null;
+            try
+            {
+                var Subscriber = await GetSubscriberByGuid(subscriberGuid);
+                if (Subscriber == null)
+                    throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
+
+                rVal = _mapper.Map<SubscribeProfileBasicDto>(Subscriber);  
+            }
+            catch (Exception e)
+            {
+                _logger.Log(LogLevel.Error, $"SubscriberService.UpdateSubscriberProfileBasicAsync: An error occured while attempting to create a subscriber. Message: {e.Message}", e);
+            }
+            return rVal;
+        }
+
+
+
+
 
         public async Task UpdateSubscriber(Subscriber subscriber)
         {

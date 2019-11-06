@@ -197,6 +197,13 @@ namespace UpDiddyApi.Helpers
                     sn.HasRead
                 })))
                 .ReverseMap();
+
+            CreateMap<Subscriber, SubscribeProfileBasicDto>()               
+                .ReverseMap();
+
+
+
+
             CreateMap<SubscriberFile, SubscriberFileDto>()
                 .ForMember(s => s.SimpleName, opt => opt.MapFrom(src => src.SimpleName))
                 .ForMember(s => s.SubscriberFileGuid, opt => opt.MapFrom(src => src.SubscriberFileGuid))
