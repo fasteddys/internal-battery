@@ -99,8 +99,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("/V2/[controller]/{subscriberGuid}")]
         public async Task<SubscribeProfileBasicDto> GetProfile(Guid subscriberGuid)
         {
-            return ( await _subscriberService.GetSubscriberProfileBasicAsync(subscriberGuid));
-            
+            return ( await _subscriberService.GetSubscriberProfileBasicAsync(subscriberGuid));            
         }
 
 
