@@ -248,6 +248,8 @@ namespace UpDiddyApi
             services.AddHttpClient<IB2CGraph, B2CGraphClient>();
 
             services.AddScoped<ISubscriberService, SubscriberService>();
+            services.AddScoped<ISubscriberEducationalHistoryService, SubscriberEducationalHistoryService>();
+            services.AddScoped<ISubscriberWorkHistoryService, SubscriberWorkHistoryService>();
             services.AddScoped<IReportingService, ReportingService>();
             services.AddScoped<IJobService, JobService>();
             services.AddScoped<ITrackingService, TrackingService>();
@@ -331,6 +333,8 @@ namespace UpDiddyApi
                 routes.Filter().OrderBy().Count();
                 routes.EnableDependencyInjection();
             });
+
+        
 
             // Added for SignalR
             app.UseSignalR(routes =>

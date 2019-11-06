@@ -44,6 +44,16 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .FirstOrDefault();
         }
 
+
+        public static async Task<CompensationType> GetCompensationTypeByNameAsync(UpDiddyDbContext db, string CompensationTypeName)
+        {
+            return db.CompensationType
+                .Where(s => s.IsDeleted == 0 && s.CompensationTypeName == CompensationTypeName)
+                .FirstOrDefault();
+        }
+
+
+
         static public CompensationType CreateCompensationType(string CompensationTypeName)
         {
             CompensationType rVal = new CompensationType();
