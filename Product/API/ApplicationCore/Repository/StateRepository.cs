@@ -10,10 +10,24 @@ namespace UpDiddyApi.ApplicationCore.Repository
 {
     public class StateRepository : UpDiddyRepositoryBase<State>, IStateRepository
     {
+
+
+        private readonly UpDiddyDbContext _dbContext;
+
         public StateRepository(UpDiddyDbContext dbContext) : base(dbContext)
         {
-
+            _dbContext = dbContext;
         }
+
+
+        public async Task<State> GetStateBySubscriberGuid(Guid subscriberGuid)
+        {
+            return await (from s in _dbContext.State join
+                          su in _dbContext.Subscriber on s.StateId equals su.StateId
+                          where su.SubscriberGuid == subscriberGuid
+                          select s).FirstOrDefaultAsync();
+        }
+
 
         public async Task<IEnumerable<State>> GetAllStatesAsync()
         {
