@@ -49,6 +49,10 @@ public class ExceptionMiddleware
         {
             await CreateResponse(410, ex, context);
         }
+        catch (NoChangeDetectedException ex)
+        {
+            await CreateResponse(204, ex, context);
+        }
         catch (Exception ex)
         {
             await CreateResponse(400, ex, context);

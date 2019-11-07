@@ -7,6 +7,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     public interface ISkillService
     {
         Task<List<SkillDto>> GetSkillsBySubscriberGuid(Guid subscriberGuid);
-        Task CreateSkillForSubscriber(Guid subscriber, List<SkillDto> skills);
+        Task UpdateSubscriberSkills(Guid subscriber, List<string> skills);
     }
 }

@@ -11,7 +11,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyLib.Domain.Models;
 using UpDiddyApi.Models;
-
+using UpDiddyApi.ApplicationCore.Exceptions;
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class SkillService : ISkillService
@@ -40,32 +40,58 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<List<SkillDto>> GetSkillsBySubscriberGuid(Guid subscriberGuid)
         {
-            var entity =  await _repositoryWrapper.SkillRepository.GetBySubscriberGuid(subscriberGuid);
-            return _mapper.Map<List<Skill>,List<SkillDto>>(entity);
+            var entity = await _repositoryWrapper.SkillRepository.GetBySubscriberGuid(subscriberGuid);
+            return _mapper.Map<List<Skill>, List<SkillDto>>(entity);
         }
 
-        public async Task CreateSkillForSubscriber(Guid subscriberGuid, List<SkillDto> skills)
+        public async Task UpdateSubscriberSkills(Guid subscriberGuid, List<string> skills)
         {
-            foreach( var skill in skills)
+            var subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
+            var subscriberSkillsList = await _repositoryWrapper.SubscriberSkillRepository.GetBySubscriberGuid(subscriberGuid);
+            foreach (var subscriberSkill in subscriberSkillsList)
             {
-                var subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
-                Skill skillEntity = _mapper.Map<Skill>(skill);
-                skillEntity.SkillGuid = Guid.NewGuid();
-                skillEntity.CreateDate = DateTime.UtcNow;
-                skillEntity.ModifyDate = DateTime.UtcNow;
-                
-                SubscriberSkill subscriberSkill = new SubscriberSkill {
+                subscriberSkill.IsDeleted = 1;
+                if (skills.Contains(subscriberSkill.Skill.SkillName, StringComparer.CurrentCultureIgnoreCase))
+                {
+                    subscriberSkill.IsDeleted = 0;
+                    skills.RemoveAll(n => n.Equals(subscriberSkill.Skill.SkillName, StringComparison.OrdinalIgnoreCase));
+                }
+            }
+
+            foreach (var skill in skills)
+            {
+                Skill skillEntity = new Skill();
+                var existingSkill = await _repositoryWrapper.SkillRepository.GetByName(skill);
+                if (existingSkill == null)
+                {
+                    skillEntity.SkillGuid = Guid.NewGuid();
+                    skillEntity.SkillName = skill;
+                    skillEntity.CreateDate = DateTime.UtcNow;
+                    skillEntity.ModifyDate = DateTime.UtcNow;
+                }
+                else
+                {
+                    skillEntity = existingSkill;
+                }
+
+                SubscriberSkill subscriberSkill = new SubscriberSkill
+                {
                     SubscriberId = subscriber.SubscriberId,
-                    Subscriber = subscriber,
                     SubscriberSkillGuid = Guid.NewGuid(),
                     Skill = skillEntity,
                     CreateDate = DateTime.UtcNow,
-                    ModifyDate = DateTime.UtcNow                    
+                    ModifyDate = DateTime.UtcNow
                 };
-
                 await _repositoryWrapper.SubscriberSkillRepository.Create(subscriberSkill);
             }
+            if (_repositoryWrapper.SubscriberSkillRepository.HasUnsavedChanges())
+            {
+                await _repositoryWrapper.SaveAsync();
+            }
+            else
+            {
+                throw new NoChangeDetectedException("No changes to subscriber skills");
+            }
         }
-
     }
 }

@@ -92,5 +92,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             return this._dbContext.Entry(entity);
         }
+
+        public bool HasUnsavedChanges()
+        {
+            return this._dbContext.ChangeTracker.Entries().Any(e => e.State == EntityState.Added
+                                                      || e.State == EntityState.Modified
+                                                      || e.State == EntityState.Deleted);
+        }
     }
 }

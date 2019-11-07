@@ -8,5 +8,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface ISubscriberSkillRepository : IUpDiddyRepositoryBase<SubscriberSkill>
     {
+        Task<SubscriberSkill> GetBySubscriberGuidAndSkillGuid(Guid subscriberGuid, Guid skillGuid);
+        Task<List<SubscriberSkill>> GetBySubscriberGuid(Guid SubscriberGuid);
     }
 }

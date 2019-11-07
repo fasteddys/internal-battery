@@ -40,5 +40,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             return skills;
         }
+
+        public async Task<Skill> GetByName(string name)
+        {
+            return await (from s in _dbContext.Skill
+                          where s.SkillName == name
+                          select s).FirstOrDefaultAsync();
+        }
     }
 }
