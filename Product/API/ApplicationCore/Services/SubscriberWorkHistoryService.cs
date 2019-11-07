@@ -75,7 +75,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new NotFoundException($"Subscriber {subscriberGuid} cannot be found");
 
             int companyId = -1;
-            if (WorkHistoryDto != null)
+            if (WorkHistoryDto.Company!= null)
             {
                 Company company = await CompanyFactory.GetOrAdd(_repository, WorkHistoryDto.Company);
                 companyId = company != null ? company.CompanyId : -1;
@@ -137,7 +137,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             SubscriberWorkHistory WorkHistory = await SubscriberWorkHistoryFactory.GetWorkHistoryByGuid(_repository, workHistoryGuid);
             if (WorkHistory == null)
-                throw new NotFoundException($"Work history {WorkHistoryDto.SubscriberWorkHistoryGuid} does not exist.");
+                throw new NotFoundException($"Work history {workHistoryGuid} does not exist.");
 
 
             if (WorkHistory.SubscriberId != subscriber.SubscriberId)

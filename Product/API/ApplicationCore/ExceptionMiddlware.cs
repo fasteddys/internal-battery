@@ -53,6 +53,10 @@ public class ExceptionMiddleware
         {
             await CreateResponse(204, ex, context);
         }
+        catch (InvalidOperationException ex)
+        {
+            await CreateResponse(401, ex, context);
+        }
         catch (Exception ex)
         {
             await CreateResponse(400, ex, context);

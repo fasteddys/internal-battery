@@ -11,5 +11,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<IEnumerable<State>> GetAllStatesAsync();
         Task<IEnumerable<State>> GetStatesByCountryGuid(Guid countryGuid);
         Task<IEnumerable<State>> GetStatesForDefaultCountry();
+        Task<State> GetStateBySubscriberGuid(Guid subscriberGuid);
     }
 }

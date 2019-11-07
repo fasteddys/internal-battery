@@ -126,7 +126,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             SubscriberEducationHistory EducationHistory = await SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(_repository, educationalHistoryGuid);
             if (EducationHistory == null )
-                throw new NotFoundException($"Educational History  {EducationHistoryDto.SubscriberEducationHistoryGuid} does not exist");
+                throw new NotFoundException($"Educational History  {educationalHistoryGuid} does not exist");
 
             if (EducationHistory.SubscriberId != subscriber.SubscriberId)
                 throw new UnauthorizedAccessException();
