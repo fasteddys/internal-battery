@@ -122,7 +122,8 @@ namespace UpDiddy.Controllers
                     FirstName = traitifyDto.FirstName,
                     LastName = traitifyDto.LastName,
                     PartnerGuid = model.PartnerGuid,
-                    ReferrerUrl = _configuration["Environment:BaseUrl"] + "traitify"
+                    ReferrerUrl = _configuration["Environment:BaseUrl"] + "traitify",
+                    IsGatedDownload = false
                 };
                 BasicResponseDto subscriberResponse = await _Api.CreateUserAsync(createUserDto);
                 switch (subscriberResponse.StatusCode)

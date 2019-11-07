@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Graph;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
@@ -20,12 +19,12 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Shared;
 using UpDiddyLib.Helpers;
-using System.Text.RegularExpressions;
 using System.Web;
 using AutoMapper;
 using System.Security.Claims;
 using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNetCore.Http;
+using System.Text.RegularExpressions;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyLib.Domain;
 using UpDiddyLib.Domain.Models;
@@ -42,6 +41,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IMapper _mapper;
         private ITaggingService _taggingService { get; set; }
         private IHangfireService _hangfireService { get; set; }
+        private IFileDownloadTrackerService _fileDownloadTrackerService { get; set; }
+        private ISysEmail _sysEmail;
 
         public SubscriberService(UpDiddyDbContext context,
             IConfiguration configuration,
@@ -50,7 +51,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             ILogger<SubscriberService> logger,
             IMapper mapper,
             ITaggingService taggingService,
-            IHangfireService hangfireService)
+            IHangfireService hangfireService,
+            IFileDownloadTrackerService fileDownloadTrackerService,
+            ISysEmail sysEmail)
         {
             _db = context;
             _configuration = configuration;
@@ -60,6 +63,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             _mapper = mapper;
             _taggingService = taggingService;
             _hangfireService = hangfireService;
+            _fileDownloadTrackerService = fileDownloadTrackerService;
+            _sysEmail = sysEmail;
         }
 
         public async Task<Subscriber> GetSubscriberByEmail(string email)
@@ -184,7 +189,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 }
 
                 // create the user in the CareerCircle database
-                _repository.SubscriberRepository.Create(new Subscriber()
+                await _repository.SubscriberRepository.Create(new Subscriber()
                 {
                     SubscriberGuid = subscribeProfileBasicDto.SubscriberGuid,
                     Auth0UserId = subscribeProfileBasicDto.Auth0UserId,
@@ -229,8 +234,10 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             try
             {
+                Models.Group group = null;
+
                 // create the user in the CareerCircle database
-                _repository.SubscriberRepository.Create(new Subscriber()
+                await _repository.SubscriberRepository.Create(new Subscriber()
                 {
                     SubscriberGuid = createUserDto.SubscriberGuid,
                     Auth0UserId = createUserDto.Auth0UserId,
@@ -250,8 +257,14 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 if (!string.IsNullOrWhiteSpace(createUserDto.ReferrerUrl) && createUserDto.PartnerGuid != null && createUserDto.PartnerGuid != Guid.Empty)
                 {
-                    // Use the new tagging service for attribution
-                    await _taggingService.CreateGroup(createUserDto.ReferrerUrl, createUserDto.PartnerGuid, subscriber.SubscriberId);
+                    // use the new tagging service for attribution
+                    group = await _taggingService.CreateGroup(createUserDto.ReferrerUrl, createUserDto.PartnerGuid, subscriber.SubscriberId);
+                }
+
+                if (createUserDto.IsGatedDownload && group != null)
+                {
+                    // set up the gated file download and send the email
+                    await HandleGatedFileDownload(createUserDto.GatedDownloadMaxAttemptsAllowed, createUserDto.GatedDownloadFileUrl, group.GroupId, subscriber.SubscriberId, subscriber.Email);
                 }
 
                 isSubscriberCreatedSuccessfully = true;
@@ -262,6 +275,77 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
             return isSubscriberCreatedSuccessfully;
+        }
+
+        public async Task<bool> ExistingSubscriberSignUp(CreateUserDto createUserDto)
+        {
+            bool isSubscriberUpdatedSuccessfully = false;
+            Models.Group group = null;
+
+            try
+            {
+                Subscriber subscriber = await this.GetSubscriberByGuid(createUserDto.SubscriberGuid);
+                if (subscriber == null)
+                    throw new ApplicationException("Invalid subscriber identifier");
+
+                if (!string.IsNullOrWhiteSpace(createUserDto.FirstName))
+                    subscriber.FirstName = createUserDto.FirstName;
+                if (!string.IsNullOrWhiteSpace(createUserDto.LastName))
+                    subscriber.LastName = createUserDto.LastName;
+                if (!string.IsNullOrWhiteSpace(createUserDto.PhoneNumber))
+                    subscriber.PhoneNumber = createUserDto.PhoneNumber;
+                await this.UpdateSubscriber(subscriber);
+                
+                // update the user in the Google Talent Cloud
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
+
+                if (!string.IsNullOrWhiteSpace(createUserDto.ReferrerUrl) && createUserDto.PartnerGuid != null && createUserDto.PartnerGuid != Guid.Empty)
+                {
+                    // use the new tagging service for attribution
+                    group = await _taggingService.CreateGroup(createUserDto.ReferrerUrl, createUserDto.PartnerGuid, subscriber.SubscriberId);
+                }
+
+                if (createUserDto.IsGatedDownload)
+                {
+                    // set up the gated file download and send the email
+                    await HandleGatedFileDownload(createUserDto.GatedDownloadMaxAttemptsAllowed, createUserDto.GatedDownloadFileUrl, group?.GroupId, subscriber.SubscriberId, subscriber.Email);
+                }
+
+                isSubscriberUpdatedSuccessfully = true;
+            }
+            catch (Exception e)
+            {
+                _logger.Log(LogLevel.Error, $"SubscriberService.ExistingSubscriberSignUp: An error occured while attempting to update a subscriber. Message: {e.Message}", e);
+            }
+
+            return isSubscriberUpdatedSuccessfully;
+        }
+
+        private async Task HandleGatedFileDownload(int? maxDownloadAttempts, string fileUrl, int? groupId, int subscriberId, string email)
+        {
+            FileDownloadTrackerDto fileDownloadTrackerDto = new FileDownloadTrackerDto
+            {
+                SourceFileCDNUrl = fileUrl,
+                MaxFileDownloadAttemptsPermitted = maxDownloadAttempts,
+                SubscriberId = subscriberId,
+                GroupId = groupId
+            };
+            string downloadUrl = await _fileDownloadTrackerService.CreateFileDownloadLink(fileDownloadTrackerDto);
+
+            _hangfireService.Enqueue(() =>
+             _sysEmail.SendTemplatedEmailAsync(
+                 email,
+                 _configuration["SysEmail:Transactional:TemplateIds:GatedDownload-LinkEmail"],
+                 new
+                 {
+                     fileDownloadLinkUrl = downloadUrl
+                 },
+                 Constants.SendGridAccount.Transactional,
+                 null,
+                 null,
+                 null,
+                 null
+             ));
         }
 
 
@@ -346,6 +430,8 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task UpdateSubscriber(Subscriber subscriber)
         {
+            subscriber.ModifyDate = DateTime.UtcNow;
+            subscriber.ModifyGuid = Guid.Empty;
             _repository.SubscriberRepository.Update(subscriber);
             await _repository.SubscriberRepository.SaveAsync();
         }
