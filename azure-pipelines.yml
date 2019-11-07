@@ -7,7 +7,7 @@ name: webapp.$(date:yyyyMMdd)$(rev:.r)
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#pool
 pool:
-  vmImage: 'ubuntu-16.04'
+  vmImage: 'ubuntu-latest'
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#variables
 variables:
@@ -40,8 +40,8 @@ steps:
 
 # npm cache cleaning
 - script: |
-    npm cache clean --force 
-  displayName: npm Cache Cleaning
+    npm cache clean --force
+  displayName: npm cache cleaning
   workingDirectory: Product/WebApp
 
 # install npm dependencies (see package.json)
