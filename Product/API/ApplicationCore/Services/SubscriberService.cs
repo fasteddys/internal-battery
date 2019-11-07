@@ -308,7 +308,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (createUserDto.IsGatedDownload)
                 {
                     // set up the gated file download and send the email
-                    await HandleGatedFileDownload(createUserDto.GatedDownloadMaxAttemptsAllowed, createUserDto.GatedDownloadFileUrl, group.GroupId, subscriber.SubscriberId, subscriber.Email);
+                    await HandleGatedFileDownload(createUserDto.GatedDownloadMaxAttemptsAllowed, createUserDto.GatedDownloadFileUrl, group?.GroupId, subscriber.SubscriberId, subscriber.Email);
                 }
 
                 isSubscriberUpdatedSuccessfully = true;
