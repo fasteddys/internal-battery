@@ -182,13 +182,13 @@ namespace UpDiddyApi.ApplicationCore.Services
                 int? StateId = null;
                 if (string.IsNullOrWhiteSpace(subscribeProfileBasicDto.ProvinceCode) == false)
                 {
-                    State state = StateFactory.GetStateByStateCode(_db, subscribeProfileBasicDto.ProvinceCode);
+                    State state = await StateFactory.GetStateByStateCode(_repositoryWrapper, subscribeProfileBasicDto.ProvinceCode);
                     if (state != null)
                         StateId = state.StateId;                  
                 }
 
                 // create the user in the CareerCircle database
-                _repository.SubscriberRepository.Create(new Subscriber()
+                await _repository.SubscriberRepository.Create(new Subscriber()
                 {
                     SubscriberGuid = subscribeProfileBasicDto.SubscriberGuid,
                     Auth0UserId = subscribeProfileBasicDto.Auth0UserId,
@@ -288,7 +288,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 int? StateId = null;
                 if (string.IsNullOrWhiteSpace(subscribeProfileBasicDto.ProvinceCode) == false)
                 {
-                    State state = StateFactory.GetStateByStateCode(_db, subscribeProfileBasicDto.ProvinceCode);
+                    State state = await StateFactory.GetStateByStateCode(_repositoryWrapper, subscribeProfileBasicDto.ProvinceCode);
                     if (state != null)
                         StateId = state.StateId;
                 }
