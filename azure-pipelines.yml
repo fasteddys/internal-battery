@@ -55,11 +55,17 @@ steps:
 - script: |
     npm --version
 
+- task: Gulp@1
+  inputs:
+    gulpFile: 'Product/Webapp/gulpfile.js'
+    targets: 'compile'
+    enableCodeCoverage: false
+
 # run gulp compile task (see gulpfile.js compile task)
-- script: |
-    npm run gulp compile
-  displayName: Compile sass, javascript and copy fonts
-  workingDirectory: Product/WebApp
+#- script: |
+#    npm run gulp compile
+#  displayName: Compile sass, javascript and copy fonts
+#  workingDirectory: Product/WebApp
 
 # run webpack for react (see package.json scripts.build)
 - script: |
