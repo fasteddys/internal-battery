@@ -15,6 +15,7 @@ using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Models;
 using UpDiddyLib.Domain.Models;
+using UpDiddyLib.Helpers;
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class JobSearchService : IJobSearchService
@@ -24,6 +25,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly ISubscriberService _subscriberService;
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
+        private readonly ICompanyService _companyService;
 
         public JobSearchService(UpDiddyDbContext _db
         , IRepositoryWrapper repositoryWrapper
@@ -32,7 +34,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         , IConfiguration configuration
         , IHttpClientFactory httpClientFactory
         , ISubscriberService subscriberService
-        , ICloudTalentService cloudTalentService)
+        , ICloudTalentService cloudTalentService
+        , ICompanyService companyService)
         {
             _repositoryWrapper = repositoryWrapper;
             _configuration = configuration;
@@ -60,6 +63,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
             var jobPostingDto = _mapper.Map<List<JobViewDto>, List<UpDiddyLib.Domain.Models.JobPostingDto>>(jobSearchForSingleJob.Jobs);
+            await JobUrlHelper.AssignCompanyLogoUrlToJobsList(jobPostingDto, _configuration, _companyService);
             return jobPostingDto;
         }
 
