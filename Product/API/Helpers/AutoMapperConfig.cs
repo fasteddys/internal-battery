@@ -198,7 +198,8 @@ namespace UpDiddyApi.Helpers
                 })))
                 .ReverseMap();
 
-            CreateMap<Subscriber, SubscribeProfileBasicDto>()               
+            CreateMap<Subscriber, SubscribeProfileBasicDto>()
+                .ForMember(x => x.ProvinceCode, opt => opt.MapFrom(src => src.State.Code))
                 .ReverseMap();
 
 

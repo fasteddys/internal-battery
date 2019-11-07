@@ -27,6 +27,8 @@ using System.Security.Claims;
 using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNetCore.Http;
 using UpDiddyApi.ApplicationCore.Exceptions;
+using UpDiddyLib.Domain;
+using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -154,7 +156,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
         }
-
+ 
+        
         public async Task<bool> CreateNewSubscriberAsync(SubscribeProfileBasicDto subscribeProfileBasicDto)
         {
             bool isSubscriberCreatedSuccessfully = false;
@@ -170,6 +173,16 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (Subscriber != null)
                     throw new AlreadyExistsException($"A subscriber already exists with {subscribeProfileBasicDto.Email} as their email");
 
+
+
+                int? StateId = null;
+                if (string.IsNullOrWhiteSpace(subscribeProfileBasicDto.ProvinceCode) == false)
+                {
+                    State state = StateFactory.GetStateByStateCode(_db, subscribeProfileBasicDto.ProvinceCode);
+                    if (state != null)
+                        StateId = state.StateId;                  
+                }
+
                 // create the user in the CareerCircle database
                 _repository.SubscriberRepository.Create(new Subscriber()
                 {
@@ -179,10 +192,17 @@ namespace UpDiddyApi.ApplicationCore.Services
                     FirstName = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.FirstName) ? subscribeProfileBasicDto.FirstName : null,
                     LastName = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.LastName) ? subscribeProfileBasicDto.LastName : null,
                     PhoneNumber = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.PhoneNumber) ? subscribeProfileBasicDto.PhoneNumber : null,
+                    Address = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.Address) ? subscribeProfileBasicDto.Address : null,
+                    City = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.City) ? subscribeProfileBasicDto.City : null,
+                    PostalCode = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.PostalCode) ? subscribeProfileBasicDto.PostalCode : null,
                     CreateDate = DateTime.UtcNow,
                     CreateGuid = Guid.Empty,
+                    StateId = StateId,
                     IsDeleted = 0
                 });
+
+
+
                 await _repository.SubscriberRepository.SaveAsync();
                 var subscriber = _repository.SubscriberRepository.GetSubscriberByGuid(subscribeProfileBasicDto.SubscriberGuid);
 
@@ -195,6 +215,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             catch (Exception e)
             {
                 _logger.Log(LogLevel.Error, $"SubscriberService.CreateNewSubscriberAsync: An error occured while attempting to create a subscriber. Message: {e.Message}", e);
+                throw (e);
             }
 
             return isSubscriberCreatedSuccessfully;
@@ -260,13 +281,25 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (Subscriber.SubscriberGuid != subscriberGuid)
                     throw new InvalidOperationException($"Not owner of profile");
 
+                int? StateId = null;
+                if (string.IsNullOrWhiteSpace(subscribeProfileBasicDto.ProvinceCode) == false)
+                {
+                    State state = StateFactory.GetStateByStateCode(_db, subscribeProfileBasicDto.ProvinceCode);
+                    if (state != null)
+                        StateId = state.StateId;
+                }
+
                 // update the user in the CareerCircle database
                 Subscriber.SubscriberGuid = subscribeProfileBasicDto.SubscriberGuid;
                 Subscriber.Auth0UserId = subscribeProfileBasicDto.Auth0UserId;
                 Subscriber.FirstName = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.FirstName) ? subscribeProfileBasicDto.FirstName : null;
                 Subscriber.LastName = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.LastName) ? subscribeProfileBasicDto.LastName : null;
                 Subscriber.PhoneNumber = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.PhoneNumber) ? subscribeProfileBasicDto.PhoneNumber : null;
+                Subscriber.Address = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.Address) ? subscribeProfileBasicDto.Address : null;
+                Subscriber.City = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.City) ? subscribeProfileBasicDto.City : null;
+                Subscriber.PostalCode = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.PostalCode) ? subscribeProfileBasicDto.PostalCode : null;
                 Subscriber.ModifyDate = DateTime.UtcNow;
+                Subscriber.StateId = StateId;
          
                 await _repository.SubscriberRepository.SaveAsync();
      
@@ -277,6 +310,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             catch (Exception e)
             {
                 _logger.Log(LogLevel.Error, $"SubscriberService.UpdateSubscriberProfileBasicAsync: An error occured while attempting to create a subscriber. Message: {e.Message}", e);
+                throw e;
             }
             return true;
         }
@@ -291,12 +325,17 @@ namespace UpDiddyApi.ApplicationCore.Services
                 var Subscriber = await GetSubscriberByGuid(subscriberGuid);
                 if (Subscriber == null)
                     throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
+                State state = await _repository.State.GetStateBySubscriberGuid(Subscriber.SubscriberGuid.Value);
+                Subscriber.State = state;
+            
+
 
                 rVal = _mapper.Map<SubscribeProfileBasicDto>(Subscriber);  
             }
             catch (Exception e)
             {
                 _logger.Log(LogLevel.Error, $"SubscriberService.UpdateSubscriberProfileBasicAsync: An error occured while attempting to create a subscriber. Message: {e.Message}", e);
+                throw e;
             }
             return rVal;
         }

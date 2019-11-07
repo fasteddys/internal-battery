@@ -18,6 +18,7 @@ using UpDiddyLib.Domain.Models;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Dto.User;
+using UpDiddyLib.Domain;
 
 namespace UpDiddyApi.Controllers.V2
 {

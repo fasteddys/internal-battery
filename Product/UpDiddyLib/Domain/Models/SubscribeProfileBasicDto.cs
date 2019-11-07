@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace UpDiddyLib.Dto
+namespace UpDiddyLib.Domain.Models
 {
     public class SubscribeProfileBasicDto
     {
@@ -21,7 +21,12 @@ namespace UpDiddyLib.Dto
 
         public string Email { get; set; }
 
-       
+        public string ProvinceCode { get; set; }
+        public string City { get; set; }
 
+        public string PostalCode { get; set; }
+
+        public string Address { get; set; }
+               
     }
 }

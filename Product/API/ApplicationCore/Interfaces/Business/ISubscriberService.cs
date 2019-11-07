@@ -10,6 +10,7 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyApi.ApplicationCore.Services.Identity;
 using UpDiddyLib.Dto.User;
+using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
