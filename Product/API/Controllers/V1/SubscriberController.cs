@@ -583,6 +583,7 @@ public class SubscriberController : Controller
             EducationalDegreeTypeId = educationalDegreeTypeId,
             EducationalInstitutionId = educationalInstitutionId
         };
+        await _repositoryWrapper.SubscriberEducationHistoryRepository.Create(EducationHistory);
         await _repositoryWrapper.SaveAsync();
 
         // update google profile 
