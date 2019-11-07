@@ -228,7 +228,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     group = await _taggingService.CreateGroup(createUserDto.ReferrerUrl, createUserDto.PartnerGuid, subscriber.SubscriberId);
                 }
 
-                if (createUserDto.IsGatedDownload && group != null)
+                if (createUserDto.IsGatedDownload)
                 {
                     // set up the gated file download and send the email
                     await HandleGatedFileDownload(createUserDto.GatedDownloadMaxAttemptsAllowed, createUserDto.GatedDownloadFileUrl, group.GroupId, subscriber.SubscriberId, subscriber.Email);
@@ -244,7 +244,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return isSubscriberUpdatedSuccessfully;
         }
 
-        private async Task HandleGatedFileDownload(int? maxDownloadAttempts, string fileUrl, int groupId, int subscriberId, string email)
+        private async Task HandleGatedFileDownload(int? maxDownloadAttempts, string fileUrl, int? groupId, int subscriberId, string email)
         {
             FileDownloadTrackerDto fileDownloadTrackerDto = new FileDownloadTrackerDto
             {
