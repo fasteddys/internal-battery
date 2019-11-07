@@ -58,7 +58,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             _cloudTalentService = cloudTalentService;
         }
 
-
         public async Task<JobDetailDto> GetJobDetail(Guid jobPostingGuid)
         {
             JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuidWithRelatedObjectsAsync(_repositoryWrapper, jobPostingGuid);
@@ -68,6 +67,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new ExpiredJobException();
 
             JobDetailDto rVal = _mapper.Map<JobDetailDto>(jobPosting);
+            rVal.CompanyLogoUrl = JobUrlHelper.SetCompanyLogoUrl(rVal.CompanyLogoUrl,_configuration);
             return rVal;
         }
 
@@ -166,7 +166,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
                 JobQueryDto jobQuery = JobQueryHelper.CreateSummaryJobQuery(PageSize, query);
                 rVal = _cloudTalentService.JobSummarySearch(jobQuery);
-                  await AssignCompanyLogoUrlToJobs(rVal.Jobs);
+                await JobUrlHelper.AssignCompanyLogoUrlToJobsList(rVal.Jobs, _configuration, _companyService);
                 _cache.SetCacheValue<JobSearchSummaryResultDto>(cacheKey, rVal);
 
             }
@@ -287,7 +287,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             JobSearchResultDto jobSearchResult = _cloudTalentService.JobSearch(jobQuery);
 
             //assign company logo urls
-            await AssignCompanyLogoUrlToJobs(jobSearchResult.Jobs);
+            await JobUrlHelper.AssignCompanyLogoUrlToJobsList(jobSearchResult.Jobs, _configuration, _companyService);
 
             // set common properties for an alert jobQuery and include this in the response
             jobQuery.DatePublished = null;

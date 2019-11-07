@@ -48,6 +48,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
                              .ToListAsync();
         }
 
+        public async Task<TEntity> GetById(int id)
+        {
+            return await this._dbContext
+            .Set<TEntity>()
+            .FindAsync(id);
+        }
+
         public async Task ExecuteSQL(string sql)
         {
             await _dbContext.Database.ExecuteSqlCommandAsync(sql);
