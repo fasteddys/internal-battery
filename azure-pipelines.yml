@@ -50,11 +50,6 @@ steps:
   displayName: Install Client Side Dependencies
   workingDirectory: Product/WebApp
 
-
-# npm version
-- script: |
-    npm --version
-
 - task: Gulp@1
   inputs:
     gulpFile: 'Product/WebApp/gulpfile.js'
