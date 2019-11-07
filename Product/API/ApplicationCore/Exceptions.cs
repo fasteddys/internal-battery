@@ -13,13 +13,35 @@ namespace UpDiddyApi.ApplicationCore.Exceptions
     public class MaximumReachedException : Exception
     {
         public MaximumReachedException() : base() { }
-        public MaximumReachedException(string message) : base(message) {
+        public MaximumReachedException(string message) : base(message)
+        {
 
-         }
-        public MaximumReachedException(string message, Exception innerException)
+        }
+        public MaximumReachedException(string message, MaximumReachedException innerException)
             : base(message, innerException) { }
     }
 
+    public class AlreadyExistsException : Exception
+    {
+        public AlreadyExistsException() : base() { }
+        public AlreadyExistsException(string message) : base(message)
+        {
+
+        }
+        public AlreadyExistsException(string message, Exception innerException)
+        : base(message, innerException) { }
+    }
+
+    public class ExpiredJobException : Exception
+    {
+        public ExpiredJobException() : base() { }
+        public ExpiredJobException(string message) : base(message)
+        {
+
+        }
+        public ExpiredJobException(string message, Exception innerException)
+        : base(message, innerException) { }
+    }
     public class FailedValidationException : Exception
     {
         public FailedValidationException() : base() { }
@@ -30,5 +52,6 @@ namespace UpDiddyApi.ApplicationCore.Exceptions
         public FailedValidationException(string message, Exception innerException)
             : base(message, innerException) { }
     }
+ 
 
 }
