@@ -38,6 +38,12 @@ steps:
     dotnet restore Product/WebApp
   displayName: Restore NuGet Packages
 
+# npm cache cleaning
+- script: |
+    npm cache clean --force
+  displayName: npm cache cleaning
+  workingDirectory: Product/WebApp
+
 # install npm dependencies (see package.json)
 - script: |
     npm install
@@ -50,17 +56,11 @@ steps:
   displayName: Install Client Side Dependencies
   workingDirectory: Product/WebApp
 
-- task: Gulp@1
-  inputs:
-    gulpFile: 'Product/WebApp/gulpfile.js'
-    targets: 'compile'
-    enableCodeCoverage: false
-
 # run gulp compile task (see gulpfile.js compile task)
-#- script: |
-#    npm run gulp compile
-#  displayName: Compile sass, javascript and copy fonts
-#  workingDirectory: Product/WebApp
+- script: |
+    npm run gulp compile
+  displayName: Compile sass, javascript and copy fonts
+  workingDirectory: Product/WebApp
 
 # run webpack for react (see package.json scripts.build)
 - script: |
