@@ -10,6 +10,7 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyApi.ApplicationCore.Services.Identity;
 using UpDiddyLib.Dto.User;
+using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
@@ -43,7 +44,32 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// <param name="createUserDto"></param>
         /// <returns></returns>
         Task<bool> CreateSubscriberAsync(CreateUserDto createUserDto);
-        
+
+
+        /// <summary>
+        /// Returns a subscribers basic profile   
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        Task<SubscribeProfileBasicDto> GetSubscriberProfileBasicAsync(Guid subscriberGuid);
+
+        /// <summary>
+        /// Updates subscriber in the CareerCircle database using the subscriber guid provided and updates the subscriber in the 
+        /// Google Talent Cloud.
+        /// </summary>
+        /// <param name="createUserDto"></param>
+        /// <returns></returns>
+        Task<bool> UpdateSubscriberProfileBasicAsync(SubscribeProfileBasicDto subscribeProfileBasicDto, Guid subscriberGuid);
+
+        /// <summary>
+        /// Creates subscriber in the CareerCircle database using the subscriber guid provided, adds the subscriber to the 
+        /// Google Talent Cloud.
+        /// </summary>
+        /// <param name="createUserDto"></param>
+        /// <returns></returns>
+        Task<bool> CreateNewSubscriberAsync(SubscribeProfileBasicDto subscribeProfileBasicDto);
+
+
         /// <summary>
         ///  Updates existing subscriber info like first name, last name and phone number
         /// </summary>
@@ -56,7 +82,15 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// </summary>
         /// <param name="subscriberGuid"></param>
         /// <returns></returns>
-        Task<Subscriber> GetSubscriberByGuid( Guid subscriberGuid); 
+        Task<Subscriber> GetSubscriberByGuid( Guid subscriberGuid);
+
+
+        /// <summary>
+        /// Gets subscriber using their email
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        Task<Subscriber> GetSubscriberByEmail(string email);
 
         /// <summary>
         /// Creates a background job to scan resume of subscriber if they have a resume on file.
