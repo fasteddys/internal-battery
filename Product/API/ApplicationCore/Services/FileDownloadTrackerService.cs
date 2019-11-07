@@ -13,15 +13,13 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IConfiguration _config;
         private readonly IMapper _mapper;
-        private readonly ISubscriberService _subscriberService;
 
 
-        public FileDownloadTrackerService(IRepositoryWrapper repositoryWrapper, IConfiguration config, IMapper mapper, ISubscriberService subscriberService)
+        public FileDownloadTrackerService(IRepositoryWrapper repositoryWrapper, IConfiguration config, IMapper mapper)
         {
             _repositoryWrapper = repositoryWrapper;
             _config = config;
             _mapper = mapper;
-            _subscriberService = subscriberService;
         }
 
         public async Task<string> CreateFileDownloadLink(FileDownloadTrackerDto fileDownloadTrackerDto)
