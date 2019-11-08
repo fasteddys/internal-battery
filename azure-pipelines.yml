@@ -38,11 +38,9 @@ steps:
     dotnet restore Product/WebApp
   displayName: Restore NuGet Packages
 
-# npm cache cleaning
-- script: |
-    npm cache clean --force
-  displayName: npm cache cleaning
-  workingDirectory: Product/WebApp
+- task: UseNode@1
+  inputs:
+    version: '10.12.0'
 
 # install npm dependencies (see package.json)
 - script: |
