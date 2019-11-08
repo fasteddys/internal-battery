@@ -15,8 +15,6 @@
 }); 
 
 $(document).ready(function () {
-
-    $("#SignInForm #EmailAddress").val("");
     $("#SignInForm #Password").val("");
 
     var error = $("#SignInValidationSummary ul li").text();

@@ -216,7 +216,7 @@ namespace UpDiddy.Controllers
 
         [HttpPost]
         [Route("/session/signin")]
-        public async Task<IActionResult> SignIn(SignInViewModel vm, [FromQuery] string returnUrl = null)
+        public async Task<IActionResult> SignIn(SignInViewModel vm, [FromQuery] string returnUrl = "/Home/Profile")
         {
             if (ModelState.IsValid)
             {
