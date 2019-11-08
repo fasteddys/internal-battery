@@ -47,30 +47,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
 
         /// <summary>
-        /// Returns a subscribers basic profile   
-        /// </summary>
-        /// <param name="subscriberGuid"></param>
-        /// <returns></returns>
-        Task<SubscribeProfileBasicDto> GetSubscriberProfileBasicAsync(Guid subscriberGuid);
-
-        /// <summary>
-        /// Updates subscriber in the CareerCircle database using the subscriber guid provided and updates the subscriber in the 
-        /// Google Talent Cloud.
-        /// </summary>
-        /// <param name="createUserDto"></param>
-        /// <returns></returns>
-        Task<bool> UpdateSubscriberProfileBasicAsync(SubscribeProfileBasicDto subscribeProfileBasicDto, Guid subscriberGuid);
-
-        /// <summary>
-        /// Creates subscriber in the CareerCircle database using the subscriber guid provided, adds the subscriber to the 
-        /// Google Talent Cloud.
-        /// </summary>
-        /// <param name="createUserDto"></param>
-        /// <returns></returns>
-        Task<bool> CreateNewSubscriberAsync(SubscribeProfileBasicDto subscribeProfileBasicDto);
-
-
-        /// <summary>
         ///  Updates existing subscriber info like first name, last name and phone number
         /// </summary>
         /// <param name="signUpdto"></param>

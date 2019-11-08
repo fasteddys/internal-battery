@@ -203,7 +203,8 @@ namespace UpDiddyApi.Helpers
                 .ReverseMap();
 
 
-
+            CreateMap<Subscriber, SubscriberProfileSocialDto>()
+                .ReverseMap();
 
             CreateMap<SubscriberFile, SubscriberFileDto>()
                 .ForMember(s => s.SimpleName, opt => opt.MapFrom(src => src.SimpleName))
