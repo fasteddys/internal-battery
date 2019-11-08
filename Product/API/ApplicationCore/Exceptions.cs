@@ -54,4 +54,15 @@ namespace UpDiddyApi.ApplicationCore.Exceptions
     }
  
 
+    public class NoChangeDetectedException : Exception
+    {
+        public NoChangeDetectedException() : base() { }
+        public NoChangeDetectedException(string message) : base(message)
+        {
+
+        }
+        public NoChangeDetectedException(string message, Exception innerException)
+            : base(message, innerException) { }
+    }
+
 }

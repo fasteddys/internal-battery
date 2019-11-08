@@ -60,7 +60,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             _isOptInToMarketingEmailsKeyName = configuration["AzureAdB2C:ExtensionFields:AgreeToCareerCircleMarketing"];
         }
 
-        private async Task ClearApiTokenAsync()
+        private void ClearApiTokenAsync()
         {
             _memoryCache.Remove(_CACHE_KEY);
         }
@@ -136,7 +136,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                     try
                     {
                         // clear the token, get a new one, and try one more time
-                        await ClearApiTokenAsync();
+                        ClearApiTokenAsync();
                         apiToken = await GetApiTokenAsync();
                         managementApiClient = new ManagementApiClient(apiToken, _domain);
                         users = await managementApiClient.Users.GetUsersByEmailAsync(email);
@@ -226,7 +226,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                     try
                     {
                         // clear the token, get a new one, and try one more time
-                        await ClearApiTokenAsync();
+                        ClearApiTokenAsync();
                         apiToken = await GetApiTokenAsync();
                         managementApiClient = new ManagementApiClient(apiToken, _domain);
                         userCreationResponse = await managementApiClient.Users.CreateAsync(userCreationRequest);
@@ -276,7 +276,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                     try
                     {
                         // clear the token, get a new one, and try one more time
-                        await ClearApiTokenAsync();
+                        ClearApiTokenAsync();
                         apiToken = await GetApiTokenAsync();
                         managementApiClient = new ManagementApiClient(apiToken, _domain);
                         var recruiterRoleIdLookup = await managementApiClient.Roles.GetAllAsync(new GetRolesRequest() { NameFilter = role.ToString() });
@@ -384,7 +384,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                         try
                         {
                             // clear the token, get a new one, and try one more time
-                            await ClearApiTokenAsync();
+                            ClearApiTokenAsync();
                             apiToken = await GetApiTokenAsync();
                             managementApiClient = new ManagementApiClient(apiToken, _domain);
                             userCreationResponse = await managementApiClient.Users.CreateAsync(userCreationRequest);
@@ -402,7 +402,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                                 if (newRoles.Count() > 0)
                                     await managementApiClient.Users.AssignRolesAsync(userCreationResponse.UserId, new AssignRolesRequest() { Roles = newRoles.ToArray() });
                             }
-                            _graphClient.DisableUser(user.SubscriberGuid);
+                            await _graphClient.DisableUser(user.SubscriberGuid);
 
                             subscriber.Auth0UserId = userCreationResponse.UserId;
                             subscriber.ModifyDate = DateTime.UtcNow;
@@ -452,7 +452,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                     try
                     {
                         // clear the token, get a new one, and try one more time
-                        await ClearApiTokenAsync();
+                        ClearApiTokenAsync();
                         apiToken = await GetApiTokenAsync();
                         var roleLookup = await managementApiClient.Roles.GetAllAsync(new GetRolesRequest() { NameFilter = role.GetDescription() });
                         await managementApiClient.Users.RemoveRolesAsync(userId, new AssignRolesRequest() { Roles = new string[] { roleLookup.FirstOrDefault().Id } });
@@ -491,7 +491,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                     try
                     {
                         // clear the token, get a new one, and try one more time
-                        await ClearApiTokenAsync();
+                        ClearApiTokenAsync();
                         apiToken = await GetApiTokenAsync();
                         managementApiClient = new ManagementApiClient(apiToken, _domain);
                         var roleLookup = await managementApiClient.Roles.GetAllAsync(new GetRolesRequest() { NameFilter = role.GetDescription() });
@@ -529,7 +529,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                     try
                     {
                         // clear the token, get a new one, and try one more time
-                        await ClearApiTokenAsync();
+                        ClearApiTokenAsync();
                         apiToken = await GetApiTokenAsync();
                         managementApiClient = new ManagementApiClient(apiToken, _domain);
                         await managementApiClient.Users.DeleteAsync(userId);

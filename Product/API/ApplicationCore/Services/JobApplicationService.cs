@@ -68,7 +68,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 Subscriber subscriber = null;
                 string ErrorMsg = string.Empty;
                 int ErrorCode = 0;
-                if (ValidateJobApplication(_db, applicationDto, subscriberGuid, jobGuid, ref subscriber, ref jobPosting,  ref ErrorMsg) == false)
+                if (ValidateJobApplication(applicationDto, subscriberGuid, jobGuid, ref subscriber, ref jobPosting,  ref ErrorMsg) == false)
                     throw new FailedValidationException(ErrorMsg);
 
                 // create job application 
@@ -98,7 +98,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 string RecruiterEmailToUse = jobPosting.Recruiter.Subscriber?.Email ?? jobPosting.Recruiter.Email;
                 // Create a jobposting dto needed for the fully qualified job posting url in the recuriter email
-                JobPostingDto jobPostingDto = _mapper.Map<JobPostingDto>(jobPosting);
+                UpDiddyLib.Dto.JobPostingDto jobPostingDto = _mapper.Map<UpDiddyLib.Dto.JobPostingDto>(jobPosting);
                 // Send recruiter email alerting them to application
 
                 Dictionary<string, bool> EmailAddressesToSend = new Dictionary<string, bool>();
@@ -170,7 +170,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         #region helper functions 
 
         // per Foley the requirment for a cover letter has been removed
-        private bool ValidateJobApplication(UpDiddyDbContext db, ApplicationDto applicationDto, Guid subscriberGuid, Guid jobGuid, ref Subscriber subscriber, ref JobPosting jobPosting, ref string ErrorMsg)
+        private bool ValidateJobApplication(ApplicationDto applicationDto, Guid subscriberGuid, Guid jobGuid, ref Subscriber subscriber, ref JobPosting jobPosting, ref string ErrorMsg)
         {
 
             if (applicationDto == null)
@@ -179,7 +179,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 return false;
             }
  
-            subscriber = SubscriberFactory.GetSubscriberWithSubscriberFiles(db, subscriberGuid);
+            subscriber = SubscriberFactory.GetSubscriberWithSubscriberFiles(_repositoryWrapper, subscriberGuid).Result;
             if (subscriber == null)
             {             
                 ErrorMsg = $"Subscriber {subscriberGuid} does not exist.";
@@ -193,7 +193,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 return false;
             }
        
-            jobPosting = JobPostingFactory.GetJobPostingByGuid(db, jobGuid);
+            jobPosting = JobPostingFactory.GetJobPostingByGuid(_repositoryWrapper, jobGuid).Result;
 
             if (jobPosting == null)
             {             
@@ -208,7 +208,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
             // verify user has not already applied 
-            JobApplication jobApplication = GetJobApplication(db, subscriber.SubscriberId, jobPosting.JobPostingId);
+            JobApplication jobApplication = GetJobApplication( subscriber.SubscriberId, jobPosting.JobPostingId);
             if (jobApplication != null)
             {             
                 ErrorMsg = "User has already applied.";
@@ -220,9 +220,9 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-        private  JobApplication GetJobApplication(UpDiddyDbContext db, int subscriberId, int jobPostingID)
+        private  JobApplication GetJobApplication(int subscriberId, int jobPostingID)
         {
-            return db.JobApplication
+            return _repositoryWrapper.JobApplication.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.JobPostingId == jobPostingID && s.SubscriberId == subscriberId)
                 .FirstOrDefault();
         }

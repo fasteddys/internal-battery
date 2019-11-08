@@ -72,20 +72,20 @@ namespace UpDiddyApi.ApplicationCore.Services
             EducationHistoryDto.EducationalDegree = HttpUtility.HtmlEncode(EducationHistoryDto.EducationalDegree);
             EducationHistoryDto.EducationalInstitution = HttpUtility.HtmlEncode(EducationHistoryDto.EducationalInstitution);
  
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repository, subscriberGuid);
             if (subscriber == null)
                 throw new NotFoundException($"Subscriber {subscriberGuid} does not exist");
             // Find or create the institution 
-            EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(_db, EducationHistoryDto.EducationalInstitution).Result;
+            EducationalInstitution educationalInstitution = await EducationalInstitutionFactory.GetOrAdd(_repository, EducationHistoryDto.EducationalInstitution);
             int educationalInstitutionId = educationalInstitution.EducationalInstitutionId;
             // Find or create the degree major 
-            EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(_db, EducationHistoryDto.EducationalDegree).Result;
+            EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(_repository, EducationHistoryDto.EducationalDegree);
             int educationalDegreeId = educationalDegree.EducationalDegreeId;
             // Find or create the degree type 
-            EducationalDegreeType educationalDegreeType = EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_db, EducationHistoryDto.EducationalDegreeType);
+            EducationalDegreeType educationalDegreeType = await EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_repository, EducationHistoryDto.EducationalDegreeType);
             int educationalDegreeTypeId = 0;
             if (educationalDegreeType == null)
-                educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_db, UpDiddyLib.Helpers.Constants.NotSpecifedOption).Result;
+                educationalDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(_repository, UpDiddyLib.Helpers.Constants.NotSpecifedOption);
             educationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
 
             SubscriberEducationHistory EducationHistory = new SubscriberEducationHistory()
@@ -120,11 +120,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             EducationHistoryDto.EducationalDegree = HttpUtility.HtmlEncode(EducationHistoryDto.EducationalDegree);
             EducationHistoryDto.EducationalInstitution = HttpUtility.HtmlEncode(EducationHistoryDto.EducationalInstitution);
    
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repository, subscriberGuid);
             if (subscriber == null)
                 throw new NotFoundException($"Subscriber {subscriberGuid} does not exist"); 
 
-            SubscriberEducationHistory EducationHistory = SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(_db, educationalHistoryGuid);
+            SubscriberEducationHistory EducationHistory = await SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(_repository, educationalHistoryGuid);
             if (EducationHistory == null )
                 throw new NotFoundException($"Educational History  {educationalHistoryGuid} does not exist");
 
@@ -132,16 +132,16 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new UnauthorizedAccessException();
 
             // Find or create the institution 
-            EducationalInstitution educationalInstitution =  await EducationalInstitutionFactory.GetOrAdd(_db, EducationHistoryDto.EducationalInstitution);
+            EducationalInstitution educationalInstitution =  await EducationalInstitutionFactory.GetOrAdd(_repository, EducationHistoryDto.EducationalInstitution);
             int educationalInstitutionId = educationalInstitution.EducationalInstitutionId;
             // Find or create the degree major 
-            EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(_db, EducationHistoryDto.EducationalDegree);
+            EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(_repository, EducationHistoryDto.EducationalDegree);
             int educationalDegreeId = educationalDegree.EducationalDegreeId;
             // Find or create the degree type 
-            EducationalDegreeType educationalDegreeType =  await EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeTypeAsync(_db, EducationHistoryDto.EducationalDegreeType);
+            EducationalDegreeType educationalDegreeType =  await EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeTypeAsync(_repository, EducationHistoryDto.EducationalDegreeType);
             int educationalDegreeTypeId = 0;
             if (educationalDegreeType == null)
-                educationalDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(_db, UpDiddyLib.Helpers.Constants.NotSpecifedOption);
+                educationalDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(_repository, UpDiddyLib.Helpers.Constants.NotSpecifedOption);
             educationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
 
             EducationHistory.ModifyDate = DateTime.UtcNow;
@@ -164,8 +164,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<bool> DeleteEducationalHistory(Guid subscriberGuid, Guid educationalHistoryGuid)
         {
  
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
-            SubscriberEducationHistory EducationHistory = SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(_db, educationalHistoryGuid);
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repository, subscriberGuid);
+            SubscriberEducationHistory EducationHistory = await SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(_repository, educationalHistoryGuid);
 
             if (EducationHistory == null )
                throw new NotFoundException($"Educational History {educationalHistoryGuid} does not exist");
@@ -175,7 +175,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             // Soft delete of the workhistory item
             EducationHistory.IsDeleted = 1;
-            _db.SaveChanges();
+            await _repository.SaveAsync();
  
             return true;
         }
@@ -184,11 +184,11 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<List<SubscriberEducationHistoryDto>> GetEducationalHistory(Guid subscriberGuid)
         {
             
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repository, subscriberGuid);
             if (subscriber == null)
                 throw new NotFoundException($"Subscriber {subscriberGuid} does not exist");
 
-            var educationHistory = _db.SubscriberEducationHistory
+            var educationHistory = await _repository.SubscriberEducationHistoryRepository.GetAllWithTracking()
             .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriber.SubscriberId)
             .OrderByDescending(s => s.StartDate)
             .Select(eh => new SubscriberEducationHistory()
@@ -233,7 +233,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // ignoring Subscriber property
             })
             .ProjectTo<SubscriberEducationHistoryDto>(_mapper.ConfigurationProvider)
-            .ToList();
+            .ToListAsync();
 
             return educationHistory;
         }

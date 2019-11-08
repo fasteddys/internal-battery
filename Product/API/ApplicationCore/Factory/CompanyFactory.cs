@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using Microsoft.EntityFrameworkCore;
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class CompanyFactory
@@ -22,37 +23,37 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return rVal;
         }
 
-        static public async Task<Company> GetOrAdd(UpDiddyDbContext db, string companyName)
+        static public async Task<Company> GetOrAdd(IRepositoryWrapper repositoryWrapper, string companyName)
         {            
             companyName = companyName.Trim();
-            Company company = db.Company
+            Company company = repositoryWrapper.Company.GetAllWithTracking()
                 .Where(c => c.IsDeleted == 0 && c.CompanyName == companyName)
                 .FirstOrDefault();
 
             if (company == null)
             {
                 company = CreateCompany(companyName);
-                db.Company.Add(company);
-                await db.SaveChangesAsync();
+                await repositoryWrapper.Company.Create(company);
+                await repositoryWrapper.Company.SaveAsync();
             }
             return company;
         }
 
-        static public Company GetCompanyByGuid(UpDiddyDbContext db, Guid CompanyGuid)
+        static public async Task<Company>GetCompanyByGuid(IRepositoryWrapper repositoryWrapper, Guid CompanyGuid)
         {
  
-            Company company = db.Company
+            Company company = await repositoryWrapper.Company.GetAllWithTracking()
                 .Where(c => c.IsDeleted == 0 && c.CompanyGuid == CompanyGuid)
-                .FirstOrDefault();    
+                .FirstOrDefaultAsync();    
             return company;
         }
 
-        static public Company GetCompanyByCompanyName(UpDiddyDbContext db, string  CompanyName)
+        static public async Task<Company> GetCompanyByCompanyName(IRepositoryWrapper repositoryWrapper, string  CompanyName)
         {
 
-            Company company = db.Company
+            Company company = await repositoryWrapper.Company.GetAllWithTracking()
                 .Where(c => c.IsDeleted == 0 && c.CompanyName == CompanyName)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
             return company;
         }
 

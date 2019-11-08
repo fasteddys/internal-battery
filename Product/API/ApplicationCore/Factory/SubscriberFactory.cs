@@ -19,18 +19,18 @@ using UpDiddyApi.ApplicationCore.Services;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class SubscriberFactory
     {
         // Can we get rid of this function given the one below it?
         // JAB - It is being used by the resume parse methods.  Refactor rquired for removal
-        public static Subscriber GetSubscriberById(UpDiddyDbContext db, int subscriberId)
+        public static async Task<Subscriber> GetSubscriberById(IRepositoryWrapper repositoryWrapper, int subscriberId)
         {
-            return db.Subscriber
+            return await repositoryWrapper.SubscriberRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
         public static string JobseekerUrl(IConfiguration config, Guid subscriberGuid)
@@ -62,7 +62,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
         }
 
-        public static SubscriberDto GetSubscriber(UpDiddyDbContext _db, Guid subscriberGuid, ILogger _syslog, IMapper _mapper)
+        public static async Task<SubscriberDto> GetSubscriber(IRepositoryWrapper repositoryWrapper, Guid subscriberGuid, ILogger _syslog, IMapper _mapper)
         {
             if (Guid.Empty.Equals(subscriberGuid))
             {
@@ -71,7 +71,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
 
 
-            Subscriber subscriber = _db.Subscriber
+            Subscriber subscriber = await repositoryWrapper.SubscriberRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
                 .Include(s => s.EmailVerification)
                 .Include(s => s.State).ThenInclude(c => c.Country)
@@ -86,29 +86,29 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Include(s => s.SubscriberEducationHistory).ThenInclude(seh => seh.EducationalDegree)
                 .Include(s => s.SubscriberFile)
                 .Include(s => s.SubscriberNotifications).ThenInclude(sn => sn.Notification)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             SubscriberDto subscriberDto = _mapper.Map<SubscriberDto>(subscriber);
 
             if (subscriber != null)
             {
                 var eligibleCampaigns =
-                    _db.PartnerContact
+                   await repositoryWrapper.PartnerContactRepository.GetAllWithTracking()
                     .Where(pc => pc.IsDeleted == 0 && pc.Contact.Subscriber.SubscriberId == subscriber.SubscriberId)
                     .Join(
-                        _db.CampaignPartnerContact.Where(cpc => cpc.IsDeleted == 0),
+                        repositoryWrapper.CampaignPartnerContactRepository.GetAllWithTracking().Where(cpc => cpc.IsDeleted == 0),
                         pc => pc.PartnerContactId,
                         cpc => cpc.PartnerContactId,
                         (pc, cpc) => cpc)
                     .Join(
-                        _db.Campaign.Where(ca => ca.IsDeleted == 0),
+                        repositoryWrapper.CampaignRepository.GetAllWithTracking().Where(ca => ca.IsDeleted == 0),
                         cpc => cpc.CampaignId,
                         ca => ca.CampaignId,
                         (cpc, ca) => ca)
                     .Include(c => c.CampaignCourseVariant).ThenInclude(ccv => ccv.CourseVariant)
                     .Include(c => c.CampaignCourseVariant).ThenInclude(ccv => ccv.RebateType)
                     .Where(ca => ca.StartDate <= DateTime.UtcNow && (!ca.EndDate.HasValue || ca.EndDate.Value >= DateTime.UtcNow))
-                    .ToList();
+                    .ToListAsync();
 
                 subscriberDto.EligibleCampaigns = _mapper.Map<List<CampaignDto>>(eligibleCampaigns);
 
@@ -117,12 +117,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 foreach (EnrollmentDto e in subscriberDto.Enrollments)
                     e.CampaignCourseStatusInfo = CampaignFactory.EnrollmentPromoStatusAsText(e);
 
-                subscriberDto.CampaignOffer = CampaignFactory.OpenOffers(_db, subscriberDto.EligibleCampaigns, subscriberDto.Enrollments);
+                subscriberDto.CampaignOffer = await CampaignFactory.OpenOffers(repositoryWrapper, subscriberDto.EligibleCampaigns, subscriberDto.Enrollments);
 
                 // todo move to when creating subscriber once we have automated process that will associate the subscriber to the contact upon contact
                 // creation.  When that is done, it will only be necessary to do this check when we create  a new subscriber since the create contact logic
                 // will handle the case of associating the contact with existing subscribers
-                ContactFactory.AssociateSubscriber(_db, subscriberDto.Email, subscriber.SubscriberId);
+                await ContactFactory.AssociateSubscriber(repositoryWrapper, subscriberDto.Email, subscriber.SubscriberId);
 
                 subscriberDto.HasVerificationEmail = subscriber.EmailVerification != null;
             }
@@ -130,57 +130,55 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             return subscriberDto;
         }
-        public static Subscriber GetSubscriberByGuid(UpDiddyDbContext db, Guid subscriberGuid)
+        public static async Task<Subscriber> GetSubscriberByGuid(IRepositoryWrapper repositoryWrapper, Guid subscriberGuid)
         {
-            return db.Subscriber
+            return await repositoryWrapper.SubscriberRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
-        public static Subscriber GetSubscriberProfileByGuid(UpDiddyDbContext db, Guid subscriberGuid)
+        public static async Task<Subscriber> GetSubscriberProfileByGuid(IRepositoryWrapper repositoryWrapper, Guid subscriberGuid)
         {
-            Subscriber subscriber = db.Subscriber
+            Subscriber subscriber = await repositoryWrapper.SubscriberRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
                 .Include(s => s.SubscriberWorkHistory).ThenInclude(e => e.Company)
                 .Include(s => s.SubscriberEducationHistory).ThenInclude(i => i.EducationalInstitution)
                 .Include(s => s.SubscriberEducationHistory).ThenInclude(i => i.EducationalDegree)
                 .Include(s => s.SubscriberEducationHistory).ThenInclude(i => i.EducationalDegreeType)
                 .Include(s => s.State)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
 
             return subscriber;
         }
 
-        public static Subscriber GetDeletedSubscriberProfileByGuid(UpDiddyDbContext db, Guid subscriberGuid)
+        public static async Task<Subscriber> GetDeletedSubscriberProfileByGuid(IRepositoryWrapper repositoryWrapper, Guid subscriberGuid)
         {
-            Subscriber subscriber = db.Subscriber
+            Subscriber subscriber = await repositoryWrapper.SubscriberRepository.GetAllWithTracking()
                 .Where(s => s.SubscriberGuid == subscriberGuid)
                 .Include(s => s.SubscriberWorkHistory).ThenInclude(e => e.Company)
                 .Include(s => s.SubscriberEducationHistory).ThenInclude(i => i.EducationalInstitution)
                 .Include(s => s.SubscriberEducationHistory).ThenInclude(i => i.EducationalDegree)
                 .Include(s => s.SubscriberEducationHistory).ThenInclude(i => i.EducationalDegreeType)
                 .Include(s => s.State)
-                .FirstOrDefault();
-
-
+                .FirstOrDefaultAsync();
             return subscriber;
         }
 
-        public static Subscriber GetSubscriberWithSubscriberFiles(UpDiddyDbContext db, Guid subscriberGuid)
+        public static async Task<Subscriber> GetSubscriberWithSubscriberFiles(IRepositoryWrapper repositoryWrapper, Guid subscriberGuid)
         {
-            return db.Subscriber
+            return await repositoryWrapper.SubscriberRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
                 .Include(s => s.SubscriberFile)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
 
-        public static bool RemoveAvatar(UpDiddyDbContext db, IConfiguration config, Guid subscriberGuid, ref string msg)
+        public static bool RemoveAvatar(IRepositoryWrapper repositoryWrapper, IConfiguration config, Guid subscriberGuid, ref string msg)
         {
 
             int MaxAvatarFileSize = int.Parse(config["CareerCircle:MaxAvatarFileSize"]);
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(db, subscriberGuid);
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(repositoryWrapper, subscriberGuid).Result;
             if (subscriber == null)
             {
                 msg = $"SubscriberFactory.ImportLinkedInImage: {subscriberGuid} is not a valid subscriber";
@@ -188,7 +186,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
             subscriber.AvatarUrl = string.Empty;
             subscriber.ModifyDate = DateTime.Now;
-            db.SaveChanges();
+            repositoryWrapper.SubscriberRepository.SaveAsync();
 
             return true;
 
@@ -196,11 +194,11 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
 
 
-        public static bool UpdateAvatar(UpDiddyDbContext db, IConfiguration config, IFormFile avatarFile, Guid subscriberGuid, ref string msg)
+        public static bool UpdateAvatar(IRepositoryWrapper repositoryWrapper, IConfiguration config, IFormFile avatarFile, Guid subscriberGuid, ref string msg)
         {
 
             int MaxAvatarFileSize = int.Parse(config["CareerCircle:MaxAvatarFileSize"]);
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(db, subscriberGuid);
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(repositoryWrapper, subscriberGuid).Result;
             if (subscriber == null)
             {
                 msg = $"SubscriberFactory.ImportLinkedInImage: {subscriberGuid} is not a valid subscriber";
@@ -216,24 +214,24 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             AzureBlobStorage abs = new AzureBlobStorage(config);
             string blobFilePath = subscriberGuid + config["CareerCircle:AvatarName"];
-            abs.UploadBlobAsync(blobFilePath, imageBytes);
+            abs.UploadBlobAsync(blobFilePath, imageBytes).Wait();
             subscriber.AvatarUrl = blobFilePath;
             subscriber.ModifyDate = DateTime.Now;
-            db.SaveChanges();
+            repositoryWrapper.SubscriberRepository.SaveAsync();
 
             return true;
         }
 
 
 
-        public static bool ImportLinkedInAvatar(UpDiddyDbContext db, IConfiguration config, string responseJSon, Guid subscriberGuid, ref string msg)
+        public static bool ImportLinkedInAvatar(IRepositoryWrapper repositoryWrapper, IConfiguration config, string responseJSon, Guid subscriberGuid, ref string msg)
         {
             JObject o = JObject.Parse(responseJSon);
             JToken imageUrlToken = o.SelectToken("$.profilePicture.displayImage~.elements[0].identifiers[0].identifier");
             string imageUrl = imageUrlToken.ToString();
             int MaxAvatarFileSize = int.Parse(config["CareerCircle:MaxAvatarFileSize"]);
 
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(db, subscriberGuid);
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(repositoryWrapper, subscriberGuid).Result;
             if (subscriber == null)
             {
                 msg = $"SubscriberFactory.ImportLinkedInImage: {subscriberGuid} is not a valid subscriber";
@@ -245,7 +243,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             {
                 AzureBlobStorage abs = new AzureBlobStorage(config);
                 string blobFilePath = subscriberGuid + config["CareerCircle:LinkedInAvatarName"];
-                abs.UploadBlobAsync(blobFilePath, imageBytes);
+                abs.UploadBlobAsync(blobFilePath, imageBytes).Wait();
                 subscriber.LinkedInAvatarUrl = blobFilePath;
                 if (string.IsNullOrEmpty(subscriber.AvatarUrl))
                     subscriber.AvatarUrl = blobFilePath;
@@ -255,18 +253,18 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 msg = $"SubscriberFactory.ImportLinkedInImage: subsscriber {subscriberGuid} has an avatar that is too large";
 
             subscriber.LinkedInSyncDate = DateTime.Now;
-            db.SaveChanges();
+            repositoryWrapper.SubscriberRepository.SaveAsync();
 
             return true;
         }
 
 
-        public static ProfileDataStatus ImportLinkedIn(UpDiddyDbContext db, ISovrenAPI sovrenApi, SubscriberProfileStagingStore info, ref string msg)
+        public static ProfileDataStatus ImportLinkedIn(IRepositoryWrapper repositoryWrapper, ISovrenAPI sovrenApi, SubscriberProfileStagingStore info, ref string msg)
         {
             try
             {
                 // Get the subscriber        
-                Subscriber subscriber = SubscriberFactory.GetSubscriberById(db, info.SubscriberId);
+                Subscriber subscriber = SubscriberFactory.GetSubscriberById(repositoryWrapper, info.SubscriberId).Result;
                 if (subscriber == null)
                 {
                     msg = $"SubscriberSkill:ImportSovren -> Subscriber {info.SubscriberId} was not found";
@@ -280,7 +278,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 String parsedDocument = sovrenApi.SubmitResumeAsync(base64Resume).Result;
 
                 List<string> skills = Utils.ParseSkillsFromHrXML(parsedDocument);
-                _AddSubscriberSkills(db, subscriber, skills);
+                _AddSubscriberSkills(repositoryWrapper, subscriber, skills).Wait();
 
                 return ProfileDataStatus.Processed;
             }
@@ -293,12 +291,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
         }
 
 
-        public static ProfileDataStatus ImportSovren(UpDiddyDbContext db, SubscriberProfileStagingStore info, ref string msg, ILogger syslog)
+        public static ProfileDataStatus ImportSovren(IRepositoryWrapper repositoryWrapper, SubscriberProfileStagingStore info, ref string msg, ILogger syslog)
         {
             try
             {
                 // Get the subscriber 
-                Subscriber subscriber = SubscriberFactory.GetSubscriberById(db, info.SubscriberId);
+                Subscriber subscriber = SubscriberFactory.GetSubscriberById(repositoryWrapper, info.SubscriberId).Result;
                 if (subscriber == null)
                 {
                     msg = $"SubscriberFactory:ImportSovren -> Subscriber {info.SubscriberId} was not found";
@@ -306,13 +304,13 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 }
 
                 // Import Contact Info 
-                _ImportSovrenContactInfo(db, subscriber, info.ProfileData, syslog);
+                _ImportSovrenContactInfo(repositoryWrapper, subscriber, info.ProfileData, syslog).Wait();
                 // Import skills 
-                _ImportSovrenSkills(db, subscriber, info.ProfileData, syslog);
+                _ImportSovrenSkills(repositoryWrapper, subscriber, info.ProfileData, syslog).Wait();
                 // Import work history  
-                _ImportSovrenWorkHistory(db, subscriber, info.ProfileData, syslog);
+                _ImportSovrenWorkHistory(repositoryWrapper, subscriber, info.ProfileData, syslog).Wait();
                 // Import education history  
-                _ImportSovrenEducationHistory(db, subscriber, info.ProfileData, syslog);
+                _ImportSovrenEducationHistory(repositoryWrapper, subscriber, info.ProfileData, syslog).Wait();
 
                 return ProfileDataStatus.Processed;
             }
@@ -323,9 +321,9 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
         }
 
-        public static bool IsEligibleForOffers(UpDiddyDbContext _db, Guid SubscriberGuid, ILogger _syslog, IMapper _mapper, IIdentity Identity)
+        public static async Task<bool> IsEligibleForOffers(IRepositoryWrapper repositoryWrapper, Guid SubscriberGuid, ILogger _syslog, IMapper _mapper, IIdentity Identity)
         {
-            SubscriberDto subscriber = GetSubscriber(_db, SubscriberGuid, _syslog, _mapper);
+            SubscriberDto subscriber = await GetSubscriber(repositoryWrapper, SubscriberGuid, _syslog, _mapper);
             if (subscriber == null)
                 return false;
             return Identity.IsAuthenticated && subscriber.Files.Count > 0;
@@ -333,24 +331,24 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         #region Skills
 
-        public static IList<SubscriberSkill> GetSubscriberSkillsById(UpDiddyDbContext _db, int subscriberId)
+        public static async Task<IList<SubscriberSkill>> GetSubscriberSkillsById(IRepositoryWrapper repositoryWrapper, int subscriberId)
         {
-            return _db.SubscriberSkill
+            return await repositoryWrapper.SubscriberSkillRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
                 .Include(s => s.Skill)
-                .ToList();
+                .ToListAsync();
         }
 
         #endregion
 
         #region Work History
 
-        public static IList<SubscriberWorkHistory> GetSubscriberWorkHistoryById(UpDiddyDbContext _db, int subscriberId)
+        public static async Task<IList<SubscriberWorkHistory>> GetSubscriberWorkHistoryById(IRepositoryWrapper repositoryWrapper, int subscriberId)
         {
-            return _db.SubscriberWorkHistory
+            return await repositoryWrapper.SubscriberWorkHistoryRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
                 .Include(s => s.Company)
-                .ToList();
+                .ToListAsync();
         }
 
         #endregion
@@ -358,14 +356,14 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         #region Education History
 
-        public static IList<SubscriberEducationHistory> GetSubscriberEducationHistoryById(UpDiddyDbContext _db, int subscriberId)
+        public static async Task<IList<SubscriberEducationHistory>> GetSubscriberEducationHistoryById(IRepositoryWrapper repositoryWrapper, int subscriberId)
         {
-            return _db.SubscriberEducationHistory
+            return await repositoryWrapper.SubscriberEducationHistoryRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
                 .Include(s => s.EducationalInstitution)
                 .Include(s => s.EducationalDegree)
                 .Include(s => s.EducationalDegreeType)
-                .ToList();
+                .ToListAsync();
         }
 
         #endregion
@@ -374,12 +372,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         #region Helper Functions
 
-        private static async Task<bool> _ImportSovrenEducationHistory(UpDiddyDbContext db, Subscriber subscriber, string profileData, ILogger syslog)
+        private static async Task<bool> _ImportSovrenEducationHistory(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, string profileData, ILogger syslog)
         {
             try
             {
                 List<SubscriberEducationHistoryDto> eductionHistory = Utils.ParseEducationHistoryFromHrXml(profileData);
-                await _AddSubscriberEducationHistory(db, subscriber, eductionHistory);
+                await _AddSubscriberEducationHistory(repositoryWrapper, subscriber, eductionHistory);
                 return true;
             }
             catch (Exception e)
@@ -391,12 +389,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
 
 
-        private static async Task<bool> _ImportSovrenWorkHistory(UpDiddyDbContext db, Subscriber subscriber, string profileData, ILogger syslog)
+        private static async Task<bool> _ImportSovrenWorkHistory(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, string profileData, ILogger syslog)
         {
             try
             {
                 List<SubscriberWorkHistoryDto> workHistory = Utils.ParseWorkHistoryFromHrXml(profileData);
-                await _AddSubscriberWorkHistory(db, subscriber, workHistory);
+                await _AddSubscriberWorkHistory(repositoryWrapper, subscriber, workHistory);
                 return true;
             }
             catch (Exception e)
@@ -409,12 +407,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
 
 
-        private static bool _ImportSovrenContactInfo(UpDiddyDbContext db, Subscriber subscriber, string profileData, ILogger syslog)
+        private static async Task<bool> _ImportSovrenContactInfo(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, string profileData, ILogger syslog)
         {
             try
             {
                 SubscriberContactInfoDto contactInfo = Utils.ParseContactInfoFromHrXML(profileData);
-                _AddSubscriberContactInfo(db, subscriber, contactInfo);
+                await _AddSubscriberContactInfo(repositoryWrapper, subscriber, contactInfo);
                 return true;
             }
             catch (Exception e)
@@ -426,12 +424,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
 
 
-        private static bool _ImportSovrenSkills(UpDiddyDbContext db, Subscriber subscriber, string profileData, ILogger syslog)
+        private static async Task<bool> _ImportSovrenSkills(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, string profileData, ILogger syslog)
         {
             try
             {
                 List<string> skills = Utils.ParseSkillsFromHrXML(profileData);
-                _AddSubscriberSkills(db, subscriber, skills);
+                await _AddSubscriberSkills(repositoryWrapper, subscriber, skills);
                 return true;
             }
             catch (Exception e)
@@ -465,33 +463,33 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
 
 
-        private static void _AddSubscriberSkills(UpDiddyDbContext db, Subscriber subscriber, List<string> skills)
+        private static async Task _AddSubscriberSkills(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, List<string> skills)
         {
             foreach (string skillName in skills)
             {
-                Skill skill = SkillFactory.GetOrAdd(db, skillName);
+                Skill skill = await SkillFactory.GetOrAdd(repositoryWrapper, skillName);
                 // Check to see if the subscriber already has that skill 
-                SubscriberSkill subscriberSkill = SubscriberSkillFactory.GetSkillForSubscriber(db, subscriber, skill);
+                SubscriberSkill subscriberSkill = await SubscriberSkillFactory.GetSkillForSubscriber(repositoryWrapper, subscriber, skill);
                 // If the subscriber does not have the skill, add it to their profile 
                 if (subscriberSkill == null)
-                    SubscriberSkillFactory.AddSkillForSubscriber(db, subscriber, skill);
+                    await SubscriberSkillFactory.AddSkillForSubscriber(repositoryWrapper, subscriber, skill);
             }
         }
 
-        private static async Task _AddSubscriberWorkHistory(UpDiddyDbContext db, Subscriber subscriber, List<SubscriberWorkHistoryDto> workHistoryList)
+        private static async Task _AddSubscriberWorkHistory(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, List<SubscriberWorkHistoryDto> workHistoryList)
         {
             foreach (SubscriberWorkHistoryDto wh in workHistoryList)
             {
 
-                Company company = CompanyFactory.GetOrAdd(db, wh.Company).Result;
-                SubscriberWorkHistory workHistory = SubscriberWorkHistoryFactory.GetWorkHistoryForSubscriber(db, subscriber, company, wh.StartDate, wh.EndDate);
+                Company company = CompanyFactory.GetOrAdd(repositoryWrapper, wh.Company).Result;
+                SubscriberWorkHistory workHistory = await SubscriberWorkHistoryFactory.GetWorkHistoryForSubscriber(repositoryWrapper, subscriber, company, wh.StartDate, wh.EndDate);
                 if (workHistory == null)
-                    await SubscriberWorkHistoryFactory.AddWorkHistoryForSubscriber(db, subscriber, wh, company);
+                    await SubscriberWorkHistoryFactory.AddWorkHistoryForSubscriber(repositoryWrapper, subscriber, wh, company);
             }
         }
 
 
-        private static void _AddSubscriberContactInfo(UpDiddyDbContext db, Subscriber subscriber, SubscriberContactInfoDto contactInfo)
+        private static async Task _AddSubscriberContactInfo(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, SubscriberContactInfoDto contactInfo)
         {
             subscriber.FirstName = contactInfo.FirstName;
             subscriber.LastName = contactInfo.LastName;
@@ -502,25 +500,24 @@ namespace UpDiddyApi.ApplicationCore.Factory
             subscriber.City = contactInfo.City;
             subscriber.Address = contactInfo.Address;
             subscriber.PostalCode = contactInfo.PostalCode;
-            State state = StateFactory.GetStateByStateCode(db, contactInfo.State);
+            State state = await StateFactory.GetStateByStateCode(repositoryWrapper, contactInfo.State);
             if (state != null)
                 subscriber.StateId = state.StateId;
 
-            db.SaveChanges();
+            await repositoryWrapper.State.SaveAsync();
         }
 
 
-        private static async Task _AddSubscriberEducationHistory(UpDiddyDbContext db, Subscriber subscriber, List<SubscriberEducationHistoryDto> educationHistoryList)
+        private static async Task _AddSubscriberEducationHistory(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, List<SubscriberEducationHistoryDto> educationHistoryList)
         {
             foreach (SubscriberEducationHistoryDto eh in educationHistoryList)
             {
-                EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(db, eh.EducationalInstitution).Result;
-                EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(db, eh.EducationalDegree).Result;
-                EducationalDegreeType educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(db, eh.EducationalDegreeType).Result;
-
-                SubscriberEducationHistory educationHistory = SubscriberEducationHistoryFactory.GetEducationHistoryForSubscriber(db, subscriber, educationalInstitution, educationalDegree, eh.StartDate, eh.EndDate, eh.DegreeDate);
+                EducationalInstitution educationalInstitution = await EducationalInstitutionFactory.GetOrAdd(repositoryWrapper, eh.EducationalInstitution);
+                EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(repositoryWrapper, eh.EducationalDegree);
+                EducationalDegreeType educationalDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(repositoryWrapper, eh.EducationalDegreeType);
+                SubscriberEducationHistory educationHistory = await SubscriberEducationHistoryFactory.GetEducationHistoryForSubscriber(repositoryWrapper, subscriber, educationalInstitution, educationalDegree, eh.StartDate, eh.EndDate, eh.DegreeDate);
                 if (educationHistory == null)
-                    await SubscriberEducationHistoryFactory.AddEducationHistoryForSubscriber(db, subscriber, eh, educationalInstitution, educationalDegree, educationalDegreeType);
+                    await SubscriberEducationHistoryFactory.AddEducationHistoryForSubscriber(repositoryWrapper, subscriber, eh, educationalInstitution, educationalDegree, educationalDegreeType);
             }
 
         }

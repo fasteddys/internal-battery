@@ -22,40 +22,22 @@ namespace UpDiddyApi.ApplicationCore.Services
 {
     public class ServiceOfferingService : IServiceOfferingService 
     {
-        private readonly IServiceProvider _services;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IMapper _mapper;
-        private ISysEmail _sysEmail;
-        private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
-        private IHangfireService _hangfireService;
-        private readonly CloudTalent _cloudTalent = null;
-        private readonly UpDiddyDbContext _db = null;
-        private readonly ILogger _syslog;
-        private readonly IHttpClientFactory _httpClientFactory = null;
-        private readonly ICompanyService _companyService;
-        private readonly ISubscriberService _subscriberService;
+      
 
-        public ServiceOfferingService(IServiceProvider services, IHangfireService hangfireService)
+        public ServiceOfferingService(IMapper mapper, IRepositoryWrapper repositoryWrapper)
         {
-            _services = services;
 
-            _db = _services.GetService<UpDiddyDbContext>();
-            _syslog = _services.GetService<ILogger<JobService>>();
-            _httpClientFactory = _services.GetService<IHttpClientFactory>();
-            _repositoryWrapper = _services.GetService<IRepositoryWrapper>();
-            _mapper = _services.GetService<IMapper>();
-            _sysEmail = _services.GetService<ISysEmail>();
-            _configuration = _services.GetService<Microsoft.Extensions.Configuration.IConfiguration>();
-            _companyService = services.GetService<ICompanyService>();
-            _subscriberService = services.GetService<ISubscriberService>();
-            _hangfireService = hangfireService;
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
+            _repositoryWrapper = repositoryWrapper;
+            _mapper = mapper;
+
         }
 
         public async Task<IList<ServiceOfferingDto>> GetAllServiceOfferings()
         {
              
-                IList<ServiceOffering> serviceOfferings = _repositoryWrapper.ServiceOfferingRepository.GetAllServiceOfferings();
+                IList<ServiceOffering> serviceOfferings = await _repositoryWrapper.ServiceOfferingRepository.GetAllServiceOfferings();
                 var rVal = _mapper.Map<IList<ServiceOfferingDto>>(serviceOfferings);
                 return rVal;                   
         }

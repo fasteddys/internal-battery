@@ -17,8 +17,12 @@ using Google.Apis.CloudTalentSolution.v3.Data;
 using UpDiddyLib.Shared.GoogleJobs;
 using Microsoft.AspNetCore.Http;
 using UpDiddyLib.Domain.Models;
-using UpDiddyApi.ApplicationCore.Factory;
+using Hangfire;
+using Newtonsoft.Json.Linq;
+using UpDiddyApi.Workflow;
 using UpDiddyApi.ApplicationCore.Exceptions;
+using UpDiddyApi.ApplicationCore.Factory;
+
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class JobService : IJobService
@@ -29,14 +33,14 @@ namespace UpDiddyApi.ApplicationCore.Services
         private ISysEmail _sysEmail;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private IHangfireService _hangfireService;
-        private readonly CloudTalent _cloudTalent = null;
+        private readonly ICloudTalentService _cloudTalentService;
         private readonly UpDiddyDbContext _db = null;
         private readonly ILogger _syslog;
         private readonly IHttpClientFactory _httpClientFactory = null;
         private readonly ICompanyService _companyService;
         private readonly ISubscriberService _subscriberService;
         private readonly IMemoryCacheService _cache;
-        public JobService(IServiceProvider services, IHangfireService hangfireService)
+        public JobService(IServiceProvider services, IHangfireService hangfireService, ICloudTalentService cloudTalentService)
         {
             _services = services;
 
@@ -51,26 +55,33 @@ namespace UpDiddyApi.ApplicationCore.Services
             _subscriberService = services.GetService<ISubscriberService>();
             _cache = services.GetService<IMemoryCacheService>();
             _hangfireService = hangfireService;
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
+            _cloudTalentService = cloudTalentService;
         }
 
         public async Task<JobDetailDto> GetJobDetail(Guid jobPostingGuid)
         {
-            JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuidWithRelatedObjectsAsync(_db, jobPostingGuid);
+            JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuidWithRelatedObjectsAsync(_repositoryWrapper, jobPostingGuid);
             if (jobPosting == null)
                 throw new NotFoundException();
+            if (jobPosting.IsDeleted == 1)
+                throw new ExpiredJobException();
 
             JobDetailDto rVal = _mapper.Map<JobDetailDto>(jobPosting);
             rVal.CompanyLogoUrl = JobUrlHelper.SetCompanyLogoUrl(rVal.CompanyLogoUrl,_configuration);
             return rVal;
         }
 
-        public async Task<JobPostingDto> GetJob(Guid jobPostingGuid)
+
+
+
+        public async Task<UpDiddyLib.Dto.JobPostingDto> GetJob(Guid jobPostingGuid)
         {
-            JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuidWithRelatedObjectsAsync(_db, jobPostingGuid);
+            JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuidWithRelatedObjectsAsync(_repositoryWrapper, jobPostingGuid);
             if (jobPosting == null)
                 throw new NotFoundException();
-            JobPostingDto rVal = _mapper.Map<JobPostingDto>(jobPosting);
+            if (jobPosting.IsDeleted == 1)
+                throw new ExpiredJobException();
+            UpDiddyLib.Dto.JobPostingDto rVal = _mapper.Map<UpDiddyLib.Dto.JobPostingDto>(jobPosting);
 
             // set meta data for seo
             JobPostingFactory.SetMetaData(jobPosting, rVal);
@@ -89,13 +100,13 @@ namespace UpDiddyApi.ApplicationCore.Services
                 jobPostingGuid.ToString());
 
             JobQueryDto jobQuery = JobQueryHelper.CreateJobQueryForSimilarJobs(jobPosting.Province, jobPosting.City, jobPosting.Title, Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]));
-            JobSearchResultDto jobSearchForSingleJob = _cloudTalent.JobSearch(jobQuery);
+            JobSearchResultDto jobSearchForSingleJob = _cloudTalentService.JobSearch(jobQuery);
 
             // If jobs in same city come back less than 6, broaden search to state.
             if (jobSearchForSingleJob.JobCount < Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]))
             {
                 jobQuery = JobQueryHelper.CreateJobQueryForSimilarJobs(jobPosting.Province, string.Empty, jobPosting.Title, Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]));
-                jobSearchForSingleJob = _cloudTalent.JobSearch(jobQuery);
+                jobSearchForSingleJob = _cloudTalentService.JobSearch(jobQuery);
             }
 
             rVal.SimilarJobs = jobSearchForSingleJob;
@@ -136,7 +147,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     int.TryParse(pageNumStr, out PageNum);
                         
                 JobQueryDto jobQuery = JobQueryHelper.CreateSummaryJobQuery(PageSize, query);
-                JobSearchSummaryResultDto jobSearchResult = _cloudTalent.JobSummarySearch(jobQuery);
+                JobSearchSummaryResultDto jobSearchResult = _cloudTalentService.JobSummarySearch(jobQuery);
                 rVal =  CreateJobBrowseResultDto(jobSearchResult, excludeJobs, excludeFacets);
                 _cache.SetCacheValue<JobBrowseResultDto>(cacheKey, rVal);
    
@@ -144,8 +155,6 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             return rVal;
         }
-
-
 
         public async Task<JobSearchSummaryResultDto> SummaryJobSearch(IQueryCollection query)
         {
@@ -156,7 +165,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
                 JobQueryDto jobQuery = JobQueryHelper.CreateSummaryJobQuery(PageSize, query);
-                rVal = _cloudTalent.JobSummarySearch(jobQuery);
+                rVal = _cloudTalentService.JobSummarySearch(jobQuery);
                 await JobUrlHelper.AssignCompanyLogoUrlToJobsList(rVal.Jobs, _configuration, _companyService);
                 _cache.SetCacheValue<JobSearchSummaryResultDto>(cacheKey, rVal);
 
@@ -178,7 +187,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task ReferJobToFriend(JobReferralDto jobReferralDto)
         {
             var jobReferralGuid = await SaveJobReferral(jobReferralDto);
-            await SendReferralEmail(jobReferralDto, jobReferralGuid);
+            SendReferralEmail(jobReferralDto, jobReferralGuid);
         }
 
         public async Task UpdateJobReferral(string referrerCode, string subscriberGuid)
@@ -192,7 +201,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (jobReferral != null)
             {
                 jobReferral.RefereeId = subscriber.SubscriberId;
-                //update JobReferral
+                //update JobReferralreferrerCode
                 await _repositoryWrapper.JobReferralRepository.UpdateJobReferral(jobReferral);
             }
         }
@@ -236,7 +245,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return jobReferralGuid;
         }
 
-        private async Task SendReferralEmail(JobReferralDto jobReferralDto, Guid jobReferralGuid)
+        private void SendReferralEmail(JobReferralDto jobReferralDto, Guid jobReferralGuid)
         {
             //generate jobUrl
             var referralUrl = jobReferralGuid == Guid.Empty ? jobReferralDto.ReferUrl : $"{jobReferralDto.ReferUrl}?referrerCode={jobReferralGuid}";
@@ -275,7 +284,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
             JobQueryDto jobQuery = JobQueryHelper.CreateJobQuery(Country, Province, City, Industry, JobCategory, Skill, PageNum, PageSize, query);
-            JobSearchResultDto jobSearchResult = _cloudTalent.JobSearch(jobQuery);
+            JobSearchResultDto jobSearchResult = _cloudTalentService.JobSearch(jobQuery);
 
             //assign company logo urls
             await JobUrlHelper.AssignCompanyLogoUrlToJobsList(jobSearchResult.Jobs, _configuration, _companyService);
@@ -292,14 +301,38 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (jobSearchResult.Jobs != null && jobSearchResult.Jobs.Count > 0)
             {
                 // don't let this stop job search from returning
-                ClientEvent ce = await _cloudTalent.CreateClientEventAsync(jobSearchResult.RequestId, ClientEventType.Impression, jobSearchResult.Jobs.Select(job => job.CloudTalentUri).ToList<string>());
+                ClientEvent ce = await _cloudTalentService.CreateClientEventAsync(jobSearchResult.RequestId, ClientEventType.Impression, jobSearchResult.Jobs.Select(job => job.CloudTalentUri).ToList<string>());
                 jobSearchResult.ClientEventId = ce.EventId;
             }
 
             return jobSearchResult;
         }
 
-        public async Task ShareJob(Guid job, Guid subscriberGuid, ShareJobDto shareJobDto)
+        private async Task AssignCompanyLogoUrlToJobs(List<JobSummaryViewDto> jobs)
+        {
+            var companies = await _companyService.GetCompaniesAsync();
+            foreach (var job in jobs)
+            {
+                var company = companies.Where(x => x.CompanyName == job.CompanyName).FirstOrDefault();
+
+                if (!string.IsNullOrWhiteSpace(company?.LogoUrl))
+                    job.CompanyLogoUrl = _configuration["StorageAccount:AssetBaseUrl"] + "Company/" + company.LogoUrl;
+            }
+        }
+
+        private async Task AssignCompanyLogoUrlToJobs(List<JobViewDto> jobs)
+        {
+            var companies = await _companyService.GetCompaniesAsync();
+            foreach (var job in jobs)
+            {
+                var company = companies.Where(x => x.CompanyName == job.CompanyName).FirstOrDefault();
+
+                if (!string.IsNullOrWhiteSpace(company?.LogoUrl))
+                    job.CompanyLogoUrl = _configuration["StorageAccount:AssetBaseUrl"] + "Company/" + company.LogoUrl;
+            }
+        }
+
+        public async Task ShareJob(Guid job, Guid subscriber, ShareJobDto shareJobDto)
         {
             if (string.IsNullOrEmpty(shareJobDto.Email))
             {
@@ -314,7 +347,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new NotFoundException("job posting not found");
 
             //get ReferrerId from ReferrerGuid
-            var referrer = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+            var referrer = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriber);
 
             //get ReferrerId from ReferrerGuid
             var referee = await _repositoryWrapper.SubscriberRepository.GetSubscriberByEmailAsync(shareJobDto.Email);

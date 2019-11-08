@@ -30,7 +30,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private ISysEmail _sysEmail;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private IHangfireService _hangfireService;
-        private readonly CloudTalent _cloudTalent = null;
+        private readonly ICloudTalentService _cloudTalentService;
         private readonly UpDiddyDbContext _db = null;
         private readonly ILogger _syslog;
         private readonly IHttpClientFactory _httpClientFactory = null;
@@ -39,7 +39,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly ISubscriberService _subscriberService;
         private IBraintreeConfiguration _braintreeConfiguration = null;
 
-        public BraintreeService(IServiceProvider services, IHangfireService hangfireService)
+        public BraintreeService(IServiceProvider services, IHangfireService hangfireService, ICloudTalentService cloudTalentService)
         {
             _services = services;
 
@@ -55,7 +55,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _subscriberService = services.GetService<ISubscriberService>();
             _hangfireService = hangfireService;
             _braintreeConfiguration = new BraintreeConfiguration(_configuration);
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
+            _cloudTalentService = cloudTalentService;
         }
 
         public bool CapturePayment(BraintreePaymentDto braintreePaymentDto, ref string authID, ref int statusCode, ref string msg)
@@ -102,7 +102,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // the following variable exists to differentiate between a successful payment and a successful transaction. 
                 // this is necessary because courses can be free with a promo code, in which case no payment is made. 
                 // in this case, the transaction is still successful even though no payment was made.
-                bool isTransactionSuccessful = false;
 
                 Result<Transaction> paymentResult = gateway.Transaction.Sale(TransactionRequest);
                 if (paymentResult.IsSuccess())
@@ -134,10 +133,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                 _syslog.LogInformation($"BraintreeService.CapturePayment returning false: {msg} ");
                 return false;
             }
-
-
-            _syslog.LogInformation("BraintreeService.CapturePayment finished returning true");
-            return true;
         }
         #region Private Helper Functions 
 

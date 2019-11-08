@@ -31,10 +31,10 @@ using UpDiddyApi.ApplicationCore.Services.GoogleProfile;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
-
+using Microsoft.EntityFrameworkCore;
 namespace UpDiddyApi.ApplicationCore.Services
 {
-    public class CloudTalent : BusinessVendorBase
+    public class CloudTalentService : BusinessVendorBase, ICloudTalentService
     {
         private string _projectId = string.Empty;
         private string _projectPath = string.Empty;
@@ -43,12 +43,12 @@ namespace UpDiddyApi.ApplicationCore.Services
         private GoogleProfileService _profileApi = null;
         private GoogleProfileService _googleProfile = null;
         private ISubscriberService _subscriberService;
+
         //  private RepositoryWrapper repositoryWrapper;
 
         #region Constructor
-        public CloudTalent(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger sysLog, IHttpClientFactory httpClientFactory, IRepositoryWrapper repositoryWrapper, ISubscriberService ISubscriberService)
+        public CloudTalentService(IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<CloudTalentService> sysLog, IHttpClientFactory httpClientFactory, IRepositoryWrapper repositoryWrapper, ISubscriberService ISubscriberService)
         {
-            _db = context;
             _mapper = mapper;
             _apiBaseUri = configuration["SysEmail:ApiUrl"];
             _accessToken = configuration["SysEmail:Transactional:ApiKey"];
@@ -58,14 +58,13 @@ namespace UpDiddyApi.ApplicationCore.Services
             _repositoryWrapper = repositoryWrapper;
             _subscriberService = ISubscriberService;
 
-
             // cloud talent configuration
             _projectId = configuration["CloudTalent:Project"];
             _projectPath = configuration["CloudTalent:ProjectPath"];
             // must have path to service account json file created on the cloud.google.com defined 
             // in GOOGLE_APPLICATION_CREDENTIALS environmental variable
             _credential = GoogleCredential.GetApplicationDefaultAsync().Result;
-            _profileApi = new GoogleProfileService(context, mapper, configuration, sysLog, httpClientFactory);
+            _profileApi = new GoogleProfileService(configuration, sysLog, httpClientFactory);
 
             // Specify the Service scope.
             if (_credential.IsCreateScopedRequired)
@@ -83,7 +82,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             });
 
 
-            _googleProfile = new GoogleProfileService(context, mapper, configuration, sysLog, httpClientFactory);
+            _googleProfile = new GoogleProfileService(configuration, sysLog, httpClientFactory);
 
         }
         #endregion
@@ -104,7 +103,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         #region Profile indexing 
 
 
-        public BasicResponseDto DeleteProfileFromCloudTalentByUri(UpDiddyDbContext db, string talentCloudUri)
+        public BasicResponseDto DeleteProfileFromCloudTalentByUri(string talentCloudUri)
         {
             try
             {
@@ -144,17 +143,17 @@ namespace UpDiddyApi.ApplicationCore.Services
             return isRemoved;
         }
 
-        public bool DeleteProfileFromCloudTalent(UpDiddyDbContext db, Guid subscriberGuid, Guid? cloudIdentifier)
+        public async Task<bool> DeleteProfileFromCloudTalent(Guid subscriberGuid, Guid? cloudIdentifier)
         {
             bool isRemoved = false;
             try
             {
-                Subscriber subscriber = SubscriberFactory.GetDeletedSubscriberProfileByGuid(db, subscriberGuid);
+                Subscriber subscriber = await SubscriberFactory.GetDeletedSubscriberProfileByGuid(_repositoryWrapper, subscriberGuid);
                 
                 if (subscriber != null)
                 {
                     // attempt to remove the profile and update the associated subscriber
-                    isRemoved = RemoveProfileFromIndex(subscriber);
+                    isRemoved = await RemoveProfileFromIndex(subscriber);
                 }
 
                 if (!isRemoved)
@@ -170,22 +169,22 @@ namespace UpDiddyApi.ApplicationCore.Services
             return isRemoved;
         }
         
-        public bool AddOrUpdateProfileToCloudTalent(UpDiddyDbContext db, Guid subscriberGuid)
+        public async Task<bool> AddOrUpdateProfileToCloudTalent(Guid subscriberGuid)
         {
             try
             {
 
-                Subscriber subscriber = SubscriberFactory.GetSubscriberProfileByGuid(db, subscriberGuid);
+                Subscriber subscriber = await SubscriberFactory.GetSubscriberProfileByGuid(_repositoryWrapper, subscriberGuid);
                 // validate we have good data 
                 if (subscriber == null)
                     return false;
 
-                IList<SubscriberSkill> skills = SubscriberFactory.GetSubscriberSkillsById(db, subscriber.SubscriberId);
+                IList<SubscriberSkill> skills = await SubscriberFactory.GetSubscriberSkillsById(_repositoryWrapper, subscriber.SubscriberId);
                 // index the job to google 
                 if (string.IsNullOrEmpty(subscriber.CloudTalentUri))
-                    return IndexProfile(subscriber, skills);
+                    return await IndexProfile(subscriber, skills);
                 else
-                    return ReIndexProfile(subscriber, skills);
+                    return await ReIndexProfile(subscriber, skills);
 
             }
             catch
@@ -194,7 +193,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
-        public bool IndexProfile(Subscriber subscriber, IList<SubscriberSkill> skills)
+        public async Task<bool> IndexProfile(Subscriber subscriber, IList<SubscriberSkill> skills)
         {
             int step = 0;
             try
@@ -215,7 +214,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     subscriber.CloudTalentIndexInfo = "Indexed on " + Utils.ISO8601DateString(DateTime.Now);
                     subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.Indexed;
                     step = 4;
-                    _db.SaveChanges();
+                    await _repositoryWrapper.SubscriberRepository.SaveAsync();
 
                     return true;
                 }
@@ -228,13 +227,13 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // Update job posting with index error
                 subscriber.CloudTalentIndexInfo = Utils.ISO8601DateString(DateTime.Now) + ": " + e.Message + " Step = " + step;
                 subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.IndexError;
-                _db.SaveChanges();
+                 await _repositoryWrapper.SubscriberRepository.SaveAsync();
                 _syslog.LogError(e, $"CloudTalent.IndexProfile Error: {e.Message} at step {step} ", e, subscriber);
                 return false;
             }
         }
 
-        public bool ReIndexProfile(Subscriber subscriber, IList<SubscriberSkill> skills)
+        public async Task<bool> ReIndexProfile(Subscriber subscriber, IList<SubscriberSkill> skills)
         {
             try
             {
@@ -246,7 +245,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     subscriber.CloudTalentIndexInfo = "ReIndexed on " + Utils.ISO8601DateString(DateTime.Now);
                     subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.Indexed;
-                    _db.SaveChanges();
+                    await _repositoryWrapper.SubscriberRepository.SaveAsync();
                 }
                 else
                     throw new Exception(errorMsg);
@@ -258,23 +257,28 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // Update job posting with index error
                 subscriber.CloudTalentIndexInfo = Utils.ISO8601DateString(DateTime.Now) + ": " + e.Message;
                 subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.IndexError;
-                _db.SaveChanges();
+                 await _repositoryWrapper.SubscriberRepository.SaveAsync();
                 _syslog.LogError(e, "CloudTalent.ReIndexProfile Error", e, subscriber);
                 throw e;
             }
         }
 
-        public bool RemoveProfileFromIndex(Subscriber subscriber)
+        public async Task<bool> RemoveProfileFromIndex(Subscriber subscriber)
         {
+            //Jim added steps to help with 
             bool isRemoved = false;
+            int step = 0;
             try
             {
                 string errorMsg = string.Empty;
                 BasicResponseDto deleteStatus = null;
+                step = 1;
                 if (subscriber.CloudTalentUri != null && string.IsNullOrEmpty(subscriber.CloudTalentUri.Trim()) == false)
                 {
+                    step = 2;
                     deleteStatus = _profileApi.DeleteProfile(subscriber.CloudTalentUri.Trim(), ref errorMsg);
 
+                    step = 3;
                     // Update job posting with index error
                     if (deleteStatus.StatusCode == 200)
                     {
@@ -283,10 +287,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                     }
                     else
                         subscriber.CloudTalentIndexInfo = "Error: " + errorMsg + " deleting profile on " + Utils.ISO8601DateString(DateTime.Now);
-
+                    step = 4;
                     subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.DeletedFromIndex;
                     subscriber.ModifyDate = DateTime.UtcNow;
-                    _db.SaveChanges();
+                    await _repositoryWrapper.SaveAsync();
+                    step = 5;
                 }
             }
             catch (Exception e)
@@ -294,10 +299,10 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // Update job posting with index error
                 subscriber.IsDeleted = 1;
                 subscriber.ModifyDate = DateTime.UtcNow;
-                subscriber.CloudTalentIndexInfo = e.Message;
+                subscriber.CloudTalentIndexInfo = $"RemoveProfileFromIndex: error at step {step}" + e.Message;
                 subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.IndexError;
-                _db.SaveChanges();
-                _syslog.LogError(e, "CloudTalent.RemoveProfileFromIndex Error", e, subscriber);
+                await _repositoryWrapper.SaveAsync();
+                _syslog.LogError(e, $"CloudTalent.RemoveProfileFromIndex Error at step {step}", e, subscriber);
                 throw e;
             }
             return isRemoved;
@@ -544,7 +549,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// </summary>
         /// <param name="jobPosting"></param>
         /// <returns></returns>
-        public bool RemoveJobFromIndex(JobPosting jobPosting)
+        public async Task<bool> RemoveJobFromIndex(JobPosting jobPosting)
         {
             try
             {
@@ -557,13 +562,13 @@ namespace UpDiddyApi.ApplicationCore.Services
                 }
 
                 // remove reference to this job posting in job pages table
-                _db.JobPage.Where(jp => jp.JobPostingId == jobPosting.JobPostingId).ToList().ForEach(jp =>
+                _repositoryWrapper.JobPage.GetAllWithTracking().Where(jp => jp.JobPostingId == jobPosting.JobPostingId).ToList().ForEach(jp =>
                 {
                     jp.ModifyDate = DateTime.UtcNow;
                     jp.ModifyGuid = Guid.Empty;
                     jp.JobPostingId = null;
                 });
-
+                await _repositoryWrapper.JobPage.SaveAsync();
                 // Update job posting with index error
                 jobPosting.IsDeleted = 1;
                 if (isIndexed)
@@ -574,7 +579,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 jobPosting.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.DeletedFromIndex;
                 jobPosting.ModifyDate = DateTime.UtcNow;
                 jobPosting.PostingExpirationDateUTC = DateTime.UtcNow;
-                _db.SaveChanges();
+                await _repositoryWrapper.JobPosting.SaveAsync();
 
                 return true;
             }
@@ -585,7 +590,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 jobPosting.ModifyDate = DateTime.UtcNow;
                 jobPosting.CloudTalentIndexInfo = e.Message;
                 jobPosting.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.IndexError;
-                _db.SaveChanges();
+                await _repositoryWrapper.JobPosting.SaveAsync();
                 _syslog.LogError(e, "CloudTalent.RemoveJobFromIndex Error", e, jobPosting);
                 throw e;
             }
@@ -598,11 +603,11 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <param name="jobPosting"></param>
         /// <returns></returns>
 
-        public CloudTalentSolution.Job ReIndexJob(JobPosting jobPosting)
+        public async Task<CloudTalentSolution.Job> ReIndexJob(JobPosting jobPosting)
         {
             try
             {
-                CloudTalentSolution.Job TalentCloudJob = JobMappingHelper.CreateGoogleJob(_db, jobPosting);
+                CloudTalentSolution.Job TalentCloudJob = await JobMappingHelper.CreateGoogleJob(_repositoryWrapper, jobPosting);
                 CloudTalentSolution.UpdateJobRequest UpdateJobRequest = new CloudTalentSolution.UpdateJobRequest();
                 UpdateJobRequest.Job = TalentCloudJob;
                 CloudTalentSolution.Job jobCreated = _jobServiceClient.Projects.Jobs.Patch(UpdateJobRequest, TalentCloudJob.Name).Execute();
@@ -610,7 +615,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 jobPosting.CloudTalentUri = jobCreated.Name;
                 jobPosting.CloudTalentIndexInfo = "ReIndexed on " + Utils.ISO8601DateString(DateTime.Now);
                 jobPosting.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.Indexed;
-                _db.SaveChanges();
+                await _repositoryWrapper.JobPosting.SaveAsync();
 
                 return jobCreated;
             }
@@ -619,7 +624,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // Update job posting with index error
                 jobPosting.CloudTalentIndexInfo = e.Message;
                 jobPosting.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.IndexError;
-                _db.SaveChanges();
+                await _repositoryWrapper.JobPosting.SaveAsync();
                 _syslog.LogError(e, "CloudTalent.IndexJob Error", e, jobPosting);
                 throw e;
             }
@@ -631,11 +636,11 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// </summary>
         /// <param name="jobPosting"></param>
         /// <returns></returns>
-        public CloudTalentSolution.Job IndexJob(JobPosting jobPosting)
+        public async Task<CloudTalentSolution.Job> IndexJob(JobPosting jobPosting)
         {
             try
             {
-                CloudTalentSolution.Job TalentCloudJob = JobMappingHelper.CreateGoogleJob(_db, jobPosting);
+                CloudTalentSolution.Job TalentCloudJob = await JobMappingHelper.CreateGoogleJob(_repositoryWrapper, jobPosting);
                 CloudTalentSolution.CreateJobRequest CreateJobRequest = new CloudTalentSolution.CreateJobRequest();
                 CreateJobRequest.Job = TalentCloudJob;
                 // "Google.Apis.Requests.RequestError\r\nInvalid value at 'job.posting_expire_time' (type.googleapis.com/google.protobuf.Timestamp), Field 'postingExpireTime', Illegal timestamp format; timestamps must end with 'Z' or have a valid timezone offset. [400]\r\nErrors [\r\n\tMessage[Invalid value at 'job.posting_expire_time' (type.googleapis.com/google.protobuf.Timestamp), Field 'postingExpireTime', Illegal timestamp format; timestamps must end with 'Z' or have a valid timezone offset.] Location[ - ] Reason[badRequest] Domain[global]\r\n]\r\n"
@@ -644,7 +649,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 jobPosting.CloudTalentUri = jobCreated.Name;
                 jobPosting.CloudTalentIndexInfo = "Indexed on " + Utils.ISO8601DateString(DateTime.Now);
                 jobPosting.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.Indexed;
-                _db.SaveChanges();
+                await _repositoryWrapper.JobPosting.SaveAsync();
 
                 return jobCreated;
             }
@@ -653,7 +658,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // Update job posting with index error
                 jobPosting.CloudTalentIndexInfo = e.Message;
                 jobPosting.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.IndexError;
-                _db.SaveChanges();
+                await _repositoryWrapper.JobPosting.SaveAsync();
                 _syslog.LogError(e, "CloudTalent.IndexJob Error", e, jobPosting);
                 throw e;
             }
@@ -664,7 +669,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// </summary>
         /// <param name="company"></param>
         /// <returns></returns>
-        public CloudTalentSolution.Company IndexCompany(Models.Company company)
+        public async Task<CloudTalentSolution.Company> IndexCompany(Models.Company company)
         {
             try
             {
@@ -686,7 +691,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 company.CloudTalentUri = companyCreated.Name;
                 company.CloudTalentIndexInfo = "Indexed on " + Utils.ISO8601DateString(DateTime.Now);
                 company.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.Indexed;
-                _db.SaveChanges();
+                await _repositoryWrapper.Company.SaveAsync();
                 return companyCreated;
             }
             catch (Exception e)
@@ -694,27 +699,27 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // Update job posting with index error
                 company.CloudTalentIndexInfo = e.Message;
                 company.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.IndexError;
-                _db.SaveChanges();
+                await _repositoryWrapper.Company.SaveAsync();
                 _syslog.LogError(e, "CloudTalent.IndexJob Error", e, company);
                 throw e;
             }
         }
 
 
-        public bool AddJobToCloudTalent(UpDiddyDbContext db, Guid jobPostingGuid)
+        public async Task<bool> AddJobToCloudTalent(Guid jobPostingGuid)
         {
             try
             {
-                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(db, jobPostingGuid);
+                JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(_repositoryWrapper, jobPostingGuid);
                 // validate we have good data 
                 if (jobPosting == null || jobPosting.Company == null || jobPosting.IsPrivate == 1)
                     return false;
                 // validate the company is known to google, if not add it to the cloud talent 
                 if (string.IsNullOrEmpty(jobPosting.Company.CloudTalentUri))
-                    IndexCompany(jobPosting.Company);
+                    await IndexCompany(jobPosting.Company);
 
                 // index the job to google 
-                CloudTalentSolution.Job job = IndexJob(jobPosting);
+                CloudTalentSolution.Job job = await IndexJob(jobPosting);
                 return true;
             }
             catch
@@ -724,20 +729,20 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
-        public bool UpdateJobToCloudTalent(UpDiddyDbContext db, Guid jobPostingGuid)
+        public async Task<bool> UpdateJobToCloudTalent(Guid jobPostingGuid)
         {
             try
             {
-                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(db, jobPostingGuid);
+                JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(_repositoryWrapper, jobPostingGuid);
                 // validate we have good data 
                 if (jobPosting == null || jobPosting.Company == null || jobPosting.IsPrivate == 1)
                     return false;
                 // validate the company is known to google, if not add it to the cloud talent 
                 if (string.IsNullOrEmpty(jobPosting.Company.CloudTalentUri))
-                    IndexCompany(jobPosting.Company);
+                    await IndexCompany(jobPosting.Company);
 
                 // index the job to google 
-                CloudTalentSolution.Job job = ReIndexJob(jobPosting);
+                CloudTalentSolution.Job job = await ReIndexJob(jobPosting);
                 return true;
             }
             catch
@@ -748,17 +753,17 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-        public bool DeleteJobFromCloudTalent(UpDiddyDbContext db, Guid jobPostingGuid)
+        public async Task<bool> DeleteJobFromCloudTalent(Guid jobPostingGuid)
         {
             try
             {
-                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuid(db, jobPostingGuid);
+                JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuid(_repositoryWrapper, jobPostingGuid);
                 // validate we have good data 
                 if (jobPosting == null)
                     return false;
 
                 // index the job to google 
-                return RemoveJobFromIndex(jobPosting);
+                return await RemoveJobFromIndex(jobPosting);
             }
             catch
             {
@@ -977,8 +982,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             return searchJobRequest;
         }
 
-
-
         /// <summary>
         /// Search the cloud talent solution for jobs 
         /// </summary>
@@ -1027,6 +1030,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             rval.SearchTimeInMilliseconds = intervalTotalSearch.TotalMilliseconds;
             rval.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
             rval.SearchMappingTimeInTicks = intervalMapTime.Ticks;
+            
             return rval;
         }
 
@@ -1082,15 +1086,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return rval;
         }
 
-
-
-
-
         #endregion
-
-
-
-
 
         #region ClientEvents
         /// <summary>
@@ -1131,8 +1127,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         #endregion
 
         #region Helper functions
-
-
 
         static private CloudTalentSolution.TimestampRange GetPublishTimeRange(string timeRange, DateTime? lowerBound = null, DateTime? upperBound = null)
         {
@@ -1225,6 +1219,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             return rVal.Trim();
         }
 
+        public async Task TrackClientEventJobViewAction(Guid jobPostingGuid, string requestId, string clientEventId)
+        {
+            string cloudTalentUri = await _repositoryWrapper.JobPosting.GetCloudTalentUri(jobPostingGuid);
+            await CreateClientEventAsync(requestId,ClientEventType.View, new List<string>() { cloudTalentUri }, clientEventId );
+        }
 
         #endregion
     }
