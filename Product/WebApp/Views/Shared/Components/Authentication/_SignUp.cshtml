@@ -61,20 +61,16 @@
                     ButtonAction = ActionButtonViewModel.Action.SUBMIT
                 })
             </div>
-            @if(!string.IsNullOrEmpty(Model.CampaignSlug))
+            @if (!string.IsNullOrEmpty(Model.CampaignSlug))
             {
-                   <div class="col-12 pt-4">
-                     <p>Existing User? Click here to @Html.ActionLink("log in", "signin","session", new { returnUrl = returnUrl, rel = "nofollow"  })</p>
-                   </div>
-            }
-         
-            @if (!string.IsNullOrWhiteSpace(Model.ObfuscatedEmail))
-            {
-                <div class="col-12 no-padding notification">
-                    You must use the following email: @Model.ObfuscatedEmail
+                <div class="col-12 pt-4">
+                    <p>Existing User? Click here to @Html.ActionLink("log in", "signin", "session", new { returnUrl = returnUrl, rel = "nofollow" })</p>
                 </div>
             }
         </div>
+        @Html.HiddenFor(x => Model.IsGatedDownload)
+        @Html.HiddenFor(x => Model.GatedDownloadFileUrl)
+        @Html.HiddenFor(x => Model.GatedFileDownloadMaxAttemptsAllowed)
         @Html.HiddenFor(x => Model.CampaignSlug)
         @Html.HiddenFor(x => Model.SubscriberGuid)
     </form>

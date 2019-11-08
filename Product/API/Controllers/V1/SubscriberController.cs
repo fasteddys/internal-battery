@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -111,7 +111,7 @@ public class SubscriberController : Controller
     {
         if (subscriberGuid == null || subscriberGuid == Guid.Empty)
             return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid subscriber" });
-        
+
         SubscriberFactory.UpdateLastSignIn(_db, subscriberGuid);
 
         return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Subscriber updated successfully" });
@@ -157,7 +157,7 @@ public class SubscriberController : Controller
 
             // track the subscriber action if performed by someone other than the user who owns the file
             if (loggedInUserGuid != subscriberDto.SubscriberGuid.Value)
-                new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);
+                new SubscriberActionFactory(_repositoryWrapper, _db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);
 
             return Ok(subscriberDto);
         }
@@ -167,7 +167,7 @@ public class SubscriberController : Controller
 
     [Authorize(Policy = "IsCareerCircleAdmin")]
     [HttpDelete("{subscriberGuid}/{cloudIdentifier}")]
-    public async Task<IActionResult> DeleteSubscriber(Guid subscriberGuid, Guid cloudIdentifier)
+    public IActionResult DeleteSubscriber(Guid subscriberGuid, Guid cloudIdentifier)
     {
         try
         {
@@ -180,14 +180,13 @@ public class SubscriberController : Controller
 
             // delete the Auth0 account associated with the subscriber
             var getUserResponse = _userService.GetUserByEmailAsync(subscriber.Email).Result;
-            await _userService.DeleteUserAsync(getUserResponse.User.UserId);
+            _userService.DeleteUserAsync(getUserResponse.User.UserId);
 
             // perform logical delete on the subscriber entity only
             subscriber.IsDeleted = 1;
             subscriber.ModifyDate = DateTime.UtcNow;
             subscriber.ModifyGuid = Guid.Empty;
-            _repositoryWrapper.SubscriberRepository.Update(subscriber);
-            await _repositoryWrapper.SaveAsync();
+            _db.SaveChanges();
 
             // write audit information to the database
             var deleteUserAuditInformation = new JObject();
@@ -205,7 +204,7 @@ public class SubscriberController : Controller
 
         return Ok(true);
     }
-    
+
     [HttpPut("/api/[controller]")]
     public IActionResult Update([FromBody] SubscriberDto Subscriber)
     {
@@ -286,7 +285,7 @@ public class SubscriberController : Controller
         if (subscriber == null)
             return BadRequest();
 
-        var workHistory = _db.SubscriberWorkHistory
+        var workHistory = _repositoryWrapper.SubscriberWorkHistoryRepository.GetAllWithTracking()
         .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriber.SubscriberId)
         .OrderByDescending(s => s.StartDate)
         .Select(wh => new SubscriberWorkHistory()
@@ -399,7 +398,7 @@ public class SubscriberController : Controller
             return Unauthorized();
 
         Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repositoryWrapper, subscriberGuid);
-        Company company = await CompanyFactory.GetOrAdd(_repositoryWrapper, WorkHistoryDto.Company);
+        Company company = CompanyFactory.GetOrAdd(_repositoryWrapper, WorkHistoryDto.Company).Result;
         int companyId = company != null ? company.CompanyId : -1;
         CompensationType compensationType = await CompensationTypeFactory.GetCompensationTypeByName(_repositoryWrapper, WorkHistoryDto.CompensationType);
         int compensationTypeId = 0;
@@ -428,7 +427,6 @@ public class SubscriberController : Controller
         WorkHistory.IsCurrent = WorkHistoryDto.IsCurrent;
         WorkHistory.Compensation = WorkHistoryDto.Compensation;
         WorkHistory.CompensationTypeId = compensationTypeId;
-        WorkHistory.Company = company;
         await _repositoryWrapper.SaveAsync();
 
         // update google profile 
@@ -475,7 +473,7 @@ public class SubscriberController : Controller
         if (subscriber == null)
             return BadRequest();
 
-        var educationHistory = await _repositoryWrapper.SubscriberEducationHistoryRepository.GetAll()
+        var educationHistory = _repositoryWrapper.SubscriberEducationHistoryRepository.GetAllWithTracking()
         .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriber.SubscriberId)
         .OrderByDescending(s => s.StartDate)
         .Select(eh => new SubscriberEducationHistory()
@@ -531,7 +529,7 @@ public class SubscriberController : Controller
             // ignoring Subscriber property
         })
         .ProjectTo<SubscriberEducationHistoryDto>(_mapper.ConfigurationProvider)
-        .ToListAsync();
+        .ToList();
 
         return Ok(educationHistory);
     }
@@ -555,16 +553,16 @@ public class SubscriberController : Controller
         if (subscriber == null)
             return BadRequest();
         // Find or create the institution 
-        EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(_repositoryWrapper, EducationHistoryDto.EducationalInstitution).Result;
+        EducationalInstitution educationalInstitution = await EducationalInstitutionFactory.GetOrAdd(_repositoryWrapper, EducationHistoryDto.EducationalInstitution);
         int educationalInstitutionId = educationalInstitution.EducationalInstitutionId;
         // Find or create the degree major 
-        EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(_repositoryWrapper, EducationHistoryDto.EducationalDegree).Result;
+        EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(_repositoryWrapper, EducationHistoryDto.EducationalDegree);
         int educationalDegreeId = educationalDegree.EducationalDegreeId;
         // Find or create the degree type 
         EducationalDegreeType educationalDegreeType = await EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_repositoryWrapper, EducationHistoryDto.EducationalDegreeType);
         int educationalDegreeTypeId = 0;
         if (educationalDegreeType == null)
-            educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_repositoryWrapper, Constants.NotSpecifedOption).Result;
+            educationalDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(_repositoryWrapper, Constants.NotSpecifedOption);
         educationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
 
         SubscriberEducationHistory EducationHistory = new SubscriberEducationHistory()
@@ -583,6 +581,7 @@ public class SubscriberController : Controller
             EducationalDegreeTypeId = educationalDegreeTypeId,
             EducationalInstitutionId = educationalInstitutionId
         };
+
         await _repositoryWrapper.SubscriberEducationHistoryRepository.Create(EducationHistory);
         await _repositoryWrapper.SaveAsync();
 
@@ -614,17 +613,18 @@ public class SubscriberController : Controller
         if (EducationHistory == null || EducationHistory.SubscriberId != subscriber.SubscriberId)
             return BadRequest();
         // Find or create the institution 
-        EducationalInstitution educationalInstitution = await EducationalInstitutionFactory.GetOrAdd(_repositoryWrapper, EducationHistoryDto.EducationalInstitution);
+        EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(_repositoryWrapper, EducationHistoryDto.EducationalInstitution).Result;
         int educationalInstitutionId = educationalInstitution.EducationalInstitutionId;
         // Find or create the degree major 
-        EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(_repositoryWrapper, EducationHistoryDto.EducationalDegree);
+        EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(_repositoryWrapper, EducationHistoryDto.EducationalDegree).Result;
         int educationalDegreeId = educationalDegree.EducationalDegreeId;
         // Find or create the degree type 
         EducationalDegreeType educationalDegreeType = await EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_repositoryWrapper, EducationHistoryDto.EducationalDegreeType);
         int educationalDegreeTypeId = 0;
         if (educationalDegreeType == null)
-            educationalDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(_repositoryWrapper, Constants.NotSpecifedOption);
+            educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_repositoryWrapper, Constants.NotSpecifedOption).Result;
         educationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
+
         EducationHistory.ModifyDate = DateTime.UtcNow;
         EducationHistory.StartDate = EducationHistoryDto.StartDate;
         EducationHistory.EndDate = EducationHistoryDto.EndDate;
@@ -697,18 +697,18 @@ public class SubscriberController : Controller
     }
 
     [HttpPut("/api/[controller]/onboard")]
-    public async Task<IActionResult> Onboard()
+    public IActionResult Onboard()
     {
         Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
         if (subscriberGuid == null || subscriberGuid == Guid.Empty)
             return BadRequest();
 
-        Subscriber subscriber = await _repositoryWrapper.SubscriberRepository.GetAll().Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid).FirstOrDefaultAsync();
+        Subscriber subscriber = _db.Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid).FirstOrDefault();
 
         subscriber.HasOnboarded = 1;
-        _repositoryWrapper.SubscriberRepository.Update(subscriber);
-        await _repositoryWrapper.SaveAsync();
+        _db.Subscriber.Update(subscriber);
+        _db.SaveChanges();
 
         return Ok();
     }
@@ -720,7 +720,8 @@ public class SubscriberController : Controller
         if (subscriberGuid == null || subscriberGuid == Guid.Empty)
             return BadRequest();
 
-        Subscriber subscriber = await _repositoryWrapper.SubscriberRepository.GetAll().Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid)
+        Subscriber subscriber = await _db
+            .Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid)
             .FirstOrDefaultAsync();
 
         if (subscriber == null)
@@ -734,7 +735,7 @@ public class SubscriberController : Controller
         var redirect = await _db.PartnerWebRedirect.Where(e => e.PartnerId == result.PartnerId).FirstOrDefaultAsync();
         return Ok(new RedirectDto() { RelativePath = redirect?.RelativePath });
     }
-    
+
     [HttpGet("/api/[controller]/search")]
     [Authorize(Policy = "IsRecruiterOrAdmin")]
     public IActionResult Search(string searchFilter = "any", string searchQuery = null, string searchLocationQuery = null, string sortOrder = null)
@@ -767,16 +768,16 @@ public class SubscriberController : Controller
 
     // todo: add security to check token to this route
     [HttpGet("/api/[controller]/{subscriberGuid}/skill")]
-    public async Task<IActionResult> GetSkillsBySubscriber(Guid subscriberGuid)
+    public IActionResult GetSkillsBySubscriber(Guid subscriberGuid)
     {
-        var subscriberSkills = await _repositoryWrapper.SubscriberRepository.GetAll()
+        var subscriberSkills = _db.Subscriber
             .Where(s => s.IsDeleted == 0 && s.SubscriberGuid.Value == subscriberGuid)
             .Join(_db.SubscriberSkill.Where(ss => ss.IsDeleted == 0), s => s.SubscriberId, sk => sk.SubscriberId, (s, sk) => new { sk.SkillId })
             .Join(_db.Skill.Where(s => s.IsDeleted == 0), x => x.SkillId, s => s.SkillId, (x, s) => s)
             .Distinct()
             .OrderBy(s => s.SkillName)
             .ProjectTo<SkillDto>(_mapper.ConfigurationProvider)
-            .ToListAsync();
+            .ToList();
 
         return Ok(subscriberSkills);
     }
@@ -802,7 +803,7 @@ public class SubscriberController : Controller
 
         // track the subscriber action if performed by someone other than the user who owns the file
         if (loggedInUserGuid != subscriber.SubscriberGuid.Value)
-            new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "Download resume", "Subscriber", subscriber.SubscriberGuid);
+            new SubscriberActionFactory(_repositoryWrapper, _db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "Download resume", "Subscriber", subscriber.SubscriberGuid);
 
         return File(await _cloudStorage.OpenReadAsync(file.BlobName), "application/octet-stream", Path.GetFileName(file.BlobName));
     }
@@ -827,8 +828,8 @@ public class SubscriberController : Controller
             return BadRequest();
 
         file.IsDeleted = 1;
-        _repositoryWrapper.SubscriberFileRepository.Update(file);
-        await _repositoryWrapper.SaveAsync();
+        _db.SubscriberFile.Update(file);
+        await _db.SaveChangesAsync();
 
         return Ok();
     }
@@ -937,7 +938,7 @@ public class SubscriberController : Controller
          ));
     }
 
-       #region SubscriberNotes
+    #region SubscriberNotes
     /// <summary>
     /// Save Notes
     /// </summary>
@@ -1023,6 +1024,19 @@ public class SubscriberController : Controller
             return Ok(new BasicResponseDto { StatusCode = 200, Description = "Subscriber notification email setting updated successfully." });
     }
 
+
+
+    [AllowAnonymous]
+    [HttpPost("/api/[controller]/existing-user-sign-up")]
+    public async Task<IActionResult> ExistingUserSignUp([FromBody] CreateUserDto createUserDto)
+    {
+        bool isExistingUserSignupSuccessful = await _subscriberService.ExistingSubscriberSignUp(createUserDto);
+
+        if (isExistingUserSignupSuccessful)
+            return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Subscriber has been signed up successfully." });
+        else
+            return Ok(new BasicResponseDto() { StatusCode = 400, Description = "An error occurred processing the existing user sign up." });
+    }
 
     [HttpPut("read-notification")]
     public async Task<IActionResult> SubscriberReadNotification([FromBody] NotificationDto ReadNotification)

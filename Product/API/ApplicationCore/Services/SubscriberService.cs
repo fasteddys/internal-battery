@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Graph;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
@@ -20,12 +19,12 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Shared;
 using UpDiddyLib.Helpers;
-using System.Text.RegularExpressions;
 using System.Web;
 using AutoMapper;
 using System.Security.Claims;
 using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNetCore.Http;
+using System.Text.RegularExpressions;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyLib.Domain;
 using UpDiddyLib.Domain.Models;
@@ -42,7 +41,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IMapper _mapper;
         private ITaggingService _taggingService { get; set; }
         private IHangfireService _hangfireService { get; set; }
-        private readonly IRepositoryWrapper _repositoryWrapper;
+        private IFileDownloadTrackerService _fileDownloadTrackerService { get; set; }
+        private ISysEmail _sysEmail;
 
         public SubscriberService(UpDiddyDbContext context,
             IConfiguration configuration,
@@ -52,7 +52,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             IMapper mapper,
             ITaggingService taggingService,
             IHangfireService hangfireService,
-            IRepositoryWrapper repositoryWrapper)
+            IFileDownloadTrackerService fileDownloadTrackerService,
+            ISysEmail sysEmail)
         {
             _db = context;
             _configuration = configuration;
@@ -62,7 +63,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             _mapper = mapper;
             _taggingService = taggingService;
             _hangfireService = hangfireService;
-            _repositoryWrapper = repositoryWrapper;
+            _fileDownloadTrackerService = fileDownloadTrackerService;
+            _sysEmail = sysEmail;
         }
 
         public async Task<Subscriber> GetSubscriberByEmail(string email)
@@ -143,8 +145,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 try
                 {
                     SubscriberFile resume = await _AddResumeAsync(subscriber, resumeDoc.FileName, resumeDoc.OpenReadStream(), resumeDoc.ContentType);
-                    await _repositoryWrapper.SubscriberFileRepository.Create(resume);
-                    await _repositoryWrapper.SaveAsync();
+                    await _repository.SubscriberFileRepository.Create(resume);
+                    await _repository.SaveAsync();
                     transaction.Commit();
 
                     if (parseResume)
@@ -182,7 +184,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 int? StateId = null;
                 if (string.IsNullOrWhiteSpace(subscribeProfileBasicDto.ProvinceCode) == false)
                 {
-                    State state = await StateFactory.GetStateByStateCode(_repositoryWrapper, subscribeProfileBasicDto.ProvinceCode);
+                    State state = await StateFactory.GetStateByStateCode(_repository, subscribeProfileBasicDto.ProvinceCode);
                     if (state != null)
                         StateId = state.StateId;                  
                 }
@@ -233,6 +235,8 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             try
             {
+                Models.Group group = null;
+
                 // create the user in the CareerCircle database
                 await _repository.SubscriberRepository.Create(new Subscriber()
                 {
@@ -254,8 +258,14 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 if (!string.IsNullOrWhiteSpace(createUserDto.ReferrerUrl) && createUserDto.PartnerGuid != null && createUserDto.PartnerGuid != Guid.Empty)
                 {
-                    // Use the new tagging service for attribution
-                    await _taggingService.CreateGroup(createUserDto.ReferrerUrl, createUserDto.PartnerGuid, subscriber.SubscriberId);
+                    // use the new tagging service for attribution
+                    group = await _taggingService.CreateGroup(createUserDto.ReferrerUrl, createUserDto.PartnerGuid, subscriber.SubscriberId);
+                }
+
+                if (createUserDto.IsGatedDownload && group != null)
+                {
+                    // set up the gated file download and send the email
+                    await HandleGatedFileDownload(createUserDto.GatedDownloadMaxAttemptsAllowed, createUserDto.GatedDownloadFileUrl, group.GroupId, subscriber.SubscriberId, subscriber.Email);
                 }
 
                 isSubscriberCreatedSuccessfully = true;
@@ -266,6 +276,77 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
             return isSubscriberCreatedSuccessfully;
+        }
+
+        public async Task<bool> ExistingSubscriberSignUp(CreateUserDto createUserDto)
+        {
+            bool isSubscriberUpdatedSuccessfully = false;
+            Models.Group group = null;
+
+            try
+            {
+                Subscriber subscriber = await this.GetSubscriberByGuid(createUserDto.SubscriberGuid);
+                if (subscriber == null)
+                    throw new ApplicationException("Invalid subscriber identifier");
+
+                if (!string.IsNullOrWhiteSpace(createUserDto.FirstName))
+                    subscriber.FirstName = createUserDto.FirstName;
+                if (!string.IsNullOrWhiteSpace(createUserDto.LastName))
+                    subscriber.LastName = createUserDto.LastName;
+                if (!string.IsNullOrWhiteSpace(createUserDto.PhoneNumber))
+                    subscriber.PhoneNumber = createUserDto.PhoneNumber;
+                await this.UpdateSubscriber(subscriber);
+                
+                // update the user in the Google Talent Cloud
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
+
+                if (!string.IsNullOrWhiteSpace(createUserDto.ReferrerUrl) && createUserDto.PartnerGuid != null && createUserDto.PartnerGuid != Guid.Empty)
+                {
+                    // use the new tagging service for attribution
+                    group = await _taggingService.CreateGroup(createUserDto.ReferrerUrl, createUserDto.PartnerGuid, subscriber.SubscriberId);
+                }
+
+                if (createUserDto.IsGatedDownload)
+                {
+                    // set up the gated file download and send the email
+                    await HandleGatedFileDownload(createUserDto.GatedDownloadMaxAttemptsAllowed, createUserDto.GatedDownloadFileUrl, group?.GroupId, subscriber.SubscriberId, subscriber.Email);
+                }
+
+                isSubscriberUpdatedSuccessfully = true;
+            }
+            catch (Exception e)
+            {
+                _logger.Log(LogLevel.Error, $"SubscriberService.ExistingSubscriberSignUp: An error occured while attempting to update a subscriber. Message: {e.Message}", e);
+            }
+
+            return isSubscriberUpdatedSuccessfully;
+        }
+
+        private async Task HandleGatedFileDownload(int? maxDownloadAttempts, string fileUrl, int? groupId, int subscriberId, string email)
+        {
+            FileDownloadTrackerDto fileDownloadTrackerDto = new FileDownloadTrackerDto
+            {
+                SourceFileCDNUrl = fileUrl,
+                MaxFileDownloadAttemptsPermitted = maxDownloadAttempts,
+                SubscriberId = subscriberId,
+                GroupId = groupId
+            };
+            string downloadUrl = await _fileDownloadTrackerService.CreateFileDownloadLink(fileDownloadTrackerDto);
+
+            _hangfireService.Enqueue(() =>
+             _sysEmail.SendTemplatedEmailAsync(
+                 email,
+                 _configuration["SysEmail:Transactional:TemplateIds:GatedDownload-LinkEmail"],
+                 new
+                 {
+                     fileDownloadLinkUrl = downloadUrl
+                 },
+                 Constants.SendGridAccount.Transactional,
+                 null,
+                 null,
+                 null,
+                 null
+             ));
         }
 
 
@@ -288,7 +369,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 int? StateId = null;
                 if (string.IsNullOrWhiteSpace(subscribeProfileBasicDto.ProvinceCode) == false)
                 {
-                    State state = await StateFactory.GetStateByStateCode(_repositoryWrapper, subscribeProfileBasicDto.ProvinceCode);
+                    State state = await StateFactory.GetStateByStateCode(_repository, subscribeProfileBasicDto.ProvinceCode);
                     if (state != null)
                         StateId = state.StateId;
                 }
@@ -350,6 +431,8 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task UpdateSubscriber(Subscriber subscriber)
         {
+            subscriber.ModifyDate = DateTime.UtcNow;
+            subscriber.ModifyGuid = Guid.Empty;
             _repository.SubscriberRepository.Update(subscriber);
             await _repository.SubscriberRepository.SaveAsync();
         }
@@ -625,7 +708,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 bool requiresMerge = false;
                 List<SubscriberEducationHistoryDto> parsedEducationHistory = Utils.ParseEducationHistoryFromHrXml(resume);
-                IList<SubscriberEducationHistory> educationHistory = await SubscriberFactory.GetSubscriberEducationHistoryById(_repositoryWrapper, subscriber.SubscriberId);
+                IList<SubscriberEducationHistory> educationHistory = await SubscriberFactory.GetSubscriberEducationHistoryById(_repository, subscriber.SubscriberId);
                 foreach (SubscriberEducationHistoryDto eh in parsedEducationHistory)
                 {
                     string parsedInstitutionName = eh.EducationalInstitution.ToLower();
@@ -633,16 +716,16 @@ namespace UpDiddyApi.ApplicationCore.Services
                     string parsedEducationalDegreeType = eh.EducationalDegreeType.ToLower();
                     var ExistingInstitution = educationHistory.Where(s => s.EducationalInstitution.Name.ToLower() == parsedInstitutionName).FirstOrDefault();
                     // get or create the company specified by the work history 
-                    EducationalInstitution institution = await EducationalInstitutionFactory.GetOrAdd(_repositoryWrapper, parsedInstitutionName);
-                    EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(_repositoryWrapper, parsedEducationalDegree);
+                    EducationalInstitution institution = await EducationalInstitutionFactory.GetOrAdd(_repository, parsedInstitutionName);
+                    EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(_repository, parsedEducationalDegree);
                     // Do not allow user defined degree types so call GetOrDefault 
-                    EducationalDegreeType educationalDegreeType = await EducationalDegreeTypeFactory.GetOrDefault(_repositoryWrapper, parsedEducationalDegreeType);
+                    EducationalDegreeType educationalDegreeType = await EducationalDegreeTypeFactory.GetOrDefault(_repository, parsedEducationalDegreeType);
                     // if its not an existing college just add it
 
                     if (ExistingInstitution == null)
                     {
 
-                        SubscriberEducationHistory newEducationHistory = await SubscriberEducationHistoryFactory.AddEducationHistoryForSubscriber(_repositoryWrapper, subscriber, eh, institution, educationalDegree, educationalDegreeType);
+                        SubscriberEducationHistory newEducationHistory = await SubscriberEducationHistoryFactory.AddEducationHistoryForSubscriber(_repository, subscriber, eh, institution, educationalDegree, educationalDegreeType);
                         await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, string.Empty, "SubscriberEducationHistory", "Object", string.Empty, string.Empty, (int)ResumeParseStatus.Merged, newEducationHistory.SubscriberEducationHistoryGuid);
                     }
                     else // Check to see its an update to an existing work history 
@@ -727,14 +810,14 @@ namespace UpDiddyApi.ApplicationCore.Services
                     // case where current value is not specified but parsed value is 
                     if (string.IsNullOrWhiteSpace(degreeType) == true && string.IsNullOrWhiteSpace(parsedDegreeType) == false)
                     {
-                        EducationalDegreeType newDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(_repositoryWrapper, parsedDegreeType);
+                        EducationalDegreeType newDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(_repository, parsedDegreeType);
                         educationHistory.EducationalDegreeTypeId = newDegreeType.EducationalDegreeTypeId;
                     }
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, string.Empty, "SubscriberEducationHistory.EducationalDegreeTypeId", "EducationalDegreeTypeId", degreeType, parsedDegreeType, (int)ResumeParseStatus.Merged, educationHistory.SubscriberEducationHistoryGuid);
                 }
                 else
                 {
-                    EducationalDegreeType educationalDegreeType = await EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_repositoryWrapper, parsedDegreeType);
+                    EducationalDegreeType educationalDegreeType = await EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_repository, parsedDegreeType);
                     // only add educational degree type if the parsed value is in the CC list of degree types since
                     // degree types is a lookup list curated by CC and user's cannot add new value to it
                     if (educationalDegreeType != null)
@@ -758,7 +841,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     // case where current value is not specified but parsed value is 
                     if (string.IsNullOrWhiteSpace(degree) == true && string.IsNullOrWhiteSpace(parsedDegree) == false)
                     {
-                        EducationalDegree newDegreeType = await EducationalDegreeFactory.GetOrAdd(_repositoryWrapper, parsedDegree);
+                        EducationalDegree newDegreeType = await EducationalDegreeFactory.GetOrAdd(_repository, parsedDegree);
                         educationHistory.EducationalDegreeId = newDegreeType.EducationalDegreeId;
                     }
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, string.Empty, "SubscriberEducationHistory.EducationalDegreeId", "EducationalDegreeId", degree, parsedDegree, (int)ResumeParseStatus.Merged, educationHistory.SubscriberEducationHistoryGuid);
@@ -902,7 +985,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // get list of work histories parsed from resume 
                 List<SubscriberWorkHistoryDto> parsedWorkHistory = Utils.ParseWorkHistoryFromHrXml(resume);
                 // get list of work histories alreay associated with user 
-                IList<SubscriberWorkHistory> workHistory = await SubscriberFactory.GetSubscriberWorkHistoryById(_repositoryWrapper, subscriber.SubscriberId);
+                IList<SubscriberWorkHistory> workHistory = await SubscriberFactory.GetSubscriberWorkHistoryById(_repository, subscriber.SubscriberId);
                 foreach (SubscriberWorkHistoryDto parsedWorkHistoryItem in parsedWorkHistory)
                 {
                     // ignore jobs without job titles - some resumes such as Jon Foley's have a header section with a summary of their
@@ -919,12 +1002,12 @@ namespace UpDiddyApi.ApplicationCore.Services
                     //  look for an existing position at the parsed company that overlaps in time with the parsed position 
                     var ExistingPosition = FindOverlappingWorkHistory(ExistingPositions, parsedWorkHistoryItem);
                     // get or create the company specified by the work history 
-                    Company company = await CompanyFactory.GetOrAdd(_repositoryWrapper, parsedCompanyName);
+                    Company company = await CompanyFactory.GetOrAdd(_repository, parsedCompanyName);
                     // if its not an existing company just add it
                     if (ExistingPosition == null)
                     {
                         // easy case of adding new company to user 
-                        SubscriberWorkHistory newWorkHistory = await SubscriberWorkHistoryFactory.AddWorkHistoryForSubscriber(_repositoryWrapper, subscriber, parsedWorkHistoryItem, company);
+                        SubscriberWorkHistory newWorkHistory = await SubscriberWorkHistoryFactory.AddWorkHistoryForSubscriber(_repository, subscriber, parsedWorkHistoryItem, company);
                         await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, string.Empty, "SubscriberWorkHistory", "Object", string.Empty, string.Empty, (int)ResumeParseStatus.Merged, newWorkHistory.SubscriberWorkHistoryGuid);
                         // add new work history to existing work histories 
                         workHistory.Add(newWorkHistory);
@@ -981,7 +1064,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 bool requireMerge = false;
                 List<string> parsedSkills = Utils.ParseSkillsFromHrXML(resume);
-                IList<SubscriberSkill> skills = await SubscriberFactory.GetSubscriberSkillsById(_repositoryWrapper, subscriber.SubscriberId);
+                IList<SubscriberSkill> skills = await SubscriberFactory.GetSubscriberSkillsById(_repository, subscriber.SubscriberId);
                 HashSet<string> foundSkills = new HashSet<string>();
                 foreach (string skillName in parsedSkills)
                 {
@@ -1106,7 +1189,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-                State state = await StateFactory.GetStateByStateCode(_repositoryWrapper, contactInfo.State);
+                State state = await StateFactory.GetStateByStateCode(_repository, contactInfo.State);
                 if (state != null)
                 {
                     if (subscriber.StateId <= 0 || subscriber.State == null || state.StateId == subscriber.StateId)

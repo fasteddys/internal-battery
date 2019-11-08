@@ -21,5 +21,11 @@ namespace UpDiddyLib.Dto.User
         public bool IsAgreeToMarketingEmails { get; set; }
 
         public string Auth0UserId { get; set; }
+
+        public bool IsGatedDownload { get; set; }
+
+        public string GatedDownloadFileUrl { get; set; }
+
+        public int? GatedDownloadMaxAttemptsAllowed { get; set; } 
     }
 }

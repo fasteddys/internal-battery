@@ -15,7 +15,7 @@ using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Helpers;
 using UpDiddy.ViewModels.ButterCMS;
 using System.Security.Claims;
-
+using UpDiddyLib.Dto.User;
 
 namespace UpDiddy.Controllers
 {
@@ -28,102 +28,12 @@ namespace UpDiddy.Controllers
         public CampaignController(IApi api,
             IConfiguration configuration,
             IHostingEnvironment env)
-            : base(api,configuration)
+            : base(api, configuration)
         {
             _env = env;
             _butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
         }
-
-        [HttpGet("/Wozu")]
-        [HttpGet("/MomProject")]
-        [HttpGet("/ClinicalResearchFastrack")]
-        [HttpGet("/barnett")]
-        public IActionResult PartnerLandingPages()
-        {
-            string viewName = Request.Path.Value.TrimStart('/');
-
-            return View(viewName, new SignUpViewModel()
-            {
-                 
-            });
-        }
-
-        [HttpGet]
-        [Route("/lp")]
-        public IActionResult SeedEmails()
-        {
-            /* the call to action from seed emails will land here. doing this because of the following statement in user story 827:
-             *      "The message in the seed emails can be similar but not exact- we should have the button labeled similarly but 
-             *      it doesn't need to invoke a sign up type experience- the wording on the link and buttons is important and possibly 
-             *      sending in a similarly formed url to encourage the data science to treat lead emails like the seed list emails 
-             *      if that makes sense."
-             *      
-             * we can make this whatever we want, but for now it will cycle through random images and display some text to remind people
-             * about why we are sending these emails.
-             */
-
-            var images = _env.WebRootFileProvider.GetDirectoryContents(@"/images/random");
-            int index = new Random().Next(0, images.Count());
-            ViewBag.ImageName = images.ElementAt(index).Name;
-            return View("SeedEmails");
-        }
-
-        [HttpGet]
-        [Route("/lp/{tinyId}")]
-        public async Task<IActionResult> TargetedCampaignLandingPageAsync(string tinyId)
-        {
-            if (string.IsNullOrWhiteSpace(tinyId))
-                return View("Community", new CampaignViewModel()
-                {
-                    IsExpressCampaign = true,
-                    IsActive = true
-                });
-            try
-            {
-                CampaignPartnerContactDto campaignPartnerContact = await _Api.GetCampaignPartnerContactAsync(tinyId);
-
-                if (string.IsNullOrWhiteSpace(tinyId) || campaignPartnerContact == null)
-                    return View("Community", new CampaignViewModel()
-                    {
-                        IsExpressCampaign = true,
-                        IsActive = true
-                    });
-
-                // capture any campaign phase information that has been passed.  
-                string campaignPhase = Request.Query[Constants.TRACKING_KEY_CAMPAIGN_PHASE].ToString();
-
-                // build trackign string url
-                string _TrackingImgSource = _configuration["Api:ApiUrl"] +
-                    "tracking?contact=" +
-                    campaignPartnerContact.PartnerContactGuid.ToString() +
-                    "&action=47D62280-213F-44F3-8085-A83BB2A5BBE3&campaign=" +
-                    campaignPartnerContact.CampaignGuid.ToString() + "&campaignphase=" + WebUtility.UrlEncode(campaignPhase);
-
-                // hide the details of the user's email
-                string obfuscatedEmail = Utils.ObfuscateEmail(campaignPartnerContact.Email);
-
-                CampaignViewModel cvm = new CampaignViewModel()
-                {
-
-                    CampaignGuid = campaignPartnerContact.CampaignGuid,
-                    PartnerContactGuid = campaignPartnerContact.PartnerContactGuid,
-                    TrackingImgSource = _TrackingImgSource,
-                    CampaignCourse = null, // no support for campaign course association and rebates
-                    CampaignPhase = campaignPhase,
-                    IsExpressCampaign = false,
-                    IsActive = campaignPartnerContact.IsCampaignActive,
-                    ObfuscatedEmail = obfuscatedEmail
-                };
-
-                string viewName = campaignPartnerContact.TargetedViewName == null ? "Community" : string.Format("TargetedPages/{0}", campaignPartnerContact.TargetedViewName);
-                return View(viewName, cvm);
-            }
-            catch (ApiException ex)
-            {
-                return StatusCode((int)ex.StatusCode);
-            }
-        }
-
+        
         [Route("/campaign/{LandingPageSlug}")]
         public async Task<IActionResult> ShowCampaignLandingPage(string LandingPageSlug)
         {
@@ -139,6 +49,13 @@ namespace UpDiddy.Controllers
             // Return 404 if no page data is returned from Butter.
             if (LandingPage == null)
                 return NotFound();
+            
+            int? gatedFileDownloadMaxAttemptsAllowed = null;
+            int tmp;
+            if(int.TryParse(LandingPage.Data.Fields.gated_file_download_max_attempts_allowed, out tmp))
+            {
+                gatedFileDownloadMaxAttemptsAllowed = tmp;
+            }
 
             // Assemble ViewModel from results returned in Butter GET call.
             SignUpViewModel signUpViewModel = new SignUpViewModel()
@@ -157,7 +74,10 @@ namespace UpDiddy.Controllers
                 ExistingUserSuccessHeader = LandingPage.Data.Fields.existing_user_success_header,
                 ExistingUserSuccessText = LandingPage.Data.Fields.existing_user_success_text,
                 IsWaitList = LandingPage.Data.Fields.iswaitlist,
-                PartnerGuid = LandingPage.Data.Fields.partner.PartnerGuid
+                PartnerGuid = LandingPage.Data.Fields.partner.PartnerGuid,
+                IsGatedDownload = LandingPage.Data.Fields.isgateddownload,
+                GatedDownloadFileUrl = LandingPage.Data.Fields.gated_file_download_file,
+                GatedFileDownloadMaxAttemptsAllowed = gatedFileDownloadMaxAttemptsAllowed
             };
 
             var CampaignLandingPageViewModel = new CampaignLandingPageViewModel

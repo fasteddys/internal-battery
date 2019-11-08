@@ -346,7 +346,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                     LastName = serviceOfferingTransactionDto.CreateUserDto.LastName,
                     Password = serviceOfferingTransactionDto.CreateUserDto.Password,
                     PhoneNumber = serviceOfferingTransactionDto.CreateUserDto.PhoneNumber,
-                    SubscriberGuid = subscriberGuid
+                    SubscriberGuid = subscriberGuid,
+                    IsGatedDownload = false
                 }).Result;
 
                 if (!subscriberCreationResult)
