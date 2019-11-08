@@ -42,12 +42,6 @@ steps:
   inputs:
     version: '10.12.0'
 
-# install npm dependencies (see package.json)
-- script: |
-    npm install
-  displayName: Install Node Package Dependencies
-  workingDirectory: Product/WebApp
-
 # install bower dependencies (see bower.json)
 - script: |
     npm run bower install
