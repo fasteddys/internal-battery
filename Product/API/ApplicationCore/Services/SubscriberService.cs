@@ -69,7 +69,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<Subscriber> GetSubscriberByEmail(string email)
         {
-            return  _repository.SubscriberRepository.GetSubscriberByEmail(email);
+            return _repository.SubscriberRepository.GetSubscriberByEmail(email);
         }
 
 
@@ -162,8 +162,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
         }
- 
-        
+
+
         public async Task<bool> CreateNewSubscriberAsync(SubscribeProfileBasicDto subscribeProfileBasicDto)
         {
             bool isSubscriberCreatedSuccessfully = false;
@@ -186,7 +186,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     State state = await StateFactory.GetStateByStateCode(_repository, subscribeProfileBasicDto.ProvinceCode);
                     if (state != null)
-                        StateId = state.StateId;                  
+                        StateId = state.StateId;
                 }
 
                 // create the user in the CareerCircle database
@@ -214,7 +214,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 // add the user to the Google Talent Cloud
                 _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscribeProfileBasicDto.SubscriberGuid));
- 
+
 
                 isSubscriberCreatedSuccessfully = true;
             }
@@ -296,7 +296,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (!string.IsNullOrWhiteSpace(createUserDto.PhoneNumber))
                     subscriber.PhoneNumber = createUserDto.PhoneNumber;
                 await this.UpdateSubscriber(subscriber);
-                
+
                 // update the user in the Google Talent Cloud
                 _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
 
@@ -352,13 +352,13 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
         public async Task<bool> UpdateSubscriberProfileBasicAsync(SubscribeProfileBasicDto subscribeProfileBasicDto, Guid subscriberGuid)
-        {            
+        {
             try
             {
                 var Subscriber = await GetSubscriberByGuid(subscribeProfileBasicDto.SubscriberGuid);
                 if (Subscriber == null)
                     throw new NotFoundException($"SubscriberGuid {subscribeProfileBasicDto.SubscriberGuid} does not exist exist");
-                
+
                 if (Subscriber.Email != subscribeProfileBasicDto.Email)
                     throw new InvalidOperationException($"This operation cannot be used to change a subscriber's email address");
 
@@ -385,9 +385,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                 Subscriber.PostalCode = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.PostalCode) ? subscribeProfileBasicDto.PostalCode : null;
                 Subscriber.ModifyDate = DateTime.UtcNow;
                 Subscriber.StateId = StateId;
-         
+
                 await _repository.SubscriberRepository.SaveAsync();
-     
+
                 // add the user to the Google Talent Cloud
                 _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscribeProfileBasicDto.SubscriberGuid));
 
@@ -403,7 +403,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<SubscribeProfileBasicDto> GetSubscriberProfileBasicAsync(Guid subscriberGuid)
         {
- 
+
             SubscribeProfileBasicDto rVal = null;
             try
             {
@@ -412,10 +412,10 @@ namespace UpDiddyApi.ApplicationCore.Services
                     throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
                 State state = await _repository.State.GetStateBySubscriberGuid(Subscriber.SubscriberGuid.Value);
                 Subscriber.State = state;
-            
 
 
-                rVal = _mapper.Map<SubscribeProfileBasicDto>(Subscriber);  
+
+                rVal = _mapper.Map<SubscribeProfileBasicDto>(Subscriber);
             }
             catch (Exception e)
             {

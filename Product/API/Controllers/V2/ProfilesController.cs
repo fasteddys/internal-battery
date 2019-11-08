@@ -20,6 +20,7 @@ using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Domain;
 
+
 namespace UpDiddyApi.Controllers.V2
 {
     [Route("api/[controller]")]
@@ -42,6 +43,7 @@ namespace UpDiddyApi.Controllers.V2
         private readonly ISubscriberWorkHistoryService _subscriberWorkHistoryService;
         private readonly IJobPostingService _jobPostingService;
         private readonly IJobAlertService _jobAlertService;
+        private readonly IProfileService _profileService;
 
 
         #region constructor 
@@ -66,12 +68,45 @@ namespace UpDiddyApi.Controllers.V2
             _jobService = _services.GetService<IJobService>();
             _jobPostingService = _services.GetService<IJobPostingService>();
             _hangfireService = hangfireService;
+            _profileService = _services.GetService<IProfileService>();
         }
 
         #endregion
 
 
-        #region profiles
+
+        #region social profile 
+
+
+        [HttpPut]
+        [Authorize]
+        [Route("/V2/[controller]/socials")]
+        public async Task<IActionResult> UpdateSocialProfile([FromBody] SubscriberProfileSocialDto subscribeProfileSocialDto)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _profileService.UpdateSubscriberProfileSocialAsync(subscribeProfileSocialDto, subscriberGuid);
+            return StatusCode(210);
+        }
+
+
+        [HttpGet]
+        [Authorize]
+        [Route("/V2/[controller]/socials")]
+        public async Task<SubscriberProfileSocialDto> GetSocialProfile()
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            return ( await _profileService.GetSubscriberProfileSocialAsync(subscriberGuid) );
+            
+        }
+
+
+
+
+        #endregion
+
+
+
+        #region basic profile
 
         [HttpPost]
         [Authorize]
@@ -79,7 +114,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> AddProfile([FromBody] SubscribeProfileBasicDto subscribeProfileBasicDto )
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _subscriberService.CreateNewSubscriberAsync(subscribeProfileBasicDto); 
+            await _profileService.CreateNewSubscriberAsync(subscribeProfileBasicDto); 
             return StatusCode(201);
         }
 
@@ -90,7 +125,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> UpdateProfile([FromBody] SubscribeProfileBasicDto subscribeProfileBasicDto)
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _subscriberService.UpdateSubscriberProfileBasicAsync(subscribeProfileBasicDto, subscriberGuid);
+            await _profileService.UpdateSubscriberProfileBasicAsync(subscribeProfileBasicDto, subscriberGuid);
             return StatusCode(200);
         }
 
@@ -100,7 +135,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("/V2/[controller]/{subscriberGuid}")]
         public async Task<SubscribeProfileBasicDto> GetProfile(Guid subscriberGuid)
         {
-            return ( await _subscriberService.GetSubscriberProfileBasicAsync(subscriberGuid));            
+            return ( await _profileService.GetSubscriberProfileBasicAsync(subscriberGuid));            
         }
 
 
