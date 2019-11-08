@@ -7,7 +7,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Models;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     /// <summary>
@@ -21,14 +21,16 @@ namespace UpDiddyApi.ApplicationCore.Factory
         private readonly IConfiguration _config = null;
         private readonly ILogger _log = null;
         private readonly IDistributedCache _cache = null;
+        private readonly IRepositoryWrapper _repositoryWrapper;
 
-        public SubscriberActionFactory(UpDiddyDbContext db, IConfiguration configuration, ILogger syslog, IDistributedCache distributedCache)
+        public SubscriberActionFactory(IRepositoryWrapper repositoryWrapper, UpDiddyDbContext db, IConfiguration configuration, ILogger syslog, IDistributedCache distributedCache)
             : base(db, configuration, syslog, distributedCache)
         {
             _db = db;
             _config = configuration;
             _log = syslog;
             _cache = distributedCache;
+            _repositoryWrapper = repositoryWrapper;
         }
 
         /// <summary>
@@ -46,12 +48,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
             try
             {
                 // load the subscriber
-                Subscriber subscriber = _db.Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid).FirstOrDefault();
+                Subscriber subscriber = _repositoryWrapper.SubscriberRepository.GetAllWithTracking().Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid).FirstOrDefault();
                 if (subscriber == null)
                     throw new InvalidOperationException("Subscriber not found");
 
                 // load the action
-                var action = _db.Action.Where(a => a.Name == actionName && a.IsDeleted == 0).FirstOrDefault();
+                var action = _repositoryWrapper.ActionRepository.GetAllWithTracking().Where(a => a.Name == actionName && a.IsDeleted == 0).FirstOrDefault();
                 if (action == null)
                     throw new InvalidOperationException("Action not found");
 
@@ -68,13 +70,13 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     switch (entityType.Name)
                     {
                         case "Subscriber":
-                            var subscriberEntity = _db.Subscriber.Where(s => s.SubscriberGuid == entityGuid && s.IsDeleted == 0).FirstOrDefault();
+                            var subscriberEntity = _repositoryWrapper.SubscriberRepository.GetAllWithTracking().Where(s => s.SubscriberGuid == entityGuid && s.IsDeleted == 0).FirstOrDefault();
                             if (subscriberEntity == null)
                                 throw new InvalidOperationException("Related subscriber entity not found");
                             entityId = subscriberEntity.SubscriberId;
                             break;
                         case "Offer":
-                            var offerEntity = _db.Offer.Where(o => o.OfferGuid == entityGuid && o.IsDeleted == 0).FirstOrDefault();
+                            var offerEntity = _repositoryWrapper.Offer.GetAllWithTracking().Where(o => o.OfferGuid == entityGuid && o.IsDeleted == 0).FirstOrDefault();
                             if (offerEntity == null)
                                 throw new InvalidOperationException("Related offer entity not found");
                             entityId = offerEntity.OfferId;
@@ -85,7 +87,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 }
 
                 // add the subscriber action to the db
-                _db.SubscriberAction.Add(
+                _repositoryWrapper.SubscriberActionRepository.Create(
                     new SubscriberAction()
                     {
                         SubscriberActionGuid = Guid.NewGuid(),
@@ -98,7 +100,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                         OccurredDate = DateTime.UtcNow,
                         SubscriberId = subscriber.SubscriberId
                     });
-                _db.SaveChanges();
+                _repositoryWrapper.SaveAsync();
 
                 // mark as successful if we got to this point
                 isSuccess = true;
