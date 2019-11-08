@@ -61,7 +61,7 @@ namespace UpDiddy.Controllers
         {
             return View(new SignUpViewModel());
         }
-        
+
         [HttpPost]
         [Route("/session/signup")]
         public async Task<IActionResult> SignUp(SignUpViewModel vm, [FromQuery] string returnUrl = "/session/signin")
@@ -113,7 +113,10 @@ namespace UpDiddy.Controllers
                 ReferrerUrl = Request.Headers["Referer"].ToString(),
                 JobReferralCode = Request.Cookies["referrerCode"] == null ? null : Request.Cookies["referrerCode"].ToString(),
                 PartnerGuid = vm.PartnerGuid,
-                IsAgreeToMarketingEmails = vm.IsAgreeToMarketingEmails
+                IsAgreeToMarketingEmails = vm.IsAgreeToMarketingEmails,
+                IsGatedDownload = vm.IsGatedDownload,
+                GatedDownloadFileUrl = vm.GatedDownloadFileUrl,
+                GatedDownloadMaxAttemptsAllowed = vm.GatedFileDownloadMaxAttemptsAllowed
             };
 
             try
@@ -129,6 +132,66 @@ namespace UpDiddy.Controllers
                     return StatusCode(500, new BasicResponseDto()
                     {
                         StatusCode = 500,
+                        Description = basicResponseDto.Description
+                    });
+                }
+            }
+            catch (ApiException e)
+            {
+                return StatusCode(500, new BasicResponseDto
+                {
+                    StatusCode = 500,
+                    Description = e.ResponseDto.Description
+                });
+            }
+        }
+
+        [HttpPost]
+        [Route("/session/existing-user-sign-up")]
+        public async Task<IActionResult> ExistingUserSignUp(SignUpViewModel vm, [FromQuery] string returnUrl = "/session/signin")
+        {
+            bool modelHasAllFields = !string.IsNullOrEmpty(vm.Email);
+
+            if (vm.IsWaitList)
+                modelHasAllFields = !string.IsNullOrEmpty(vm.FirstName) && !string.IsNullOrEmpty(vm.LastName);
+
+            if (!modelHasAllFields)
+            {
+                return BadRequest(new BasicResponseDto
+                {
+                    StatusCode = 400,
+                    Description = "Please enter all sign-up fields and try again."
+                });
+            }
+            
+            CreateUserDto createUserDto = new CreateUserDto
+            {
+                SubscriberGuid = vm.SubscriberGuid.Value,
+                Email = vm.Email,
+                FirstName = vm.IsWaitList ? vm.FirstName : null,
+                LastName = vm.IsWaitList ? vm.LastName : null,
+                PhoneNumber = vm.IsWaitList ? vm.PhoneNumber : null,
+                ReferrerUrl = Request.Headers["Referer"].ToString(),
+                JobReferralCode = Request.Cookies["referrerCode"] == null ? null : Request.Cookies["referrerCode"].ToString(),
+                PartnerGuid = vm.PartnerGuid,
+                IsGatedDownload = vm.IsGatedDownload,
+                GatedDownloadFileUrl = vm.GatedDownloadFileUrl,
+                GatedDownloadMaxAttemptsAllowed = vm.GatedFileDownloadMaxAttemptsAllowed
+            };
+
+            try
+            {
+                BasicResponseDto basicResponseDto = await _api.ExistingUserSignup(createUserDto);
+
+                if (basicResponseDto.StatusCode == 200)
+                {
+                    return Ok(basicResponseDto);
+                }
+                else
+                {
+                    return StatusCode(400, new BasicResponseDto()
+                    {
+                        StatusCode = 400,
                         Description = basicResponseDto.Description
                     });
                 }

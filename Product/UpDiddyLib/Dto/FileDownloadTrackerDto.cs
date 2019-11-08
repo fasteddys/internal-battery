@@ -11,6 +11,6 @@ namespace UpDiddyLib.Dto
         public string SourceFileCDNUrl { get; set; }
         public DateTime? MostrecentfiledownloadAttemptinUtc { get; set; }
         public int SubscriberId { get; set; }
-        public int GroupId { get; set; }
+        public int? GroupId { get; set; }
     }
 }

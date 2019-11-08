@@ -692,6 +692,11 @@ namespace UpDiddy.Api
 
         #region Public UnCached Methods
 
+        public async Task<BasicResponseDto> ExistingUserSignup(CreateUserDto createUserDto)
+        {
+            return await PostAsync<BasicResponseDto>("subscriber/existing-user-sign-up", createUserDto);
+        }
+
         public async Task<BasicResponseDto> UpdateLastSignIn(Guid subscriberGuid)
         {
             return await PutAsync<BasicResponseDto>($"subscriber/{subscriberGuid}/update-last-sign-in");

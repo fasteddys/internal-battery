@@ -88,6 +88,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 Subscriber.State = state;
 
                 rVal = _mapper.Map<SubscribeProfileBasicDto>(Subscriber);
+                // Do not return the auth0UserId 
+                rVal.Auth0UserId = string.Empty;
             }
             catch (Exception e)
             {
@@ -126,7 +128,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 }
 
                 // update the user in the CareerCircle database
-                Subscriber.Auth0UserId = subscribeProfileBasicDto.Auth0UserId;
+                // Note: Do Not allow updates to auth0UserId
                 Subscriber.FirstName = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.FirstName) ? subscribeProfileBasicDto.FirstName : null;
                 Subscriber.LastName = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.LastName) ? subscribeProfileBasicDto.LastName : null;
                 Subscriber.PhoneNumber = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.PhoneNumber) ? subscribeProfileBasicDto.PhoneNumber : null;

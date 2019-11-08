@@ -20,7 +20,6 @@ namespace UpDiddy.ViewModels
         public Guid? CourseGuid { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-
         [RegularExpression(@"^(?:(?:\+?1\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?|^$", ErrorMessage = "Not a valid phone number")]
         public string PhoneNumber { get; set; }
         public string CampaignSlug { get; set; }
@@ -36,7 +35,9 @@ namespace UpDiddy.ViewModels
         public Guid? SubscriberGuid { get; set; }
         public Guid PartnerGuid { get; set; }
         public bool IsAgreeToMarketingEmails { get; set; }
-
+        public bool IsGatedDownload { get; set; }
+        public string GatedDownloadFileUrl { get; set; }
+        public int? GatedFileDownloadMaxAttemptsAllowed { get; set; }
     }
 }
 

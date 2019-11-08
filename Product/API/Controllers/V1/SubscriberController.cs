@@ -110,7 +110,7 @@ public class SubscriberController : Controller
     {
         if (subscriberGuid == null || subscriberGuid == Guid.Empty)
             return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid subscriber" });
-        
+
         SubscriberFactory.UpdateLastSignIn(_db, subscriberGuid);
 
         return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Subscriber updated successfully" });
@@ -203,7 +203,7 @@ public class SubscriberController : Controller
 
         return Ok(true);
     }
-    
+
     [HttpPut("/api/[controller]")]
     public IActionResult Update([FromBody] SubscriberDto Subscriber)
     {
@@ -734,7 +734,7 @@ public class SubscriberController : Controller
         var redirect = await _db.PartnerWebRedirect.Where(e => e.PartnerId == result.PartnerId).FirstOrDefaultAsync();
         return Ok(new RedirectDto() { RelativePath = redirect?.RelativePath });
     }
-    
+
     [HttpGet("/api/[controller]/search")]
     [Authorize(Policy = "IsRecruiterOrAdmin")]
     public IActionResult Search(string searchFilter = "any", string searchQuery = null, string searchLocationQuery = null, string sortOrder = null)
@@ -937,7 +937,7 @@ public class SubscriberController : Controller
          ));
     }
 
-       #region SubscriberNotes
+    #region SubscriberNotes
     /// <summary>
     /// Save Notes
     /// </summary>
@@ -1023,6 +1023,19 @@ public class SubscriberController : Controller
             return Ok(new BasicResponseDto { StatusCode = 200, Description = "Subscriber notification email setting updated successfully." });
     }
 
+
+
+    [AllowAnonymous]
+    [HttpPost("/api/[controller]/existing-user-sign-up")]
+    public async Task<IActionResult> ExistingUserSignUp([FromBody] CreateUserDto createUserDto)
+    {
+        bool isExistingUserSignupSuccessful = await _subscriberService.ExistingSubscriberSignUp(createUserDto);
+
+        if (isExistingUserSignupSuccessful)
+            return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Subscriber has been signed up successfully." });
+        else
+            return Ok(new BasicResponseDto() { StatusCode = 400, Description = "An error occurred processing the existing user sign up." });
+    }
 
     [HttpPut("read-notification")]
     public async Task<IActionResult> SubscriberReadNotification([FromBody] NotificationDto ReadNotification)
