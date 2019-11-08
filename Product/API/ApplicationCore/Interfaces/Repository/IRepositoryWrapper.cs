@@ -1,4 +1,5 @@
-﻿namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
+﻿using System.Threading.Tasks;
+namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface IRepositoryWrapper
     {
@@ -59,6 +60,23 @@
         IPromoCodeRepository PromoCodeRepository { get; }
         IFileDownloadTrackerRepository FileDownloadTrackerRepository { get; }
         IPartnerTypeRepository PartnerTypeRepository { get; }
+        IJobPostingSkillRepository JobPostingSkillRepository { get; }
+        ICampaignPartnerContactRepository CampaignPartnerContactRepository { get; }
+        ICampaignRepository CampaignRepository { get; }
+        ISubscriberWorkHistoryRepository SubscriberWorkHistoryRepository { get; }
+        ISubscriberSkillRepository SubscriberSkillRepository { get; }
+        ISubscriberEducationHistoryRepository SubscriberEducationHistoryRepository { get; }
+        IIndustryRepository IndustryRepository { get; }
+        ISecurityClearanceRepository SecurityClearanceRepository { get; }
+        IEmploymentTypeRepository EmploymentTypeRepository { get; }
+        IEducationalDegreeRepository EducationalDegreeRepository { get; }
+        IEducationalDegreeTypeRepository EducationalDegreeTypeRepository { get; }
+        IEducationalInstitutionRepository EducationalInstitutionRepository { get; }
+        IEducationLevelRepository EducationLevelRepository { get; }
+        IExperienceLevelRepository ExperienceLevelRepository {get;}
+        ICompensationTypeRepository CompensationTypeRepository {get;}
+        IRecruiterCompanyRepository RecruiterCompanyRepository {get;}
+        Task SaveAsync();
         ITraitifyCourseTopicBlendMappingRepository TraitifyCourseTopicBlendMappingRepository { get; }
     }
 }

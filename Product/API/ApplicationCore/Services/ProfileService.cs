@@ -122,7 +122,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 int? StateId = null;
                 if (string.IsNullOrWhiteSpace(subscribeProfileBasicDto.ProvinceCode) == false)
                 {
-                    State state = StateFactory.GetStateByStateCode(_db, subscribeProfileBasicDto.ProvinceCode);
+                    State state = await StateFactory.GetStateByStateCode(_repository, subscribeProfileBasicDto.ProvinceCode);
                     if (state != null)
                         StateId = state.StateId;
                 }
@@ -173,7 +173,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 int? StateId = null;
                 if (string.IsNullOrWhiteSpace(subscribeProfileBasicDto.ProvinceCode) == false)
                 {
-                    State state = StateFactory.GetStateByStateCode(_db, subscribeProfileBasicDto.ProvinceCode);
+                    State state =  await StateFactory.GetStateByStateCode(_repository, subscribeProfileBasicDto.ProvinceCode);
                     if (state != null)
                         StateId = state.StateId;
                 }

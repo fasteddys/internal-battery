@@ -33,7 +33,7 @@ namespace UpDiddyApi.Controllers.V2
         private readonly ILogger _syslog;
         private readonly IHttpClientFactory _httpClientFactory = null;
         private readonly int _postingTTL = 30;
-        private readonly CloudTalent _cloudTalent = null;
+        private readonly CloudTalentService _cloudTalentService;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IServiceProvider _services;
         private readonly IJobService _jobService;
@@ -47,7 +47,7 @@ namespace UpDiddyApi.Controllers.V2
 
 
         #region constructor 
-        public ProfilesController(IServiceProvider services, IHangfireService hangfireService)
+        public ProfilesController(IServiceProvider services, IHangfireService hangfireService, CloudTalentService cloudTalentService)
 
 
         {
@@ -63,7 +63,7 @@ namespace UpDiddyApi.Controllers.V2
             _subscriberWorkHistoryService = _services.GetService<ISubscriberWorkHistoryService>();
             _subscriberEducationalHistoryService = _services.GetService<ISubscriberEducationalHistoryService>();
             _postingTTL = int.Parse(_configuration["JobPosting:PostingTTLInDays"]);
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
+            _cloudTalentService = cloudTalentService;
             //job Service to perform all business logic related to jobs
             _jobService = _services.GetService<IJobService>();
             _jobPostingService = _services.GetService<IJobPostingService>();

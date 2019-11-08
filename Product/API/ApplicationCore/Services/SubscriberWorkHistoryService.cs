@@ -28,7 +28,6 @@ using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNetCore.Http;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using AutoMapper.QueryableExtensions;
-
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class SubscriberWorkHistoryService : ISubscriberWorkHistoryService
@@ -71,24 +70,24 @@ namespace UpDiddyApi.ApplicationCore.Services
             WorkHistoryDto.JobDescription = HttpUtility.HtmlEncode(WorkHistoryDto.JobDescription);
             WorkHistoryDto.Title = HttpUtility.HtmlEncode(WorkHistoryDto.Title);
 
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repository, subscriberGuid);
             if (subscriber == null)
                 throw new NotFoundException($"Subscriber {subscriberGuid} cannot be found");
 
             int companyId = -1;
             if (WorkHistoryDto.Company!= null)
             {
-                Company company = CompanyFactory.GetOrAdd(_db, WorkHistoryDto.Company).Result;
+                Company company = await CompanyFactory.GetOrAdd(_repository, WorkHistoryDto.Company);
                 companyId = company != null ? company.CompanyId : -1;
             }
 
             int compensationTypeId = 0;
             if ( WorkHistoryDto.CompensationType != null )
             {
-                CompensationType compensationType = CompensationTypeFactory.GetCompensationTypeByName(_db, WorkHistoryDto.CompensationType);
+                CompensationType compensationType = await CompensationTypeFactory.GetCompensationTypeByName(_repository, WorkHistoryDto.CompensationType);
 
                 if (compensationType == null)
-                    compensationType = CompensationTypeFactory.GetOrAdd(_db, UpDiddyLib.Helpers.Constants.NotSpecifedOption);
+                    compensationType = await CompensationTypeFactory.GetOrAdd(_repository, UpDiddyLib.Helpers.Constants.NotSpecifedOption);
                 compensationTypeId = compensationType.CompensationTypeId;
 
             }
@@ -112,8 +111,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 CompanyId = companyId
             };
 
-            _db.SubscriberWorkHistory.Add(WorkHistory);
-            _db.SaveChanges();
+            await _repository.SubscriberWorkHistoryRepository.Create(WorkHistory);
+            await _repository.SaveAsync();
 
             // update google profile 
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
@@ -131,12 +130,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             WorkHistoryDto.JobDescription = HttpUtility.HtmlEncode(WorkHistoryDto.JobDescription);
             WorkHistoryDto.Title = HttpUtility.HtmlEncode(WorkHistoryDto.Title);
 
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repository, subscriberGuid);
 
             if (subscriber == null)
                 throw new NotFoundException($"Subscriber {subscriberGuid} does not exist.");
 
-            SubscriberWorkHistory WorkHistory = SubscriberWorkHistoryFactory.GetWorkHistoryByGuid(_db, workHistoryGuid);
+            SubscriberWorkHistory WorkHistory = await SubscriberWorkHistoryFactory.GetWorkHistoryByGuid(_repository, workHistoryGuid);
             if (WorkHistory == null)
                 throw new NotFoundException($"Work history {workHistoryGuid} does not exist.");
 
@@ -148,20 +147,20 @@ namespace UpDiddyApi.ApplicationCore.Services
             int companyId = -1;
             if ( WorkHistoryDto.Company != null )
             {
-                 Company company = await CompanyFactory.GetOrAdd(_db, WorkHistoryDto.Company);
+                 Company company = await CompanyFactory.GetOrAdd(_repository, WorkHistoryDto.Company);
                  companyId = company != null ? company.CompanyId : -1;
             }
 
             int compensationTypeId = -1;
             if (WorkHistoryDto.CompensationType != null )
             {
-                CompensationType compensationType = await CompensationTypeFactory.GetCompensationTypeByNameAsync(_db, WorkHistoryDto.CompensationType);
+                CompensationType compensationType = await CompensationTypeFactory.GetCompensationTypeByNameAsync(_repository, WorkHistoryDto.CompensationType);
 
                 if (compensationType != null)
                     compensationTypeId = compensationType.CompensationTypeId;
                 else
                 {
-                    compensationType = CompensationTypeFactory.GetOrAdd(_db, UpDiddyLib.Helpers.Constants.NotSpecifedOption);
+                    compensationType = await CompensationTypeFactory.GetOrAdd(_repository, UpDiddyLib.Helpers.Constants.NotSpecifedOption);
                     compensationTypeId = compensationType.CompensationTypeId;
                 }
             }
@@ -197,11 +196,11 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<bool> DeleteWorklHistory(Guid subscriberGuid, Guid workHistoryGuid)
         {
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repository, subscriberGuid);
             if ( subscriber == null )
                 throw new NotFoundException($"Subscriber {subscriberGuid} not found.");
 
-            SubscriberWorkHistory WorkHistory = SubscriberWorkHistoryFactory.GetWorkHistoryByGuid(_db, workHistoryGuid);
+            SubscriberWorkHistory WorkHistory = await SubscriberWorkHistoryFactory.GetWorkHistoryByGuid(_repository, workHistoryGuid);
             if (WorkHistory == null )
                 throw new NotFoundException($"Workhistory {workHistoryGuid} not found");
 
@@ -219,11 +218,11 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<List<SubscriberWorkHistoryDto>> GetWorkHistory(Guid subscriberGuid)
         {
 
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repository, subscriberGuid);
             if (subscriber == null)
                 throw new NotFoundException($"Subscriber {subscriberGuid} not found.");
 
-            var workHistory = _db.SubscriberWorkHistory
+            var workHistory = await _repository.SubscriberWorkHistoryRepository.GetAllWithTracking()
             .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriber.SubscriberId)
             .OrderByDescending(s => s.StartDate)
             .Select(wh => new SubscriberWorkHistory()
@@ -259,7 +258,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             // ignoring subscriber property
         })
             .ProjectTo<SubscriberWorkHistoryDto>(_mapper.ConfigurationProvider)
-            .ToList();
+            .ToListAsync();
 
             return workHistory;
         }

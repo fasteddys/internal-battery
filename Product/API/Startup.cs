@@ -261,7 +261,6 @@ namespace UpDiddyApi
             services.AddScoped<IPromoCodeService, PromoCodeService>();
             services.AddScoped<IBraintreeService, BraintreeService>();
             services.AddScoped<IUserService, UserService>();
-
             services.AddScoped<ICourseService, CourseService>();
             services.AddScoped<ICompanyService, CompanyService>();
             services.AddScoped<IRecruiterService, RecruiterService>();
@@ -271,6 +270,10 @@ namespace UpDiddyApi
             services.AddScoped<IHangfireService, HangfireService>();
             services.AddScoped<IMemoryCacheService, MemoryCacheService>();
             services.AddScoped<IServiceOfferingPromoCodeRedemptionService, ServiceOfferingPromoCodeRedemptionService>();
+            services.AddScoped<IJobFavoriteService, JobFavoriteService>();
+            services.AddScoped<IJobSearchService, JobSearchService>();
+            services.AddScoped<ICloudTalentService, CloudTalentService>();
+            services.AddScoped<ISkillService, SkillService>();
             services.AddScoped<IFileDownloadTrackerService, FileDownloadTrackerService>();
             services.AddScoped<IJobAlertService, JobAlertService>();
             #endregion

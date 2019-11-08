@@ -30,11 +30,19 @@ namespace UpDiddyApi.Controllers
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly string _queueConnection = string.Empty;
         protected internal ILogger _syslog = null;
-        private readonly CloudTalent _cloudTalent = null;
+        private readonly ICloudTalentService _cloudTalentService;
         private readonly ISubscriberService _subscriberService = null;
         private readonly IHangfireService _hangfireService;
 
-        public ProfileController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<ProfileController> sysLog, IHttpClientFactory httpClientFactory, ISubscriberService subscriberService, IRepositoryWrapper repositoryWrapper, IHangfireService hangfireService)
+        public ProfileController(UpDiddyDbContext db
+        , IMapper mapper
+        , Microsoft.Extensions.Configuration.IConfiguration configuration
+        , ILogger<ProfileController> sysLog
+        , IHttpClientFactory httpClientFactory
+        , ISubscriberService subscriberService
+        , IRepositoryWrapper repositoryWrapper
+        , IHangfireService hangfireService
+        , ICloudTalentService cloudTalentService)
         {
             _db = db;
             _mapper = mapper;
@@ -42,7 +50,7 @@ namespace UpDiddyApi.Controllers
             _syslog = sysLog;     
             _subscriberService = subscriberService;
             _hangfireService = hangfireService;
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory, repositoryWrapper,_subscriberService);
+            _cloudTalentService = cloudTalentService;
         }
 
         #region profile tenants
@@ -58,7 +66,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult TenantList()
         {
             // search profiles 
-            BasicResponseDto rVal = _cloudTalent.ProfileTenantList();
+            BasicResponseDto rVal = _cloudTalentService.ProfileTenantList();
             return Ok(rVal);
         }
 
@@ -195,7 +203,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult ProfileSearch([FromBody] ProfileQueryDto profileQueryDto)
         {
             // search profiles 
-            ProfileSearchResultDto rVal = _cloudTalent.ProfileSearch(profileQueryDto);
+            ProfileSearchResultDto rVal = _cloudTalentService.ProfileSearch(profileQueryDto);
             return Ok(rVal);
         }
 
@@ -242,7 +250,7 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/delete-by-uri")]
         public IActionResult DeleteProfileByGoogleName([FromBody] string TalentCloudUri)
         {
-            _cloudTalent.DeleteProfileFromCloudTalentByUri(_db, TalentCloudUri);
+            _cloudTalentService.DeleteProfileFromCloudTalentByUri(TalentCloudUri);
             return Ok();
         }
  
