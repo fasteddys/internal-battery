@@ -96,7 +96,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _repositoryWrapper.SaveAsync();
         }
 
-
         public async Task<List<JobAlertDto>> GetJobAlert(Guid subscriberGuid)
         {
             var result = await _repositoryWrapper.JobPostingAlertRepository.GetAllJobPostingAlertsBySubscriber(subscriberGuid);
