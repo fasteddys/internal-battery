@@ -204,6 +204,17 @@ namespace UpDiddyApi.Controllers
             return Ok(jobAlerts);
         }
 
+        [HttpPut]
+        [Route("/V2/[controller]/alert/{jobAlert}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateJobAlert([FromBody] JobAlertDto jobPostingAlertDto, Guid jobAlert)
+        {
+
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _jobAlertService.UpdateJobAlert(subscriberGuid, jobAlert, jobPostingAlertDto);
+            return StatusCode(204);
+        }
+
         [HttpDelete]
         [Route("/V2/[controller]/alert/{jobAlert}")]
         [Authorize]

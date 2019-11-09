@@ -10,5 +10,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     {
         Task<IEnumerable<JobPostingAlert>> GetAllJobPostingAlertsBySubscriber(Guid subscriberGuid);
         Task<JobPostingAlert> GetJobPostingAlert(Guid jobPostingAlertGuid);
+        Task<JobPostingAlert> GetJobPostingAlertBySubscriberGuidAndJobPostingAlertGuid(Guid subscriberGuid, Guid jobPostingAlertGuid);
     }
 }

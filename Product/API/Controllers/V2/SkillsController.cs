@@ -19,7 +19,6 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 
 namespace UpDiddyApi.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
     public class SkillsController : ControllerBase
     {
