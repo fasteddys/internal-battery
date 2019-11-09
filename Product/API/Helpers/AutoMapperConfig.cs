@@ -109,6 +109,7 @@ namespace UpDiddyApi.Helpers
 
 
             CreateMap<JobPosting, JobDetailDto>()
+                .ForMember(x => x.CompanyName, opt => opt.MapFrom(src => src.Company.CompanyName))
                 .ForMember(x => x.CommuteTime, opt => opt.Ignore())
                 .ReverseMap();
 
@@ -208,7 +209,8 @@ namespace UpDiddyApi.Helpers
                 .ReverseMap();
 
 
-
+            CreateMap<Subscriber, SubscriberProfileSocialDto>()
+                .ReverseMap();
 
             CreateMap<SubscriberFile, SubscriberFileDto>()
                 .ForMember(s => s.SimpleName, opt => opt.MapFrom(src => src.SimpleName))

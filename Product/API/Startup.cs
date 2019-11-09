@@ -246,7 +246,7 @@ namespace UpDiddyApi
 
             services.AddTransient<IB2CGraph, B2CGraphClient>();
             services.AddHttpClient<IB2CGraph, B2CGraphClient>();
-
+            services.AddScoped<IProfileService, ProfileService>();
             services.AddScoped<ISubscriberService, SubscriberService>();
             services.AddScoped<ISubscriberEducationalHistoryService, SubscriberEducationalHistoryService>();
             services.AddScoped<ISubscriberWorkHistoryService, SubscriberWorkHistoryService>();

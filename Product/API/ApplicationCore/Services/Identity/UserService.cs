@@ -186,9 +186,17 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
         public async Task<CreateUserResponse> CreateUserAsync(User user, bool requireEmailVerification, params Role[] userRoles)
         {
             // create an ADB2C account - this can be removed once WozU has switched to Auth0 for SSO (client id and secret)
-            var adb2cUser = await _graphClient.CreateUser(user.Email, user.Email, user.Password);
-            Guid subscriberGuid = Guid.Parse(adb2cUser.AdditionalData["objectId"].ToString());
-            
+            Guid subscriberGuid = Guid.NewGuid();
+            try
+            {
+                var adb2cUser = await _graphClient.CreateUser(user.Email, user.Email, user.Password);
+                subscriberGuid = Guid.Parse(adb2cUser.AdditionalData["objectId"].ToString());
+            }
+            catch (Exception e)
+            {
+                _logger.LogInformation($"An exception occurred while trying to create an ADB2C user: {e.Message}");
+            }
+
             Auth0.ManagementApi.Models.User userCreationResponse = null;
             var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByEmailAsync(user.Email);
 
@@ -397,7 +405,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                                 foreach (var oldGroup in userGroupsFromADB2C)
                                 {
                                     var matchingRole = auth0Roles.Where(r => r.Name == oldGroup.DisplayName).FirstOrDefault();
-                                    newRoles.Add(matchingRole.Id);
+                                    if (matchingRole != null)
+                                        newRoles.Add(matchingRole.Id);
                                 }
                                 if (newRoles.Count() > 0)
                                     await managementApiClient.Users.AssignRolesAsync(userCreationResponse.UserId, new AssignRolesRequest() { Roles = newRoles.ToArray() });
