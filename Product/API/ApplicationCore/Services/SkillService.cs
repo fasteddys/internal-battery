@@ -47,7 +47,9 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task UpdateSubscriberSkills(Guid subscriberGuid, List<string> skills)
         {
             var subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
-            var subscriberSkillsList = await _repositoryWrapper.SubscriberSkillRepository.GetBySubscriberGuid(subscriberGuid);
+            if (subscriber == null)
+                throw new NotFoundException("Subscribe not found");
+            var subscriberSkillsList = await _repositoryWrapper.SubscriberSkillRepository.GetAllSkillsBySubscriberGuid(subscriberGuid);
             foreach (var subscriberSkill in subscriberSkillsList)
             {
                 subscriberSkill.IsDeleted = 1;
@@ -71,7 +73,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 }
                 else
                 {
-                    skillEntity = existingSkill;
+                    skillEntity.SkillId = existingSkill.SkillId;
                 }
 
                 SubscriberSkill subscriberSkill = new SubscriberSkill
@@ -88,10 +90,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 await _repositoryWrapper.SaveAsync();
             }
-            else
-            {
-                throw new NoChangeDetectedException("No changes to subscriber skills");
-            }
+
         }
     }
 }

@@ -15,7 +15,7 @@ using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Models;
 using UpDiddyLib.Domain.Models;
-using UpDiddyLib.Helpers;
+using UpDiddyApi.ApplicationCore.Exceptions;
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class JobSearchService : IJobSearchService
@@ -41,7 +41,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _configuration = configuration;
             _mapper = mapper;
             _cloudTalentService = cloudTalentService;
-
+            _companyService = companyService;
         }
 
         public async Task<int> GetActiveJobCount()
@@ -52,6 +52,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<List<UpDiddyLib.Domain.Models.JobPostingDto>> GetSimilarJobs(Guid jobPostingGuid)
         {
             var job = await _repositoryWrapper.JobPosting.GetJobPostingByGuid(jobPostingGuid);
+            if(job == null)
+                throw new NotFoundException("Job not found");
 
             JobQueryDto jobQuery = JobQueryHelper.CreateJobQueryForSimilarJobs(job.Province, job.City, job.Title, Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]));
             JobSearchResultDto jobSearchForSingleJob = _cloudTalentService.JobSearch(jobQuery);

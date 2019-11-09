@@ -12,7 +12,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
     {
         private readonly UpDiddyDbContext _dbContext;
 
-        public JobPostingAlertRepository(UpDiddyDbContext dbContext): base(dbContext)
+        public JobPostingAlertRepository(UpDiddyDbContext dbContext) : base(dbContext)
         {
             _dbContext = dbContext;
         }
@@ -31,9 +31,17 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             var jobPostingAlerts = GetAll();
             return await jobPostingAlerts
-                .Include(a => a.Subscriber) 
+                .Include(a => a.Subscriber)
                 .Where(a => a.JobPostingAlertGuid == jobPostingAlertGuid)
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<JobPostingAlert> GetJobPostingAlertBySubscriberGuidAndJobPostingAlertGuid(Guid subscriberGuid, Guid jobPostingAlertGuid)
+        {
+            return await (from jpa in _dbContext.JobPostingAlert
+                          join s in _dbContext.Subscriber on jpa.SubscriberId equals s.SubscriberId
+                          where s.SubscriberGuid == subscriberGuid && jpa.JobPostingAlertGuid == jobPostingAlertGuid
+                          select jpa).FirstOrDefaultAsync();
         }
     }
 }

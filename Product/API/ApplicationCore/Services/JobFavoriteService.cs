@@ -16,7 +16,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task AddJobToFavorite(Guid subscriberGuid, Guid jobPostingGuid)
         {
-            var jobFavorite = _repositoryWrapper.JobPostingFavorite.GetBySubscriberAndJobPostingGuid(subscriberGuid, jobPostingGuid);
+            var jobFavorite = await _repositoryWrapper.JobPostingFavorite.GetBySubscriberAndJobPostingGuid(subscriberGuid, jobPostingGuid);
             JobPosting jobPostingEntity = await _repositoryWrapper.JobPosting.GetJobPostingByGuid(jobPostingGuid);
             if (jobPostingEntity == null)
             {

@@ -23,12 +23,21 @@ namespace UpDiddyApi.ApplicationCore.Repository
                           select ss).FirstOrDefaultAsync();
         }
 
-        public async Task<List<SubscriberSkill>> GetBySubscriberGuid(Guid SubscriberGuid)
+        public async Task<List<SubscriberSkill>> GetActiveSkillsBySubscriberGuid(Guid subscriberGuid)
         {
             return await (from ss in _dbContext.SubscriberSkill
                           join s in _dbContext.Subscriber on ss.SubscriberId equals s.SubscriberId
                           join sk in _dbContext.Skill on ss.SkillId equals sk.SkillId
-                          where s.SubscriberGuid == SubscriberGuid && ss.IsDeleted == 0
+                          where s.SubscriberGuid == subscriberGuid && ss.IsDeleted == 0
+                          select ss).Include(x => x.Skill).ToListAsync();
+        }
+
+         public async Task<List<SubscriberSkill>> GetAllSkillsBySubscriberGuid(Guid subscriberGuid)
+        {
+            return await (from ss in _dbContext.SubscriberSkill
+                          join s in _dbContext.Subscriber on ss.SubscriberId equals s.SubscriberId
+                          join sk in _dbContext.Skill on ss.SkillId equals sk.SkillId
+                          where s.SubscriberGuid == subscriberGuid 
                           select ss).Include(x => x.Skill).ToListAsync();
         }
     }
