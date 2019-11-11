@@ -42,10 +42,5 @@ namespace UpDiddyApi.ApplicationCore.Repository
             Update(company);
             await SaveAsync();
         }
-
-        public async Task<Company> GetCompanyById(int id)
-        {
-            return await _dbContext.Company.Where(x => x.CompanyId == id).FirstOrDefaultAsync();
-        }
     }
 }
