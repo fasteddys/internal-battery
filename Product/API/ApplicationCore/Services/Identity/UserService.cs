@@ -368,7 +368,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                         foreach (var oldGroup in userGroupsFromADB2C)
                         {
                             var matchingRole = auth0Roles.Where(r => r.Name == oldGroup.DisplayName).FirstOrDefault();
-                            newRoles.Add(matchingRole.Id);
+                            if (matchingRole != null)
+                                newRoles.Add(matchingRole.Id);
                         }
                         if (newRoles.Count() > 0)
                             await managementApiClient.Users.AssignRolesAsync(userCreationResponse.UserId, new AssignRolesRequest() { Roles = newRoles.ToArray() });

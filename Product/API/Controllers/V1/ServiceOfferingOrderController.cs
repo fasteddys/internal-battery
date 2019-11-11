@@ -64,9 +64,9 @@ namespace UpDiddyApi.Controllers
 
             string Msg = "Order processed";
             int statusCode = 200;
-            if (serviceOfferingTransactionDto?.CreateUserDto?.SubscriberGuid != null)
+            if (serviceOfferingTransactionDto?.CreateUserDto?.SubscriberGuid != null && serviceOfferingTransactionDto?.CreateUserDto?.SubscriberGuid != Guid.Empty)
                 subscriberGuid = serviceOfferingTransactionDto.CreateUserDto.SubscriberGuid;
-            else if (serviceOfferingTransactionDto?.ServiceOfferingOrderDto?.Subscriber?.SubscriberGuid != null)
+            else if (serviceOfferingTransactionDto?.ServiceOfferingOrderDto?.Subscriber?.SubscriberGuid != null && serviceOfferingTransactionDto?.ServiceOfferingOrderDto?.Subscriber?.SubscriberGuid != Guid.Empty)
                 subscriberGuid = serviceOfferingTransactionDto.ServiceOfferingOrderDto.Subscriber.SubscriberGuid.Value;
             _serviceOfferingOrderService.ProcessOrder(serviceOfferingTransactionDto, subscriberGuid, ref statusCode, ref Msg);
             return Ok(new BasicResponseDto() { StatusCode = statusCode, Description = Msg });

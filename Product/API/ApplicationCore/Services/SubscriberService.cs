@@ -262,10 +262,13 @@ namespace UpDiddyApi.ApplicationCore.Services
                     group = await _taggingService.CreateGroup(createUserDto.ReferrerUrl, createUserDto.PartnerGuid, subscriber.SubscriberId);
                 }
 
-                if (createUserDto.IsGatedDownload && group != null)
+                if (createUserDto.IsGatedDownload)
                 {
+                    int? groupId = null;
+                    if (group == null)
+                        groupId = group.GroupId;
                     // set up the gated file download and send the email
-                    await HandleGatedFileDownload(createUserDto.GatedDownloadMaxAttemptsAllowed, createUserDto.GatedDownloadFileUrl, group.GroupId, subscriber.SubscriberId, subscriber.Email);
+                    await HandleGatedFileDownload(createUserDto.GatedDownloadMaxAttemptsAllowed, createUserDto.GatedDownloadFileUrl, groupId, subscriber.SubscriberId, subscriber.Email);
                 }
 
                 isSubscriberCreatedSuccessfully = true;

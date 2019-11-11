@@ -6,7 +6,7 @@
     var returnUrl = "/";
     if(!String.IsNullOrEmpty(Model.CampaignSlug))
     {
-        returnUrl = "campaign/" + Model.CampaignSlug;
+        returnUrl = "/campaign/" + Model.CampaignSlug;
     }
 }
 
@@ -72,6 +72,7 @@
         @Html.HiddenFor(x => Model.GatedDownloadFileUrl)
         @Html.HiddenFor(x => Model.GatedFileDownloadMaxAttemptsAllowed)
         @Html.HiddenFor(x => Model.CampaignSlug)
+        @Html.HiddenFor(x => Model.IsWaitList)
         @Html.HiddenFor(x => Model.SubscriberGuid)
     </form>
     <div class="modal signup-modal text-cc-secondary" tabindex="-1" role="dialog">
