@@ -276,7 +276,9 @@ namespace UpDiddyApi
             services.AddScoped<ISkillService, SkillService>();
             services.AddScoped<IFileDownloadTrackerService, FileDownloadTrackerService>();
             services.AddScoped<IJobAlertService, JobAlertService>();
-             services.AddScoped<IResumeService, ResumeService>();
+            services.AddScoped<IResumeService, ResumeService>();
+            services.AddScoped<IKeywordService, KeywordService>();
+
             #endregion
 
             // Configure SnapshotCollector from application settings
