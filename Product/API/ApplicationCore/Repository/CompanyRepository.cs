@@ -10,9 +10,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
 {
     public class CompanyRepository : UpDiddyRepositoryBase<Company>, ICompanyRepository
     {
+        private readonly UpDiddyDbContext _dbContext;
         public CompanyRepository(UpDiddyDbContext dbContext) : base(dbContext)
         {
-
+                _dbContext = dbContext;
         }
 
         public async Task AddCompany(Company company)
@@ -40,6 +41,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             Update(company);
             await SaveAsync();
+        }
+
+        public async Task<Company> GetCompanyById(int id)
+        {
+            return await _dbContext.Company.Where(x => x.CompanyId == id).FirstOrDefaultAsync();
         }
     }
 }

@@ -10,5 +10,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     {
         IQueryable<SubscriberFile> GetAllSubscriberFileQueryableAsync();
         Task UpdateSubscriberFileAsync(SubscriberFile subscriberFile);
+        Task<List<SubscriberFile>> GetAllSubscriberFilesBySubscriberGuid(Guid subscriberFile);
+        Task<SubscriberFile> GetMostRecentBySubscriberGuid(Guid subscriberGuid);
     }
 }

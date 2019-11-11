@@ -19,6 +19,7 @@ using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Domain;
+using Microsoft.AspNetCore.Http;
 
 
 namespace UpDiddyApi.Controllers.V2
@@ -33,7 +34,7 @@ namespace UpDiddyApi.Controllers.V2
         private readonly ILogger _syslog;
         private readonly IHttpClientFactory _httpClientFactory = null;
         private readonly int _postingTTL = 30;
-        private readonly CloudTalentService _cloudTalentService;
+        private readonly ICloudTalentService _cloudTalentService;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IServiceProvider _services;
         private readonly IJobService _jobService;
@@ -44,10 +45,11 @@ namespace UpDiddyApi.Controllers.V2
         private readonly IJobPostingService _jobPostingService;
         private readonly IJobAlertService _jobAlertService;
         private readonly IProfileService _profileService;
+        private readonly IResumeService _resumeService;
 
 
         #region constructor 
-        public ProfilesController(IServiceProvider services, IHangfireService hangfireService, CloudTalentService cloudTalentService)
+        public ProfilesController(IServiceProvider services, IHangfireService hangfireService, ICloudTalentService cloudTalentService, IResumeService resumeService)
 
 
         {
@@ -69,6 +71,7 @@ namespace UpDiddyApi.Controllers.V2
             _jobPostingService = _services.GetService<IJobPostingService>();
             _hangfireService = hangfireService;
             _profileService = _services.GetService<IProfileService>();
+            _resumeService = resumeService;
         }
 
         #endregion
@@ -235,6 +238,30 @@ namespace UpDiddyApi.Controllers.V2
             return Ok(rVal);
         }
 
+
+        #endregion
+
+        #region Resume
+        
+        [HttpGet]
+        [Authorize]
+        [Route("/V2/[controller]/resume")]
+        public async Task<IActionResult> DownloadResume()
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var resume = await _resumeService.DownloadResume(subscriberGuid);
+            return File(resume.ByteArrayData, resume.MimeType, resume.FileName);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("/V2/[controller]/resume")]
+        public async Task<IActionResult> UploadResume([FromForm] IFormFile resumeDoc)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _resumeService.UploadResume(subscriberGuid, resumeDoc);
+            return StatusCode(201);
+        }
 
         #endregion
 
