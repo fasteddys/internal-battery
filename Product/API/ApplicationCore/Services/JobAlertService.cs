@@ -94,6 +94,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             jobPostingAlert.ModifyDate = DateTime.UtcNow;
             _repositoryWrapper.JobPostingAlertRepository.Update(jobPostingAlert);
             await _repositoryWrapper.SaveAsync();
+            _hangfireService.AddOrUpdate<ScheduledJobs>($"jobPostingAlert:{jobPostingAlert.JobPostingAlertGuid}", sj => sj.ExecuteJobPostingAlert(jobPostingAlert.JobPostingAlertGuid), cronSchedule);
         }
 
         public async Task<List<JobAlertDto>> GetJobAlert(Guid subscriberGuid)
