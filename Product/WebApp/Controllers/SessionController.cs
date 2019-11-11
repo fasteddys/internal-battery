@@ -107,9 +107,9 @@ namespace UpDiddy.Controllers
             {
                 Email = vm.Email,
                 Password = vm.Password,
-                FirstName = vm.IsWaitList ? vm.FirstName : null,
-                LastName = vm.IsWaitList ? vm.LastName : null,
-                PhoneNumber = vm.IsWaitList ? vm.PhoneNumber : null,
+                FirstName = vm.FirstName,
+                LastName = vm.LastName,
+                PhoneNumber = vm.PhoneNumber,
                 ReferrerUrl = Request.Headers["Referer"].ToString(),
                 JobReferralCode = Request.Cookies["referrerCode"] == null ? null : Request.Cookies["referrerCode"].ToString(),
                 PartnerGuid = vm.PartnerGuid,

@@ -58,6 +58,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _serviceOfferingPromoCodeRedemptionService = services.GetService<IServiceOfferingPromoCodeRedemptionService>();
             _cloudTalentService = cloudTalentService;
             _userService = services.GetService<IUserService>();
+            _subscriberService = services.GetService<ISubscriberService>();
         }
 
         public bool ProcessOrder(ServiceOfferingTransactionDto serviceOfferingTransactionDto, Guid subscriberGuid, ref int statusCode, ref string msg)
@@ -336,7 +337,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                         _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg}");
                         return false;
                     }
-                }
+               }
 
                 var subscriberCreationResult = _subscriberService.CreateSubscriberAsync(new CreateUserDto()
                 {
