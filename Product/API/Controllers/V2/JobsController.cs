@@ -42,6 +42,7 @@ namespace UpDiddyApi.Controllers
         private readonly IJobSearchService _jobSearchService;
         private readonly ITrackingService _trackingService;
         private readonly IJobApplicationService _jobApplicationService;
+        private readonly IKeywordService _keywordService;
 
         #region constructor 
         public JobsController(IServiceProvider services
@@ -50,7 +51,8 @@ namespace UpDiddyApi.Controllers
         , IJobFavoriteService jobFavoriteService
         , IJobSearchService jobSearchService
         , ICloudTalentService cloudTalentService
-        , ITrackingService trackingService)
+        , ITrackingService trackingService
+        , IKeywordService keywordService)
 
         {
             _services = services;
@@ -73,6 +75,7 @@ namespace UpDiddyApi.Controllers
             _jobAlertService = jobAlertService;
             _jobFavoriteService = jobFavoriteService;
             _jobSearchService = jobSearchService;
+            _keywordService = keywordService;
         }
 
         #endregion
@@ -131,6 +134,14 @@ namespace UpDiddyApi.Controllers
         {
 
             JobDetailDto rVal = await _jobService.GetJobDetail(JobGuid);
+            return Ok(rVal);
+        }
+
+        [HttpGet]
+        [Route("/V2/[controller]/search/keyword")]
+        public async Task<IActionResult> GetKeywordSearchTerms(string value)
+        {
+            var rVal = await _keywordService.GetKeywordSearchTerms(value);
             return Ok(rVal);
         }
 
