@@ -278,6 +278,7 @@ namespace UpDiddyApi
             services.AddScoped<IJobAlertService, JobAlertService>();
             services.AddScoped<IResumeService, ResumeService>();
             services.AddScoped<IKeywordService, KeywordService>();
+            services.AddScoped<ICountryService, CountryService>();
 
             #endregion
 
