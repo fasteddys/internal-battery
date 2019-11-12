@@ -279,6 +279,7 @@ namespace UpDiddyApi
             services.AddScoped<IResumeService, ResumeService>();
             services.AddScoped<IKeywordService, KeywordService>();
             services.AddScoped<ICountryService, CountryService>();
+            services.AddScoped<IStateService, StateService>();
 
             #endregion
 

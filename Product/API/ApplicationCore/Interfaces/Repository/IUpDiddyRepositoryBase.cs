@@ -13,7 +13,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IQueryable<TEntity> GetAllWithTracking();
         Task<IEnumerable<TEntity>> GetByConditionWithTrackingAsync(Expression<Func<TEntity,bool>> expression);
         Task<IEnumerable<TEntity>> GetByConditionAsync(Expression<Func<TEntity,bool>> expression);
-        Task<IEnumerable<TEntity>> GetAllWithSorting(int limit, int take, string sort, string order);
+        Task<IEnumerable<TEntity>> GetByConditionWithSorting(Expression<Func<TEntity, bool>> expression, int limit, int offset, string sort, string order);
         Task<TEntity> GetById(int id);
         Task Create(TEntity entity);
         Task CreateRange(TEntity[] entity);
