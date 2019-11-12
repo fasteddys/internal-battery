@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Reflection;
 namespace UpDiddyApi.ApplicationCore.Repository
 {
     public class UpDiddyRepositoryBase<TEntity> : IUpDiddyRepositoryBase<TEntity> where TEntity : class
@@ -47,6 +48,23 @@ namespace UpDiddyApi.ApplicationCore.Repository
                              .Where(expression)
                              .ToListAsync();
         }
+
+        public async Task<IEnumerable<TEntity>> GetAllWithSorting(int limit, int offset, string sort, string order)
+        {
+            System.Reflection.PropertyInfo prop = typeof(TEntity).GetProperty(sort, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+            List<TEntity> entity = new List<TEntity>();
+            switch (order)
+            {
+                case "descending":
+                    entity = await _dbContext.Set<TEntity>().OrderByDescending(x => prop.GetValue(x, null)).Take(limit).Skip(offset).ToListAsync();
+                    break;
+                default:
+                    entity = await _dbContext.Set<TEntity>().OrderBy(x => prop.GetValue(x, null)).Take(limit).Skip(offset).ToListAsync();
+                    break;
+            }
+            return entity;
+        }
+
 
         public async Task<TEntity> GetById(int id)
         {
