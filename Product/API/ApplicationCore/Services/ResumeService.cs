@@ -4,10 +4,13 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
+using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using Microsoft.AspNetCore.Http;
+using System.Net.Http;
+using System.IO;
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class ResumeService : IResumeService
@@ -26,13 +29,17 @@ namespace UpDiddyApi.ApplicationCore.Services
             _subscriberService = subscriberService;
         }
 
-        public async Task UploadResume(Guid subscriberGuid, IFormFile resumeDoc)
+        public async Task UploadResume(Guid subscriberGuid, FileDto fileDto)
         {
             var subscriber = await _subscriberService.GetBySubscriberGuid(subscriberGuid);
             if (subscriber == null)
                 throw new NotFoundException("Subscriber is not found");
+            if(fileDto == null)
+                throw new NullReferenceException("FileDto cannot be null");
+            var bytes = Convert.FromBase64String(fileDto.Base64EncodedData);
+            var resumeStream = new StreamContent(new MemoryStream(bytes));
             var subscriberFiles = await _repositoryWrapper.SubscriberFileRepository.GetAllSubscriberFilesBySubscriberGuid(subscriberGuid);
-            string blobName = await _cloudStorage.UploadFileAsync(String.Format("{0}/{1}/", subscriberGuid, "resume"), resumeDoc.FileName, resumeDoc.OpenReadStream());
+            string blobName = await _cloudStorage.UploadFileAsync(String.Format("{0}/{1}/", subscriberGuid, "resume"), fileDto.FileName, await resumeStream.ReadAsStreamAsync());
             SubscriberFile subscriberFileResume = new SubscriberFile
             {
                 BlobName = blobName,
@@ -41,7 +48,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 CreateDate = DateTime.UtcNow,
                 ModifyDate = DateTime.UtcNow,
                 SubscriberId = subscriber.SubscriberId,
-                MimeType = resumeDoc.ContentType
+                MimeType = fileDto.MimeType
             };
 
             if (subscriberFiles.Count > 0)

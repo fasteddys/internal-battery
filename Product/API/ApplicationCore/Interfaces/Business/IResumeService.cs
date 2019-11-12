@@ -7,7 +7,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface IResumeService
     {
-      Task UploadResume(Guid subscriberGuid, IFormFile resumeDoc);
+      Task UploadResume(Guid subscriberGuid, FileDto fileDto);
       Task<FileDto> DownloadResume(Guid subscriberGuid);
     }
 }
