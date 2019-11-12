@@ -48,7 +48,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             var subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
             if (subscriber == null)
-                throw new NotFoundException("Subscribe not found");
+                throw new NotFoundException("Subscriber not found");
             var subscriberSkillsList = await _repositoryWrapper.SubscriberSkillRepository.GetAllSkillsBySubscriberGuid(subscriberGuid);
             foreach (var subscriberSkill in subscriberSkillsList)
             {

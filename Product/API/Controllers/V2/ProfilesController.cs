@@ -256,10 +256,10 @@ namespace UpDiddyApi.Controllers.V2
         [HttpPost]
         [Authorize]
         [Route("/V2/[controller]/resume")]
-        public async Task<IActionResult> UploadResume([FromForm] IFormFile resumeDoc)
+        public async Task<IActionResult> UploadResume([FromBody] UpDiddyLib.Domain.Models.FileDto fileDto)
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _resumeService.UploadResume(subscriberGuid, resumeDoc);
+            await _resumeService.UploadResume(subscriberGuid, fileDto);
             return StatusCode(201);
         }
 
