@@ -48,18 +48,28 @@ namespace UpDiddyApi.ApplicationCore.Repository
                              .Where(expression)
                              .ToListAsync();
         }
-
-        public async Task<IEnumerable<TEntity>> GetAllWithSorting(int limit, int offset, string sort, string order)
+        
+        public async Task<IEnumerable<TEntity>> GetByConditionWithSorting(Expression<Func<TEntity, bool>> expression, int limit, int offset, string sort, string order)
         {
-            System.Reflection.PropertyInfo prop = typeof(TEntity).GetProperty(sort, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+            System.Reflection.PropertyInfo sortProp = typeof(TEntity).GetProperty(sort, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
             List<TEntity> entity = new List<TEntity>();
             switch (order)
             {
                 case "descending":
-                    entity = await _dbContext.Set<TEntity>().OrderByDescending(x => prop.GetValue(x, null)).Take(limit).Skip(offset).ToListAsync();
+                    entity = await _dbContext.Set<TEntity>()
+                    .OrderByDescending(x => sortProp.GetValue(x, null))
+                    .Where(expression)                   
+                    .Skip(offset)
+                    .Take(limit)
+                    .ToListAsync();
                     break;
                 default:
-                    entity = await _dbContext.Set<TEntity>().OrderBy(x => prop.GetValue(x, null)).Take(limit).Skip(offset).ToListAsync();
+                    entity = await _dbContext.Set<TEntity>()
+                    .OrderBy(x => sortProp.GetValue(x, null))
+                    .Where(expression)
+                    .Skip(offset)
+                    .Take(limit)                   
+                    .ToListAsync();
                     break;
             }
             return entity;

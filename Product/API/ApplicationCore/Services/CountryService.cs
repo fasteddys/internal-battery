@@ -37,7 +37,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<List<CountryDetailDto>> GetAllCountries(int limit = 100, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var country = await _repositoryWrapper.Country.GetAllWithSorting(limit, offset, sort, order);
+            var country = await _repositoryWrapper.Country.GetByConditionWithSorting(x => x.IsDeleted == 0, limit, offset, sort, order);
             if(country == null)
                 throw  new NotSupportedException("Invalid parameters");
             return _mapper.Map<List<CountryDetailDto>>(country);
