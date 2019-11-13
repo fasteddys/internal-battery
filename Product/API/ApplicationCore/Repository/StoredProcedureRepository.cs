@@ -13,9 +13,82 @@ namespace UpDiddyApi.ApplicationCore.Repository
     public class StoredProcedureRepository : IStoredProcedureRepository
     {
         private readonly UpDiddyDbContext _dbContext;
+
         public StoredProcedureRepository(UpDiddyDbContext dbContext)
         {
             _dbContext = dbContext;
+        }
+
+ 
+
+
+
+
+        public async Task<List<CourseDetailDto>> GetCoursesBySkillHistogram(Dictionary<string,int> SkillHistogram, int NumCourses)
+        {
+            List<CourseDetailDto> rval = null;
+
+            DataTable table = new DataTable();
+            table.Columns.Add("Skill", typeof(string));
+            table.Columns.Add("Occurences", typeof(int));
+                  
+            foreach ( KeyValuePair<string,int> SkillInfo in SkillHistogram)
+            {
+                DataRow row = table.NewRow();
+                row["Skill"] = SkillInfo.Key;
+                row["Occurences"] = SkillInfo.Value;
+                table.Rows.Add(row);
+            }
+    
+
+            var Skills = new SqlParameter("@SkillHistogram", table);
+            Skills.SqlDbType = SqlDbType.Structured;
+            Skills.TypeName = "dbo.SkillHistogram";
+
+            var spParams = new object[] { Skills, new SqlParameter("@MaxResults", NumCourses) }; 
+            rval = await _dbContext.CourseDetails.FromSql<CourseDetailDto>("System_Get_RelatedCoursesBySkills @SkillHistogram,@MaxResults", spParams).ToListAsync();
+             
+            return rval;
+        }
+
+
+
+        public async Task<List<CourseDetailDto>> GetCoursesRandom(int NumCourses)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@MaxResults", NumCourses)
+                };
+
+            List<CourseDetailDto> rval = null;
+            rval = await _dbContext.CourseDetails.FromSql<CourseDetailDto>("System_Get_CoursesRandom @MaxResults", spParams).ToListAsync();
+            return rval;
+        }
+
+
+
+        public async Task<List<CourseDetailDto>> GetCoursesForJob( Guid JobGuid, int NumCourses)
+        {
+            var spParams = new object[] {                
+                new SqlParameter("@JobGuid", JobGuid),
+                new SqlParameter("@MaxResults", NumCourses)
+                };
+
+            List<CourseDetailDto> rval = null;
+            rval = await _dbContext.CourseDetails.FromSql<CourseDetailDto>("System_Get_CoursesForJob @JobGuid,@MaxResults", spParams).ToListAsync();
+            return rval;
+        }
+
+
+
+
+        public async Task<List<SearchTermDto>> GetKeywordSearchTermsAsync()
+        {
+            return await _dbContext.KeywordSearchTerms.FromSql<SearchTermDto>("System_Get_KeywordSearchTerms").ToListAsync();
+        }
+
+        public async Task<List<SearchTermDto>> GetLocationSearchTermsAsync()
+        {
+            return await _dbContext.LocationSearchTerms.FromSql<SearchTermDto>("System_Get_LocationSearchTerms").ToListAsync();
         }
 
         public async Task<List<JobAbandonmentStatistics>> GetJobAbandonmentStatisticsAsync(DateTime startDate, DateTime endDate)
@@ -31,7 +104,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             return await _dbContext.JobCountPerProvince.FromSql<JobCountPerProvince>("System_JobCountPerProvince").ToListAsync();
         }
-
+              
+        public async Task<List<SubscriberInitialSourceDto>> GetNewSubscribers()
+        {
+            List<SubscriberInitialSourceDto> rval = null;     
+            rval = await _dbContext.SubscriberInitialSource.FromSql<SubscriberInitialSourceDto>("System_Get_New_Subscribers").ToListAsync();     
+            return rval;
+        }
 
         public async Task<List<SubscriberSourceDto>> GetSubscriberSources(int SubscriberId)
         {

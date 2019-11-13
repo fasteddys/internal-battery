@@ -6,5 +6,11 @@ using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
-    public interface IPartnerRepository : IUpDiddyRepositoryBase<Partner> { }
+    public interface IPartnerRepository : IUpDiddyRepositoryBase<Partner>
+    {
+        Task<Partner> GetPartnerByName(string PartnerName);
+        Task<Partner> GetPartnerByGuid(Guid partnerGuid);
+        Task<Partner> GetOrCreatePartnerByName(string partnerName, PartnerType partnerType);
+
+    }
 }

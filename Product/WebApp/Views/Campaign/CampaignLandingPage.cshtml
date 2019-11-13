@@ -25,7 +25,6 @@
                                                     @Html.Raw(Model.hero_content)
                                                 </div>
                                             </div>
-                                            
                                         </div>
                                     </div>
                                 </div>
@@ -42,13 +41,63 @@
                                     <img src="@Model.hero_sub_image" />
                                 </div>
                                 <div class="col-12 no-padding sub-header font-bold">
-                                    Sign Up Today!
+                                        @if (Model.isLoggedIn)
+                                        {
+                                            if(string.IsNullOrEmpty(Model.existing_user_form_header))
+                                            {
+                                                @Html.Raw("Sign Up Today!");
+                                            }
+                                            else
+                                            {
+                                                @Html.Raw(Model.existing_user_form_header);
+                                            }
+                                            
+                                        }
+                                        else
+                                        {
+                                            if(string.IsNullOrEmpty(Model.signup_form_header))
+                                            {
+                                                @Html.Raw("Sign Up Today!");
+                                            } 
+                                            else
+                                            {
+                                                @Html.Raw(Model.signup_form_header);
+                                            }
+                                        }   
                                 </div>
-                                <div class="col-12 no-padding mini-header">
-                                    Create an account to get started
+                                <div class="col-12 no-padding mini-header">                                                   
+                                        @if (Model.isLoggedIn)
+                                        {
+                                            if(string.IsNullOrEmpty(Model.existing_user_form_text))
+                                            {
+                                                @Html.Raw("Create an account to get started");
+                                            } 
+                                            else
+                                            {
+                                                @Html.Raw(Model.existing_user_form_text);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if(string.IsNullOrEmpty(Model.signup_form_text))
+                                            {
+                                                @Html.Raw("Create an account to get started");
+                                            } 
+                                            else
+                                            {
+                                                @Html.Raw(Model.signup_form_text);
+                                            }
+                                        }                                                        
                                 </div>
                                 <div class="col-12 no-padding">
-                                    @Html.Partial("Components/Authentication/_SignUp", new SignUpViewModel { IsExpressSignUp = Model.IsExpressSignUp, IsWaitList = Model.IsWaitList, PartnerGuid = Model.partner.PartnerGuid != null ? Model.partner.PartnerGuid : Guid.Empty})
+                                    @if (Model.isLoggedIn)
+                                    {
+                                        @Html.Partial("Components/Authentication/_SignUpExistingUser", Model.signUpViewModel)
+                                    }
+                                    else
+                                    {
+                                        @Html.Partial("Components/Authentication/_SignUp", Model.signUpViewModel)
+                                    }
                                 </div>
                             </div>
                         </div>

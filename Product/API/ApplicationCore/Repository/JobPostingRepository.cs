@@ -32,12 +32,19 @@ namespace UpDiddyApi.ApplicationCore.Repository
         public async Task<JobPosting> GetJobPostingByGuid(Guid jobPostingGuid)
         {
 
-            var queryableJobPosting =  GetAll();
+            var queryableJobPosting = GetAll();
             var jobPostingResult = await queryableJobPosting
                                 .Where(jp => jp.IsDeleted == 0 && jp.JobPostingGuid == jobPostingGuid)
                                 .ToListAsync();
 
             return jobPostingResult.Count == 0 ? null : jobPostingResult[0];
+        }
+
+        public async Task<string> GetCloudTalentUri(Guid jobPostingGuid)
+        {
+            return await (from jobPosting in _dbContext.JobPosting
+                          where jobPosting.JobPostingGuid == jobPostingGuid
+                          select jobPosting.CloudTalentUri).FirstOrDefaultAsync();
         }
     }
 }

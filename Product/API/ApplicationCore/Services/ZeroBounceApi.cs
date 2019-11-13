@@ -161,7 +161,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     dynamic jsonResponse = JsonConvert.DeserializeObject<dynamic>(response);
 
                     // interpret response
-                    isValidEmail = jsonResponse.status == "valid";
+                    isValidEmail = jsonResponse.status != "invalid";
 
                     // write the history of the zero bounce request to our db
                     _repositoryWrapper.ZeroBounceRepository.Create(new ZeroBounce()

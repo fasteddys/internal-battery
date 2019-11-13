@@ -53,7 +53,7 @@ namespace UpDiddyApi.ApplicationCore
                 {
                     // Update or create users linked profile data 
                     SubscriberProfileStagingStoreFactory.StoreProfileData(_db, subscriberGuid, responseJson);
-                    if (SubscriberFactory.ImportLinkedInAvatar(_db, _configuration, responseJson, subscriberGuid, ref errorMsg) == false)
+                    if (SubscriberFactory.ImportLinkedInAvatar(_repositoryWrapper, _configuration, responseJson, subscriberGuid, ref errorMsg) == false)
                         _syslog.Log(LogLevel.Information, errorMsg);
                     
                     rVal = (int)ProfileDataStatus.Acquired;

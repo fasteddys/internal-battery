@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using UpDiddy.Api;
 using UpDiddyLib.Dto;
 using X.PagedList;
@@ -11,17 +12,15 @@ namespace UpDiddy.Controllers
     [Route("[controller]")]
     public class UserController : BaseController
     {
-        private IApi _api;
-        public UserController(IApi api) : base(api)
+        public UserController(IApi api, IConfiguration configuration) : base(api, configuration)
         {
-            _api = api;
         }
 
         [HttpGet("jobs")]
         public async Task<IActionResult> MyJobsAsync(int? page)
         {
             page = page.HasValue ? page.Value : 1;
-            var pagingDto = await _api.GetUserJobsOfInterest(page);
+            var pagingDto = await _Api.GetUserJobsOfInterest(page);
             var list = new StaticPagedList<UpDiddyLib.Dto.User.JobDto>(pagingDto.Results, page.Value, pagingDto.PageSize, pagingDto.Count);
             ViewBag.Jobs = list;
             return View();
@@ -35,7 +34,7 @@ namespace UpDiddy.Controllers
             int tmp;
             if (int.TryParse(Request.Cookies["timeZoneOffset"], out tmp))
                 timeZoneOffset = tmp;
-            var pagingDto = await _api.GetUserJobAlerts(page, timeZoneOffset);
+            var pagingDto = await _Api.GetUserJobAlerts(page, timeZoneOffset);
             var list = new StaticPagedList<JobPostingAlertDto>(pagingDto.Results, page.Value, pagingDto.PageSize, pagingDto.Count);
             ViewBag.JobAlerts = list;
             return View();

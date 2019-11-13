@@ -7,7 +7,7 @@ name: webapp.$(date:yyyyMMdd)$(rev:.r)
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#pool
 pool:
-  vmImage: 'ubuntu-16.04'
+  vmImage: 'ubuntu-latest'
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#variables
 variables:
@@ -38,10 +38,14 @@ steps:
     dotnet restore Product/WebApp
   displayName: Restore NuGet Packages
 
-# install npm dependencies (see package.json)
+- task: UseNode@1
+  inputs:
+    version: '10.12.0'
+
+# install gulp
 - script: |
-    npm install
-  displayName: Install Node Package Dependencies
+    npm install gulp@^3.9.1
+  displayName: Install Gulp
   workingDirectory: Product/WebApp
 
 # install bower dependencies (see bower.json)

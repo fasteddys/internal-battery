@@ -10,5 +10,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IQueryable<JobPosting> GetAllJobPostings();
         Task<JobPosting> GetJobPostingByGuid(Guid jobPostingGuid);
         Task<JobPosting> GetJobPostingById(int Id);
+        Task<string> GetCloudTalentUri(Guid jobPostingGuid);
     }
 }

@@ -1,4 +1,5 @@
-﻿namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
+﻿using System.Threading.Tasks;
+namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface IRepositoryWrapper
     {
@@ -13,7 +14,6 @@
         IJobApplicationRepository JobApplication { get; }
         ICompanyRepository Company { get; }
         IRecruiterActionRepository RecruiterActionRepository { get; }
-        ISubscriberRepository Subscriber { get; }
         IZeroBounceRepository ZeroBounceRepository { get; }
         IPartnerContactLeadStatusRepository PartnerContactLeadStatusRepository { get; }
         ISubscriberRepository SubscriberRepository { get; }
@@ -38,7 +38,7 @@
         IOfferRepository Offer { get; }
         ISubscriberFileRepository SubscriberFileRepository { get; }
         ISkillRepository SkillRepository { get; }
-        IStoredProcedureRepository StoredProcedureRepository { get;  }
+        IStoredProcedureRepository StoredProcedureRepository { get; }
         ICourseSiteRepository CourseSite { get; }
         ICoursePageRepository CoursePage { get; }
         ICourseRepository Course { get; }
@@ -51,15 +51,32 @@
         ITagCourseRepository TagCourse { get; }
         IVendorRepository Vendor { get; }
         IEnrollmentRepository EnrollmentRepository { get; }
-        ITraitifyRepository TraitifyRepository {get;}
+        ITraitifyRepository TraitifyRepository { get; }
         IServiceOfferingRepository ServiceOfferingRepository { get; }
         IServiceOfferingItemRepository ServiceOfferingItemRepository { get; }
         IServiceOfferingOrderRepository ServiceOfferingOrderRepository { get; }
         IServiceOfferingPromoCodeRedemptionRepository ServiceOfferingPromoCodeRedemptionRepository { get; }
-
-        IServiceOfferingPromoCodeRepository ServiceOfferingPromoCodeRepository { get;  }
+        IServiceOfferingPromoCodeRepository ServiceOfferingPromoCodeRepository { get; }
         IPromoCodeRepository PromoCodeRepository { get; }
-
-        
+        IFileDownloadTrackerRepository FileDownloadTrackerRepository { get; }
+        IPartnerTypeRepository PartnerTypeRepository { get; }
+        IJobPostingSkillRepository JobPostingSkillRepository { get; }
+        ICampaignPartnerContactRepository CampaignPartnerContactRepository { get; }
+        ICampaignRepository CampaignRepository { get; }
+        ISubscriberWorkHistoryRepository SubscriberWorkHistoryRepository { get; }
+        ISubscriberSkillRepository SubscriberSkillRepository { get; }
+        ISubscriberEducationHistoryRepository SubscriberEducationHistoryRepository { get; }
+        IIndustryRepository IndustryRepository { get; }
+        ISecurityClearanceRepository SecurityClearanceRepository { get; }
+        IEmploymentTypeRepository EmploymentTypeRepository { get; }
+        IEducationalDegreeRepository EducationalDegreeRepository { get; }
+        IEducationalDegreeTypeRepository EducationalDegreeTypeRepository { get; }
+        IEducationalInstitutionRepository EducationalInstitutionRepository { get; }
+        IEducationLevelRepository EducationLevelRepository { get; }
+        IExperienceLevelRepository ExperienceLevelRepository {get;}
+        ICompensationTypeRepository CompensationTypeRepository {get;}
+        IRecruiterCompanyRepository RecruiterCompanyRepository {get;}
+        Task SaveAsync();
+        ITraitifyCourseTopicBlendMappingRepository TraitifyCourseTopicBlendMappingRepository { get; }
     }
 }

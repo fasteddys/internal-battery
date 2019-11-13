@@ -71,11 +71,8 @@
                                 <div id="active-filters">
 
                                 </div>
-
-
                                 @foreach (var facets in Model.Facets)
                                 {
-
                                     //Date Published Search Navigator
                                     if (!url.Contains("datepublished"))
                                     {
@@ -100,7 +97,6 @@
                                             </div>
                                         }
                                     }
-
 
                                     //Employment Type Search Navigator
                                     if (!url.Contains("employmenttype"))
@@ -139,7 +135,7 @@
                                                 {
                                                     counter++;
                                                     <div>
-                                                        <a rel="nofollow" href="@string.Format("/Jobs{0}city={1}", (@ViewBag.QueryUrl.Equals("")? "?" : @ViewBag.QueryUrl.ToString().Replace("location","province")+"&"), @facet.UrlParam.Split(',')[0])" class="facet-link @((counter > 5) ? "moreLink" : "")"> @string.Join(", ",facet.Label.Split(",")[0], facet.Label.Split(",")[1].ToUpper()) &nbsp(@facet.Count)</a>
+                                                        <a rel="nofollow" href="@string.Format("/Jobs{0}city={1}", (@ViewBag.QueryUrl.Equals("")? "?" : @ViewBag.QueryUrl.ToString().Replace("location","province")+"&"), @facet.UrlParam.Split(',')[0])" class="facet-link @((counter > 5) ? "moreLink" : "")"> @string.Join(", ", facet.Label.Split(",")[0], facet.Label.Split(",")[1].ToUpper()) &nbsp(@facet.Count)</a>
                                                     </div>
                                                     @if (counter >= 15)
                                                     {
@@ -208,10 +204,7 @@
                                             </div>
                                         }
                                     }
-
                                 }
-
-
                             </div>
                         </div>
                     </div>
@@ -225,7 +218,7 @@
                     @{ await Html.RenderPartialAsync("Partials/_JobResultsPartial", Model);}
 
                     <div class="row job-pagination container-align-center">
-                        @Html.PagedListPager(Model.JobsSearchResult, page => Url.Action("Index", new
+                        @Html.PagedListPager(Model.JobsSearchResult, page => Url.Action("Index", new 
                    { page,
                        keywords= Model.Keywords,
                        location= Model.Location,
@@ -235,9 +228,9 @@
                        jobcategory= ViewContext.HttpContext.Request.Query["jobcategory"],
                        industry= ViewContext.HttpContext.Request.Query["industry"],
                        companyname= ViewContext.HttpContext.Request.Query["companyname"]
-                   }),new X.PagedList.Mvc.Common.PagedListRenderOptionsBase() { Display=X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                       LiElementClasses = new string[] { "page-item" },
-                       PageClasses = new string[] { "page-link" },
+                   }),new X.PagedList.Mvc.Common.PagedListRenderOptions() { Display=X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                       LiElementClasses = new List<string> { "page-item" },
+                       PageClasses = new List<string> { "page-link" },
                        MaximumPageNumbersToDisplay=5,
                        DisplayLinkToFirstPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
                        DisplayLinkToLastPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
@@ -248,8 +241,8 @@
                        LinkToNextPageFormat = "»",
                        LinkToLastPageFormat = "»»",
                        DisplayEllipsesWhenNotShowingAllPageNumbers = true,
-                       ContainerDivClasses = new[] { "pagination-container" },
-                       UlElementClasses = new[] { "pagination" }
+                       ContainerDivClasses = new List<string> {  "pagination-container" },
+                       UlElementClasses = new List<string> { "pagination" }
                    })
                     </div>
                 </div>
@@ -267,7 +260,7 @@
             var parentElementUndoElement = document.getElementById('active-filters');
             var innerHtml = "<div class='facet-header'>Selected Filters</div>";
 
-            @{              
+            @{
                 var queryParameterList=System.Web.HttpUtility.ParseQueryString(url);
                 CultureInfo cultureInfo = Thread.CurrentThread.CurrentCulture;
                 TextInfo textInfo = cultureInfo.TextInfo;
@@ -277,11 +270,11 @@
             {
                 @foreach(string qp in queryParameterList)
                 {
-                        if ((qp == "datepublished" || qp== "employmenttype" 
-                            || qp == "city" || qp == "jobcategory" 
+                        if ((qp == "datepublished" || qp== "employmenttype"
+                            || qp == "city" || qp == "jobcategory"
                             || qp== "industry" || qp == "keywords"
-                            || qp=="location" || qp=="province") 
-                            && !string.IsNullOrEmpty(queryParameterList[qp]))
+                            || qp=="location" || qp=="province"
+                            || qp=="companyname") && !string.IsNullOrEmpty(queryParameterList[qp]))
                             {
                                 var queryStrings=System.Web.HttpUtility.ParseQueryString(url);
                                     queryStrings.Remove(qp);
@@ -293,11 +286,10 @@
                                         innerHtml = innerHtml + "<div class='facet-link'><span>@textInfo.ToTitleCase(queryParameterList[qp].ToString().ToLower().Replace('_', ' '))<span>&nbsp<a href='@undoUrl' data-toggle='tooltip' data-placement='bottom' title='Remove'><b>(X)</b></a><span></div>";
                                         parentElementUndoElement.innerHTML = innerHtml;
                                         parentElementUndoElement.style="overflow-wrap:break-word;"
-                                    </text> 
-                            } 
+                                    </text>
+                            }
                 }
             }
-          
 
             $( "#keywords" ).autocomplete({
                 source : function(request, response){
@@ -313,12 +305,12 @@
                                     type:"GET",
                                     dataType:'json',
                                     data:{
-                                        keyword:request.term
+                                        value:request.term
                                     },
                                     error: function error(res) {
                                         console.log(res);
                                     },
-                                    success:function(data){ 
+                                    success:function(data){
                                         if(data && data.length>0)
                                         {
                                             response(data);
@@ -331,7 +323,7 @@
 
                     }
                 }
-                }); 
+                });
 
 
                  $( "#location" ).autocomplete({
@@ -348,12 +340,12 @@
                                         type:"GET",
                                         dataType:'json',
                                         data:{
-                                            location:request.term
+                                            value:request.term
                                         },
                                         error: function error(res) {
                                             console.log(res);
                                         },
-                                        success:function(data){ 
+                                        success:function(data){
                                             if(data && data.length>0)
                                             {
                                                response(data);
@@ -366,7 +358,7 @@
 
                         }
                     }
-                }); 
+                });
 
         });
 

@@ -20,7 +20,10 @@ namespace UpDiddy.ViewModels.ButterCMS
         public string HeroDescription { get; set; }
         [JsonProperty("training_vendors")]
         public IList<TrainingVendorViewModel> TrainingVendors { get; set; }
-    }
+        public IList<TrainingTopicViewModel> TrainingTopics { get; set; }
 
-    
+    }
+ 
+
+
 }

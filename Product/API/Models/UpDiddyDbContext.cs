@@ -54,7 +54,6 @@ namespace UpDiddyApi.Models
     public class UpDiddyDbContext : DbContext
     {
         public UpDiddyDbContext(DbContextOptions<UpDiddyDbContext> options) : base(options) { }
-
         public DbSet<Topic> Topic { get; set; }
         public DbSet<Vendor> Vendor { get; set; }
         public DbSet<Subscriber> Subscriber { get; set; }
@@ -127,7 +126,6 @@ namespace UpDiddyApi.Models
         public DbSet<ExperienceLevel> ExperienceLevel { get; set; }
         public DbSet<JobPostingSkill> JobPostingSkill { get; set; }
         public DbSet<JobCategory> JobCategory { get; set; }
-
         public DbSet<Offer> Offer { get; set; }
         public DbSet<Partner> Partner { get; set; }
         public DbSet<PartnerContact> PartnerContact { get; set; }
@@ -140,13 +138,10 @@ namespace UpDiddyApi.Models
         public DbSet<PartnerContactLeadStatus> PartnerContactLeadStatus { get; set; }
         public DbSet<PartnerContactFile> PartnerContactFile { get; set; }
         public DbSet<PartnerContactFileLeadStatus> PartnerContactFileLeadStatus { get; set; }
-
         public DbSet<CampaignPartnerContact> CampaignPartnerContact { get; set; }
         public DbSet<PartnerContactAction> PartnerContactAction { get; set; }
         public DbSet<JobApplication> JobApplication { get; set; }
-
         public DbSet<RecruiterCompany> RecruiterCompany { get; set; }
-
         public DbSet<JobPostingFavorite> JobPostingFavorite { get; set; }
         public DbSet<Recruiter> Recruiter { get; set; }
         public DbSet<RecruiterAction> RecruiterAction { get; set; }
@@ -160,29 +155,21 @@ namespace UpDiddyApi.Models
         public DbSet<SubscriberNotes> SubscriberNotes { get; set; }
         public DbSet<Notification> Notification { get; set; }
         public DbSet<SubscriberNotification> SubscriberNotification { get; set; }
-
         public DbSet<ResumeParse> ResumeParse { get; set; }
-
         public DbSet<ResumeParseResult> ResumeParseResult { get; set; }
-
         public DbSet<CampaignPartner> CampaignPartner { get; set; }
         public DbSet<Group> Group { get; set; }
         public DbSet<SubscriberGroup> SubscriberGroup { get; set; }
         public DbSet<GroupPartner> GroupPartner { get; set; }
         public DbSet<SalesForceSignUpList> SalesForceSignUpList { get; set; }
         public DbSet<Traitify> Traitify { get; set; }
-
+        public DbSet<TraitifyCourseTopicBlendMapping> TraitifyBlendCourseTopicMapping { get; set; }
         public DbSet<ServiceOffering> ServiceOffering { get; set; }
         public DbSet<ServiceOfferingItem> ServiceOfferingItem { get; set; }
-    
-        public DbSet<ServiceOfferingOrder> ServiceOfferingOrder { get; set; }      
+        public DbSet<ServiceOfferingOrder> ServiceOfferingOrder { get; set; }
         public DbSet<ServiceOfferingPromoCodeRedemption> ServiceOfferingPromoCodeRedemption { get; set; }
-
         public DbSet<ServiceOfferingPromoCode> ServiceOfferingPromoCode { get; set; }
-        
-
-
-
+        public DbSet<FileDownloadTracker> FileDownloadTracker { get; set; }
         public DbSet<CourseSite> CourseSite { get; set; }
         public DbSet<CoursePage> CoursePage { get; set; }
         public DbSet<CoursePageStatus> CoursePageStatus { get; set; }
@@ -203,13 +190,18 @@ namespace UpDiddyApi.Models
         public DbQuery<JobCountPerProvince> JobCountPerProvince { get; set; }
         public DbQuery<SubscriberSourceDto> SubscriberSourcesDetails { get; set; }
 
+        public DbQuery<SubscriberInitialSourceDto> SubscriberInitialSource { get; set; }
+        public DbQuery<CourseDetailDto> CourseDetails { get; set; }
+
 
 
         public DbQuery<JobDto> SubscriberJobFavorites { get; set; }
         public DbQuery<SubscriberSignUpCourseEnrollmentStatistics> SubscriberSignUpCourseEnrollmentStatistics { get; set; }
+        public DbQuery<SearchTermDto> KeywordSearchTerms { get; set; }
+        public DbQuery<SearchTermDto> LocationSearchTerms { get; set; }
 
         #endregion
- 
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<CourseSite>()

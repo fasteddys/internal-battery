@@ -1,5 +1,4 @@
-﻿using Hangfire;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,7 +34,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <returns></returns>
         public async Task<Dictionary<Subscriber, List<JobPosting>>> GetSubscriberAbandonedJobPostingHistoryByDateAsync(DateTime date)
         {
-            IQueryable<SubscriberAction> subscriberAction = _repositoryWrapper.SubscriberActionRepository.GetAll();           
+            IQueryable<SubscriberAction> subscriberAction = _repositoryWrapper.SubscriberActionRepository.GetAll();
             List<SubscriberAction> todaysActions = await subscriberAction
                 .Where(x => x.EntityType.Name == UpDiddyLib.Helpers.Constants.EventType.JobPosting && x.Action.Name == UpDiddyLib.Helpers.Constants.Action.ApplyJob && x.CreateDate.Date == date.Date)
                 .ToListAsync();
@@ -46,7 +45,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 foreach (int sub in subscribers)
                 {
                     List<SubscriberAction> actions = todaysActions.Where(x => x.SubscriberId == sub).ToList();
-                    Subscriber subscriber = await _repositoryWrapper.Subscriber.GetSubscriberByIdAsync(sub);
+                    Subscriber subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByIdAsync(sub);
                     List<JobPosting> jobPostingList = new List<JobPosting>();
                     foreach (SubscriberAction action in actions)
                     {
@@ -59,7 +58,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                         }
                     }
                     //Add to mapping collection only if there is atleast one job the subscriber applied to without submitting
-                    if(jobPostingList.Count > 0)
+                    if (jobPostingList.Count > 0)
                     {
                         subscribersToJobPostingMapping.Add(subscriber, jobPostingList);
                     }
@@ -79,7 +78,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             JobPosting jobPosting = await _repositoryWrapper.JobPosting.GetJobPostingByGuid(jobGuid);
             Models.Action action = await _repositoryWrapper.ActionRepository.GetByNameAsync(UpDiddyLib.Helpers.Constants.Action.ApplyJob);
             EntityType entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync(EntityTypeConst.JobPosting);
-            Subscriber subscriber = await _repositoryWrapper.Subscriber.GetSubscriberByGuidAsync(subscriberGuid);
+            Subscriber subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
             SubscriberAction subAction = new SubscriberAction()
             {
                 IsDeleted = 0,
@@ -103,11 +102,55 @@ namespace UpDiddyApi.ApplicationCore.Services
             Models.Action action = await _repositoryWrapper.ActionRepository.GetByNameAsync(UpDiddyLib.Helpers.Constants.Action.View);
             EntityType entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync(EntityTypeConst.JobPosting);
 
-            if (jobGuid !=Guid.Empty && subscriberGuid!=Guid.Empty)
+            if (jobGuid != Guid.Empty && subscriberGuid != Guid.Empty)
             {
-                    // invoke the Hangfire job to store the tracking information
-                    _hangfireService.Enqueue<ScheduledJobs>(j => j.TrackSubscriberActionInformation(subscriberGuid, action.ActionGuid, entityType.EntityTypeGuid, jobGuid));
+                // invoke the Hangfire job to store the tracking information
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.TrackSubscriberActionInformation(subscriberGuid, action.ActionGuid, entityType.EntityTypeGuid, jobGuid));
             }
+        }
+
+        public async Task TrackingSubscriberFileDownloadAction(int subscriberId, int fileDownloadTrackerId)
+        {
+            Models.Action action = await _repositoryWrapper.ActionRepository.GetByNameAsync(UpDiddyLib.Helpers.Constants.Action.DownloadGatedFile);
+            EntityType entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync(EntityTypeConst.FileDownloadTracker);
+            Subscriber subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByIdAsync(subscriberId);
+            SubscriberAction subAction = new SubscriberAction()
+            {
+                IsDeleted = 0,
+                CreateDate = DateTime.UtcNow,
+                ModifyDate = null,
+                Action = action,
+                CreateGuid = Guid.Empty,
+                Subscriber = subscriber,
+                SubscriberActionGuid = Guid.NewGuid(),
+                EntityType = entityType,
+                EntityId = fileDownloadTrackerId,
+                ModifyGuid = null,
+                OccurredDate = DateTime.UtcNow
+            };
+            await _repositoryWrapper.SubscriberActionRepository.Create(subAction);
+            await _repositoryWrapper.SubscriberActionRepository.SaveAsync();
+        }
+
+        public async Task TrackSubscriberAction(int subscriberId, Models.Action action, EntityType entityType, int entityId)
+        {
+            Subscriber subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByIdAsync(subscriberId);
+            SubscriberAction subAction = new SubscriberAction()
+            {
+                IsDeleted = 0,
+                CreateDate = DateTime.UtcNow,
+                ModifyDate = null,
+                Action = action,
+                CreateGuid = Guid.Empty,
+                Subscriber = subscriber,
+                SubscriberActionGuid = Guid.NewGuid(),
+                EntityType = entityType,
+                EntityId = entityId,
+                ModifyGuid = null,
+                OccurredDate = DateTime.UtcNow
+            };
+            await _repositoryWrapper.SubscriberActionRepository.Create(subAction);
+            await _repositoryWrapper.SubscriberActionRepository.SaveAsync();
         }
     }
 }

@@ -5,27 +5,28 @@ using System.Threading.Tasks;
 using System.Web;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using Microsoft.EntityFrameworkCore;
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class SubscriberWorkHistoryFactory
     {
 
-        public static SubscriberWorkHistory GetWorkHistoryByGuid(UpDiddyDbContext db, Guid SubcriberWorkHistoryGuid)
+        public static async Task<SubscriberWorkHistory> GetWorkHistoryByGuid(IRepositoryWrapper repositoryWrapper, Guid SubcriberWorkHistoryGuid)
         {
-            return db.SubscriberWorkHistory
+            return await repositoryWrapper.SubscriberWorkHistoryRepository.GetAllWithTracking()
                 .Where(wh => wh.IsDeleted == 0 && wh.SubscriberWorkHistoryGuid == SubcriberWorkHistoryGuid )
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
-        public static SubscriberWorkHistory GetWorkHistoryForSubscriber(UpDiddyDbContext db, Subscriber subscriber, Company company, DateTime? startDate, DateTime? endDate)
+        public static async Task<SubscriberWorkHistory> GetWorkHistoryForSubscriber(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, Company company, DateTime? startDate, DateTime? endDate)
         {
-            return db.SubscriberWorkHistory
+            return await repositoryWrapper.SubscriberWorkHistoryRepository.GetAllWithTracking()
                 .Where(wh => wh.IsDeleted == 0 && wh.CompanyId == company.CompanyId && wh.SubscriberId == subscriber.SubscriberId && wh.StartDate == startDate && wh.EndDate == endDate)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
-        public static async Task<SubscriberWorkHistory> AddWorkHistoryForSubscriber(UpDiddyDbContext db, Subscriber subscriber, SubscriberWorkHistoryDto workHistory, Company company)
+        public static async Task<SubscriberWorkHistory> AddWorkHistoryForSubscriber(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, SubscriberWorkHistoryDto workHistory, Company company)
         {
 
             // html encode title and job description to be consistent with api endpoints that encode to protect again script injection 
@@ -47,8 +48,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     SubscriberWorkHistoryGuid = Guid.NewGuid(),
                     IsDeleted = 0
                 };
-                db.SubscriberWorkHistory.Add(wh);
-                await db.SaveChangesAsync();
+                await repositoryWrapper.SubscriberWorkHistoryRepository.Create(wh);
+                await repositoryWrapper.SubscriberWorkHistoryRepository.SaveAsync();
                 return wh;
             }
             catch

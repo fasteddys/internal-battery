@@ -7,16 +7,9 @@ using UpDiddyLib.Helpers;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.EntityFrameworkCore; 
 using UpDiddyLib.Dto;
-using UpDiddyApi.ApplicationCore.Factory;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
-using UpDiddyApi.ApplicationCore.Services;
-using System.Net;
-using System.Text;
 using Microsoft.Extensions.Configuration;
-using System.Globalization;
-using System.Threading;
-using UpDiddyApi.ApplicationCore.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 
@@ -41,7 +34,7 @@ namespace UpDiddyApi.Helpers.GoogleProfile
                 },
                 updateTime = new Timestamp()
                 {
-                    Seconds = Utils.ToUnixTimeInSeconds(subscriber.ModifyDate.Value),
+                    Seconds = Utils.ToUnixTimeInSeconds(subscriber.ModifyDate.HasValue ? subscriber.ModifyDate.Value : subscriber.CreateDate),
                     Nanos = 0
                 },
                 personNames = MapPersonName(subscriber),

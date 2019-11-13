@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UpDiddyApi.Models;
 using System.Threading.Tasks;
-using UpDiddyLib.Dto.Reporting;
-using Microsoft.AspNet.OData;
-using Microsoft.AspNet.OData.Query;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
@@ -14,5 +10,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task RecordSubscriberApplyActionAsync(Guid jobGuid, Guid subscriberGuid);
         Task<Dictionary<Subscriber, List<JobPosting>>> GetSubscriberAbandonedJobPostingHistoryByDateAsync(DateTime datetime);
         Task TrackingSubscriberJobViewAction(Guid jobGuid, Guid subscriberGuid);
+        Task TrackingSubscriberFileDownloadAction(int subscriberId, int fileDownloadTrackerId);
+        Task TrackSubscriberAction(int subscriberId, Models.Action action, EntityType entityType, int entityId);
     }
 }

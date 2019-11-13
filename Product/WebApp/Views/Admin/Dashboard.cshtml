@@ -44,8 +44,8 @@
                     <div class="card-header">
                         Total User Breakdown By Partner
                     </div>
-                    <div class="card-body p-0" style="max-height: 440px;overflow-y: hidden;">
-                        @Html.React("TotalUserBreakdownByPartner", new { partnerReport=ViewBag.partnerReport })
+                    <div class="card-body p-0" style="max-height: 440px;overflow-y: auto;">
+                        @Html.React("TotalUserBreakdownByPartner", new { partnerReport = ViewBag.partnerReport })
                     </div>
                 </div>
             </div>
@@ -62,6 +62,22 @@
                     </div>
                 </div>
             </div>
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                <div class="card shadow my-3">
+                    <div class="card-header">
+                        Recent Subscribers
+                    </div>
+                    <div class="react-report-table" data-reactroot="">
+                       <div class="advanced-filters-wrapper p-2">
+                           <button class="btn btn-primary ml-0 m-2" onclick="window.location.href='/admin/new-subscriber-csv'" >Download Data
+                        </button>
+                       </div>
+                    </div>                                        
+             
+                </div>
+            </div>
+
+
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                 <div class="card shadow my-3">
                     <div class="card-header">

@@ -1,0 +1,91 @@
+﻿@using UpDiddy.ViewModels
+@using System.Net
+@model SignUpViewModel
+<div id="ExistingUserComponent">
+    <form id="ExistingUserForm" asp-controller="session" asp-action="existing-user-sign-up" data-action="existing-user-sign-up">
+        @if (Model.IsWaitList)
+        {
+            <div id="SignUpFirstName" class="col-12 sign-up-input no-padding">
+                <input class="wide-input" placeholder="Your first name" name="FirstName" asp-for="FirstName" required />
+            </div>
+            <div id="SignUpLastName" class="col-12 sign-up-input no-padding">
+                <input class="wide-input" placeholder="Your last name" name="LastName" asp-for="LastName" required />
+            </div>
+            <div id="SignUpPhone" class="col-12 sign-up-input no-padding">
+                <input class="wide-input" placeholder="Your phone number (optional)" type="text" maxlength="16" name="PhoneNumber" asp-for="PhoneNumber" />
+            </div>
+        }
+        else
+        {
+            if (!string.IsNullOrEmpty(Model.FirstName) && !string.IsNullOrEmpty(Model.LastName))
+            {
+                <div id="SignUpFirstName" class="col-12 sign-up-input no-padding">
+                    <input class="wide-input" placeholder="Your first name" name="FirstName" asp-for="FirstName" disabled />
+                </div>
+                <div id="SignUpLastName" class="col-12 sign-up-input no-padding">
+                    <input class="wide-input" placeholder="Your last name" name="LastName" asp-for="LastName" disabled />
+                </div>
+            }
+            <div id="SignUpEmail" class="col-12 sign-up-input no-padding">
+                <input class="wide-input" type="text" maxlength="16" name="Email" asp-for="Email" disabled />
+            </div>
+        }
+
+
+        <div id="SignUpAction" class="col-12 no-padding">
+            @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
+                Text = @String.IsNullOrEmpty(Model.ExistingUserSubmitButtonText) ? "Sign Up Now" : Model.ExistingUserSubmitButtonText,
+                SkewDirection = "skew-left-to-right",
+                Form = "ExistingUserForm",
+                ChosenColorScheme = "cc-cscheme-darkred",
+                ButtonAction = ActionButtonViewModel.Action.SUBMIT
+            })
+        </div>
+        @Html.HiddenFor(x => Model.IsGatedDownload)
+        @Html.HiddenFor(x => Model.GatedDownloadFileUrl)
+        @Html.HiddenFor(x => Model.GatedFileDownloadMaxAttemptsAllowed)
+        @Html.HiddenFor(x => Model.PartnerGuid)
+        @Html.HiddenFor(x => Model.CampaignSlug)
+        @Html.HiddenFor(x => Model.SubscriberGuid)
+        @Html.HiddenFor(x => Model.Email)
+        @Html.HiddenFor(x => Model.IsWaitList)
+        @if (Model.IsWaitList)
+        {
+            @Html.HiddenFor(x => Model.FirstName)
+            @Html.HiddenFor(x => Model.LastName)
+            @Html.HiddenFor(x => Model.PhoneNumber)
+        }
+    </form>
+    <div class="modal signup-modal text-cc-secondary" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        @if(!String.IsNullOrEmpty(Model.ExistingUserSuccessHeader))
+                        {
+                            @Html.Raw(Model.ExistingUserSuccessHeader);
+                        }
+                        else
+                        {
+                            @Html.Raw("Thank You!");
+                        }
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    @if(!String.IsNullOrEmpty(Model.ExistingUserSuccessText))
+                    {
+                        @Html.Raw(Model.ExistingUserSuccessText);
+                    }
+                    else
+                    {
+                        @Html.Raw("<p>You have signed up successfully.</p>");
+                    }
+                </div>
+                <div class="modal-footer">
+                    <a href="/Home/Profile" class="btn btn-primary">Continue</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

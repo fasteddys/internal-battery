@@ -6,13 +6,90 @@
 	window.onload = function () {
 	   var model = @Html.Raw(Json.Serialize(@Model));
 	   var traitify  = new TraitifyCC(model, this.Traitify);
-	   }
+	  	}
 </script>
+<div id="traitify-hidden-signup-container" style="display:none;" >
+	<div class="traitify-signup-container d-flex align-items-center" style="background-image: url(@Model.SignupFormImageBanner);" >
+		<div class="container">
+			<div class="row">
+				<div class="traitify-signup-band-left col-12 col-md-7 col-lg-8 ">
+					<div class="col-12 hero-header font-bold">
+						<h1>@Model.SignupHeroTitle</h1>
+					</div>
+					<div class="col-12">
+						<div class="d-flex flex-column bd-highlight mb-3 mt-3">
+							@Html.Raw(Model.SignupHeroContent)
+						</div>
+					</div>
+				</div>
+				<div class="traitify-signup-band-right col-12 col-md-5 col-lg-4 no-padding">
+					<div class="traitify-signup-form p-5">
+						<div class="col-12 no-padding sub-header font-bold">
+							@if(string.IsNullOrEmpty(Model.SignupFormHeader))
+							{
+								@Html.Raw("Enter a password");
+							}
+							else
+							{
+								@Html.Raw(Model.SignupFormHeader);
+							}				
+						</div>
+						<div class="col-12 no-padding mini-header">                                                   
+							@if(string.IsNullOrEmpty(Model.SignupFormText))
+							{
+								@Html.Raw("Create an account to get your full result");
+							} 
+							else
+							{
+								@Html.Raw(Model.SignupFormText);
+							}                              
+						</div>
+						<form id="SignUpComponent" asp-controller="traitify" asp-action="createaccount" >
+							<div id="SignUpEmail" class="col-12 sign-up-input no-padding">
+								<input class="wide-input" form="SignUpComponent" id="Email" asp-for="Email"  />
+							</div>	
+							<div id="SignUpPassword" class="col-12 sign-up-input no-padding">
+								<input class="wide-input" placeholder="Password" type="password" form="SignUpComponent" name="Password" asp-for="Password" required />
+							</div>
+							<div id="SignUpPasswordRetype" class="col-12 sign-up-input no-padding">
+								<input class="wide-input" placeholder="Re-enter password" type="password" form="SignUpComponent" name="ReenterPassword" asp-for="ReenterPassword" required />
+							</div>
+							<div class="form-check sign-up-input">
+								<input type="checkbox" class="form-check-input"   id="termsAndConditionsCheck" value="agree" required>
+								<label class="form-check-label text-left" for="termsAndConditionsCheck">I agree to CareerCircle website <a target="_blank" href="/Home/TermsOfService">terms and conditions</a></label>
+							</div>
+							<div>
+								@Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
+								Text =  "Confirm Signup" ,
+								SkewDirection = "skew-left-to-right",
+								ChosenColorScheme = "cc-cscheme-darkred",
+								Form = "SignUpComponent",
+								ButtonAction = ActionButtonViewModel.Action.SUBMIT
+								})
+							</div>				
+							@Html.HiddenFor(x => x.AssessmentId)
+                            @Html.HiddenFor(x => x.PartnerGuid)
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
 <div class="traitify-assessment-container pb-5" id="assessmentContainer">
 	<div id="traitifyInstructions" class="traitify-header">
 		Simply click "Me" or "Not Me" as each image relates to you.
 	</div>
-	<div id="traitify"></div>
+	<div class="traitify-result-container" id="traitify"></div>
+	<div id="resultFooter" class="text-center" style="display:none;" >
+	@if(!Model.IsAuthenticated)
+	{
+		@Html.Raw(Model.ResultFooterText)
+	}
+	</div>
+	
 </div>
 <div class="modal traitify-modal text-cc-secondary" tabindex="-1" role="dialog">
 	<div class="modal-dialog" role="document">
@@ -23,7 +100,9 @@
 			<div class="modal-body">
 				<p>@Html.Raw(Model.ModalText)</p>
 			</div>
-			<div class="modal-footer"> <a href="/" class="btn btn-primary">Continue</a>
+			
+			<div class="modal-footer"> 
+      		  <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
 			</div>
 		</div>
 	</div>

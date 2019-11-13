@@ -17,7 +17,7 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using System.Globalization;
 using System.Threading;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 namespace UpDiddyApi.Helpers.Job
 {
     /// <summary>
@@ -27,9 +27,28 @@ namespace UpDiddyApi.Helpers.Job
     {
         #region Cloud talent job -> CC job helpers
 
+
+        public static JobSummaryViewDto CreateSummaryJobView(CloudTalentSolution.MatchingJob matchingJob)
+        {
+            JobSummaryViewDto rVal = new JobSummaryViewDto();
+ 
+            Guid postingGuid = Guid.Empty;
+            Guid.TryParse(matchingJob.Job.RequisitionId, out postingGuid);
+            rVal.JobPostingGuid = postingGuid; 
+            rVal.CompanyName = matchingJob.Job.CompanyDisplayName;
+            rVal.Title = matchingJob.Job.Title; 
+            rVal.PostingDateUTC = DateTime.Parse(matchingJob.Job.PostingCreateTime.ToString());            
+            // map location that was indexed into google -- do not use a foreach loop since it's sloooooow (might be string concat0
+   
+
+            return rVal;
+        }
+
+
         public static JobViewDto CreateJobView(CloudTalentSolution.MatchingJob matchingJob)
         {
             JobViewDto rVal = new JobViewDto();
+            
             rVal.JobSummary = matchingJob.JobSummary;
             rVal.JobTitleSnippet = matchingJob.SearchTextSnippet;
             rVal.SearchTextSnippet = matchingJob.SearchTextSnippet;
@@ -48,6 +67,56 @@ namespace UpDiddyApi.Helpers.Job
 
             return rVal;
         }
+
+        public static JobSearchSummaryResultDto MapSummarySearchResults(ILogger syslog, IMapper mapper, IConfiguration configuration, CloudTalentSolution.SearchJobsResponse searchJobsResponse, JobQueryDto jobQuery)
+        {
+
+            JobSearchSummaryResultDto rVal = new JobSearchSummaryResultDto();
+            // handle case of no jobs found 
+            if (searchJobsResponse == null || searchJobsResponse.MatchingJobs == null)
+            {
+                rVal.JobCount = 0;
+                rVal.TotalHits = 0;
+                rVal.NumPages = 0;
+                return rVal;
+            }
+
+            rVal.JobCount = searchJobsResponse.MatchingJobs.Count;
+            rVal.TotalHits = searchJobsResponse.TotalSize.Value;
+            rVal.RequestId = searchJobsResponse.Metadata.RequestId;
+            rVal.PageSize = jobQuery.PageSize;
+            rVal.NumPages = rVal.PageSize != 0 ? (int)Math.Ceiling((double)rVal.TotalHits / rVal.PageSize) : 0;
+
+            Dictionary<string,int> JobSkillHistogram = new Dictionary<string,int>();
+            foreach (CloudTalentSolution.MatchingJob j in searchJobsResponse.MatchingJobs)
+            {
+                try
+                {
+                    // Automapper is too slow so do the mapping the old fashion way                    
+                    JobSummaryViewDto jv = CreateSummaryJobView(j); 
+                    if (jobQuery.ExcludeCustomProperties == 0)
+                        JobMappingHelper.MapCustomSummaryJobPostingAttributes(j, jv);
+                    // create a histogram of skill that appear in the job results if the user has requested it or they
+                    // have requested related course (we need this to get related courses)
+                    if ( jobQuery.IncludeCouseSkillsHistogram == 1 )                    
+                        JobMappingHelper.ExtractJobSkills(j, JobSkillHistogram);
+
+                    rVal.Jobs.Add(jv);
+                }
+                catch (Exception e)
+                {
+                    syslog.LogError(e, "JobPostingFactory.MapSearchResults Error mapping job", e, j);
+                }
+            }
+            // sort and return the skills histogram if it was requested 
+            if ( jobQuery.IncludeCouseSkillsHistogram == 1)           
+                rVal.SkillHistogram  = JobSkillHistogram.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+                        
+            if (jobQuery.ExcludeFacets == 0)
+                rVal.Facets = JobMappingHelper.MapFacetsAsQueryStrings(configuration, jobQuery, searchJobsResponse);
+            return rVal;
+        }
+
 
 
 
@@ -99,6 +168,81 @@ namespace UpDiddyApi.Helpers.Job
                 rVal.Facets = JobMappingHelper.MapFacets(configuration, jobQuery, searchJobsResponse);
             return rVal;
         }
+
+
+
+
+        static public List<JobQueryFacetDto> MapFacetsAsQueryStrings(IConfiguration config, JobQueryDto jobQuery, CloudTalentSolution.SearchJobsResponse searchJobsResponse)
+        {
+            List<JobQueryFacetDto> rVal = new List<JobQueryFacetDto>();
+            
+            string JobNavigatorUrl = config["CloudTalent:JobNavigatorUrl"].ToString();   
+            //Culture Info for facets
+            CultureInfo cultureInfo = Thread.CurrentThread.CurrentCulture;
+            TextInfo textInfo = cultureInfo.TextInfo;
+
+            // Map simple histogram results 
+            if (searchJobsResponse.HistogramResults.SimpleHistogramResults != null)
+            {
+                foreach (CloudTalentSolution.HistogramResult hr in searchJobsResponse.HistogramResults.SimpleHistogramResults)
+                {
+
+                    hr.Values = hr.Values.OrderByDescending(o => o.Value).ToDictionary<KeyValuePair<string, int?>, string, int?>(pair => pair.Key, pair => pair.Value); ;
+                    JobQueryFacetDto facet = new JobQueryFacetDto()
+                    {
+                        Name = hr.SearchType
+
+                    };
+                    foreach (var hrValue in hr.Values)
+                    {
+                        JobQueryFacetItemDto facetItem = new JobQueryFacetItemDto()
+                        {
+                            Url = JobUrlHelper.MapFacetToUrlQueryParams(jobQuery, facet.Name, hrValue.Key, JobNavigatorUrl),
+                            Count = hrValue.Value.Value,
+                            UrlParam = hrValue.Key,
+                            Label = textInfo.ToTitleCase(hrValue.Key.ToLower().Replace('_', ' '))
+                        };
+                        facet.Facets.Add(facetItem);
+                    }
+                    rVal.Add(facet);
+                }
+            }
+
+            // map custom facets  
+            // Note: currently not using nor supporting cloud talent custom long facet values
+            if (searchJobsResponse.HistogramResults.CustomAttributeHistogramResults != null)
+            {
+                foreach (CloudTalentSolution.CustomAttributeHistogramResult hr in searchJobsResponse.HistogramResults.CustomAttributeHistogramResults)
+                {
+                    JobQueryFacetDto facet = new JobQueryFacetDto()
+                    {
+                        Name = hr.Key
+
+                    };
+                    if (hr.StringValueHistogramResult != null)
+                    {
+                        foreach (KeyValuePair<string, int?> facetInfo in hr.StringValueHistogramResult)
+                        {
+
+                            JobQueryFacetItemDto facetItem = new JobQueryFacetItemDto()
+                            {
+                                Url = JobUrlHelper.MapFacetToUrlQueryParams(jobQuery, facet.Name, facetInfo.Key, JobNavigatorUrl),
+                                Count = facetInfo.Value.Value,
+                                Label = facetInfo.Key
+
+                            };
+                            facet.Facets.Add(facetItem);
+                        }
+                    }
+                    rVal.Add(facet);
+                }
+            }
+            return rVal;
+        }
+
+
+
+
 
         static public List<JobQueryFacetDto> MapFacets(IConfiguration config, JobQueryDto jobQuery, CloudTalentSolution.SearchJobsResponse searchJobsResponse)
         {
@@ -193,6 +337,48 @@ namespace UpDiddyApi.Helpers.Job
         }
 
 
+        public static void ExtractJobSkills(CloudTalentSolution.MatchingJob matchingJob, Dictionary<string,int> skillList)
+        {
+            // map skills
+            if (matchingJob.Job.CustomAttributes.Keys.Contains("Skills") && matchingJob.Job.CustomAttributes["Skills"] != null)
+            {
+                foreach (string skill in matchingJob.Job.CustomAttributes["Skills"].StringValues)
+                {
+                    if ( ! skillList.ContainsKey(skill) )                    
+                        skillList.Add(skill, 1);                    
+                    else 
+                        skillList[skill] = skillList[skill] + 1;                    
+                }
+               
+            }
+
+        }
+
+
+        public static void MapCustomSummaryJobPostingAttributes(CloudTalentSolution.MatchingJob matchingJob, JobSummaryViewDto jobViewDto)
+        {
+            DateTime dateVal = DateTime.MinValue;
+            // Short circuit if the job has no custom attributes 
+            if (matchingJob.Job.CustomAttributes == null)
+                return;
+
+            // grabs some values needed for semantic url 
+            string Industry = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "Industry");       
+            string JobCategory = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "JobCategory");
+            string Country = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "Country");
+
+
+            // map province 
+            jobViewDto.Province = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "Province");
+            // map city
+            jobViewDto.City = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "City");
+            // map postal code             
+            // semantic url
+            jobViewDto.SemanticJobPath = Utils.CreateSemanticJobPath(Industry, JobCategory, Country, jobViewDto.Province, jobViewDto.City, jobViewDto.JobPostingGuid.ToString());
+
+        }
+
+
         public static void MapCustomJobPostingAttributes(CloudTalentSolution.MatchingJob matchingJob, JobViewDto jobViewDto)
         {
             DateTime dateVal = DateTime.MinValue;
@@ -267,7 +453,7 @@ namespace UpDiddyApi.Helpers.Job
 
         /// <param name="jobPosting"></param>
         /// <returns></returns>
-        static public CloudTalentSolution.Job CreateGoogleJob(UpDiddyDbContext db, JobPosting jobPosting)
+        static public async Task<CloudTalentSolution.Job> CreateGoogleJob(IRepositoryWrapper repositoryWrapper, JobPosting jobPosting)
         {
             // Set default application instructions as required by Google
             CloudTalentSolution.ApplicationInfo applicationInfo = new CloudTalentSolution.ApplicationInfo()
@@ -276,7 +462,7 @@ namespace UpDiddyApi.Helpers.Job
             };
 
             // Create custom job posting attributes 
-            IDictionary<string, CloudTalentSolution.CustomAttribute> customAttributes = CreateGoogleJobCustomAttributes(db, jobPosting);
+            IDictionary<string, CloudTalentSolution.CustomAttribute> customAttributes = await CreateGoogleJobCustomAttributes(repositoryWrapper, jobPosting);
 
             // Set the jobs expire timestamp
             string ExpireTimestamp = Utils.GetTimestampAsString(jobPosting.PostingExpirationDateUTC);
@@ -341,6 +527,9 @@ namespace UpDiddyApi.Helpers.Job
 
         #region Helper functions 
 
+
+       
+
         static private long MapCustomLongAttribute(IDictionary<string, CloudTalentSolution.CustomAttribute> attributes, string attributeName)
         {
             long rVal = 0;
@@ -375,7 +564,7 @@ namespace UpDiddyApi.Helpers.Job
         /// </summary>
         /// <param name="jobPosting"></param>
         /// <returns></returns>
-        static private IDictionary<string, CloudTalentSolution.CustomAttribute> CreateGoogleJobCustomAttributes(UpDiddyDbContext db, JobPosting jobPosting)
+        static private async Task<IDictionary<string, CloudTalentSolution.CustomAttribute>> CreateGoogleJobCustomAttributes(IRepositoryWrapper repositoryWrapper, JobPosting jobPosting)
         {
 
             IDictionary<string, CloudTalentSolution.CustomAttribute> rVal = new Dictionary<string, CloudTalentSolution.CustomAttribute>();
@@ -507,7 +696,7 @@ namespace UpDiddyApi.Helpers.Job
             };
             rVal.Add("TelecommutePercentage", TelecommutePercentage);
 
-            var jobSkills = JobPostingFactory.GetPostingSkills(db, jobPosting);
+            var jobSkills = await JobPostingFactory.GetPostingSkills(repositoryWrapper, jobPosting);
             List<string> skillsList = new List<string>();
             foreach (JobPostingSkill jps in jobSkills)
             {
@@ -581,6 +770,8 @@ namespace UpDiddyApi.Helpers.Job
 
             return rVal;
         }
+        
+        
 
     }
 

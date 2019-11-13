@@ -5,17 +5,19 @@ using System.Text;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class CampaignFactory
     {
 
-        public static Campaign GetCampaignByGuid(UpDiddyDbContext db, Guid campaignGuid )
+        public static async Task<Campaign> GetCampaignByGuid(IRepositoryWrapper repositoryWrapper, Guid campaignGuid)
         {
-            return db.Campaign
+            return await repositoryWrapper.CampaignRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.CampaignGuid == campaignGuid)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
         public static Campaign CreateCampaign(string Name, string Terms, string Description, DateTime StartDate, DateTime EndDate)
         {
@@ -36,7 +38,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         }
 
- 
+
         public static string EnrollmentPromoStatusAsText(EnrollmentDto enrollment)
         {
             string rVal = string.Empty;
@@ -76,38 +78,34 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return rVal;
         }
 
-        public static string OpenOffers(UpDiddyDbContext _db, List<CampaignDto> currentCampaigns, List<EnrollmentDto> enrollments)
+        public static async Task<string> OpenOffers(IRepositoryWrapper repositoryWrapper, List<CampaignDto> currentCampaigns, List<EnrollmentDto> enrollments)
         {
             string rVal = string.Empty;
-            foreach ( CampaignDto c in currentCampaigns) 
-            {    
-                foreach ( CampaignCourseVariantDto ccv in c.CampaignCourseVariant )
-                {                                    
-                    if ( OfferAccepted(ccv,enrollments) == false )
+            foreach (CampaignDto c in currentCampaigns)
+            {
+                foreach (CampaignCourseVariantDto ccv in c.CampaignCourseVariant)
+                {
+                    if (OfferAccepted(ccv, enrollments) == false)
                     {
                         // Create anchor tag to let them navigate to promoted course checkout
-                        string courseSlug = CourseVariantFactory.GetCourseVariantCourseSlug(_db, ccv.CourseVariant.CourseVariantId);
+                        string courseSlug = await CourseVariantFactory.GetCourseVariantCourseSlug(repositoryWrapper, ccv.CourseVariant.CourseVariantId);
                         rVal += c.Description + " <a href='/Course/Checkout/" + courseSlug + "'>click here</a> ";
-                    }                    
-                }               
-            }            
+                    }
+                }
+            }
             return rVal;
         }
 
 
-        public static bool OfferAccepted(CampaignCourseVariantDto campaignCourse, List<EnrollmentDto>  enrollments)
+        public static bool OfferAccepted(CampaignCourseVariantDto campaignCourse, List<EnrollmentDto> enrollments)
         {
             bool rVal = false;
-            foreach ( EnrollmentDto enrollment in enrollments)
+            foreach (EnrollmentDto enrollment in enrollments)
             {
                 if (enrollment.CourseVariantId == campaignCourse.CourseVariant.CourseVariantId)
                     return true;
             }
-
             return rVal;
         }
-
-   
-
     }
 }
