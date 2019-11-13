@@ -31,7 +31,7 @@ namespace UpDiddy.Controllers
         IConfiguration configuration,
         IHostingEnvironment env,
         ILogger<TalentController> sysLog)
-         : base(api,configuration)
+         : base(api, configuration)
         {
             _env = env;
             _sysLog = sysLog;
@@ -279,8 +279,9 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [HttpGet]
+        [Route("/Talent/Subscriber/{subscriberGuid}")]
         [Route("/Talent/Subscriber/{subscriberGuid}/{cloudIdentifier}")]
-        public async Task<IActionResult> SubscriberAsync(Guid subscriberGuid, Guid cloudIdentifier)
+        public async Task<IActionResult> SubscriberAsync(Guid subscriberGuid, Guid? cloudIdentifier = null)
         {
             SubscriberDto subscriber = null;
             SubscriberViewModel subscriberViewModel = null;
@@ -317,8 +318,9 @@ namespace UpDiddy.Controllers
                 }
                 else
                 {
-                    // if we get here, it means that we have an orphaned record in Google that should be deleted
-                    await _Api.DeleteSubscriberAsync(subscriberGuid, cloudIdentifier);
+                    // if we get here, it means that we have an orphaned record in Google that should be deleted (if we have the cloud identifier)
+                    if (cloudIdentifier.HasValue)
+                        await _Api.DeleteSubscriberAsync(subscriberGuid, cloudIdentifier.Value);
                 }
             }
             catch (Exception e)
