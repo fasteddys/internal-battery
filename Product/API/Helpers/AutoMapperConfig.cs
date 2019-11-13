@@ -55,7 +55,7 @@ namespace UpDiddyApi.Helpers
             CreateMap<EducationalInstitution, EducationalInstitutionDto>().ReverseMap();
             CreateMap<EducationalDegree, EducationalDegreeDto>().ReverseMap();
             CreateMap<EducationalDegreeType, EducationalDegreeTypeDto>().ReverseMap();
-            CreateMap<CompensationType, CompensationTypeDto>().ReverseMap();
+            CreateMap<CompensationType, UpDiddyLib.Dto.CompensationTypeDto>().ReverseMap();
             CreateMap<Campaign, CampaignDto>().ReverseMap();
             CreateMap<CampaignCourseVariant, CampaignCourseVariantDto>().ReverseMap();
             CreateMap<RebateType, RebateTypeDto>().ReverseMap();
@@ -65,11 +65,11 @@ namespace UpDiddyApi.Helpers
             CreateMap<CampaignDetail, CampaignDetailDto>().ReverseMap();
             CreateMap<v_SubscriberSources, SubscriberSourceStatisticDto>().ReverseMap();
             CreateMap<SecurityClearance, SecurityClearanceDto>().ReverseMap();
-            CreateMap<EmploymentType, EmploymentTypeDto>().ReverseMap();
+            CreateMap<EmploymentType, UpDiddyLib.Dto.EmploymentTypeDto>().ReverseMap();
             CreateMap<Industry, IndustryDto>().ReverseMap();
 
             CreateMap<JobPostingSkill, JobPostingSkillDto>().ReverseMap();
-            CreateMap<ExperienceLevel, ExperienceLevelDto>().ReverseMap();
+            CreateMap<ExperienceLevel, UpDiddyLib.Dto.ExperienceLevelDto>().ReverseMap();
             CreateMap<EducationLevel, EducationLevelDto>().ReverseMap();
             CreateMap<JobCategory, JobCategoryDto>().ReverseMap();
             CreateMap<JobApplication, JobApplicationDto>().ReverseMap();
