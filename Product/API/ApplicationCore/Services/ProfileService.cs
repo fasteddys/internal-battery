@@ -1,14 +1,7 @@
-﻿using Hangfire;
-using Microsoft.EntityFrameworkCore;
+﻿
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Graph;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Factory;
 using UpDiddyApi.ApplicationCore.Interfaces;
@@ -16,23 +9,13 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
-using UpDiddyLib.Dto;
-using UpDiddyLib.Dto.User;
-using UpDiddyLib.Shared;
-using UpDiddyLib.Helpers;
-using System.Text.RegularExpressions;
-using System.Web;
 using AutoMapper;
-using System.Security.Claims;
-using Microsoft.AspNet.OData.Query;
-using Microsoft.AspNetCore.Http;
 using UpDiddyApi.ApplicationCore.Exceptions;
-using UpDiddyLib.Domain;
 using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
- 
+
     public class ProfileService : IProfileService
     {
 
@@ -48,14 +31,14 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
         public ProfileService(UpDiddyDbContext context,
-    IConfiguration configuration,
-    ICloudStorage cloudStorage,
-    IRepositoryWrapper repository,
-    ILogger<SubscriberService> logger,
-    IMapper mapper,
-    ITaggingService taggingService,
-    IHangfireService hangfireService,
-    ISubscriberService subscriberService)
+        IConfiguration configuration,
+        ICloudStorage cloudStorage,
+        IRepositoryWrapper repository,
+        ILogger<SubscriberService> logger,
+        IMapper mapper,
+        ITaggingService taggingService,
+        IHangfireService hangfireService,
+        ISubscriberService subscriberService)
         {
             _db = context;
             _configuration = configuration;
@@ -73,7 +56,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         #region basic profile 
 
- 
+
         public async Task<SubscribeProfileBasicDto> GetSubscriberProfileBasicAsync(Guid subscriberGuid)
         {
 
@@ -173,13 +156,13 @@ namespace UpDiddyApi.ApplicationCore.Services
                 int? StateId = null;
                 if (string.IsNullOrWhiteSpace(subscribeProfileBasicDto.ProvinceCode) == false)
                 {
-                    State state =  await StateFactory.GetStateByStateCode(_repository, subscribeProfileBasicDto.ProvinceCode);
+                    State state = await StateFactory.GetStateByStateCode(_repository, subscribeProfileBasicDto.ProvinceCode);
                     if (state != null)
                         StateId = state.StateId;
                 }
 
                 // create the user in the CareerCircle database
-                _repository.SubscriberRepository.Create(new Subscriber()
+                await _repository.SubscriberRepository.Create(new Subscriber()
                 {
                     SubscriberGuid = subscribeProfileBasicDto.SubscriberGuid,
                     Auth0UserId = subscribeProfileBasicDto.Auth0UserId,
@@ -231,7 +214,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (Subscriber == null)
                     throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
 
-                rVal = _mapper.Map<SubscriberProfileSocialDto>(Subscriber); 
+                rVal = _mapper.Map<SubscriberProfileSocialDto>(Subscriber);
             }
             catch (Exception e)
             {
@@ -246,13 +229,13 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             try
             {
-                var Subscriber = await _subscriberService.GetSubscriberByGuid(subscribeProfileBasicDto.SubscriberGuid);
+                var Subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
                 if (Subscriber == null)
-                    throw new NotFoundException($"SubscriberGuid {subscribeProfileBasicDto.SubscriberGuid} does not exist exist");
-   
+                    throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
+
                 if (Subscriber.SubscriberGuid != subscriberGuid)
                     throw new InvalidOperationException($"Not owner of profile");
- 
+
                 // update the user in the CareerCircle database 
                 Subscriber.FacebookUrl = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.FacebookUrl) ? subscribeProfileBasicDto.FacebookUrl : null;
                 Subscriber.LinkedInUrl = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.LinkedInUrl) ? subscribeProfileBasicDto.LinkedInUrl : null;
@@ -276,22 +259,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             return true;
         }
 
-
         #endregion
 
-
-
-
-
-
-
     }
-
-
-
-
-
-
-
 
 }
