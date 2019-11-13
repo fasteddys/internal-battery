@@ -280,6 +280,9 @@ namespace UpDiddyApi
             services.AddScoped<IKeywordService, KeywordService>();
             services.AddScoped<ICountryService, CountryService>();
             services.AddScoped<IStateService, StateService>();
+            services.AddScoped<IEmploymentTypeService, EmploymentTypeService>();
+            services.AddScoped<IExperienceLevelService, ExperienceLevelService>();
+            services.AddScoped<ICompensationTypeService, CompensationTypeService>();
 
             #endregion
 
