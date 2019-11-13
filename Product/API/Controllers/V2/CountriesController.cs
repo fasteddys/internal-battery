@@ -41,7 +41,7 @@ namespace UpDiddyApi.Controllers
         {
             //TODO - Protect this endpoint
             await _countryService.UpdateCountry(country, countryDetailDto);
-            return StatusCode(204);
+            return StatusCode(200);
         }
 
         [HttpDelete]
@@ -87,7 +87,7 @@ namespace UpDiddyApi.Controllers
         {
             //TODO - Protect this endpoint
             await _stateService.UpdateState(country, state, stateDetailDto);
-            return StatusCode(204);
+            return StatusCode(200);
         }
 
         [HttpDelete]

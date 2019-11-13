@@ -19,8 +19,7 @@ using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Domain;
-using Microsoft.AspNetCore.Http;
-
+using System.Collections.Generic;
 
 namespace UpDiddyApi.Controllers.V2
 {
@@ -47,14 +46,15 @@ namespace UpDiddyApi.Controllers.V2
         private readonly IProfileService _profileService;
         private readonly IResumeService _resumeService;
 
+        private readonly ISkillService _skillservice;
+
 
         #region constructor 
-        public ProfilesController(IServiceProvider services, IHangfireService hangfireService, ICloudTalentService cloudTalentService, IResumeService resumeService)
+        public ProfilesController(IServiceProvider services, IHangfireService hangfireService, ICloudTalentService cloudTalentService, IResumeService resumeService, ISkillService skillservice)
 
 
         {
             _services = services;
-
             _db = _services.GetService<UpDiddyDbContext>();
             _mapper = _services.GetService<IMapper>();
             _configuration = _services.GetService<Microsoft.Extensions.Configuration.IConfiguration>();
@@ -72,6 +72,7 @@ namespace UpDiddyApi.Controllers.V2
             _hangfireService = hangfireService;
             _profileService = _services.GetService<IProfileService>();
             _resumeService = resumeService;
+            _skillservice = skillservice;
         }
 
         #endregion
@@ -80,7 +81,6 @@ namespace UpDiddyApi.Controllers.V2
 
         #region social profile 
 
-
         [HttpPut]
         [Authorize]
         [Route("/V2/[controller]/socials")]
@@ -88,7 +88,7 @@ namespace UpDiddyApi.Controllers.V2
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             await _profileService.UpdateSubscriberProfileSocialAsync(subscribeProfileSocialDto, subscriberGuid);
-            return StatusCode(210);
+            return StatusCode(200);
         }
 
 
@@ -98,26 +98,20 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<SubscriberProfileSocialDto> GetSocialProfile()
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            return ( await _profileService.GetSubscriberProfileSocialAsync(subscriberGuid) );
-            
+            return (await _profileService.GetSubscriberProfileSocialAsync(subscriberGuid));
         }
 
-
-
-
         #endregion
-
-
 
         #region basic profile
 
         [HttpPost]
         [Authorize]
         [Route("/V2/[controller]")]
-        public async Task<IActionResult> AddProfile([FromBody] SubscribeProfileBasicDto subscribeProfileBasicDto )
+        public async Task<IActionResult> AddProfile([FromBody] SubscribeProfileBasicDto subscribeProfileBasicDto)
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _profileService.CreateNewSubscriberAsync(subscribeProfileBasicDto); 
+            await _profileService.CreateNewSubscriberAsync(subscribeProfileBasicDto);
             return StatusCode(201);
         }
 
@@ -138,7 +132,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("/V2/[controller]/{subscriberGuid}")]
         public async Task<SubscribeProfileBasicDto> GetProfile(Guid subscriberGuid)
         {
-            return ( await _profileService.GetSubscriberProfileBasicAsync(subscriberGuid));            
+            return (await _profileService.GetSubscriberProfileBasicAsync(subscriberGuid));
         }
 
 
@@ -154,7 +148,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> AddProfileEducationHistory([FromBody] SubscriberEducationHistoryDto subscriberEducationHistoryDto)
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _subscriberEducationalHistoryService.CreateEducationalHistory(subscriberEducationHistoryDto,subscriberGuid);
+            await _subscriberEducationalHistoryService.CreateEducationalHistory(subscriberEducationHistoryDto, subscriberGuid);
             return StatusCode(201);
         }
 
@@ -242,7 +236,7 @@ namespace UpDiddyApi.Controllers.V2
         #endregion
 
         #region Resume
-        
+
         [HttpGet]
         [Authorize]
         [Route("/V2/[controller]/resume")]
@@ -265,6 +259,29 @@ namespace UpDiddyApi.Controllers.V2
 
         #endregion
 
+        #region Skills
+
+        [HttpGet]
+        [Route("/V2/[controller]/skills")]
+        [Authorize]
+        public async Task<IActionResult> GetSubscriberSkills()
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var skills = await _skillservice.GetSkillsBySubscriberGuid(subscriberGuid);
+            return Ok(skills);
+        }
+
+        [HttpPut]
+        [Route("/V2/[controller]/skills")]
+        [Authorize]
+        public async Task<IActionResult> UpdateSubscriberSkills([FromBody] List<string> skills)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _skillservice.UpdateSubscriberSkills(subscriberGuid, skills);
+            return StatusCode(200);
+        }
+
+        #endregion
 
     }
-} 
+}

@@ -37,11 +37,66 @@ namespace UpDiddyApi.ApplicationCore.Services
             _subscriberService = subscriberService;
         }
 
+        public async Task<List<SkillDto>> GetSkills(int limit, int offset, string sort, string order)
+        {
+            var skills = await _repositoryWrapper.SkillRepository.GetByConditionWithSorting(x => x.IsDeleted == 0, limit, offset, sort, order);
+            if (skills == null)
+                throw new NotFoundException("Skills not found");
+            return _mapper.Map<List<SkillDto>>(skills);
+        }
+
+        public async Task<SkillDto> GetSkill(Guid skillGuid)
+        {
+            var skill = await _repositoryWrapper.SkillRepository.GetByGuid(skillGuid);
+            if (skill == null)
+                throw new NotFoundException("Skill not found");
+            return _mapper.Map<SkillDto>(skill);
+        }
+
+        public async Task CreateSkill(SkillDto skillDto)
+        {
+            if (skillDto == null)
+                throw new NullReferenceException("SkillDto cannot be null");
+            Skill skill = _mapper.Map<Skill>(skillDto);
+            skill.CreateDate = DateTime.UtcNow;
+            skill.SkillGuid = Guid.NewGuid();
+            await _repositoryWrapper.SkillRepository.Create(skill);
+            await _repositoryWrapper.SaveAsync();
+        }
+
+        public async Task UpdateSkill(Guid skillGuid, SkillDto skillDto)
+        {
+            if (skillDto == null || skillGuid == null || skillGuid == Guid.Empty)
+                throw new NullReferenceException("SkillDto cannot be null");
+            Skill skill = await _repositoryWrapper.SkillRepository.GetByGuid(skillGuid);
+            if (skill == null)
+                throw new NotFoundException("Skill not found");
+            skill.SkillName = skillDto.Name;
+            skill.ModifyDate = DateTime.UtcNow;
+            await _repositoryWrapper.SaveAsync();
+        }
+
+        public async Task DeleteSkill(Guid skillGuid)
+        {
+            if (skillGuid == null || skillGuid == Guid.Empty)
+                throw new NullReferenceException("SkillDto cannot be null");
+            Skill skill = await _repositoryWrapper.SkillRepository.GetByGuid(skillGuid);
+            if (skill == null)
+                throw new NotFoundException("Skill not found");
+            skill.ModifyDate = DateTime.UtcNow;
+            skill.IsDeleted = 1;
+            await _repositoryWrapper.SaveAsync();
+        }
+
 
         public async Task<List<SkillDto>> GetSkillsBySubscriberGuid(Guid subscriberGuid)
         {
-            var entity = await _repositoryWrapper.SkillRepository.GetBySubscriberGuid(subscriberGuid);
-            return _mapper.Map<List<Skill>, List<SkillDto>>(entity);
+            if (subscriberGuid == null || subscriberGuid == Guid.Empty)
+                throw new NullReferenceException("SubscriberGuid cannot be null");
+            var skills = await _repositoryWrapper.SkillRepository.GetBySubscriberGuid(subscriberGuid);
+            if (skills == null)
+                throw new NotFoundException("Skill not found");
+            return _mapper.Map<List<Skill>, List<SkillDto>>(skills);
         }
 
         public async Task UpdateSubscriberSkills(Guid subscriberGuid, List<string> skills)

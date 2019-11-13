@@ -15,6 +15,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<IEnumerable<TEntity>> GetByConditionAsync(Expression<Func<TEntity,bool>> expression);
         Task<IEnumerable<TEntity>> GetByConditionWithSorting(Expression<Func<TEntity, bool>> expression, int limit, int offset, string sort, string order);
         Task<TEntity> GetById(int id);
+        Task<TEntity> GetByGuid(Guid guid);
         Task Create(TEntity entity);
         Task CreateRange(TEntity[] entity);
         void Update(TEntity entity);

@@ -1,22 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using UpDiddyApi.Models;
-
-using Microsoft.AspNetCore.Authorization;
-
-using System.Security.Claims;
 using UpDiddyLib.Domain.Models;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
-
+using Microsoft.AspNetCore.Authorization;
 namespace UpDiddyApi.Controllers
 {
     [ApiController]
@@ -41,22 +32,45 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet]
         [Route("/V2/[controller]/")]
-        [Authorize]
-        public async Task<IActionResult> GetSkills()
+        public async Task<IActionResult> GetSkills(int limit, int offset, string sort, string order)
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var skills = await _skillservice.GetSkillsBySubscriberGuid(subscriberGuid);
-            return Ok(skills);             
+            var skills = await _skillservice.GetSkills(limit, offset, sort, order);
+            return Ok(skills);
+        }
+
+        [HttpGet]
+        [Route("/V2/[controller]/{skill}")]
+        public async Task<IActionResult> GetSkill(Guid skill)
+        {
+            var result = await _skillservice.GetSkill(skill);
+            return Ok(result);
         }
 
         [HttpPut]
-        [Route("/V2/[controller]/")]
-        [Authorize]
-        public async Task<IActionResult> UpdateSubscriberSkills([FromBody] List<string> skills)
+        [Route("/V2/[controller]/{skill}")]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        public async Task<IActionResult> UpdateSkill(Guid skill, SkillDto skillDto)
         {
-             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-             await _skillservice.UpdateSubscriberSkills(subscriberGuid, skills);
-             return StatusCode(201);
+            await _skillservice.UpdateSkill(skill, skillDto);
+            return StatusCode(200);
+        }
+
+        [HttpDelete]
+        [Route("/V2/[controller]/{skill}")]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        public async Task<IActionResult> DeleteSkill(Guid skill, SkillDto skillDto)
+        {
+            await _skillservice.UpdateSkill(skill, skillDto);
+            return StatusCode(204);
+        }
+
+        [HttpPost]
+        [Route("/V2/[controller]/{skill}")]
+        [Authorize]
+        public async Task<IActionResult> CreateSkill(Guid skill, SkillDto skillDto)
+        {
+            await _skillservice.CreateSkill(skillDto);
+            return StatusCode(201);
         }
     }
 }

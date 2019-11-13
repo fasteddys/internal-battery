@@ -48,39 +48,50 @@ namespace UpDiddyApi.ApplicationCore.Repository
                              .Where(expression)
                              .ToListAsync();
         }
-        
+
         public async Task<IEnumerable<TEntity>> GetByConditionWithSorting(Expression<Func<TEntity, bool>> expression, int limit, int offset, string sort, string order)
         {
-            System.Reflection.PropertyInfo sortProp = typeof(TEntity).GetProperty(sort, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+            PropertyInfo sortProp = typeof(TEntity).GetProperty(sort, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
             List<TEntity> entity = new List<TEntity>();
             switch (order)
             {
                 case "descending":
                     entity = await _dbContext.Set<TEntity>()
+                    .AsNoTracking()
                     .OrderByDescending(x => sortProp.GetValue(x, null))
-                    .Where(expression)                   
+                    .Where(expression)
                     .Skip(offset)
                     .Take(limit)
                     .ToListAsync();
                     break;
                 default:
                     entity = await _dbContext.Set<TEntity>()
+                    .AsNoTracking()
                     .OrderBy(x => sortProp.GetValue(x, null))
                     .Where(expression)
                     .Skip(offset)
-                    .Take(limit)                   
+                    .Take(limit)
                     .ToListAsync();
                     break;
             }
+
             return entity;
         }
-
 
         public async Task<TEntity> GetById(int id)
         {
             return await this._dbContext
             .Set<TEntity>()
             .FindAsync(id);
+        }
+
+        public async Task<TEntity> GetByGuid(Guid guid)
+        {
+            string entityGuidName = typeof(TEntity).Name + "Guid";
+            PropertyInfo prop = typeof(TEntity).GetProperty(entityGuidName);
+            return await _dbContext.Set<TEntity>()
+             .Where(x => (Guid)prop.GetValue(x, null) == guid)
+             .FirstOrDefaultAsync();
         }
 
         public async Task ExecuteSQL(string sql)
