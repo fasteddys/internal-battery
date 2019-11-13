@@ -117,7 +117,7 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> DeletePartnerAsync(Guid PartnerGuid);
         Task<IList<NotificationDto>> GetNotificationsAsync();
         Task<NotificationDto> GetNotificationAsync(Guid notificationGuid);
-        Task<NotificationDto> CreateNotificationAsync(NotificationDto notificationDto);
+        Task<NewNotificationDto> CreateNotificationAsync(NewNotificationDto newNotificationDto);
         Task<BasicResponseDto> UpdateNotificationAsync(NotificationDto notificationDto);
         Task<BasicResponseDto> DeleteNotificationAsync(Guid NotificationGuid);
         Task<BasicResponseDto> UpdateSubscriberNotificationAsync(Guid SubscriberGuid, NotificationDto notificationDto);
@@ -127,6 +127,8 @@ namespace UpDiddy.Api
         Task<IList<JobSiteScrapeStatisticDto>> JobScrapeStatisticsSearchAsync(int numRecords);
         Task<List<JobPostingCountReportDto>> GetActiveJobPostCountPerCompanyByDatesAsynch(DateTime? startPostDate, DateTime? endPostDate);
         Task<List<FailedSubscriberDto>> GetFailedSubscribersSummaryAsync();
+        Task<List<GroupDto>> GetGroupsAsync();
+
         #endregion
 
         #region Marketing

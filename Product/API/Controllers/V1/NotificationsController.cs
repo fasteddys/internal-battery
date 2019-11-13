@@ -15,6 +15,8 @@ using UpDiddyLib.Dto;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Workflow;
+using UpDiddyApi.Workflow.Helpers;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
 
 namespace UpDiddyApi.Controllers
 {
@@ -29,6 +31,7 @@ namespace UpDiddyApi.Controllers
         private ICloudStorage _cloudStorage;
         private IHangfireService _hangfireService;
         private readonly IRepositoryWrapper _repositoryWrapper;
+        private readonly ISubscriberService _subscriberService;
 
 
         public NotificationsController(UpDiddyDbContext db,
@@ -39,7 +42,8 @@ namespace UpDiddyApi.Controllers
             ICloudStorage cloudStorage,
             IAuthorizationService authorizationService,
             IRepositoryWrapper repositoryWrapper,
-            IHangfireService hangfireService)
+            IHangfireService hangfireService,
+            ISubscriberService subscriberService)
         {
             _db = db;
             _mapper = mapper;
@@ -49,6 +53,7 @@ namespace UpDiddyApi.Controllers
             _authorizationService = authorizationService;
             _repositoryWrapper = repositoryWrapper;
             _hangfireService = hangfireService;
+            _subscriberService = subscriberService;
         }
 
         [HttpGet]
@@ -68,8 +73,9 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateNotification([FromBody] NotificationDto notificationDto)
+        public async Task<IActionResult> CreateNotification([FromBody] NewNotificationDto newNotificationDto)
         {
+            NotificationDto notificationDto = newNotificationDto.NotificationDto;
             // Ensure required information is present prior to creating new partner
             if (notificationDto == null || string.IsNullOrEmpty(notificationDto.Title) || string.IsNullOrEmpty(notificationDto.Description))
             {
@@ -87,7 +93,7 @@ namespace UpDiddyApi.Controllers
                 notification.Title = notificationDto.Title;
                 notification.Description = notificationDto.Description;
                 notification.NotificationGuid = NewNotificationGuid;
-                notification.IsTargeted = notificationDto.IsTargeted;
+                notification.IsTargeted = notificationDto.IsTargeted == true ? 1 : 0;
                 notification.ExpirationDate = notificationDto.ExpirationDate;
                 notification.CreateDate = CurrentDateTime;
                 notification.ModifyDate = CurrentDateTime;
@@ -98,9 +104,9 @@ namespace UpDiddyApi.Controllers
                 await _repositoryWrapper.NotificationRepository.SaveAsync();
 
                 Notification NewNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == NewNotificationGuid).Result.FirstOrDefault();
-                //_hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, null));
-                _hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, null));
-                return Created(_configuration["Environment:ApiUrl"] + "notification/" + notification.NotificationGuid, _mapper.Map<NotificationDto>(notification));
+                IList<Subscriber> Subscribers = await _subscriberService.GetSubscribersInGroupAsync(newNotificationDto.GroupGuid);
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, Subscribers));
+                return Created(_configuration["Environment:ApiUrl"] + "notification/" + notification.NotificationGuid, new NewNotificationDto{NotificationDto = _mapper.Map<NotificationDto>(notification)} );
             }
             else
                 return Unauthorized();
@@ -124,7 +130,7 @@ namespace UpDiddyApi.Controllers
 
                 ExistingNotification.Title = NewNotificationDto.Title;
                 ExistingNotification.Description = NewNotificationDto.Description;
-                ExistingNotification.IsTargeted = NewNotificationDto.IsTargeted;
+                ExistingNotification.IsTargeted = NewNotificationDto.IsTargeted == true ? 1 : 0;
                 ExistingNotification.ExpirationDate = NewNotificationDto.ExpirationDate;
                 ExistingNotification.ModifyDate = DateTime.UtcNow;
 

@@ -1574,16 +1574,13 @@ namespace UpDiddy.Api
             return await GetAsync<IList<NotificationDto>>("notifications");
         }
 
-        public async Task<NotificationDto> CreateNotificationAsync(NotificationDto notificationDto)
+        public async Task<NewNotificationDto> CreateNotificationAsync(NewNotificationDto newNotificationDto)
         {
-            // Create the new partner and store it for return
-            NotificationDto newNotification = await PostAsync<NotificationDto>("notifications", notificationDto);
+            NewNotificationDto newNotification = await PostAsync<NewNotificationDto>("notifications", newNotificationDto);
 
-            // Reset the cached partners list to contain the new partner
             string cacheKey = $"Notifications";
             RemoveCachedValue<IList<NotificationDto>>(cacheKey);
 
-            // Return the newly created partner
             return newNotification;
         }
 
@@ -1644,6 +1641,10 @@ namespace UpDiddy.Api
         public async Task<List<FailedSubscriberDto>> GetFailedSubscribersSummaryAsync()
         {
             return await GetAsync<List<FailedSubscriberDto>>("subscriber/failed-subscribers");
+        }
+
+        public async Task<List<GroupDto>> GetGroupsAsync(){
+            return await GetAsync<List<GroupDto>>("groups");
         }
 
         #endregion
