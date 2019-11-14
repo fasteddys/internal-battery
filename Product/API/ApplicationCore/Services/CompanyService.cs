@@ -33,7 +33,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var company = _mapper.Map<Company>(companyDto);
             company.CompanyGuid = Guid.NewGuid();
             company.CreateDate = DateTime.Now;
-            company.LogoUrl = null;
+            company.LogoUrl = string.Empty;
             BaseModelFactory.SetDefaultsForAddNew(company);
             await _repositoryWrapper.Company.AddCompany(company);
         }
