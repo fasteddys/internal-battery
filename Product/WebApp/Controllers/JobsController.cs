@@ -354,7 +354,6 @@ namespace UpDiddy.Controllers
                 EmployeeType = job.EmploymentType?.Name,
                 Summary = job.Description,
                 ThirdPartyIdentifier = job.ThirdPartyIdentifier,
-                CompanyBoilerplate = job.Company.JobPageBoilerplate,
                 IsThirdPartyJob = job.ThirdPartyApply,
                 MetaDescription = job.MetaDescription,
                 MetaTitle = job.MetaTitle,
