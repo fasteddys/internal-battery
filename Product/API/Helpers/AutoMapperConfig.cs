@@ -182,7 +182,7 @@ namespace UpDiddyApi.Helpers
             CreateMap<CourseVariant, CourseVariantDto>()
                 .ForMember(cv => cv.CourseVariantType, opt => opt.MapFrom(src => src.CourseVariantType))
                 .ReverseMap();
-            CreateMap<Subscriber, SubscriberDto>()
+            CreateMap<Subscriber, UpDiddyLib.Dto.SubscriberDto>()
                 .ForMember(s => s.Enrollments, opt => opt.MapFrom(src => src.Enrollments))
                 .ForMember(s => s.Skills, opt => opt.MapFrom(src => src.SubscriberSkills.Select(ss => ss.Skill)))
                 .ForMember(s => s.WorkHistory, opt => opt.MapFrom(src => src.SubscriberWorkHistory))

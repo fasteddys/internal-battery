@@ -75,6 +75,32 @@ namespace UpDiddyApi.Controllers
             }
         }
 
+        [HttpGet("thing")]
+        public async Task<IActionResult> Derp()
+        {
+            dynamic response = new { subscriberGuid = Guid.NewGuid() };
+            return Ok(response);
+        }
+
+        // todo: need to secure this endpoint in some fashion - don't want just anyone to be able to create subscriber records
+        [HttpPost("new-user")]
+        public async Task<IActionResult> NewUser([FromBody] EmailDto emailDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            var getUserResponse = await _userService.GetUserByEmailAsync(emailDto.Email);
+            if (getUserResponse.Success && getUserResponse.User != null)
+            {
+                return Conflict();
+            }
+            else
+            {
+                // todo: create the user instead of returning a meaningless guid
+                return Ok(new { subscriberGuid = Guid.NewGuid() });
+            }
+        }
+
         [HttpPost("check-adb2c-login")]
         [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
         public async Task<IActionResult> CheckADB2CLogin([FromBody] UserDto userDto)
@@ -95,11 +121,11 @@ namespace UpDiddyApi.Controllers
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = "This login is not valid for ADB2C." });
             }
         }
-        
+
         [HttpPost("migrate-user")]
         [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
         public async Task<IActionResult> MigrateUserAsync([FromBody] CreateUserDto createUserDto)
-        {   
+        {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -118,7 +144,7 @@ namespace UpDiddyApi.Controllers
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = "The user was not migrated successfully." });
             }
         }
-        
+
         [HttpPost("create-user")]
         [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
         public async Task<IActionResult> CreateUserAsync([FromBody] CreateUserDto createUserDto)

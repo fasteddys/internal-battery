@@ -20,6 +20,14 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     public interface ISubscriberService
     {
         /// <summary>
+        /// This method is intended to be used in conjunction with the pre user registration hook in Auth0
+        /// once the new site launches and ADB2C is no longer referenced anywhere in the project.
+        /// </summary>
+        /// <param name="subscriberDto"></param>
+        /// <returns></returns>
+        Task<Guid> CreateSubscriberAsync(UpDiddyLib.Domain.Models.SubscriberDto subscriberDto);
+
+        /// <summary>
         /// Updates the subscriber notification email setting.
         /// </summary>
         /// <param name="subscriberGuid"></param>
