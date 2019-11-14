@@ -283,6 +283,7 @@ namespace UpDiddyApi
             services.AddScoped<IEmploymentTypeService, EmploymentTypeService>();
             services.AddScoped<IExperienceLevelService, ExperienceLevelService>();
             services.AddScoped<ICompensationTypeService, CompensationTypeService>();
+            services.AddScoped<ISecurityClearanceService, SecurityClearanceService>();
 
             #endregion
 

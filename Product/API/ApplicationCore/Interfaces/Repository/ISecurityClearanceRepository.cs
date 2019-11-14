@@ -8,5 +8,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface ISecurityClearanceRepository : IUpDiddyRepositoryBase<SecurityClearance>
     {
+        Task<List<SecurityClearance>> GetAllSecurityClearances();
     }
 }
