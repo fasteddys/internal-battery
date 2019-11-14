@@ -82,9 +82,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
             int compensationTypeId = 0;
-            if ( WorkHistoryDto.CompensationType != null )
+            if ( WorkHistoryDto.CompensationTypeGuid != null )
             {
-                CompensationType compensationType = await CompensationTypeFactory.GetCompensationTypeByName(_repository, WorkHistoryDto.CompensationType);
+                CompensationType compensationType = await _repository.CompensationTypeRepository.GetByGuid(WorkHistoryDto.CompensationTypeGuid);
 
                 if (compensationType == null)
                     compensationType = await CompensationTypeFactory.GetOrAdd(_repository, UpDiddyLib.Helpers.Constants.NotSpecifedOption);

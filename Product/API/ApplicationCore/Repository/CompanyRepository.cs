@@ -42,5 +42,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
             Update(company);
             await SaveAsync();
         }
+
+        public async Task<List<Company>> GetAllCompanyEntities()
+        {
+            return await (from e in _dbContext.Company
+                          where e.IsDeleted == 0
+                          select e ).ToListAsync();
+        }
     }
 }

@@ -17,9 +17,9 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCompensationTypes()
+        public async Task<IActionResult> GetCompensationTypes(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var compensationTypes = await _compensationTypeService.GetCompensationTypes();
+            var compensationTypes = await _compensationTypeService.GetCompensationTypes(limit, offset, sort, order);
             return Ok(compensationTypes);
         }
 
@@ -27,7 +27,7 @@ namespace UpDiddyApi.Controllers
         [Route("{compensationType}")]
         public async Task<IActionResult> GetCompensationType(Guid compensationType)
         {
-            var result  = await _compensationTypeService.GetCompensationType(compensationType);
+            var result = await _compensationTypeService.GetCompensationType(compensationType);
             return Ok(result);
         }
 
@@ -56,6 +56,6 @@ namespace UpDiddyApi.Controllers
             await _compensationTypeService.CreateCompensationType(compensationTypeDto);
             return StatusCode(201);
         }
-       
+
     }
 }

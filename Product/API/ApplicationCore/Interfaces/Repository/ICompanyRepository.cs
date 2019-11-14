@@ -12,5 +12,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task AddCompany(Company company);
         Task<Company> GetCompanyByCompanyGuid(Guid companyGuid);
         Task UpdateCompany(Company company);
+        Task<List<Company>> GetAllCompanyEntities();
     }
 }

@@ -164,7 +164,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // create the user in the CareerCircle database
                 await _repository.SubscriberRepository.Create(new Subscriber()
                 {
-                    SubscriberGuid = subscribeProfileBasicDto.SubscriberGuid,
+                    //TODO: Need to revisit the guid creation later to make sure it's in line with the auth0 process
+                    SubscriberGuid = Guid.NewGuid(),
                     Auth0UserId = subscribeProfileBasicDto.Auth0UserId,
                     Email = subscribeProfileBasicDto.Email,
                     FirstName = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.FirstName) ? subscribeProfileBasicDto.FirstName : null,
