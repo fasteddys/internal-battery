@@ -17,9 +17,9 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetEmploymentTypes()
+        public async Task<IActionResult> GetEmploymentTypes(int limit, int offset, string sort, string order)
         {
-            var employmentTypes = await _employmentTypeService.GetEmploymentTypes();
+            var employmentTypes = await _employmentTypeService.GetEmploymentTypes(limit, offset, sort, order);
             return Ok(employmentTypes);
         }
 
@@ -27,7 +27,7 @@ namespace UpDiddyApi.Controllers
         [Route("{employmentType}")]
         public async Task<IActionResult> GetEmploymentType(Guid employmentType)
         {
-            var result  = await _employmentTypeService.GetEmploymentType(employmentType);
+            var result = await _employmentTypeService.GetEmploymentType(employmentType);
             return Ok(result);
         }
 
@@ -55,6 +55,6 @@ namespace UpDiddyApi.Controllers
         {
             await _employmentTypeService.CreateEmploymentType(employmentTypeDto);
             return StatusCode(201);
-        }    
+        }
     }
 }
