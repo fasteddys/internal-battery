@@ -55,7 +55,7 @@ public class ExceptionMiddleware
         }
         catch (Exception ex)
         {
-            await CreateResponse(400, ex, context);
+            await CreateResponse(500, ex, context);
             _logger.Log(LogLevel.Error, $"Unhandled exception thrown -> {ex.InnerException}");
             throw;
         }

@@ -42,7 +42,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 JobQueryDto jobQueryDto = CreateJobQueryDto(jobAlertDto);
                 var alerts = await _repositoryWrapper.JobPostingAlertRepository.GetAllJobPostingAlertsBySubscriber(subscriberGuid);
 
-                if (alerts.ToList().Count >= 4)
+                if (alerts.ToList().Count >= 5)
                     throw new MaximumReachedException("Subscriber has exceeded the maximum number of job exception");
 
                 DateTime localExecutionDate = CreateLocalExecutionDate(jobAlertDto.Frequency, jobAlertDto.ExecutionDayOfWeek);
