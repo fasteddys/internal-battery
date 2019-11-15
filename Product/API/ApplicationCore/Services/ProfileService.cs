@@ -87,7 +87,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             try
             {
-                var Subscriber = await _subscriberService.GetSubscriberByGuid(subscribeProfileBasicDto.SubscriberGuid);
+                var Subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
                 if (Subscriber == null)
                     throw new NotFoundException($"SubscriberGuid {subscribeProfileBasicDto.SubscriberGuid} does not exist exist");
 
@@ -124,7 +124,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 await _repository.SubscriberRepository.SaveAsync();
 
                 // add the user to the Google Talent Cloud
-                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscribeProfileBasicDto.SubscriberGuid));
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriberGuid));
 
             }
             catch (Exception e)
