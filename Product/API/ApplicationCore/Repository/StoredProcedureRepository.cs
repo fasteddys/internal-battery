@@ -19,35 +19,35 @@ namespace UpDiddyApi.ApplicationCore.Repository
             _dbContext = dbContext;
         }
 
- 
 
 
 
 
-        public async Task<List<CourseDetailDto>> GetCoursesBySkillHistogram(Dictionary<string,int> SkillHistogram, int NumCourses)
+
+        public async Task<List<CourseDetailDto>> GetCoursesBySkillHistogram(Dictionary<string, int> SkillHistogram, int NumCourses)
         {
             List<CourseDetailDto> rval = null;
 
             DataTable table = new DataTable();
             table.Columns.Add("Skill", typeof(string));
             table.Columns.Add("Occurences", typeof(int));
-                  
-            foreach ( KeyValuePair<string,int> SkillInfo in SkillHistogram)
+
+            foreach (KeyValuePair<string, int> SkillInfo in SkillHistogram)
             {
                 DataRow row = table.NewRow();
                 row["Skill"] = SkillInfo.Key;
                 row["Occurences"] = SkillInfo.Value;
                 table.Rows.Add(row);
             }
-    
+
 
             var Skills = new SqlParameter("@SkillHistogram", table);
             Skills.SqlDbType = SqlDbType.Structured;
             Skills.TypeName = "dbo.SkillHistogram";
 
-            var spParams = new object[] { Skills, new SqlParameter("@MaxResults", NumCourses) }; 
+            var spParams = new object[] { Skills, new SqlParameter("@MaxResults", NumCourses) };
             rval = await _dbContext.CourseDetails.FromSql<CourseDetailDto>("System_Get_RelatedCoursesBySkills @SkillHistogram,@MaxResults", spParams).ToListAsync();
-             
+
             return rval;
         }
 
@@ -66,9 +66,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
 
 
-        public async Task<List<CourseDetailDto>> GetCoursesForJob( Guid JobGuid, int NumCourses)
+        public async Task<List<CourseDetailDto>> GetCoursesForJob(Guid JobGuid, int NumCourses)
         {
-            var spParams = new object[] {                
+            var spParams = new object[] {
                 new SqlParameter("@JobGuid", JobGuid),
                 new SqlParameter("@MaxResults", NumCourses)
                 };
@@ -104,11 +104,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             return await _dbContext.JobCountPerProvince.FromSql<JobCountPerProvince>("System_JobCountPerProvince").ToListAsync();
         }
-              
+
         public async Task<List<SubscriberInitialSourceDto>> GetNewSubscribers()
         {
-            List<SubscriberInitialSourceDto> rval = null;     
-            rval = await _dbContext.SubscriberInitialSource.FromSql<SubscriberInitialSourceDto>("System_Get_New_Subscribers").ToListAsync();     
+            List<SubscriberInitialSourceDto> rval = null;
+            rval = await _dbContext.SubscriberInitialSource.FromSql<SubscriberInitialSourceDto>("System_Get_New_Subscribers").ToListAsync();
             return rval;
         }
 
@@ -210,6 +210,31 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 throw new ApplicationException($"An error occurred in {errorProcedure.Value.ToString()} at line {errorLine.Value.ToString()}: {errorMessage.Value.ToString()}");
 
             return (int)courseId.Value;
+        }
+
+        public async Task<List<CourseDetailDto>> GetCourses(int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+
+            List<CourseDetailDto> rval = null;
+            rval = await _dbContext.CourseDetails.FromSql<CourseDetailDto>("System_Get_Courses @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
+
+        public async Task<CourseDetailDto> GetCourse(Guid courseGuid)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@CourseGuid", courseGuid)
+                };
+                
+            CourseDetailDto rval = null;
+            rval = await _dbContext.CourseDetails.FromSql<CourseDetailDto>("System_Get_Course @CourseGuid", spParams).FirstOrDefaultAsync();
+            return rval;
         }
     }
 }

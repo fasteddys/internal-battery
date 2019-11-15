@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
- 
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -11,7 +11,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-
+using UpDiddyApi.ApplicationCore.Exceptions;
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class CourseService : ICourseService
@@ -19,7 +19,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IMapper _mapper;
         private readonly IConfiguration _config;
-        public CourseService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IConfiguration configuration )
+        public CourseService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IConfiguration configuration)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
@@ -40,15 +40,34 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
-        public async Task<List<CourseDetailDto>> GetCoursesForJob(Guid jobGuid,IQueryCollection query )
+        public async Task<List<CourseDetailDto>> GetCoursesForJob(Guid jobGuid, IQueryCollection query)
         {
- 
+
             int MaxResults = 3;
-            int.TryParse (_config["APIGateway:DefaultMaxLimit"], out MaxResults);
+            int.TryParse(_config["APIGateway:DefaultMaxLimit"], out MaxResults);
             string limit = query["limit"];
-            if ( limit != null )        
+            if (limit != null)
                 int.TryParse(limit, out MaxResults);
             return await _repositoryWrapper.StoredProcedureRepository.GetCoursesForJob(jobGuid, MaxResults);
+        }
+
+
+        public async Task<List<CourseDetailDto>> GetCourses(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        {
+            var courses = await _repositoryWrapper.StoredProcedureRepository.GetCourses(limit, offset, sort, order);
+            if (courses == null)
+                throw new NotFoundException("Courses not found");
+            return (courses);
+        }
+
+         public async Task<CourseDetailDto> GetCourse(Guid courseGuid)
+        {
+            if(courseGuid == null || courseGuid == Guid.Empty)
+                throw new NullReferenceException("CourseGuid cannot be null");
+            var course = await _repositoryWrapper.StoredProcedureRepository.GetCourse(courseGuid);
+            if (course == null)
+                throw new NotFoundException("Courses not found");
+            return (course);
         }
 
 
@@ -159,11 +178,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             });
         }
 
-        public async Task<List<CourseDto>> GetCoursesAsync()
-        {
-            // we do not need to implement this right now
-            throw new NotImplementedException();
-        }
 
         #region Private Members
 
@@ -179,7 +193,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var courseVariantType = courseVariantTypeLookup.FirstOrDefault();
             if (courseVariantType == null)
             {
-                _repositoryWrapper.CourseVariantType.Create(new CourseVariantType()
+                await _repositoryWrapper.CourseVariantType.Create(new CourseVariantType()
                 {
                     CreateDate = DateTime.UtcNow,
                     CreateGuid = Guid.Empty,
@@ -208,7 +222,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var vendor = vendorLookup.FirstOrDefault();
             if (vendor == null)
             {
-                _repositoryWrapper.Vendor.Create(new Vendor()
+                await _repositoryWrapper.Vendor.Create(new Vendor()
                 {
                     CreateDate = DateTime.UtcNow,
                     CreateGuid = Guid.Empty,
@@ -244,7 +258,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (skill == null)
                 {
                     // create the skill if it does not exist
-                    _repositoryWrapper.SkillRepository.Create(new Skill()
+                    await _repositoryWrapper.SkillRepository.Create(new Skill()
                     {
                         CreateDate = DateTime.UtcNow,
                         CreateGuid = Guid.Empty,
@@ -280,7 +294,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 var tag = tagLookup.FirstOrDefault();
                 if (tag == null)
                 {
-                    _repositoryWrapper.Tag.Create(new Tag()
+                    await _repositoryWrapper.Tag.Create(new Tag()
                     {
                         CreateDate = DateTime.UtcNow,
                         CreateGuid = Guid.Empty,
@@ -303,7 +317,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 var topic = topicLookup.FirstOrDefault();
                 if (topic == null)
                 {
-                    _repositoryWrapper.Topic.Create(new Topic()
+                    await _repositoryWrapper.Topic.Create(new Topic()
                     {
                         CreateDate = DateTime.UtcNow,
                         CreateGuid = Guid.Empty,
@@ -323,7 +337,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 var tagTopic = tagTopicLookup.FirstOrDefault();
                 if (tagTopic == null)
                 {
-                    _repositoryWrapper.TagTopic.Create(new TagTopic()
+                    await _repositoryWrapper.TagTopic.Create(new TagTopic()
                     {
                         CreateDate = DateTime.UtcNow,
                         CreateGuid = Guid.Empty,

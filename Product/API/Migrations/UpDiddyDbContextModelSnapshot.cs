@@ -651,8 +651,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int?>("TopicId");
 
-                    b.Property<int?>("TopicSecondaryId");
-
                     b.Property<int>("VendorId");
 
                     b.Property<string>("VideoUrl");
@@ -1305,45 +1303,6 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("ExperienceLevel");
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.FileDownloadTracker", b =>
-                {
-                    b.Property<int>("FileDownloadTrackerId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("FileDownloadAttemptCount");
-
-                    b.Property<Guid?>("FileDownloadTrackerGuid");
-
-                    b.Property<int?>("GroupId");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<int?>("MaxFileDownloadAttemptsPermitted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<DateTime?>("MostrecentfiledownloadAttemptinUtc");
-
-                    b.Property<string>("SourceFileCDNUrl");
-
-                    b.Property<int>("SubscriberId");
-
-                    b.HasKey("FileDownloadTrackerId");
-
-                    b.HasIndex("GroupId");
-
-                    b.HasIndex("SubscriberId");
-
-                    b.ToTable("FileDownloadTracker");
-                });
-
             modelBuilder.Entity("UpDiddyApi.Models.Gender", b =>
                 {
                     b.Property<int>("GenderId")
@@ -1486,8 +1445,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("ModifyGuid");
 
-                    b.Property<int?>("PartnerId");
-
                     b.Property<int>("SubscriberId");
 
                     b.HasKey("JobApplicationId");
@@ -1495,8 +1452,6 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("JobApplicationStatusId");
 
                     b.HasIndex("JobPostingId");
-
-                    b.HasIndex("PartnerId");
 
                     b.HasIndex("SubscriberId");
 
@@ -3845,51 +3800,6 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("Traitify");
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.TraitifyCourseTopicBlendMapping", b =>
-                {
-                    b.Property<int>("TraitifyCourseTopicBlendMappingId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<string>("PersonalityTypeOne");
-
-                    b.Property<string>("PersonalityTypeTwo");
-
-                    b.Property<string>("TopicOneImgUrl");
-
-                    b.Property<string>("TopicOneName");
-
-                    b.Property<string>("TopicOneUrl");
-
-                    b.Property<string>("TopicThreeImgUrl");
-
-                    b.Property<string>("TopicThreeName");
-
-                    b.Property<string>("TopicThreeUrl");
-
-                    b.Property<string>("TopicTwoImgUrl");
-
-                    b.Property<string>("TopicTwoName");
-
-                    b.Property<string>("TopicTwoUrl");
-
-                    b.Property<Guid>("TraitifyCourseTopicBlendMappingGuid");
-
-                    b.HasKey("TraitifyCourseTopicBlendMappingId");
-
-                    b.ToTable("TraitifyBlendCourseTopicMapping");
-                });
-
             modelBuilder.Entity("UpDiddyApi.Models.Vendor", b =>
                 {
                     b.Property<int>("VendorId")
@@ -4302,18 +4212,6 @@ namespace UpDiddyApi.Migrations
                         .HasForeignKey("CampaignId", "CourseVariantId");
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.FileDownloadTracker", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.Group", "Group")
-                        .WithMany()
-                        .HasForeignKey("GroupId");
-
-                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany()
-                        .HasForeignKey("SubscriberId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
             modelBuilder.Entity("UpDiddyApi.Models.GroupPartner", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.Group", "Group")
@@ -4338,10 +4236,6 @@ namespace UpDiddyApi.Migrations
                         .WithMany()
                         .HasForeignKey("JobPostingId")
                         .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UpDiddyApi.Models.Partner", "Partner")
-                        .WithMany()
-                        .HasForeignKey("PartnerId");
 
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany()

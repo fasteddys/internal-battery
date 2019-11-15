@@ -86,7 +86,20 @@ namespace UpDiddyApi.Controllers
            return Ok(await _courseService.GetCoursesBySkillHistogram(SkillHistogram, Request.Query));
         }
 
+        [HttpGet]
+        [Route("/V2/[controller]/")]
+        public async Task<IActionResult> GetCourses(int limit, int offset, string sort, string order)
+        {       
+           var courses = await _courseService.GetCourses(limit, offset, sort, order);
+           return Ok(courses);
+        }
 
-
+        [HttpGet]
+        [Route("/V2/[controller]/{course}")]
+        public async Task<IActionResult> GetCourse(Guid course)
+        {       
+           var courses = await _courseService.GetCourse(course);
+           return Ok(courses);
+        }
     }
 }
