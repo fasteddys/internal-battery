@@ -72,9 +72,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _repository.SubscriberRepository.GetSubscriberByEmail(email);
         }
 
-
-
-
         public async Task<Subscriber> GetSubscriberByGuid(Guid subscriberGuid)
         {
             return await _repository.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
@@ -228,7 +225,55 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         }
 
+        /// <summary>
+        /// This is the new service that should be used by the Auth0 pre user registration hook's controller endpoint 
+        /// </summary>
+        /// <param name="subscriberDto"></param>
+        /// <returns></returns>
+        public async Task<Guid> CreateSubscriberAsync(UpDiddyLib.Domain.Models.SubscriberDto subscriberDto)
+        {
+            Models.Group group = null;
+            var subscriberGuid = Guid.NewGuid();
 
+            // create the user in the CareerCircle database
+            await _repository.SubscriberRepository.Create(new Subscriber()
+            {
+                SubscriberGuid = subscriberGuid,
+                Email = subscriberDto.Email,
+                FirstName = !string.IsNullOrWhiteSpace(subscriberDto.FirstName) ? subscriberDto.FirstName : null,
+                LastName = !string.IsNullOrWhiteSpace(subscriberDto.LastName) ? subscriberDto.LastName : null,
+                PhoneNumber = !string.IsNullOrWhiteSpace(subscriberDto.PhoneNumber) ? subscriberDto.PhoneNumber : null,
+                CreateDate = DateTime.UtcNow,
+                CreateGuid = Guid.Empty,
+                IsDeleted = 0
+            });
+            await _repository.SubscriberRepository.SaveAsync();
+
+            // todo: if we remove the dependency for INT PKs from other services (tagging, file download) then we can remove the following line of code
+            var subscriber = _repository.SubscriberRepository.GetSubscriberByGuid(subscriberGuid);
+
+            // add the user to the Google Talent Cloud
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriberGuid));
+
+            if (!string.IsNullOrWhiteSpace(subscriberDto.ReferrerUrl) && subscriberDto.PartnerGuid != null && subscriberDto.PartnerGuid != Guid.Empty)
+            {
+                // use the new tagging service for attribution
+                group = await _taggingService.CreateGroup(subscriberDto.ReferrerUrl, subscriberDto.PartnerGuid, subscriber.SubscriberId);
+            }
+
+            if (subscriberDto.IsGatedDownload)
+            {
+                int? groupId = null;
+                if (group == null)
+                    groupId = group.GroupId;
+                // set up the gated file download and send the email
+                HandleGatedFileDownload(subscriberDto.GatedDownloadMaxAttemptsAllowed, subscriberDto.GatedDownloadFileUrl, groupId, subscriber.SubscriberId, subscriber.Email);
+            }
+
+            return subscriberGuid;
+        }
+
+        [Obsolete("This can be removed after we launch the new website (HelloBuild).", false)]
         public async Task<bool> CreateSubscriberAsync(CreateUserDto createUserDto)
         {
             bool isSubscriberCreatedSuccessfully = false;
@@ -1245,7 +1290,8 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         #endregion
 
-        public async Task<IList<Subscriber>> GetSubscribersInGroupAsync(Guid GroupGuid){
+        public async Task<IList<Subscriber>> GetSubscribersInGroupAsync(Guid GroupGuid)
+        {
             IEnumerable<UpDiddyApi.Models.Group> ieGroup = await _repository.GroupRepository.GetByConditionAsync(g => g.GroupGuid == GroupGuid);
             UpDiddyApi.Models.Group Group = ieGroup.FirstOrDefault();
 

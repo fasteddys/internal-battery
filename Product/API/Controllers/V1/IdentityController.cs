@@ -74,7 +74,7 @@ namespace UpDiddyApi.Controllers
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = "A user with that email does not exist in ADB2C." });
             }
         }
-
+        
         [HttpPost("check-adb2c-login")]
         [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
         public async Task<IActionResult> CheckADB2CLogin([FromBody] UserDto userDto)
@@ -95,11 +95,11 @@ namespace UpDiddyApi.Controllers
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = "This login is not valid for ADB2C." });
             }
         }
-        
+
         [HttpPost("migrate-user")]
         [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
         public async Task<IActionResult> MigrateUserAsync([FromBody] CreateUserDto createUserDto)
-        {   
+        {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -118,7 +118,7 @@ namespace UpDiddyApi.Controllers
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = "The user was not migrated successfully." });
             }
         }
-        
+
         [HttpPost("create-user")]
         [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
         public async Task<IActionResult> CreateUserAsync([FromBody] CreateUserDto createUserDto)
