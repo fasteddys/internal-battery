@@ -83,6 +83,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ICompensationTypeRepository _compensationTypeRepository;
         private IRecruiterCompanyRepository _recruiterCompanyRepository;
         private ITraitifyCourseTopicBlendMappingRepository _traitifyCourseTopicBlendMappingRepository;
+        private ICourseFavoriteRepository _courseFavoriteRepository;
 
         private readonly IConfiguration _configuration;
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
@@ -990,6 +991,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _traitifyCourseTopicBlendMappingRepository = new TraitifyCourseTopicBlendMappingRepository(_dbContext);
                 }
                 return _traitifyCourseTopicBlendMappingRepository;
+            }
+        }
+
+        public ICourseFavoriteRepository CourseFavoriteRepository
+        {
+            get
+            {
+                if (_courseFavoriteRepository == null)
+                {
+                    _courseFavoriteRepository = new CourseFavoriteRepository(_dbContext);
+                }
+                return _courseFavoriteRepository;
             }
         }
     }

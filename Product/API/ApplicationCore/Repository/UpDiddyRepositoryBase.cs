@@ -87,10 +87,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<TEntity> GetByGuid(Guid guid)
         {
-            string entityGuidName = typeof(TEntity).Name + "Guid";
-            PropertyInfo prop = typeof(TEntity).GetProperty(entityGuidName);
+            PropertyInfo guidProp = typeof(TEntity).GetProperty(typeof(TEntity).Name + "Guid");
             return await _dbContext.Set<TEntity>()
-             .Where(x => (Guid)prop.GetValue(x, null) == guid)
+             .Where(x => (Guid)guidProp.GetValue(x, null) == guid)
              .FirstOrDefaultAsync();
         }
 

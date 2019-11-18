@@ -172,6 +172,7 @@ namespace UpDiddyApi.Models
         public DbSet<FileDownloadTracker> FileDownloadTracker { get; set; }
         public DbSet<CourseSite> CourseSite { get; set; }
         public DbSet<CoursePage> CoursePage { get; set; }
+        public DbSet<CourseFavorite> CourseFavorite { get; set; }
         public DbSet<CoursePageStatus> CoursePageStatus { get; set; }
 
         #region DBQueries
