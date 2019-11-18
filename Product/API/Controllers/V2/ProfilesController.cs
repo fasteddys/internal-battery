@@ -88,7 +88,7 @@ namespace UpDiddyApi.Controllers.V2
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             await _profileService.UpdateSubscriberProfileSocialAsync(subscribeProfileSocialDto, subscriberGuid);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
 
@@ -123,7 +123,7 @@ namespace UpDiddyApi.Controllers.V2
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             await _profileService.UpdateSubscriberProfileBasicAsync(subscribeProfileBasicDto, subscriberGuid);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
 
@@ -160,7 +160,7 @@ namespace UpDiddyApi.Controllers.V2
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             await _subscriberEducationalHistoryService.UpdateEducationalHistory(subscriberEducationHistoryDto, subscriberGuid, educationalHistoryGuid);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
 
@@ -171,7 +171,7 @@ namespace UpDiddyApi.Controllers.V2
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             await _subscriberEducationalHistoryService.DeleteEducationalHistory(subscriberGuid, educationalHistoryGuid);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
 
@@ -207,7 +207,7 @@ namespace UpDiddyApi.Controllers.V2
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             await _subscriberWorkHistoryService.UpdateEducationalHistory(subscriberEducationHistoryDto, subscriberGuid, workHistoryGuid);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
 
@@ -278,7 +278,7 @@ namespace UpDiddyApi.Controllers.V2
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             await _skillservice.UpdateSubscriberSkills(subscriberGuid, skills);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         #endregion
