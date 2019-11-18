@@ -129,10 +129,12 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet]
         [Authorize]
-        [Route("/V2/[controller]/{subscriberGuid}")]
-        public async Task<SubscribeProfileBasicDto> GetProfile(Guid subscriberGuid)
+        [Route("/V2/[controller]/")]
+        public async Task<IActionResult> GetProfile()
         {
-            return (await _profileService.GetSubscriberProfileBasicAsync(subscriberGuid));
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var profile = await _profileService.GetSubscriberProfileBasicAsync(subscriberGuid);
+            return Ok(profile);
         }
 
 
