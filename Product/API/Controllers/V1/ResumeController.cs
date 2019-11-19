@@ -80,8 +80,6 @@ namespace UpDiddyApi.Controllers
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Success!" });
         }
 
-
-
         [Authorize]
         [HttpPost]
         [Route("resolve-profile-merge/{resumeParseGuid}")]
@@ -101,12 +99,10 @@ namespace UpDiddyApi.Controllers
                 return BadRequest(new BasicResponseDto() { StatusCode = 401, Description = "Requester does not own resume parse" });
 
 
-            await ResumeParseFactory.ResolveProfileMerge(_repositoryWrapper, _db, _mapper, _syslog, resumeParse, subscriber, mergeInfo);
+            await ResumeParseFactory.ResolveProfileMerge(_repositoryWrapper, _mapper, _syslog, resumeParse, subscriber, mergeInfo);
 
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Success!" });
         }
-
-
 
         [Authorize]
         [HttpGet]
@@ -163,7 +159,5 @@ namespace UpDiddyApi.Controllers
 
             return NotFound(new { code = 404, message = $"Subscriber {subscriberGuid} not found" });
         }
-
-
     }
 }

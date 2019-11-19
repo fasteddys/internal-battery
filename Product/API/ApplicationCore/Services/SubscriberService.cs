@@ -538,7 +538,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<bool> QueueScanResumeJobAsync(Guid subscriberGuid)
         {
-            Subscriber subscriber = await _db.Subscriber
+            Subscriber subscriber = await _repository.SubscriberRepository.GetAllWithTracking()
                 .Where(e => e.IsDeleted == 0 && e.SubscriberGuid == subscriberGuid)
                 .Include(e => e.SubscriberFile)
                 .FirstOrDefaultAsync();

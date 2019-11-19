@@ -19,7 +19,7 @@ namespace UpDiddyApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CoursesController : ControllerBase
+    public class CoursesController : BaseApiController
     {
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
@@ -104,8 +104,7 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         public async Task<IActionResult> GetFavoriteCourses(int limit, int offset, string sort, string order)
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var isFavorite = await _courseFavoriteService.GetFavoriteCourses(subscriberGuid, limit, offset, sort, order);
+            var isFavorite = await _courseFavoriteService.GetFavoriteCourses(GetSubscriberGuid(), limit, offset, sort, order);
             return Ok(isFavorite);
         }
 
@@ -114,8 +113,7 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         public async Task<IActionResult> IsCourseAddedToFavorite(Guid course)
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var isFavorite = await _courseFavoriteService.IsCourseAddedToFavorite(subscriberGuid, course);
+            var isFavorite = await _courseFavoriteService.IsCourseAddedToFavorite(GetSubscriberGuid(), course);
             return Ok(isFavorite);
         }
 
@@ -125,8 +123,7 @@ namespace UpDiddyApi.Controllers
 
         public async Task<IActionResult> AddCourseFavorite(Guid course)
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _courseFavoriteService.AddToFavorite(subscriberGuid, course);
+            await _courseFavoriteService.AddToFavorite(GetSubscriberGuid(), course);
             return StatusCode(201);
         }
 
@@ -136,8 +133,7 @@ namespace UpDiddyApi.Controllers
 
         public async Task<IActionResult> RemoveCourseFavorite(Guid course)
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _courseFavoriteService.RemoveFromFavorite(subscriberGuid, course);
+            await _courseFavoriteService.RemoveFromFavorite(GetSubscriberGuid(), course);
             return StatusCode(204);
         }
     }

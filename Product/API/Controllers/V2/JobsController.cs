@@ -19,9 +19,9 @@ using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyLib.Shared.GoogleJobs;
 namespace UpDiddyApi.Controllers
 {
-
+    [Route("/V2/[controller]/")]
     [ApiController]
-    public class JobsController : ControllerBase
+    public class JobsController : BaseApiController
     {
 
         private readonly UpDiddyDbContext _db = null;
@@ -84,7 +84,7 @@ namespace UpDiddyApi.Controllers
         #region CloudTalentTracking
 
         [HttpPost]
-        [Route("/V2/[controller]/{job}/tracking/{requestId}/{clientEventId}")]
+        [Route("{job}/tracking/{requestId}/{clientEventId}")]
         [Authorize]
         public async Task<IActionResult> TrackClientEventJobViewAction(Guid job, string requestId, string clientEventId)
         {
@@ -97,13 +97,12 @@ namespace UpDiddyApi.Controllers
 
 
         [HttpPost]
-        [Route("/V2/[controller]/{JobGuid}/applications")]
+        [Route("{JobGuid}/applications")]
         [Authorize]
         public async Task<IActionResult> CreateJobApplication([FromBody] ApplicationDto jobApplicationDto, Guid JobGuid)
         {
 
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _jobApplicationService.CreateJobApplication(subscriberGuid, JobGuid, jobApplicationDto);
+            await _jobApplicationService.CreateJobApplication(GetSubscriberGuid(), JobGuid, jobApplicationDto);
             return StatusCode(201);
         }
 
@@ -116,7 +115,7 @@ namespace UpDiddyApi.Controllers
 
 
         [HttpGet]
-        [Route("/V2/[controller]/browse-location")]
+        [Route("browse-location")]
         public async Task<IActionResult> BrowseJobsByLocation()
         {
             JobBrowseResultDto rVal = null;
@@ -129,7 +128,7 @@ namespace UpDiddyApi.Controllers
         #region Job Search
 
         [HttpGet]
-        [Route("/V2/[controller]/search/{JobGuid}")]
+        [Route("search/{JobGuid}")]
         public async Task<IActionResult> GetJob(Guid JobGuid)
         {
 
@@ -138,7 +137,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("/V2/[controller]/search/keyword")]
+        [Route("search/keyword")]
         public async Task<IActionResult> GetKeywordSearchTerms(string value)
         {
             var rVal = await _keywordService.GetKeywordSearchTerms(value);
@@ -147,17 +146,16 @@ namespace UpDiddyApi.Controllers
 
 
         [HttpPost]
-        [Route("/V2/[controller]/{job}/share")]
+        [Route("{job}/share")]
         [Authorize]
         public async Task<IActionResult> Share([FromBody] ShareJobDto shareJobDto, Guid job)
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _jobService.ShareJob(subscriberGuid, job, shareJobDto);
+            await _jobService.ShareJob(GetSubscriberGuid(), job, shareJobDto);
             return StatusCode(201);
         }
 
         [HttpGet]
-        [Route("/V2/[controller]/search")]
+        [Route("search")]
         public async Task<ActionResult> Search()
         {
             JobSearchSummaryResultDto rVal = await _jobService.SummaryJobSearch(Request.Query);
@@ -165,7 +163,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("/V2/[controller]/search/count")]
+        [Route("search/count")]
         public async Task<IActionResult> GetActiveJobCount()
         {
             var count = await _jobSearchService.GetActiveJobCount();
@@ -173,7 +171,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("/V2/[controller]/search/{job}/similar")]
+        [Route("search/{job}/similar")]
         public async Task<IActionResult> GetSimilarJobs(Guid job)
         {
             var jobs = await _jobSearchService.GetSimilarJobs(job);
@@ -181,7 +179,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("/V2/[controller]/search/state-map")]
+        [Route("search/state-map")]
         public async Task<IActionResult> GetStateMapData()
         {
             var stateMapdto = await _jobSearchService.GetStateMapData();
@@ -194,46 +192,42 @@ namespace UpDiddyApi.Controllers
         #region Job Alert
 
         [HttpPost]
-        [Route("/V2/[controller]/alert")]
+        [Route("alert")]
         [Authorize]
         public async Task<IActionResult> CreateJobAlert([FromBody] JobAlertDto jobPostingAlertDto)
         {
 
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _jobAlertService.CreateJobAlert(subscriberGuid, jobPostingAlertDto);
+            await _jobAlertService.CreateJobAlert(GetSubscriberGuid(), jobPostingAlertDto);
             return StatusCode(201);
         }
 
         [HttpGet]
-        [Route("/V2/[controller]/alert")]
+        [Route("alert")]
         [Authorize]
         public async Task<IActionResult> GetJobAlerts()
         {
 
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var jobAlerts = await _jobAlertService.GetJobAlert(subscriberGuid);
+            var jobAlerts = await _jobAlertService.GetJobAlert(GetSubscriberGuid());
             return Ok(jobAlerts);
         }
 
         [HttpPut]
-        [Route("/V2/[controller]/alert/{jobAlert}")]
+        [Route("alert/{jobAlert}")]
         [Authorize]
         public async Task<IActionResult> UpdateJobAlert([FromBody] JobAlertDto jobPostingAlertDto, Guid jobAlert)
         {
 
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _jobAlertService.UpdateJobAlert(subscriberGuid, jobAlert, jobPostingAlertDto);
+            await _jobAlertService.UpdateJobAlert(GetSubscriberGuid(), jobAlert, jobPostingAlertDto);
             return StatusCode(204);
         }
 
         [HttpDelete]
-        [Route("/V2/[controller]/alert/{jobAlert}")]
+        [Route("alert/{jobAlert}")]
         [Authorize]
         public async Task<IActionResult> DeleteJobAlert(Guid jobAlert)
         {
 
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _jobAlertService.DeleteJobAlert(subscriberGuid, jobAlert);
+            await _jobAlertService.DeleteJobAlert(GetSubscriberGuid(), jobAlert);
             return StatusCode(204);
         }
 
@@ -242,35 +236,32 @@ namespace UpDiddyApi.Controllers
         #region Job Favorites
 
         [HttpPost]
-        [Route("/V2/[controller]/{job}/favorites")]
+        [Route("{job}/favorites")]
         [Authorize]
         public async Task<IActionResult> CreateJobFavorite(Guid job)
         {
 
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _jobFavoriteService.AddJobToFavorite(subscriberGuid, job);
+            await _jobFavoriteService.AddJobToFavorite(GetSubscriberGuid(), job);
             return StatusCode(201);
         }
 
         [HttpGet]
-        [Route("/V2/[controller]/favorites")]
+        [Route("favorites")]
         [Authorize]
         public async Task<IActionResult> GetJobFavorites()
         {
 
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var favorites = await _jobFavoriteService.GetJobFavorites(subscriberGuid);
+            var favorites = await _jobFavoriteService.GetJobFavorites(GetSubscriberGuid());
             return Ok(favorites);
         }
 
         [HttpDelete]
-        [Route("/V2/[controller]/{job}/favorites")]
+        [Route("{job}/favorites")]
         [Authorize]
         public async Task<IActionResult> DeleteJobFavorite(Guid job)
         {
 
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _jobFavoriteService.DeleteJobFavorite(subscriberGuid, job);
+            await _jobFavoriteService.DeleteJobFavorite(GetSubscriberGuid(), job);
             return StatusCode(204);
         }
 

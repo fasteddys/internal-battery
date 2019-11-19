@@ -4,28 +4,21 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using UpDiddyApi.ApplicationCore.Services;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using AutoMapper;
-using System.Security.Claims;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using Microsoft.Extensions.DependencyInjection;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
-using Microsoft.AspNetCore.Http;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyLib.Domain.Models;
-using UpDiddyApi.ApplicationCore.Exceptions;
-using UpDiddyLib.Dto.Marketing;
-using UpDiddyLib.Dto.User;
-using UpDiddyLib.Domain;
 using System.Collections.Generic;
 
 namespace UpDiddyApi.Controllers.V2
 {
-    [Route("api/[controller]")]
+    [Route("/V2/[controller]")]
     [ApiController]
-    public class ProfilesController : ControllerBase
+    public class ProfilesController : BaseApiController
     {
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
@@ -51,8 +44,6 @@ namespace UpDiddyApi.Controllers.V2
 
         #region constructor 
         public ProfilesController(IServiceProvider services, IHangfireService hangfireService, ICloudTalentService cloudTalentService, IResumeService resumeService, ISkillService skillservice)
-
-
         {
             _services = services;
             _db = _services.GetService<UpDiddyDbContext>();
@@ -83,22 +74,20 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpPut]
         [Authorize]
-        [Route("/V2/[controller]/socials")]
+        [Route("socials")]
         public async Task<IActionResult> UpdateSocialProfile([FromBody] SubscriberProfileSocialDto subscribeProfileSocialDto)
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _profileService.UpdateSubscriberProfileSocialAsync(subscribeProfileSocialDto, subscriberGuid);
+            await _profileService.UpdateSubscriberProfileSocialAsync(subscribeProfileSocialDto, GetSubscriberGuid());
             return StatusCode(204);
         }
 
 
         [HttpGet]
         [Authorize]
-        [Route("/V2/[controller]/socials")]
+        [Route("socials")]
         public async Task<SubscriberProfileSocialDto> GetSocialProfile()
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            return (await _profileService.GetSubscriberProfileSocialAsync(subscriberGuid));
+            return (await _profileService.GetSubscriberProfileSocialAsync(GetSubscriberGuid()));
         }
 
         #endregion
@@ -107,10 +96,8 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpPost]
         [Authorize]
-        [Route("/V2/[controller]")]
         public async Task<IActionResult> AddProfile([FromBody] SubscribeProfileBasicDto subscribeProfileBasicDto)
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             await _profileService.CreateNewSubscriberAsync(subscribeProfileBasicDto);
             return StatusCode(201);
         }
@@ -118,22 +105,18 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpPut]
         [Authorize]
-        [Route("/V2/[controller]")]
         public async Task<IActionResult> UpdateProfile([FromBody] SubscribeProfileBasicDto subscribeProfileBasicDto)
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _profileService.UpdateSubscriberProfileBasicAsync(subscribeProfileBasicDto, subscriberGuid);
+            await _profileService.UpdateSubscriberProfileBasicAsync(subscribeProfileBasicDto, GetSubscriberGuid());
             return StatusCode(204);
         }
 
 
         [HttpGet]
         [Authorize]
-        [Route("/V2/[controller]/")]
         public async Task<IActionResult> GetProfile()
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var profile = await _profileService.GetSubscriberProfileBasicAsync(subscriberGuid);
+            var profile = await _profileService.GetSubscriberProfileBasicAsync(GetSubscriberGuid());
             return Ok(profile);
         }
 
@@ -146,45 +129,40 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpPost]
         [Authorize]
-        [Route("/V2/[controller]/education-histories")]
+        [Route("education-histories")]
         public async Task<IActionResult> AddProfileEducationHistory([FromBody] SubscriberEducationHistoryDto subscriberEducationHistoryDto)
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _subscriberEducationalHistoryService.CreateEducationalHistory(subscriberEducationHistoryDto, subscriberGuid);
+            await _subscriberEducationalHistoryService.CreateEducationalHistory(subscriberEducationHistoryDto, GetSubscriberGuid());
             return StatusCode(201);
         }
 
 
         [HttpPut]
         [Authorize]
-        [Route("/V2/[controller]/education-histories/{educationalHistoryGuid}")]
+        [Route("education-histories/{educationalHistoryGuid}")]
         public async Task<IActionResult> UpdateProfileEducationHistory([FromBody] SubscriberEducationHistoryDto subscriberEducationHistoryDto, Guid educationalHistoryGuid)
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _subscriberEducationalHistoryService.UpdateEducationalHistory(subscriberEducationHistoryDto, subscriberGuid, educationalHistoryGuid);
+            await _subscriberEducationalHistoryService.UpdateEducationalHistory(subscriberEducationHistoryDto, GetSubscriberGuid(), educationalHistoryGuid);
             return StatusCode(204);
         }
 
 
         [HttpDelete]
         [Authorize]
-        [Route("/V2/[controller]/education-histories/{educationalHistoryGuid}")]
+        [Route("education-histories/{educationalHistoryGuid}")]
         public async Task<IActionResult> DeleteProfileEducationHistory(Guid educationalHistoryGuid)
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _subscriberEducationalHistoryService.DeleteEducationalHistory(subscriberGuid, educationalHistoryGuid);
+            await _subscriberEducationalHistoryService.DeleteEducationalHistory(GetSubscriberGuid(), educationalHistoryGuid);
             return StatusCode(204);
         }
 
 
-
         [HttpGet]
         [Authorize]
-        [Route("/V2/[controller]/education-histories")]
+        [Route("education-histories")]
         public async Task<IActionResult> GetProfileEducationHistory()
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var rVal = await _subscriberEducationalHistoryService.GetEducationalHistory(subscriberGuid);
+            var rVal = await _subscriberEducationalHistoryService.GetEducationalHistory(GetSubscriberGuid());
             return Ok(rVal);
         }
 
@@ -194,43 +172,39 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpPost]
         [Authorize]
-        [Route("/V2/[controller]/work-histories")]
+        [Route("work-histories")]
         public async Task<IActionResult> AddWorkHistory([FromBody] SubscriberWorkHistoryDto subscriberEducationHistoryDto)
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _subscriberWorkHistoryService.AddWorkHistory(subscriberEducationHistoryDto, subscriberGuid);
+            await _subscriberWorkHistoryService.AddWorkHistory(subscriberEducationHistoryDto, GetSubscriberGuid());
             return StatusCode(201);
         }
 
         [HttpPut]
         [Authorize]
-        [Route("/V2/[controller]/work-histories/{workHistoryGuid}")]
+        [Route("work-histories/{workHistoryGuid}")]
         public async Task<IActionResult> UpdateWorkHistory([FromBody] SubscriberWorkHistoryDto subscriberEducationHistoryDto, Guid workHistoryGuid)
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _subscriberWorkHistoryService.UpdateEducationalHistory(subscriberEducationHistoryDto, subscriberGuid, workHistoryGuid);
+            await _subscriberWorkHistoryService.UpdateEducationalHistory(subscriberEducationHistoryDto, GetSubscriberGuid(), workHistoryGuid);
             return StatusCode(204);
         }
 
 
         [HttpDelete]
         [Authorize]
-        [Route("/V2/[controller]/work-histories/{workHistoryGuid}")]
+        [Route("work-histories/{workHistoryGuid}")]
         public async Task<IActionResult> DeleteWorkHistory(Guid workHistoryGuid)
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _subscriberWorkHistoryService.DeleteWorklHistory(subscriberGuid, workHistoryGuid);
+            await _subscriberWorkHistoryService.DeleteWorklHistory(GetSubscriberGuid(), workHistoryGuid);
             return StatusCode(204);
         }
 
 
         [HttpGet]
         [Authorize]
-        [Route("/V2/[controller]/work-histories")]
+        [Route("work-histories")]
         public async Task<IActionResult> GetWorkHistory()
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var rVal = await _subscriberWorkHistoryService.GetWorkHistory(subscriberGuid);
+            var rVal = await _subscriberWorkHistoryService.GetWorkHistory(GetSubscriberGuid());
             return Ok(rVal);
         }
 
@@ -241,21 +215,46 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet]
         [Authorize]
-        [Route("/V2/[controller]/resume")]
+        [Route("resume")]
         public async Task<IActionResult> DownloadResume()
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var resume = await _resumeService.DownloadResume(subscriberGuid);
+            var resume = await _resumeService.DownloadResume(GetSubscriberGuid());
             return File(resume.ByteArrayData, resume.MimeType, resume.FileName);
         }
 
         [HttpPost]
         [Authorize]
-        [Route("/V2/[controller]/resume")]
+        [Route("resume")]
         public async Task<IActionResult> UploadResume([FromBody] UpDiddyLib.Domain.Models.FileDto fileDto)
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _resumeService.UploadResume(subscriberGuid, fileDto);
+            await _resumeService.UploadResume(GetSubscriberGuid(), fileDto);
+            return StatusCode(201);
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("resume/parse")]
+        public async Task<IActionResult> GetResumeParse()
+        {
+            var resumeParseGuid = await _resumeService.GetResumeParse(GetSubscriberGuid());
+            return Ok(resumeParseGuid);
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("resume/parse/questions/{resumeParseGuid}")]
+        public async Task<IActionResult> GetResumeQuestions(Guid resumeParseGuid)
+        {
+            var resumeParse = await _resumeService.GetResumeQuestions(GetSubscriberGuid(), resumeParseGuid);
+            return Ok(resumeParse);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("resume/parse/questions/{resumeParseGuid}")]
+        public async Task<IActionResult> ResolveProfileMerge([FromBody] List<string> mergeInfo, Guid resumeParseGuid)
+        {
+            await _resumeService.ResolveProfileMerge(mergeInfo, GetSubscriberGuid(), resumeParseGuid);
             return StatusCode(201);
         }
 
@@ -264,22 +263,20 @@ namespace UpDiddyApi.Controllers.V2
         #region Skills
 
         [HttpGet]
-        [Route("/V2/[controller]/skills")]
+        [Route("skills")]
         [Authorize]
         public async Task<IActionResult> GetSubscriberSkills()
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var skills = await _skillservice.GetSkillsBySubscriberGuid(subscriberGuid);
+            var skills = await _skillservice.GetSkillsBySubscriberGuid(GetSubscriberGuid());
             return Ok(skills);
         }
 
         [HttpPut]
-        [Route("/V2/[controller]/skills")]
+        [Route("skills")]
         [Authorize]
         public async Task<IActionResult> UpdateSubscriberSkills([FromBody] List<string> skills)
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await _skillservice.UpdateSubscriberSkills(subscriberGuid, skills);
+            await _skillservice.UpdateSubscriberSkills(GetSubscriberGuid(), skills);
             return StatusCode(204);
         }
 
