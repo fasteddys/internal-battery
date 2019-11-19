@@ -24,7 +24,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("{employmentType}")]
+        [Route("{employmentType:guid}")]
         public async Task<IActionResult> GetEmploymentType(Guid employmentType)
         {
             var result = await _employmentTypeService.GetEmploymentType(employmentType);
@@ -32,7 +32,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPut]
-        [Route("{employmentType}")]
+        [Route("{employmentType:guid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> UpdateEmploymentType(Guid employmentType, [FromBody]  EmploymentTypeDto employmentTypeDto)
         {
@@ -41,7 +41,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpDelete]
-        [Route("{employmentType}")]
+        [Route("{employmentType:guid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> DeleteEmploymentType(Guid employmentType)
         {

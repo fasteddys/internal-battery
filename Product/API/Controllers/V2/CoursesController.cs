@@ -17,8 +17,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 namespace UpDiddyApi.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
+    [Route("/V2/[controller]/")]
     public class CoursesController : BaseApiController
     {
         private readonly UpDiddyDbContext _db = null;
@@ -63,28 +62,27 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("/V2/[controller]/random")]
+        [Route("random")]
         public async Task<IActionResult> Random(Guid JobGuid)
         {
             return Ok(await _courseService.GetCoursesRandom(Request.Query));
         }
 
         [HttpGet]
-        [Route("/V2/[controller]/job/{JobGuid}/related")]
+        [Route("job/{JobGuid:guid}/related")]
         public async Task<IActionResult> Search(Guid JobGuid)
         {
             return Ok(await _courseService.GetCoursesForJob(JobGuid, Request.Query));
         }
 
         [HttpPost]
-        [Route("/V2/[controller]/skill/related")]
+        [Route("skill/related")]
         public async Task<IActionResult> SearchBySkills([FromBody] Dictionary<string, int> SkillHistogram)
         {
             return Ok(await _courseService.GetCoursesBySkillHistogram(SkillHistogram, Request.Query));
         }
 
         [HttpGet]
-        [Route("/V2/[controller]/")]
         public async Task<IActionResult> GetCourses(int limit, int offset, string sort, string order)
         {
             var courses = await _courseService.GetCourses(limit, offset, sort, order);
@@ -92,7 +90,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("/V2/[controller]/{course}")]
+        [Route("{course:guid}")]
         public async Task<IActionResult> GetCourse(Guid course)
         {
             var courses = await _courseService.GetCourse(course);
@@ -100,7 +98,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("/V2/[controller]/favorites")]
+        [Route("favorites")]
         [Authorize]
         public async Task<IActionResult> GetFavoriteCourses(int limit, int offset, string sort, string order)
         {
@@ -109,7 +107,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("/V2/[controller]/{course}/favorites")]
+        [Route("{course}/favorites")]
         [Authorize]
         public async Task<IActionResult> IsCourseAddedToFavorite(Guid course)
         {
@@ -118,7 +116,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPost]
-        [Route("/V2/[controller]/{course}/favorites")]
+        [Route("{course:guid}/favorites")]
         [Authorize]
 
         public async Task<IActionResult> AddCourseFavorite(Guid course)
@@ -128,7 +126,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpDelete]
-        [Route("/V2/[controller]/{course}/favorites")]
+        [Route("{course:guid}/favorites")]
         [Authorize]
 
         public async Task<IActionResult> RemoveCourseFavorite(Guid course)

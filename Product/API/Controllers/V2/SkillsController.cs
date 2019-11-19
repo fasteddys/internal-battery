@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Authorization;
 namespace UpDiddyApi.Controllers
 {
     [Route("/V2/[controller]/")]
-    [ApiController]
     public class SkillsController : ControllerBase
     {
         private readonly IMapper _mapper;
@@ -39,7 +38,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("{skill}")]
+        [Route("{skill:guid}")]
         public async Task<IActionResult> GetSkill(Guid skill)
         {
             var result = await _skillservice.GetSkill(skill);
@@ -47,7 +46,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPut]
-        [Route("{skill}")]
+        [Route("{skill:guid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> UpdateSkill(Guid skill, SkillDto skillDto)
         {
@@ -56,7 +55,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpDelete]
-        [Route("{skill}")]
+        [Route("{skill:guid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> DeleteSkill(Guid skill, SkillDto skillDto)
         {
@@ -65,7 +64,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPost]
-        [Route("{skill}")]
+        [Route("{skill:guid}")]
         [Authorize]
         public async Task<IActionResult> CreateSkill(Guid skill, SkillDto skillDto)
         {

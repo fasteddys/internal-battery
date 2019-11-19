@@ -20,7 +20,6 @@ using UpDiddyLib.Shared.GoogleJobs;
 namespace UpDiddyApi.Controllers
 {
     [Route("/V2/[controller]/")]
-    [ApiController]
     public class JobsController : BaseApiController
     {
 
@@ -84,7 +83,7 @@ namespace UpDiddyApi.Controllers
         #region CloudTalentTracking
 
         [HttpPost]
-        [Route("{job}/tracking/{requestId}/{clientEventId}")]
+        [Route("{job:guid}/tracking/{requestId}/{clientEventId}")]
         [Authorize]
         public async Task<IActionResult> TrackClientEventJobViewAction(Guid job, string requestId, string clientEventId)
         {
@@ -97,7 +96,7 @@ namespace UpDiddyApi.Controllers
 
 
         [HttpPost]
-        [Route("{JobGuid}/applications")]
+        [Route("{JobGuid:guid}/applications")]
         [Authorize]
         public async Task<IActionResult> CreateJobApplication([FromBody] ApplicationDto jobApplicationDto, Guid JobGuid)
         {
@@ -128,7 +127,7 @@ namespace UpDiddyApi.Controllers
         #region Job Search
 
         [HttpGet]
-        [Route("search/{JobGuid}")]
+        [Route("search/{JobGuid:guid}")]
         public async Task<IActionResult> GetJob(Guid JobGuid)
         {
 
@@ -146,7 +145,7 @@ namespace UpDiddyApi.Controllers
 
 
         [HttpPost]
-        [Route("{job}/share")]
+        [Route("{job:guid}/share")]
         [Authorize]
         public async Task<IActionResult> Share([FromBody] ShareJobDto shareJobDto, Guid job)
         {
@@ -171,7 +170,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("search/{job}/similar")]
+        [Route("search/{job:guid}/similar")]
         public async Task<IActionResult> GetSimilarJobs(Guid job)
         {
             var jobs = await _jobSearchService.GetSimilarJobs(job);
@@ -212,7 +211,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPut]
-        [Route("alert/{jobAlert}")]
+        [Route("alert/{jobAlert:guid}")]
         [Authorize]
         public async Task<IActionResult> UpdateJobAlert([FromBody] JobAlertDto jobPostingAlertDto, Guid jobAlert)
         {
@@ -222,7 +221,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpDelete]
-        [Route("alert/{jobAlert}")]
+        [Route("alert/{jobAlert:guid}")]
         [Authorize]
         public async Task<IActionResult> DeleteJobAlert(Guid jobAlert)
         {
@@ -236,7 +235,7 @@ namespace UpDiddyApi.Controllers
         #region Job Favorites
 
         [HttpPost]
-        [Route("{job}/favorites")]
+        [Route("{job:guid}/favorites")]
         [Authorize]
         public async Task<IActionResult> CreateJobFavorite(Guid job)
         {
@@ -256,7 +255,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpDelete]
-        [Route("{job}/favorites")]
+        [Route("{job:guid}/favorites")]
         [Authorize]
         public async Task<IActionResult> DeleteJobFavorite(Guid job)
         {

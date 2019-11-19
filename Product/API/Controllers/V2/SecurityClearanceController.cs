@@ -24,7 +24,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("{securityClearance}")]
+        [Route("{securityClearance:guid}")]
         public async Task<IActionResult> GetSecurityClearance(Guid securityClearance)
         {
             var result  = await _securityClearanceService.GetSecurityClearance(securityClearance);
@@ -32,7 +32,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPut]
-        [Route("{securityClearance}")]
+        [Route("{securityClearance:guid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> UpdateSecurityClearance(Guid securityClearance, [FromBody]  SecurityClearanceDto securityClearanceDto)
         {
@@ -41,7 +41,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpDelete]
-        [Route("{securityClearance}")]
+        [Route("{securityClearance:guid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> DeleteSecurityClearance(Guid securityClearance)
         {

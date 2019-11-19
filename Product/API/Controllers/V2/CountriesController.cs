@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authorization;
 namespace UpDiddyApi.Controllers
 {
     [Route("/V2/[controller]/")]
-    [ApiController]
     public class CountriesController : ControllerBase
     {
         private readonly ICountryService _countryService;
@@ -20,7 +19,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("{country}")]
+        [Route("{country:guid}")]
         public async Task<IActionResult> GetCountryDetail(Guid country)
         {
             var countryDetail = await _countryService.GetCountryDetail(country);
@@ -35,7 +34,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPut]
-        [Route("{country}")]
+        [Route("{country:guid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> UpdateCountry(Guid country, [FromBody]  CountryDetailDto countryDetailDto)
         {
@@ -44,7 +43,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpDelete]
-        [Route("{country}")]
+        [Route("{country:guid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> DeleteCountry(Guid country)
         {
@@ -61,7 +60,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("states/{state}")]
+        [Route("states/{state:guid}")]
         public async Task<IActionResult> GetStateDetail(Guid state)
         {
             var countryDetail = await _stateService.GetStateDetail(state);
@@ -69,7 +68,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("{country}/states")]
+        [Route("{country:guid}/states")]
         public async Task<IActionResult> GetStates(Guid country, int limit, int offset, string sort, string order)
         {
             var states = await _stateService.GetAllStates(country, limit, offset, sort, order);
@@ -77,7 +76,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPut]
-        [Route("{country}/states/{state}")]
+        [Route("{country:guid}/states/{state:guid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
 
         public async Task<IActionResult> UpdateState(Guid country, Guid state, [FromBody]  StateDetailDto stateDetailDto)
@@ -87,7 +86,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpDelete]
-        [Route("states/{state}")]
+        [Route("states/{state:guid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> DeleteState(Guid state)
         {
@@ -96,7 +95,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPost]
-        [Route("{country}/states/")]
+        [Route("{country:guid}/states/")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateState(Guid country, [FromBody] StateDetailDto StateDetailDto)
         {

@@ -16,8 +16,7 @@ using System.Collections.Generic;
 
 namespace UpDiddyApi.Controllers.V2
 {
-    [Route("/V2/[controller]")]
-    [ApiController]
+    [Route("/V2/[controller]/")]
     public class ProfilesController : BaseApiController
     {
         private readonly UpDiddyDbContext _db = null;
@@ -139,7 +138,7 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpPut]
         [Authorize]
-        [Route("education-histories/{educationalHistoryGuid}")]
+        [Route("education-histories/{educationalHistoryGuid:guid}")]
         public async Task<IActionResult> UpdateProfileEducationHistory([FromBody] SubscriberEducationHistoryDto subscriberEducationHistoryDto, Guid educationalHistoryGuid)
         {
             await _subscriberEducationalHistoryService.UpdateEducationalHistory(subscriberEducationHistoryDto, GetSubscriberGuid(), educationalHistoryGuid);
@@ -149,7 +148,7 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpDelete]
         [Authorize]
-        [Route("education-histories/{educationalHistoryGuid}")]
+        [Route("education-histories/{educationalHistoryGuid:guid}")]
         public async Task<IActionResult> DeleteProfileEducationHistory(Guid educationalHistoryGuid)
         {
             await _subscriberEducationalHistoryService.DeleteEducationalHistory(GetSubscriberGuid(), educationalHistoryGuid);
@@ -181,7 +180,7 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpPut]
         [Authorize]
-        [Route("work-histories/{workHistoryGuid}")]
+        [Route("work-histories/{workHistoryGuid:guid}")]
         public async Task<IActionResult> UpdateWorkHistory([FromBody] SubscriberWorkHistoryDto subscriberEducationHistoryDto, Guid workHistoryGuid)
         {
             await _subscriberWorkHistoryService.UpdateEducationalHistory(subscriberEducationHistoryDto, GetSubscriberGuid(), workHistoryGuid);
@@ -191,7 +190,7 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpDelete]
         [Authorize]
-        [Route("work-histories/{workHistoryGuid}")]
+        [Route("work-histories/{workHistoryGuid:guid}")]
         public async Task<IActionResult> DeleteWorkHistory(Guid workHistoryGuid)
         {
             await _subscriberWorkHistoryService.DeleteWorklHistory(GetSubscriberGuid(), workHistoryGuid);
@@ -242,7 +241,7 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet]
         [Authorize]
-        [Route("resume/parse/questions/{resumeParseGuid}")]
+        [Route("resume/parse/questions/{resumeParseGuid:guid}")]
         public async Task<IActionResult> GetResumeQuestions(Guid resumeParseGuid)
         {
             var resumeParse = await _resumeService.GetResumeQuestions(GetSubscriberGuid(), resumeParseGuid);
@@ -251,7 +250,7 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpPost]
         [Authorize]
-        [Route("resume/parse/questions/{resumeParseGuid}")]
+        [Route("resume/parse/questions/{resumeParseGuid:guid}")]
         public async Task<IActionResult> ResolveProfileMerge([FromBody] List<string> mergeInfo, Guid resumeParseGuid)
         {
             await _resumeService.ResolveProfileMerge(mergeInfo, GetSubscriberGuid(), resumeParseGuid);

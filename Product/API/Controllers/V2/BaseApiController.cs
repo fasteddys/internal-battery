@@ -7,7 +7,6 @@ namespace UpDiddyApi.Controllers
     public class BaseApiController : ControllerBase
     {
         public BaseApiController() { }
-
         public Guid GetSubscriberGuid()
         {
             Guid subscriberGuid;
