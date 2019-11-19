@@ -285,6 +285,7 @@ namespace UpDiddyApi
             services.AddScoped<ICompensationTypeService, CompensationTypeService>();
             services.AddScoped<ISecurityClearanceService, SecurityClearanceService>();
             services.AddScoped<IContactService, ContactService>();
+            services.AddScoped<ICourseFavoriteService, CourseFavoriteService>();
 
 
             #endregion

@@ -24,7 +24,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("{company}")]
+        [Route("{company:guid}")]
         public async Task<IActionResult> GetCompany(Guid company)
         {
             var result = await _companyService.GetByCompanyGuid(company);
@@ -32,7 +32,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPut]
-        [Route("{company}")]
+        [Route("{company:guid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> UpdateCompany(Guid company, [FromBody]  CompanyDto companyDto)
         {
@@ -42,7 +42,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpDelete]
-        [Route("{company}")]
+        [Route("{company:guid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> DeleteCompany(Guid company)
         {

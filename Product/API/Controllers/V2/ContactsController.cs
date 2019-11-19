@@ -10,14 +10,12 @@ namespace UpDiddyApi.Controllers
     public class ContactsController : ControllerBase
     {
         private readonly IContactService _contactService;
-
         public ContactsController(IContactService contactService)
         {
             _contactService = contactService;
         }
 
         [HttpPost]
-        
         public async Task<IActionResult> CreateNewMessage(ContactUsDto contactUsDto)
         {
             await _contactService.CreateNewMessage(contactUsDto);

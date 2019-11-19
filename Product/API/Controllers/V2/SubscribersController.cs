@@ -9,7 +9,7 @@ using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.Controllers.V2
 {
-    [ApiController]
+    [Route("/V2/[controller]/")]
     public class SubscribersController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -21,10 +21,9 @@ namespace UpDiddyApi.Controllers.V2
             _subscriberService = services.GetService<ISubscriberService>();
         }
 
-
         [HttpPost]
         [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
-        [Route("/V2/[controller]/new-subscriber-registration")]
+        [Route("new-subscriber-registration")]
         public async Task<IActionResult> NewSubscriberRegistration([FromBody] SubscriberDto subscriberDto)
         {
             if (!ModelState.IsValid)

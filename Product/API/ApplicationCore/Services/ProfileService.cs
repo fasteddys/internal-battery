@@ -89,18 +89,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 var Subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
                 if (Subscriber == null)
-                    throw new NotFoundException($"SubscriberGuid {subscribeProfileBasicDto.SubscriberGuid} does not exist exist");
-
-                if (Subscriber.Email != subscribeProfileBasicDto.Email)
-                    throw new InvalidOperationException($"This operation cannot be used to change a subscriber's email address");
+                    throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
 
 
-                if (Subscriber.SubscriberGuid != subscribeProfileBasicDto.SubscriberGuid)
-                    throw new InvalidOperationException($"This operation cannot be used to change a subscriber's guid");
-
-
-                if (Subscriber.SubscriberGuid != subscriberGuid)
-                    throw new InvalidOperationException($"Not owner of profile");
 
                 int? StateId = null;
                 if (string.IsNullOrWhiteSpace(subscribeProfileBasicDto.ProvinceCode) == false)

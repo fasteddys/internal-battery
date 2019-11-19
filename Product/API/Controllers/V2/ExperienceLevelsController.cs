@@ -24,7 +24,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("{experienceLevel}")]
+        [Route("{experienceLevel:guid}")]
         public async Task<IActionResult> GetExperienceLevel(Guid experienceLevel)
         {
             var result  = await _experienceLevelService.GetExperienceLevel(experienceLevel);
@@ -32,7 +32,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPut]
-        [Route("{experienceLevel}")]
+        [Route("{experienceLevel:guid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> UpdateExperienceLevel(Guid experienceLevel, [FromBody]  ExperienceLevelDto experienceLevelDto)
         {
@@ -41,7 +41,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpDelete]
-        [Route("{experienceLevel}")]
+        [Route("{experienceLevel:guid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> DeleteExperienceLevel(Guid experienceLevel)
         {

@@ -24,7 +24,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("{compensationType}")]
+        [Route("{compensationType:guid}")]
         public async Task<IActionResult> GetCompensationType(Guid compensationType)
         {
             var result = await _compensationTypeService.GetCompensationType(compensationType);
@@ -32,7 +32,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPut]
-        [Route("{compensationType}")]
+        [Route("{compensationType:guid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> UpdateCompensationType(Guid compensationType, [FromBody]  CompensationTypeDto compensationTypeDto)
         {
@@ -41,7 +41,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpDelete]
-        [Route("{compensationType}")]
+        [Route("{compensationType:guid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> DeleteCompensationType(Guid compensationType)
         {
