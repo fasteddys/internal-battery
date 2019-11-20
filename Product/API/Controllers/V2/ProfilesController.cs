@@ -68,8 +68,6 @@ namespace UpDiddyApi.Controllers.V2
 
         #endregion
 
-
-
         #region social profile 
 
         [HttpPut]
@@ -80,7 +78,6 @@ namespace UpDiddyApi.Controllers.V2
             await _profileService.UpdateSubscriberProfileSocialAsync(subscribeProfileSocialDto, GetSubscriberGuid());
             return StatusCode(204);
         }
-
 
         [HttpGet]
         [Authorize]
@@ -120,10 +117,7 @@ namespace UpDiddyApi.Controllers.V2
             return Ok(profile);
         }
 
-
-
         #endregion
-
 
         #region educational history
 
@@ -136,7 +130,6 @@ namespace UpDiddyApi.Controllers.V2
             return Ok(educationGuid);
         }
 
-
         [HttpPut]
         [Authorize]
         [Route("education-histories/{educationalHistoryGuid:guid}")]
@@ -146,7 +139,6 @@ namespace UpDiddyApi.Controllers.V2
             return StatusCode(204);
         }
 
-
         [HttpDelete]
         [Authorize]
         [Route("education-histories/{educationalHistoryGuid:guid}")]
@@ -155,7 +147,6 @@ namespace UpDiddyApi.Controllers.V2
             await _subscriberEducationalHistoryService.DeleteEducationalHistory(GetSubscriberGuid(), educationalHistoryGuid);
             return StatusCode(204);
         }
-
 
         [HttpGet]
         [Authorize]
@@ -175,8 +166,8 @@ namespace UpDiddyApi.Controllers.V2
         [Route("work-histories")]
         public async Task<IActionResult> AddWorkHistory([FromBody] SubscriberWorkHistoryDto subscriberEducationHistoryDto)
         {
-            await _subscriberWorkHistoryService.AddWorkHistory(subscriberEducationHistoryDto, GetSubscriberGuid());
-            return StatusCode(201);
+            var workHistoryGuid = await _subscriberWorkHistoryService.AddWorkHistory(subscriberEducationHistoryDto, GetSubscriberGuid());
+            return Ok(workHistoryGuid);
         }
 
         [HttpPut]
@@ -188,7 +179,6 @@ namespace UpDiddyApi.Controllers.V2
             return StatusCode(204);
         }
 
-
         [HttpDelete]
         [Authorize]
         [Route("work-histories/{workHistoryGuid:guid}")]
@@ -198,7 +188,6 @@ namespace UpDiddyApi.Controllers.V2
             return StatusCode(204);
         }
 
-
         [HttpGet]
         [Authorize]
         [Route("work-histories")]
@@ -207,7 +196,6 @@ namespace UpDiddyApi.Controllers.V2
             var rVal = await _subscriberWorkHistoryService.GetWorkHistory(GetSubscriberGuid());
             return Ok(rVal);
         }
-
 
         #endregion
 
@@ -219,7 +207,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> DownloadResume()
         {
             var resume = await _resumeService.DownloadResume(GetSubscriberGuid());
-            return File(resume.ByteArrayData, resume.MimeType, resume.FileName);
+            return Ok(resume);
         }
 
         [HttpPost]
@@ -312,6 +300,5 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         #endregion
-
     }
 }

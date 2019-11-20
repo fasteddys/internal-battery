@@ -42,7 +42,15 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             else
             {
-                throw new AlreadyExistsException("Job is already added to favorites");
+                if (jobPostingFavorite.IsDeleted == 0)
+                {
+                    throw new AlreadyExistsException("Job already added to favorites");
+                }
+                else
+                {
+                    jobPostingFavorite.IsDeleted = 0;
+                    await _repositoryWrapper.JobPostingFavorite.SaveAsync();
+                }
             }
         }
 

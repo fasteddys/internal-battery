@@ -63,7 +63,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _hangfireService = hangfireService;
         }
 
-        public async Task<bool> AddWorkHistory(SubscriberWorkHistoryDto WorkHistoryDto, Guid subscriberGuid )
+        public async Task<Guid> AddWorkHistory(SubscriberWorkHistoryDto WorkHistoryDto, Guid subscriberGuid )
         {
             // sanitize user inputs
             WorkHistoryDto.Company = HttpUtility.HtmlEncode(WorkHistoryDto.Company);
@@ -117,7 +117,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             // update google profile 
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
 
-            return true;
+            return WorkHistory.SubscriberWorkHistoryGuid;
         }
 
 

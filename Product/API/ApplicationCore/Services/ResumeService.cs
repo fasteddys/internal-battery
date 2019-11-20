@@ -83,7 +83,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             UpDiddyLib.Domain.Models.FileDto resume = new UpDiddyLib.Domain.Models.FileDto();
             resume.MimeType = file.MimeType;
             resume.FileName = file.SimpleName;
-            resume.ByteArrayData = Utils.StreamToByteArray(await _cloudStorage.OpenReadAsync(file.BlobName));
+            resume.Base64EncodedData = Convert.ToBase64String(Utils.StreamToByteArray(await _cloudStorage.OpenReadAsync(file.BlobName)));
             return resume;
         }
 
