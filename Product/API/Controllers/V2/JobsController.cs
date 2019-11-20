@@ -234,7 +234,7 @@ namespace UpDiddyApi.Controllers
 
         #region Job Favorites
 
-        [HttpPost]
+        [HttpPut]
         [Route("{job:guid}/favorites")]
         [Authorize]
         public async Task<IActionResult> CreateJobFavorite(Guid job)
