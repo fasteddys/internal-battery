@@ -25,6 +25,10 @@ public class ExceptionMiddleware
         {
             await CreateResponse(400, ex, context);
         }
+        catch (FileSizeExceedsLimit ex)
+        {
+            await CreateResponse(400, ex, context);
+        }
         catch (FailedValidationException ex)
         {
             await CreateResponse(400, ex, context);
@@ -35,7 +39,7 @@ public class ExceptionMiddleware
         }
         catch (NotFoundException ex)
         {
-            await CreateResponse(400, ex, context);
+            await CreateResponse(404, ex, context);
         }
         catch (NotSupportedException ex)
         {

@@ -6,7 +6,7 @@ namespace UpDiddyApi.ApplicationCore.Exceptions
     {
         public NotFoundException() : base() { }
         public NotFoundException(string message) : base(message) { }
-        public NotFoundException(string message, Exception innerException)
+        public NotFoundException(string message, NotFoundException innerException)
             : base(message, innerException) { }
     }
 
@@ -28,7 +28,7 @@ namespace UpDiddyApi.ApplicationCore.Exceptions
         {
 
         }
-        public AlreadyExistsException(string message, Exception innerException)
+        public AlreadyExistsException(string message, AlreadyExistsException innerException)
         : base(message, innerException) { }
     }
 
@@ -39,7 +39,7 @@ namespace UpDiddyApi.ApplicationCore.Exceptions
         {
 
         }
-        public ExpiredJobException(string message, Exception innerException)
+        public ExpiredJobException(string message, ExpiredJobException innerException)
         : base(message, innerException) { }
     }
     public class FailedValidationException : Exception
@@ -49,9 +49,22 @@ namespace UpDiddyApi.ApplicationCore.Exceptions
         {
 
         }
-        public FailedValidationException(string message, Exception innerException)
+        public FailedValidationException(string message, FailedValidationException innerException)
             : base(message, innerException) { }
     }
 
 
+    public class FileSizeExceedsLimit : Exception
+    {
+        public FileSizeExceedsLimit() : base() { }
+        public FileSizeExceedsLimit(string message) : base(message)
+        {
+
+        }
+        public FileSizeExceedsLimit(string message, FileSizeExceedsLimit innerException)
+            : base(message, innerException) { }
+    }
+
 }
+
+
