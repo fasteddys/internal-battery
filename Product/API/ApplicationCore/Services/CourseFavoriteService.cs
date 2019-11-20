@@ -53,7 +53,16 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             else
             {
-                throw new AlreadyExistsException("Course already added to favorite");
+                if (courseFavorite.IsDeleted == 0)
+                {
+                    throw new AlreadyExistsException("Course already added to favorites");
+                }
+                else
+                {
+                    courseFavorite.IsDeleted = 0;
+                    courseFavorite.ModifyDate = DateTime.UtcNow;
+                    await _repositoryWrapper.SaveAsync();
+                }
             }
         }
 

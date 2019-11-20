@@ -49,6 +49,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 else
                 {
                     jobPostingFavorite.IsDeleted = 0;
+                    jobPostingFavorite.ModifyDate = DateTime.UtcNow;
                     await _repositoryWrapper.JobPostingFavorite.SaveAsync();
                 }
             }
