@@ -252,7 +252,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
         #endregion
-
     }
 
 }

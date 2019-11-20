@@ -37,12 +37,12 @@ namespace UpDiddyApi.Controllers.V2
         private readonly IJobAlertService _jobAlertService;
         private readonly IProfileService _profileService;
         private readonly IResumeService _resumeService;
-
         private readonly ISkillService _skillservice;
+        private readonly IAvatarService _avatarService;
 
 
         #region constructor 
-        public ProfilesController(IServiceProvider services, IHangfireService hangfireService, ICloudTalentService cloudTalentService, IResumeService resumeService, ISkillService skillservice)
+        public ProfilesController(IServiceProvider services, IHangfireService hangfireService, ICloudTalentService cloudTalentService, IResumeService resumeService, ISkillService skillservice, IAvatarService avatarService)
         {
             _services = services;
             _db = _services.GetService<UpDiddyDbContext>();
@@ -63,6 +63,7 @@ namespace UpDiddyApi.Controllers.V2
             _profileService = _services.GetService<IProfileService>();
             _resumeService = resumeService;
             _skillservice = skillservice;
+            _avatarService = avatarService;
         }
 
         #endregion
@@ -131,8 +132,8 @@ namespace UpDiddyApi.Controllers.V2
         [Route("education-histories")]
         public async Task<IActionResult> AddProfileEducationHistory([FromBody] SubscriberEducationHistoryDto subscriberEducationHistoryDto)
         {
-            await _subscriberEducationalHistoryService.CreateEducationalHistory(subscriberEducationHistoryDto, GetSubscriberGuid());
-            return StatusCode(201);
+            var educationGuid = await _subscriberEducationalHistoryService.CreateEducationalHistory(subscriberEducationHistoryDto, GetSubscriberGuid());
+            return Ok(educationGuid);
         }
 
 
@@ -277,6 +278,37 @@ namespace UpDiddyApi.Controllers.V2
         {
             await _skillservice.UpdateSubscriberSkills(GetSubscriberGuid(), skills);
             return StatusCode(204);
+        }
+
+        #endregion
+
+        #region Avatar
+
+        [HttpPut]
+        [Route("avatar")]
+        [Authorize]
+        public async Task<IActionResult> UploadAvatar([FromBody] UpDiddyLib.Domain.Models.FileDto fileDto)
+        {
+            await _avatarService.UploadAvatar(GetSubscriberGuid(), fileDto);
+            return StatusCode(204);
+        }
+
+        [HttpDelete]
+        [Route("avatar")]
+        [Authorize]
+        public async Task<IActionResult> DeleteAvatar()
+        {
+            await _avatarService.RemoveAvatar(GetSubscriberGuid());
+            return StatusCode(204);
+        }
+
+        [HttpGet]
+        [Route("avatar")]
+        [Authorize]
+        public async Task<IActionResult> GetAvatar([FromBody] List<string> skills)
+        {
+            var avatarUrl = await _avatarService.GetAvatar(GetSubscriberGuid());
+            return Ok(avatarUrl);
         }
 
         #endregion

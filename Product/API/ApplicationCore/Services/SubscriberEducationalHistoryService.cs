@@ -66,7 +66,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         // todo jab start with update Educational History 
 
-        public async Task<bool> CreateEducationalHistory(SubscriberEducationHistoryDto EducationHistoryDto, Guid subscriberGuid)
+        public async Task<Guid> CreateEducationalHistory(SubscriberEducationHistoryDto EducationHistoryDto, Guid subscriberGuid)
         {
             // sanitize user inputs
             EducationHistoryDto.EducationalDegree = HttpUtility.HtmlEncode(EducationHistoryDto.EducationalDegree);
@@ -111,7 +111,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             // update google profile 
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
 
-            return true;
+            return EducationHistory.SubscriberEducationHistoryGuid;
         }
 
         public async Task<bool> UpdateEducationalHistory(SubscriberEducationHistoryDto EducationHistoryDto, Guid subscriberGuid, Guid educationalHistoryGuid)

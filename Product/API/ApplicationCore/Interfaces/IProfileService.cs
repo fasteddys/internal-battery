@@ -33,7 +33,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
         /// <returns></returns>
         Task<bool> CreateNewSubscriberAsync(SubscribeProfileBasicDto subscribeProfileBasicDto);
 
-#endregion
+        #endregion
 
         #region social profile
         /// <summary>

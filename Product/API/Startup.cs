@@ -286,6 +286,7 @@ namespace UpDiddyApi
             services.AddScoped<ISecurityClearanceService, SecurityClearanceService>();
             services.AddScoped<IContactService, ContactService>();
             services.AddScoped<ICourseFavoriteService, CourseFavoriteService>();
+            services.AddScoped<IAvatarService, AvatarService>();
 
 
             #endregion
