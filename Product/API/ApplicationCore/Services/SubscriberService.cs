@@ -147,7 +147,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     transaction.Commit();
 
                     if (parseResume)
-                        _hangfireService.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileDataAsync(subscriber, resume));
+                        _hangfireService.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileDataAsync(subscriber, resume, null));
 
                     return resume;
                 }
@@ -546,7 +546,17 @@ namespace UpDiddyApi.ApplicationCore.Services
             SubscriberFile resume = subscriber.SubscriberFile.OrderByDescending(e => e.CreateDate).FirstOrDefault();
 
             if (resume != null)
-                _hangfireService.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileDataAsync(subscriber, resume));
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileDataAsync(subscriber, resume, null));
+
+            return true;
+        }
+
+        public bool QueueScanResumeJobAsync(Subscriber subscriber, string base64EncodedData)
+        {
+
+            SubscriberFile resume = subscriber.SubscriberFile.OrderByDescending(e => e.CreateDate).FirstOrDefault();
+            if (resume != null)
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileDataAsync(subscriber, resume, base64EncodedData));
 
             return true;
         }

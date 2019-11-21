@@ -73,7 +73,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// </summary>
         /// <param name="subscriberGuid"></param>
         /// <returns></returns>
-        Task<Subscriber> GetSubscriberByGuid( Guid subscriberGuid);
+        Task<Subscriber> GetSubscriberByGuid(Guid subscriberGuid);
 
 
         /// <summary>
@@ -89,6 +89,14 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// <param name="subscriberGuid"></param>
         /// <returns>bool</returns>
         Task<bool> QueueScanResumeJobAsync(Guid subscriberGuid);
+
+        /// <summary>
+        /// Creates a background job to scan resume of subscriber 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <param name="base64EncodedData"></param>
+        /// <returns></returns>
+        bool QueueScanResumeJobAsync(Subscriber subscriber, string base64EncodedData);
 
         /// <summary>
         /// Returns a subscriber's resume as a Stream

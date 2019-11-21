@@ -69,10 +69,10 @@ namespace UpDiddyApi.ApplicationCore.Services
                 await _cloudStorage.DeleteFileAsync(oldFile.BlobName);
                 oldFile.IsDeleted = 1;
             }
+            subscriber.SubscriberFile = subscriberFiles;
             await _repositoryWrapper.SubscriberFileRepository.Create(subscriberFileResume);
             await _repositoryWrapper.SaveAsync();
-            await _subscriberService.QueueScanResumeJobAsync(subscriberGuid);
-
+            _subscriberService.QueueScanResumeJobAsync(subscriber, fileDto.Base64EncodedData);
         }
 
         public async Task<UpDiddyLib.Domain.Models.FileDto> DownloadResume(Guid subscriberGuid)
