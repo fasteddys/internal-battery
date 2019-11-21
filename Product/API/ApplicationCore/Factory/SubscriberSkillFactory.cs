@@ -44,7 +44,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                         IsDeleted = 0,
                         SubscriberSkillGuid = Guid.NewGuid()
                     };
-                    await repositoryWrapper.SubscriberSkillRepository.Create(existingSkill);
+                    await repositoryWrapper.SubscriberSkillRepository.Create(subscriberSkill);
                 }
                 await repositoryWrapper.SubscriberSkillRepository.SaveAsync();
             }

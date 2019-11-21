@@ -14,6 +14,7 @@ using UpDiddyApi.ApplicationCore.Factory;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using UpDiddyApi.Helpers;
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class ResumeService : IResumeService
@@ -24,8 +25,15 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly ISubscriberService _subscriberService;
         private readonly IMapper _mapper;
         private readonly ILogger _syslog;
+        private readonly ISovrenAPI _sovrenApi;
 
-        public ResumeService(IHangfireService hangfireService, IRepositoryWrapper repositoryWrapper, ICloudStorage cloudStorage, ISubscriberService subscriberService, IMapper mapper, ILogger<ResumeService> syslog)
+        public ResumeService(IHangfireService hangfireService
+        , IRepositoryWrapper repositoryWrapper
+        , ICloudStorage cloudStorage
+        , ISubscriberService subscriberService
+        , IMapper mapper
+        , ILogger<ResumeService> syslog
+        , ISovrenAPI sovrenApi)
         {
             _repositoryWrapper = repositoryWrapper;
             _hangfireService = hangfireService;
@@ -33,9 +41,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             _subscriberService = subscriberService;
             _mapper = mapper;
             _syslog = syslog;
+            _sovrenApi = sovrenApi;
         }
 
-        public async Task UploadResume(Guid subscriberGuid, FileDto fileDto)
+        public async Task<Guid> UploadResume(Guid subscriberGuid, FileDto fileDto)
         {
             var subscriber = await _subscriberService.GetBySubscriberGuid(subscriberGuid);
             if (subscriber == null)
@@ -69,10 +78,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                 await _cloudStorage.DeleteFileAsync(oldFile.BlobName);
                 oldFile.IsDeleted = 1;
             }
+            subscriber.SubscriberFile = subscriberFiles;
             await _repositoryWrapper.SubscriberFileRepository.Create(subscriberFileResume);
             await _repositoryWrapper.SaveAsync();
-            await _subscriberService.QueueScanResumeJobAsync(subscriberGuid);
-
+            var resumeParseGuid = await ResumeHelper.ImportSubscriberProfileDataAsync(_subscriberService, _repositoryWrapper, _sovrenApi, subscriber, subscriberFileResume, fileDto.Base64EncodedData);
+            return resumeParseGuid;
         }
 
         public async Task<UpDiddyLib.Domain.Models.FileDto> DownloadResume(Guid subscriberGuid)

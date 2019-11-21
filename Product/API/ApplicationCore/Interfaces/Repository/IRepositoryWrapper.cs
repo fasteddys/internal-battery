@@ -79,5 +79,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task SaveAsync();
         ITraitifyCourseTopicBlendMappingRepository TraitifyCourseTopicBlendMappingRepository { get; }
         ICourseFavoriteRepository CourseFavoriteRepository { get; }
+        ISubscriberProfileStagingStoreRepository SubscriberProfileStagingStoreRepository {get;}
     }
 }

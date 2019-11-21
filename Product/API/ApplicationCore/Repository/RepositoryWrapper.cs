@@ -84,6 +84,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IRecruiterCompanyRepository _recruiterCompanyRepository;
         private ITraitifyCourseTopicBlendMappingRepository _traitifyCourseTopicBlendMappingRepository;
         private ICourseFavoriteRepository _courseFavoriteRepository;
+        private ISubscriberProfileStagingStoreRepository _subscriberProfileStagingRepository;
 
         private readonly IConfiguration _configuration;
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
@@ -1004,6 +1005,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 }
                 return _courseFavoriteRepository;
             }
+        }
+
+        public ISubscriberProfileStagingStoreRepository SubscriberProfileStagingStoreRepository 
+        {
+            get{
+                  if (_subscriberProfileStagingRepository == null)
+                {
+                    _subscriberProfileStagingRepository = new SubscriberProfileStagingStoreRepository(_dbContext);
+                }
+                return _subscriberProfileStagingRepository;
+            }
+            
         }
     }
 }

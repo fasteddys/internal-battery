@@ -73,7 +73,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// </summary>
         /// <param name="subscriberGuid"></param>
         /// <returns></returns>
-        Task<Subscriber> GetSubscriberByGuid( Guid subscriberGuid);
+        Task<Subscriber> GetSubscriberByGuid(Guid subscriberGuid);
 
 
         /// <summary>

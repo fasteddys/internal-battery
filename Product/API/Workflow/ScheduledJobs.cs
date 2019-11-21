@@ -91,7 +91,7 @@ namespace UpDiddyApi.Workflow
             _cloudTalentService = cloudTalentService;
             _mimeMappingService = mimeMappingService;
             _hangfireService = hangfireService;
-            _memoryCache=memoryCache;
+            _memoryCache = memoryCache;
             _courseService = courseService;
         }
 
@@ -652,11 +652,12 @@ namespace UpDiddyApi.Workflow
                             _repositoryWrapper.CoursePage.Update(coursePage);
 
                         await _repositoryWrapper.CoursePage.SaveAsync();
-                    }catch(Exception e)
+                    }
+                    catch (Exception e)
                     {
                         _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.CrawlCourseSiteAsync encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                     }
-                }                
+                }
 
                 // update the course site to indicate that the crawl operation is complete
                 courseSite.LastCrawl = DateTime.UtcNow;
@@ -695,7 +696,7 @@ namespace UpDiddyApi.Workflow
                 var coursePages = (await _repositoryWrapper.CoursePage.GetPendingCoursePagesForCourseSiteAsync(courseSite.CourseSiteGuid)).ToList();
 
                 // transform course pages into courses which can be updated in the career circle schema
-                ConcurrentBag<Tuple<CoursePage, CourseDto>> coursePageAndTransformedCourses = new ConcurrentBag<Tuple<CoursePage, CourseDto>>();                
+                ConcurrentBag<Tuple<CoursePage, CourseDto>> coursePageAndTransformedCourses = new ConcurrentBag<Tuple<CoursePage, CourseDto>>();
                 var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 10 };
                 Parallel.For(0, coursePages.Count(), maxdop, async (index) =>
                 {
@@ -735,7 +736,7 @@ namespace UpDiddyApi.Workflow
                     finally
                     {
                         coursePage.CoursePageStatus = null; // must do this if there is an existing status which conflicts with the value we are setting
-                        
+
                         // save the related course page to reflect what occurred with the course operation
                         coursePage.ModifyDate = DateTime.UtcNow;
                         coursePage.ModifyGuid = Guid.Empty;
@@ -1060,7 +1061,6 @@ namespace UpDiddyApi.Workflow
 
                 }
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData: Finished downloading and encoding file at {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resume.Subscriber.SubscriberGuid}");
-
 
                 String parsedDocument = _sovrenApi.SubmitResumeAsync(base64EncodedString).Result;
                 // Save profile in staging store 
@@ -1580,7 +1580,7 @@ namespace UpDiddyApi.Workflow
             List<Subscriber> subscribers = await _subscriberService.GetSubscribersToIndexIntoGoogle(numProfilesToProcess, indexVersion);
             foreach (Subscriber s in subscribers)
             {
-               await _cloudTalentService.AddOrUpdateProfileToCloudTalent(s.SubscriberGuid.Value);
+                await _cloudTalentService.AddOrUpdateProfileToCloudTalent(s.SubscriberGuid.Value);
 
             }
             return true;
@@ -1605,7 +1605,7 @@ namespace UpDiddyApi.Workflow
         }
 
         [DisableConcurrentExecution(timeoutInSeconds: 30)]
-        public async Task<bool>CloudTalentDeleteJob(Guid jobPostingGuid)
+        public async Task<bool> CloudTalentDeleteJob(Guid jobPostingGuid)
         {
             await _cloudTalentService.DeleteJobFromCloudTalent(jobPostingGuid);
             return true;
@@ -1796,7 +1796,7 @@ namespace UpDiddyApi.Workflow
             }
         }
         #endregion
-        
+
         #region Update for Allegis Group Jobs Raw Data Fix
         /// <summary>
         /// Fix the RawData field in JobPage table for Allegis Group so that when job mining runs, it doesn't classify existing job as new jobs  
