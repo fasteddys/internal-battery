@@ -215,8 +215,8 @@ namespace UpDiddyApi.Controllers.V2
         [Route("resume")]
         public async Task<IActionResult> UploadResume([FromBody] UpDiddyLib.Domain.Models.FileDto fileDto)
         {
-            await _resumeService.UploadResume(GetSubscriberGuid(), fileDto);
-            return StatusCode(201);
+            var resumeParseGuid = await _resumeService.UploadResume(GetSubscriberGuid(), fileDto);
+            return Ok(resumeParseGuid);
         }
 
         [HttpGet]

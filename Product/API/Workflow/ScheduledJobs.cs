@@ -1045,24 +1045,22 @@ namespace UpDiddyApi.Workflow
 
         #region Resume Parsing 
         [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
-        public async Task<bool> ImportSubscriberProfileDataAsync(Subscriber subscriber, SubscriberFile resume, string base64EncodedString = null)
+        public async Task<bool> ImportSubscriberProfileDataAsync(Subscriber subscriber, SubscriberFile resume)
         {
             try
             {
                 resume.Subscriber = subscriber;
                 string errMsg = string.Empty;
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData started at: {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resume.Subscriber.SubscriberGuid}");
-                if (base64EncodedString == null)
+                string base64EncodedString = null;
+                using (var ms = new MemoryStream())
                 {
-                    using (var ms = new MemoryStream())
-                    {
-                        await _cloudStorage.DownloadToStreamAsync(resume.BlobName, ms);
-                        var fileBytes = ms.ToArray();
-                        base64EncodedString = Convert.ToBase64String(fileBytes);
+                    await _cloudStorage.DownloadToStreamAsync(resume.BlobName, ms);
+                    var fileBytes = ms.ToArray();
+                    base64EncodedString = Convert.ToBase64String(fileBytes);
 
-                    }
-                    _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData: Finished downloading and encoding file at {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resume.Subscriber.SubscriberGuid}");
                 }
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData: Finished downloading and encoding file at {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resume.Subscriber.SubscriberGuid}");
 
                 String parsedDocument = _sovrenApi.SubmitResumeAsync(base64EncodedString).Result;
                 // Save profile in staging store 
