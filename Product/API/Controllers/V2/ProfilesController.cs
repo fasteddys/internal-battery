@@ -213,6 +213,15 @@ namespace UpDiddyApi.Controllers.V2
             return Ok(resume);
         }
 
+        [HttpDelete]
+        [Authorize]
+        [Route("resume")]
+        public async Task<IActionResult> DeleteResume()
+        {
+            await _resumeService.DeleteResume(GetSubscriberGuid());
+            return StatusCode(204);
+        }
+
         [HttpPost]
         [Authorize]
         [Route("resume")]

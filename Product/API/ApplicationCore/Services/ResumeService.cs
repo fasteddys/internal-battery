@@ -132,5 +132,17 @@ namespace UpDiddyApi.ApplicationCore.Services
             Subscriber subscriber = await _subscriberService.GetBySubscriberGuid(subscriberGuid);
             await ResumeParseFactory.ResolveProfileMerge(_repositoryWrapper, _mapper, _syslog, resumeParse, subscriber, mergeInfo);
         }
+
+        public async Task DeleteResume(Guid subscriberGuid)
+        {
+            if (subscriberGuid == null || subscriberGuid == Guid.Empty)
+                throw new NullReferenceException("SubscriberGuid cannot be null");
+            SubscriberFile file = await _repositoryWrapper.SubscriberFileRepository.GetMostRecentBySubscriberGuid(subscriberGuid);
+            if (file == null)
+                throw new NotFoundException("Resume not found");
+            await _cloudStorage.DeleteFileAsync(file.BlobName);
+            file.IsDeleted = 1;
+            await _repositoryWrapper.SaveAsync();
+        }
     }
 }
