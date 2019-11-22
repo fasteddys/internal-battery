@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.ComponentModel.DataAnnotations;
 
 namespace UpDiddyLib.Domain.Models
 {
@@ -27,6 +28,11 @@ namespace UpDiddyLib.Domain.Models
         public string PostalCode { get; set; }
 
         public string Address { get; set; }
+
+        [StringLength(50)]
+        public string Title {get;set;}
+        [StringLength(200)]
+        public string Biography {get;set;}
                
     }
 }

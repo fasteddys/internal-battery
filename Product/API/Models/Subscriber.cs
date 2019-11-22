@@ -47,6 +47,8 @@ namespace UpDiddyApi.Models
         [MaxLength(100)]
         public string Auth0UserId { get; set; }
         public DateTime? LastSignIn { get; set; }
+        public string Title { get; set; }
+        public string Biography { get; set; }
 
         #region Avatar Urls
         public string LinkedInAvatarUrl { get; set; }
