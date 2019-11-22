@@ -13,9 +13,11 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyLib.Domain.Models;
 using System.Collections.Generic;
+using UpDiddyApi.ApplicationCore.ActionFilter;
 
 namespace UpDiddyApi.Controllers.V2
 {
+    [ServiceFilter(typeof(ActionFilter))]
     [Route("/V2/[controller]/")]
     public class ProfilesController : BaseApiController
     {
@@ -104,6 +106,7 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize]
         public async Task<IActionResult> UpdateProfile([FromBody] SubscribeProfileBasicDto subscribeProfileBasicDto)
         {
+
             await _profileService.UpdateSubscriberProfileBasicAsync(subscribeProfileBasicDto, GetSubscriberGuid());
             return StatusCode(204);
         }

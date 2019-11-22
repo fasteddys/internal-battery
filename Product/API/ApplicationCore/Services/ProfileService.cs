@@ -15,10 +15,8 @@ using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
-
     public class ProfileService : IProfileService
     {
-
         private UpDiddyDbContext _db { get; set; }
         private IConfiguration _configuration { get; set; }
         private ICloudStorage _cloudStorage { get; set; }
@@ -28,7 +26,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         private ITaggingService _taggingService { get; set; }
         private IHangfireService _hangfireService { get; set; }
         private ISubscriberService _subscriberService { get; set; }
-
 
         public ProfileService(UpDiddyDbContext context,
         IConfiguration configuration,
@@ -51,11 +48,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _subscriberService = subscriberService;
         }
 
-
-
-
         #region basic profile 
-
 
         public async Task<SubscribeProfileBasicDto> GetSubscriberProfileBasicAsync(Guid subscriberGuid)
         {
@@ -81,7 +74,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             return rVal;
         }
-
 
         public async Task<bool> UpdateSubscriberProfileBasicAsync(SubscribeProfileBasicDto subscribeProfileBasicDto, Guid subscriberGuid)
         {
@@ -109,6 +101,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 Subscriber.Address = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.Address) ? subscribeProfileBasicDto.Address : null;
                 Subscriber.City = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.City) ? subscribeProfileBasicDto.City : null;
                 Subscriber.PostalCode = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.PostalCode) ? subscribeProfileBasicDto.PostalCode : null;
+                Subscriber.Biography = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.Biography) ? subscribeProfileBasicDto.Biography : null;
+                Subscriber.Title = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.Title) ? subscribeProfileBasicDto.Title : null;
                 Subscriber.ModifyDate = DateTime.UtcNow;
                 Subscriber.StateId = StateId;
 
@@ -189,9 +183,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
             return isSubscriberCreatedSuccessfully;
-
         }
-
 
         #endregion
 
