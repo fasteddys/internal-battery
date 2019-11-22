@@ -39,7 +39,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using UpDiddyApi.ApplicationCore.Services.CourseCrawling;
 using UpDiddyApi.ApplicationCore.Services.Identity.Interfaces;
 using UpDiddyApi.ApplicationCore.Services.Identity;
-
+using UpDiddyApi.ApplicationCore.ActionFilter;
 namespace UpDiddyApi
 {
     public class Startup
@@ -152,10 +152,7 @@ namespace UpDiddyApi
             // Add framework services.
             // the 'ignore' option for reference loop handling was implemented to prevent circular errors during serialization 
             // (e.g. SubscriberDto contains a collection of EnrollmentDto objects, and the EnrollmentDto object has a reference to a SubscriberDto)
-            services.AddMvc(config =>
-            {
-                config.Filters.Add(new ActionFilter());
-            }).AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+            services.AddMvc().AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
             // Add SignalR
             services.AddSignalR();
@@ -290,6 +287,8 @@ namespace UpDiddyApi
             services.AddScoped<IContactService, ContactService>();
             services.AddScoped<ICourseFavoriteService, CourseFavoriteService>();
             services.AddScoped<IAvatarService, AvatarService>();
+            services.AddScoped<ActionFilter>();
+
 
 
             #endregion

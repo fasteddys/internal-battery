@@ -13,10 +13,11 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyLib.Domain.Models;
 using System.Collections.Generic;
-using System.Net;
+using UpDiddyApi.ApplicationCore.ActionFilter;
 
 namespace UpDiddyApi.Controllers.V2
 {
+    [ServiceFilter(typeof(ActionFilter))]
     [Route("/V2/[controller]/")]
     public class ProfilesController : BaseApiController
     {
