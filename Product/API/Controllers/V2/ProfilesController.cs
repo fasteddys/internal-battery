@@ -107,10 +107,8 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> UpdateProfile([FromBody] SubscribeProfileBasicDto subscribeProfileBasicDto)
         {
 
-                await _profileService.UpdateSubscriberProfileBasicAsync(subscribeProfileBasicDto, GetSubscriberGuid());
-                return StatusCode(204);
-
-        
+            await _profileService.UpdateSubscriberProfileBasicAsync(subscribeProfileBasicDto, GetSubscriberGuid());
+            return StatusCode(204);
         }
 
 
