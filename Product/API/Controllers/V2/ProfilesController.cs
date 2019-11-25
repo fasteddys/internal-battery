@@ -305,7 +305,7 @@ namespace UpDiddyApi.Controllers.V2
         [HttpGet]
         [Route("avatar")]
         [Authorize]
-        public async Task<IActionResult> GetAvatar([FromBody] List<string> skills)
+        public async Task<IActionResult> GetAvatar()
         {
             var avatarUrl = await _avatarService.GetAvatar(GetSubscriberGuid());
             return Ok(avatarUrl);
