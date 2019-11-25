@@ -108,8 +108,6 @@ namespace UpDiddyApi.Controllers
 
         #endregion
 
-
-
         #region Job Browse 
 
 
@@ -265,5 +263,40 @@ namespace UpDiddyApi.Controllers
         }
 
         #endregion
+
+
+        #region Job crud
+
+
+
+        [HttpPost]
+        [Route("admin")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        public async Task<IActionResult> CreateJob([FromBody] UpDiddyLib.Dto.JobPostingDto jobPostingDto)
+        {
+
+            await _jobPostingService.CreateJobPosting(GetSubscriberGuid(), jobPostingDto);
+            return StatusCode(201);
+        }
+
+
+
+
+        [HttpPut]
+        [Route("admin/{jobGuid:guid}")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        public async Task<IActionResult> UpdateJob([FromBody] UpDiddyLib.Dto.JobPostingDto jobPostingDto, Guid jobGuid)
+        {
+
+         //   await _jobPostingService.CreateJobPosting(GetSubscriberGuid(), jobPostingDto);
+            return StatusCode(204);
+        }
+
+
+
+
+
+        #endregion
+
     }
 }

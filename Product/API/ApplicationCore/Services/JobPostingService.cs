@@ -2,9 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using UpDiddyApi.ApplicationCore.Exceptions;
+using UpDiddyApi.ApplicationCore.Factory;
+using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.Models;
+using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Helpers;
@@ -14,7 +22,27 @@ namespace UpDiddyApi.ApplicationCore.Services
     public class JobPostingService : IJobPostingService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
-        public JobPostingService(IRepositoryWrapper repositoryWrapper) => _repositoryWrapper = repositoryWrapper;
+
+        private readonly IHangfireService _hangfireService;
+        private readonly ILogger _syslog;
+        private readonly IMapper _mapper;
+        private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
+       
+
+
+
+        // todo jab remove  public JobPostingService(IRepositoryWrapper repositoryWrapper) => _repositoryWrapper = repositoryWrapper;
+
+        public JobPostingService(IServiceProvider services, IRepositoryWrapper repositoryWrapper, IMapper mapper, IHangfireService hangfireService, Microsoft.Extensions.Configuration.IConfiguration configuration)
+        {
+            _repositoryWrapper = repositoryWrapper;
+            _mapper = mapper;
+            _hangfireService = hangfireService;
+            _syslog = services.GetService<ILogger<JobPostingService>>();
+            _configuration = configuration;
+            
+        }
+        
         /// <summary>
         /// Gets the job count based on state (province). It utilizes two types of enums (state prefix and state name)
         /// because the jobposting's province column has data that spells out state names and that uses abbreviations.
@@ -72,6 +100,52 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             return await _repositoryWrapper.StoredProcedureRepository.GetSubscriberJobFavorites(SubscriberId);
         }
-        
+
+
+
+        public async Task<bool> CreateJobPosting(Guid subscriberGuid, UpDiddyLib.Dto.JobPostingDto jobPostingDto)
+        {
+
+            if (jobPostingDto == null)
+                throw new NotFoundException("JobPostingService.CreateJobPosting: No JobPostingDto was passed");
+
+            if ( jobPostingDto.Recruiter == null || jobPostingDto.Recruiter.RecruiterGuid == null )
+                throw new NotFoundException("JobPostingService.CreateJobPosting: Recruiter not specified for job posting");
+
+            Recruiter recruiter = await RecruiterFactory.GetRecruiterBySubscriberGuid(_repositoryWrapper, jobPostingDto.Recruiter.SubscriberGuid);
+ 
+            if (recruiter == null)
+                throw new NotFoundException($"Recruiter {jobPostingDto.Recruiter.Subscriber.SubscriberGuid.Value} was not found");     
+
+            string errorMsg = string.Empty;
+            Guid newPostingGuid = Guid.Empty;
+            if (JobPostingFactory.PostJob(_repositoryWrapper, recruiter.RecruiterId, jobPostingDto, ref newPostingGuid, ref errorMsg, _syslog, _mapper, _configuration, _hangfireService) == true)
+                return true;
+            else
+                throw new JobPostingCreation(errorMsg);
+
+        }
+
+
+        public async Task<bool> UpdateJobPosting(Guid subscriberGuid, UpDiddyLib.Dto.JobPostingDto jobPostingDto)
+        {
+            // validate request      
+            if (jobPostingDto.Recruiter.Subscriber == null || jobPostingDto.Recruiter.Subscriber.SubscriberGuid == null || jobPostingDto.Recruiter.Subscriber.SubscriberGuid != subscriberGuid)
+                throw new UnauthorizedAccessException();
+
+            _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
+            // update the job posting 
+            string ErrorMsg = string.Empty;
+            bool UpdateOk = JobPostingFactory.UpdateJobPosting(_repositoryWrapper, jobPostingDto.JobPostingGuid.Value, jobPostingDto, ref ErrorMsg, _hangfireService);
+            _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
+            if (UpdateOk)
+                return true;
+            else
+                throw new JobPostingUpdate(ErrorMsg);
+
+        }
+
+
+
     }
 }

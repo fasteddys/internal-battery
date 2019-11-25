@@ -65,6 +65,33 @@ namespace UpDiddyApi.ApplicationCore.Exceptions
             : base(message, innerException) { }
     }
 
+
+    public class JobPostingCreation : Exception
+    {
+        public JobPostingCreation() : base() { }
+        public JobPostingCreation(string message) : base(message)
+        {
+
+        }
+        public JobPostingCreation(string message, FileSizeExceedsLimit innerException)
+            : base(message, innerException) { }
+    }
+
+
+    public class JobPostingUpdate : Exception
+    {
+        public JobPostingUpdate() : base() { }
+        public JobPostingUpdate(string message) : base(message)
+        {
+
+        }
+        public JobPostingUpdate(string message, FileSizeExceedsLimit innerException)
+            : base(message, innerException) { }
+    }
+
+
+
+
 }
 
 
