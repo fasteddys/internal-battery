@@ -22,7 +22,6 @@ namespace UpDiddyApi.Controllers
     [Route("/V2/[controller]/")]
     public class JobsController : BaseApiController
     {
-
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
@@ -79,7 +78,6 @@ namespace UpDiddyApi.Controllers
 
         #endregion
 
-
         #region CloudTalentTracking
 
         [HttpPost]
@@ -108,10 +106,7 @@ namespace UpDiddyApi.Controllers
 
         #endregion
 
-
-
         #region Job Browse 
-
 
         [HttpGet]
         [Route("browse-location")]
@@ -262,6 +257,26 @@ namespace UpDiddyApi.Controllers
 
             await _jobFavoriteService.DeleteJobFavorite(GetSubscriberGuid(), job);
             return StatusCode(204);
+        }
+
+        #endregion
+
+        #region Related Entities
+
+        [HttpGet]
+        [Route("courses/{course:guid}/related")]
+        public async Task<IActionResult> GetRelatedJobsByCourse(Guid course)
+        {
+            // GetSubscriberGuid - if value exists, use for geo
+            throw new NotImplementedException();
+        }
+        
+        [HttpGet]
+        [Route("subscriber/related")]
+        public async Task<IActionResult> GetRelatedJobsForSubscriber()
+        {
+            // GetSubscriberGuid - if value exists, use for geo
+            throw new NotImplementedException();
         }
 
         #endregion

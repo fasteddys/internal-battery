@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191126150325_city and postal")]
+    partial class cityandpostal
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1750,8 +1752,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("PostalCode");
 
-                    b.Property<int?>("PostalId");
-
                     b.Property<DateTime>("PostingDateUTC");
 
                     b.Property<DateTime>("PostingExpirationDateUTC");
@@ -1789,8 +1789,6 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("IndustryId");
 
                     b.HasIndex("JobCategoryId");
-
-                    b.HasIndex("PostalId");
 
                     b.HasIndex("RecruiterId");
 
@@ -4523,10 +4521,6 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.JobCategory", "JobCategory")
                         .WithMany()
                         .HasForeignKey("JobCategoryId");
-
-                    b.HasOne("UpDiddyApi.Models.Postal", "Postal")
-                        .WithMany()
-                        .HasForeignKey("PostalId");
 
                     b.HasOne("UpDiddyApi.Models.Recruiter", "Recruiter")
                         .WithMany()

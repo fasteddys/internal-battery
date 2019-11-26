@@ -16,6 +16,9 @@ namespace UpDiddyApi.Models
  
     public class JobPosting : BaseModel
     {
+        public int? PostalId { get; set; }
+        public virtual Postal Postal { get; set; }
+
         public int JobPostingId { get; set; }
         /// <summary>
         /// Posting Guid

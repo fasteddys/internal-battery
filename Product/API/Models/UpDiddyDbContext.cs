@@ -174,6 +174,8 @@ namespace UpDiddyApi.Models
         public DbSet<CoursePage> CoursePage { get; set; }
         public DbSet<CourseFavorite> CourseFavorite { get; set; }
         public DbSet<CoursePageStatus> CoursePageStatus { get; set; }
+        public DbSet<City> City { get; set; }
+        public DbSet<Postal> Postal { get; set; }
 
         #region DBQueries
 
@@ -205,6 +207,16 @@ namespace UpDiddyApi.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Postal>()
+                .HasIndex(p => new { p.CityId, p.Code })
+                .HasName("UIX_Postal_City_Code")
+                .IsUnique(true);
+
+            modelBuilder.Entity<City>()
+                .HasIndex(c => new { c.StateId, c.Name })
+                .HasName("UIX_City_State_Name")
+                .IsUnique(true);
+
             modelBuilder.Entity<CourseSite>()
                 .HasIndex(c => c.Name)
                 .HasName("UIX_CourseSite_Name")

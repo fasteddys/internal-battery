@@ -134,5 +134,30 @@ namespace UpDiddyApi.Controllers
             await _courseFavoriteService.RemoveFromFavorite(GetSubscriberGuid(), course);
             return StatusCode(204);
         }
+
+        #region Related Entities
+
+        [HttpGet]
+        [Route("courses/{course:guid}/related")]
+        public async Task<IActionResult> GetRelatedCoursesByCourse(Guid course)
+        {
+            throw new NotImplementedException();
+        }
+
+        [HttpGet]
+        [Route("jobs/{job:guid}/related")]
+        public async Task<IActionResult> GetRelatedCoursesByJob(Guid job)
+        {
+            throw new NotImplementedException();
+        }
+
+        [HttpGet]
+        [Route("subscriber/related")]
+        public async Task<IActionResult> GetRelatedCoursesForSubscriber()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
     }
 }
