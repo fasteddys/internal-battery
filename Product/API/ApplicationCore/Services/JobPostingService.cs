@@ -30,10 +30,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
        
 
-
-
-        // todo jab remove  public JobPostingService(IRepositoryWrapper repositoryWrapper) => _repositoryWrapper = repositoryWrapper;
-
         public JobPostingService(IServiceProvider services, IRepositoryWrapper repositoryWrapper, IMapper mapper, IHangfireService hangfireService, Microsoft.Extensions.Configuration.IConfiguration configuration)
         {
             _repositoryWrapper = repositoryWrapper;
