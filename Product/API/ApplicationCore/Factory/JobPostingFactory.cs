@@ -657,7 +657,14 @@ namespace UpDiddyApi.ApplicationCore.Factory
             try
             {
                 // Retreive the current state of the job posting 
-                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(repositoryWrapper, jobPostingDto.JobPostingGuid.Value).Result;
+                JobPosting jobPosting = null;
+
+                // for backward compatability, try and find the posting by the value specified in the jobposting DTO, if not it's not specified try and find int based on the passed job posting guid
+                if (jobPostingDto.JobPostingGuid != null )
+                    jobPosting =  JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(repositoryWrapper, jobPostingDto.JobPostingGuid.Value).Result;
+                else
+                    jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(repositoryWrapper, jobPostingGuid).Result;
+
                 if (jobPosting == null)
                 {
                     ErrorMsg = $"{jobPostingDto.JobPostingGuid} is not a valid jobposting guid";

@@ -17,6 +17,8 @@ using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyLib.Domain.Models;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyLib.Shared.GoogleJobs;
+using System.Collections.Generic;
+
 namespace UpDiddyApi.Controllers
 {
     [Route("/V2/[controller]/")]
@@ -288,9 +290,42 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> UpdateJob([FromBody] UpDiddyLib.Dto.JobPostingDto jobPostingDto, Guid jobGuid)
         {
 
-         //   await _jobPostingService.CreateJobPosting(GetSubscriberGuid(), jobPostingDto);
+            await _jobPostingService.UpdateJobPosting(GetSubscriberGuid(), jobGuid,jobPostingDto);
             return StatusCode(204);
         }
+
+
+
+        [HttpDelete]
+        [Route("admin/{jobGuid:guid}")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        public async Task<IActionResult> DeleteJob([FromBody] UpDiddyLib.Dto.JobPostingDto jobPostingDto, Guid jobGuid)
+        {
+
+            await _jobPostingService.DeleteJobPosting(GetSubscriberGuid(), jobGuid );
+            return StatusCode(204);
+        }
+
+        [HttpGet]
+        [Route("admin/{jobGuid:guid}")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        public async Task<IActionResult> GetJobAdmin(Guid jobGuid)
+        {
+
+            UpDiddyLib.Dto.JobPostingDto jobPostingDto =  await _jobPostingService.GetJobPosting(GetSubscriberGuid(), jobGuid);
+            return Ok(jobPostingDto);
+        }
+
+        [HttpGet]
+        [Route("admin")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        public async Task<IActionResult> GetJobAdminForSubscriber(Guid jobGuid)
+        {
+
+            List<UpDiddyLib.Dto.JobPostingDto> postings = await _jobPostingService.GetJobPostingForSubscriber(GetSubscriberGuid());
+            return Ok(postings);
+        }
+
 
 
 
