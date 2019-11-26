@@ -64,8 +64,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _hangfireService = hangfireService;
         }
 
-        // todo jab start with update Educational History 
-
+ 
         public async Task<Guid> CreateEducationalHistory(SubscriberEducationHistoryDto EducationHistoryDto, Guid subscriberGuid)
         {
             // sanitize user inputs
