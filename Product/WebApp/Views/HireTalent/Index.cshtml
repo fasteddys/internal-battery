@@ -1,0 +1,33 @@
+@using UpDiddy.ViewModels.ButterCMS
+@model UpDiddy.ViewModels.ButterCMS.HireTalentPageViewModel
+
+<div class="hire-talent-page-container">
+    <div class="row hire-talent-hero-band">
+        <div class="col-md-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="hire-talent-hero">
+                            <div class="hire-talent-header">
+                             @Html.Raw(Model.Header)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row hire-talent-content">
+        <div class="col-md-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="row hire-talent-content-container">
+                              @Html.Raw(Model.Content)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

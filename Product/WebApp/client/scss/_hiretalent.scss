@@ -1,0 +1,50 @@
+﻿@import '_variables';
+
+// Base Styles
+@media (min-width: 0px) {
+    .hire-talent-page-container {
+        div{
+            display: block;
+        }
+        .hire-talent-hero-band {
+            background-image: url('../images/medium_blue_background.jpg');
+            color: $color-white;
+            background-size: cover;
+
+            .hire-talent-hero {
+                padding-bottom: 2rem;
+
+                .hire-talent-header {
+                    font-size: 2rem;
+                    padding: 2rem 0;
+                }
+            }
+        }
+        .hire-talent-content{
+            padding: 2rem 0;
+            .hire-talent-content-container{
+
+            }
+       }
+    }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+}
+
+// Small Styles
+@media (min-width: 576px) {
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+}
+
+// Large Styles
+@media (min-width: 992px) {
+}
+
+//Extra Large Styles
+@media (min-width: 1200px) {
+}
