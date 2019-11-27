@@ -16,6 +16,8 @@ using UpDiddyApi.ApplicationCore.Services.Identity;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Domain.Models;
 using Microsoft.Extensions.Configuration;
+using UpDiddyLib.Domain;
+
 namespace UpDiddyApi.Helpers
 {
     public class AutoMapperConfiguration
@@ -242,6 +244,17 @@ namespace UpDiddyApi.Helpers
                 .ForMember(x => x.UpdateCount, opt => opt.MapFrom(src => src.CoursePages.Count(cp => cp.CoursePageStatus.Name == "Update")))
                 .ForMember(x => x.DeleteCount, opt => opt.MapFrom(src => src.CoursePages.Count(cp => cp.CoursePageStatus.Name == "Delete")))
                 .ForMember(x => x.ErrorCount, opt => opt.MapFrom(src => src.CoursePages.Count(cp => cp.CoursePageStatus.Name == "Error")))
+                .ReverseMap();
+
+            CreateMap<TalentFavorite, TalentFavoriteDto>()
+                .ForMember(x => x.SubscriberGuid, opt => opt.MapFrom(src => src.Talent.SubscriberGuid))
+                .ForMember(x => x.FirstName, opt => opt.MapFrom(src => src.Talent.FirstName))
+                .ForMember(x => x.LastName, opt => opt.MapFrom(src => src.Talent.LastName))
+                .ForMember(x => x.Email, opt => opt.MapFrom(src => src.Talent.Email))
+                .ForMember(x => x.PhoneNumber, opt => opt.MapFrom(src => src.Talent.PhoneNumber))
+                .ForMember(x => x.ProfileImage, opt => opt.MapFrom(src => src.Talent.ProfileImage))
+                .ForMember(x => x.ModifyDate, opt => opt.MapFrom(src => src.Talent.ModifyDate))
+                .ForMember(x => x.JoinDate, opt => opt.MapFrom(src => src.Talent.CreateDate))
                 .ReverseMap();
 
 

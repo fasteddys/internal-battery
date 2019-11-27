@@ -8,6 +8,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Reflection;
+ 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
     public class UpDiddyRepositoryBase<TEntity> : IUpDiddyRepositoryBase<TEntity> where TEntity : class
@@ -77,6 +78,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             return entity;
         }
+ 
+
 
         public async Task<TEntity> GetById(int id)
         {
