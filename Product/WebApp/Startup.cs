@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc.Razor;
 using System.Globalization;
@@ -29,6 +30,7 @@ using UpDiddy.Services.ButterCMS;
 using UpDiddy.ExceptionHandling;
 using System.Threading.Tasks;
 
+
 namespace UpDiddy
 {
     public class Startup
@@ -46,7 +48,7 @@ namespace UpDiddy
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
-             
+
             // if environment is set to development then add user secrets
             if (env.IsDevelopment())
             {
@@ -75,14 +77,15 @@ namespace UpDiddy
                 .AddChakraCore();
 
             services.AddReact();
-         
+
             string domain = $"https://{Configuration["Auth0:Domain"]}";
 
             services.Configure<CookiePolicyOptions>(options =>
            {
-                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-                options.CheckConsentNeeded = context => true;
-               options.MinimumSameSitePolicy = Microsoft.AspNetCore.Http.SameSiteMode.None;
+               // This lambda determines whether user consent for non-essential cookies is needed for a given request.
+               options.CheckConsentNeeded = context => true;
+               options.MinimumSameSitePolicy = Microsoft.AspNetCore.Http.SameSiteMode.Lax;
+               options.Secure = CookieSecurePolicy.Always;
            });
 
             // Add Auth0 authentication services
@@ -92,7 +95,8 @@ namespace UpDiddy
                 options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             })
-            .AddCookie(options => {
+            .AddCookie(options =>
+            {
                 options.LoginPath = "/Session/SignIn";
                 options.LogoutPath = "/Session/SignOut";
                 options.AccessDeniedPath = "/Session/AccessDenied";
@@ -330,6 +334,7 @@ namespace UpDiddy
             app.UseStaticFiles();
             app.UseCookiePolicy();
             app.UseAuthentication();
+            app.UseHttpsRedirection();
 
             // TODO - Change template action below to index upon site launch.
             app.UseMvc(routes =>
