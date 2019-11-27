@@ -10,7 +10,11 @@ namespace UpDiddy.ViewModels.ButterCMS
         public string Header { get; set; }
         [JsonProperty("hero_content")]
         public string Content { get; set; }
-        [JsonProperty("hero_footer")]
-        public string Footer { get; set; }
+
+        [JsonProperty("contact_form_header")]
+        public string ContactFormHeader { get; set; }
+
+        [JsonProperty("contact_form_text")]
+        public string ContactFormText { get; set; }
     }
 }

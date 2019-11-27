@@ -1,6 +1,5 @@
 @using UpDiddy.ViewModels.ButterCMS
-@model UpDiddy.ViewModels.ButterCMS.HireTalentPageViewModel
-
+@model UpDiddy.ViewModels.HireTalentViewModel
 <div class="hire-talent-page-container">
     <div class="row hire-talent-hero-band">
         <div class="col-md-12">
@@ -30,4 +29,116 @@
             </div>
         </div>
     </div>
+    <div class="hire-talent-contact-container">
+        <div class="row hire-talent-tertiary-band ">
+            <div class="d-flex justify-content-center">
+              <div class="col-md-6 pb-4">
+                <div class="container">
+                    <div class="header-container">
+                        <h1>@Model.ContactFormHeader</h1>
+                        <div>
+                            @Html.Raw(Model.ContactFormText)
+                        </div>
+                    </div>
+                    <form id="HireTalentForm" asp-controller="HireTalent" asp-action="Contact" onsubmit="return validateRecaptcha();">
+                        <div class="d-flex flex-row ">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="FirstName">First Name:</label>
+                                    <input required type="text" class="form-control" asp-for="FirstName">
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="LastName">Last Name:</label>
+                                    <input required type="text" class="form-control" asp-for="LastName" >
+                                </div>
+                            </div>                                                      
+                        </div> 
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="CompanyName">Company Name:</label>
+                                <input  type="text" class="form-control" asp-for="CompanyName">
+                            </div>
+                        </div>                      
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="Title">Title:</label>
+                                <input  type="text" class="form-control" id="Title" asp-for="Title">
+                            </div>
+                        </div>
+                         <div class="col">
+                            <div class="form-group">
+                                <label for="Email">Email Address:</label>
+                                <input required type="email" class="form-control" id="Email" asp-for="Email" pattern="^[a-zA-Z0-9.!#$@@%&'*+/=?^_`{|}~-]+@@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$">
+                             </div>
+                        </div>
+                         <div class="col">
+                            <div class="form-group">
+                                <label for="Phone">Phone Number:</label>
+                                <input type="text" class="form-control" id="Phone" asp-for="Phone">
+                            </div>
+                        </div>
+                         <div class="col">
+                            <div class="form-group">
+                                <label for="Pipeline">Description of Talent Pipeline:</label>
+                                <textarea style="height:100px" class="form-control" id="Pipeline" asp-for="Pipeline"></textarea>
+                            </div>
+                        </div>
+                         <div class="col">
+                            <div class="form-group">
+                                <label for="SkillSets">Skill Set to Build:</label>
+                                <input type="text" class="form-control" id="SkillSet" asp-for="SkillSet">
+                            </div>
+                        </div>
+                         <div class="col">
+                            <div class="form-group">
+                                <label for="Location">Location:</label>
+                                <input type="text" class="form-control" id="Location" asp-for="Location">
+                            </div>
+                        </div>
+                         <div class="col">
+                             <div class="form-group">
+                                <label for="Comments">Comments:</label>
+                                <textarea style="height:100px" class="form-control" id="Comments" asp-for="Comments"></textarea>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group d-flex justify-content-center">
+                                <div class="form-group g-recaptcha" data-sitekey="6LfyG6YUAAAAACnUU2wHebNKpTqaOnuQOuMG3OU4"></div>
+                            </div>
+                        </div>
+                         <div class="col">
+                            <div class="hire-talent-button-container d-flex justify-content-center">
+                                <button type="submit" class="btn btn-primary brand-button font-small">Submit</button>
+                                <br />
+                            </div>
+                        </div>                       
+                    </form>
+                </div>
+            </div>
+            </div>         
+        </div>
+    </div>
 </div>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+@section Scripts
+{
+
+<script type="text/javascript">
+
+    function validateRecaptcha()
+            {
+                var response = grecaptcha.getResponse();
+                if (response.length === 0)
+                {
+                    ToastService.warning('Please confirm you are not a robot');
+                    return false;
+                }
+                else
+                    return true;
+            }
+
+</script>
+
+}
