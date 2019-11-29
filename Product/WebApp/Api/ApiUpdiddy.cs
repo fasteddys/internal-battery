@@ -716,6 +716,24 @@ namespace UpDiddy.Api
                 return false;
         }
 
+        public async Task<bool> CustomPasswordResetAsync(string email)
+        {
+            var basicResponseDto = await PostAsync<BasicResponseDto>($"identity/custom-password-reset", new EmailDto() { Email = email });
+            if (basicResponseDto.StatusCode == 200)
+                return true;
+            else
+                return false;
+        }
+
+        public async Task<bool> ChangeUserPasswordInADB2CAsync(string email, string password)
+        {
+            var basicResponseDto = await PostAsync<BasicResponseDto>($"identity/change-password-adb2c", new UserDto() { Email = email, Password = password }, true);
+            if (basicResponseDto.StatusCode == 200)
+                return true;
+            else
+                return false;
+        }
+
         public async Task<bool> IsUserExistsInAuth0Async(string email)
         {
             var basicResponseDto = await PostAsync<BasicResponseDto>($"identity/is-user-exists-auth0", new UserDto() { Email = email, Password = string.Empty }, true);

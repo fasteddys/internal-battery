@@ -163,7 +163,7 @@ namespace UpDiddy.Controllers
                     Description = "Please enter all sign-up fields and try again."
                 });
             }
-            
+
             CreateUserDto createUserDto = new CreateUserDto
             {
                 SubscriberGuid = vm.SubscriberGuid.Value,
@@ -324,15 +324,19 @@ namespace UpDiddy.Controllers
                         }
                     }
 
-                    // send the password reset request
-                    var connectionString = string.Empty;
-                    var changePasswordResponse = await _auth0Client.ChangePasswordAsync(new ChangePasswordRequest()
-                    {
-                        Email = vm.EmailAddress,
-                        ClientId = _auth0ClientId,
-                        Connection = _auth0Connection
-                    });
-
+                    var isPasswordResetInitiatedSuccessfully = await _api.CustomPasswordResetAsync(vm.EmailAddress);
+                    if (isPasswordResetInitiatedSuccessfully)
+                        return Ok(new BasicResponseDto
+                        {
+                            StatusCode = 200,
+                            Description = "Password reset has been initiated."
+                        });
+                    else
+                        return BadRequest(new BasicResponseDto
+                        {
+                            StatusCode = 400,
+                            Description = "There was a problem initating the password reset."
+                        });
                 }
                 catch (Auth0.Core.Exceptions.ApiException ae)
                 {

@@ -37,7 +37,7 @@ namespace UpDiddyApi.Controllers
             _graphClient = services.GetService<IB2CGraph>();
             _adb2cApi = services.GetService<IAPIGateway>();
         }
-
+        
         // intentionally using HttpPost rather than HttpGet because of how IIS treats certain special characters in routes even if they are escaped (such as +)
         // https://stackoverflow.com/questions/7739233/double-escape-sequence-inside-a-url-the-request-filtering-module-is-configured
         [HttpPost("is-user-exists-auth0")]
@@ -74,7 +74,17 @@ namespace UpDiddyApi.Controllers
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = "A user with that email does not exist in ADB2C." });
             }
         }
-        
+
+        [HttpPost("change-password-adb2c")]
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
+        public async Task<IActionResult> ChangePasswordInADB2C([FromBody] UserDto userDto)
+        {
+            var subscriber = await _subscriberService.GetSubscriberByEmail(userDto.Email);
+            var result = await _graphClient.ChangeUserPassword(subscriber.SubscriberGuid.Value, userDto.Password);
+            throw new NotImplementedException();
+        }
+
+
         [HttpPost("check-adb2c-login")]
         [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
         public async Task<IActionResult> CheckADB2CLogin([FromBody] UserDto userDto)
@@ -117,6 +127,19 @@ namespace UpDiddyApi.Controllers
             {
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = "The user was not migrated successfully." });
             }
+        }
+
+        [HttpPost("custom-password-reset")]
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
+        public async Task<IActionResult> CustomPasswordReset([FromBody] EmailDto emailDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // send email, create password request entry
+            throw new NotImplementedException();
         }
 
         [HttpPost("create-user")]

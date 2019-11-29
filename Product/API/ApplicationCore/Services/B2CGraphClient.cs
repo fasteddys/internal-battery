@@ -108,6 +108,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await SendGraphPatchRequest($"/users/{subscriberGuid}", "{ \"accountEnabled\" : false}");
         }
 
+        public async Task<string> ChangeUserPassword(Guid subscriberGuid, string password)
+        {
+            string jsonBody = "{\"passwordProfile\":{\"password\":\"" + password + "\",\"forceChangePasswordNextLogin\":false},\"passwordPolicies\":\"DisablePasswordExpiration\"}";
+            return await SendGraphPatchRequest($"/users/{subscriberGuid}", jsonBody);
+        }
+
         public async Task<string> SendGraphGetRequest(string api, string query)
         {
             // First, use ADAL to acquire a token using the app's identity (the credential)
