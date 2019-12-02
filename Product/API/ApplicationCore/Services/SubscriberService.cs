@@ -44,6 +44,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         private IFileDownloadTrackerService _fileDownloadTrackerService { get; set; }
         private ISysEmail _sysEmail;
 
+        private ITraitifyServiceV2 _traitifyService;
+
         public SubscriberService(UpDiddyDbContext context,
             IConfiguration configuration,
             ICloudStorage cloudStorage,
@@ -53,7 +55,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             ITaggingService taggingService,
             IHangfireService hangfireService,
             IFileDownloadTrackerService fileDownloadTrackerService,
-            ISysEmail sysEmail)
+            ISysEmail sysEmail,
+            ITraitifyServiceV2 _traitifyService)
         {
             _db = context;
             _configuration = configuration;
@@ -232,7 +235,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <returns></returns>
         public async Task<Guid> CreateSubscriberAsync(UpDiddyLib.Domain.Models.SubscriberDto subscriberDto)
         {
-            
             Models.Group group = null;
             var subscriberGuid = Guid.NewGuid();
 
@@ -269,6 +271,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                     groupId = group.GroupId;
                 // set up the gated file download and send the email
                 await HandleGatedFileDownload(subscriberDto.GatedDownloadMaxAttemptsAllowed, subscriberDto.GatedDownloadFileUrl, groupId, subscriber.SubscriberId, subscriber.Email);
+            }
+
+            if (!string.IsNullOrEmpty(subscriberDto.AssessmentId))
+            {
+                await _traitifyService.CompleteSignup(subscriberDto.AssessmentId, subscriber);
             }
 
             return subscriberGuid;

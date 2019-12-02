@@ -21,8 +21,6 @@ namespace UpDiddyLib.Domain.Models
         public string JobReferralCode { get; set; }
 
         public Guid PartnerGuid { get; set; }
-
-        public bool IsWaitlist {get;set;}
                 
         public bool IsGatedDownload { get; set; }
 

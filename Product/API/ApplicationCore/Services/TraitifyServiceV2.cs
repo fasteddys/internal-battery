@@ -95,7 +95,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (string.IsNullOrEmpty(assessmentId))
             {
-                throw new NullReferenceException("AssessmentId cannot be null or empty");
+                throw new NullReferenceException("AssessmentId cannot be null or empty.");
             }
             try
             {
@@ -104,8 +104,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     string results = await GetJsonResults(assessmentId);
                     UpDiddyApi.Models.Traitify traitify = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(assessmentId);
-                    if(traitify.CompleteDate != null)
-                        throw new TraitifyException("The assessment has already been completed");
+                    if (traitify.CompleteDate != null)
+                        throw new TraitifyException("The assessment has already been completed.");
                     traitify.CompleteDate = DateTime.UtcNow;
                     traitify.ResultData = results;
                     traitify.ResultLength = results.Length;
@@ -117,7 +117,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 }
                 else
                 {
-                    throw new TraitifyException("The assessment is not complete");
+                    throw new TraitifyException("The assessment is not complete.");
                 }
             }
             catch (Exception e)
@@ -126,6 +126,27 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new TraitifyException(e.Message);
             }
         }
+
+        public async Task CompleteSignup(string assessmentId, Subscriber subscriber)
+        {
+            try
+            {
+                UpDiddyApi.Models.Traitify traitify = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(assessmentId);
+                traitify.SubscriberId = subscriber.SubscriberId;
+                traitify.ModifyDate = DateTime.UtcNow;
+                traitify.Email = subscriber.Email;
+                await _repositoryWrapper.TraitifyRepository.SaveAsync();
+                Models.Action action = await _repositoryWrapper.ActionRepository.GetByNameAsync(UpDiddyLib.Helpers.Constants.Action.TraitifyAccountCreation);
+                EntityType entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync(EntityTypeConst.TraitifyAssessment);
+                await _trackingService.TrackSubscriberAction(subscriber.SubscriberId, action, entityType, traitify.Id);
+                await SendCompletionEmail(assessmentId, traitify.Email);
+            }
+            catch (Exception e)
+            {
+                _logger.Log(LogLevel.Error, $"TraitifyController.CompleteSignup: An error occured while attempting to complete signup Message: {e.Message}", e);
+            }
+        }
+
 
         #region Private Functions
         private async Task CreateNewAssessment(TraitifyRequestDto dto, Subscriber subscriber)
@@ -145,20 +166,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             };
             await _repositoryWrapper.TraitifyRepository.Create(traitify);
             await _repositoryWrapper.TraitifyRepository.SaveAsync();
-        }
-
-        private async Task CompleteSignup(string assessmentId, Guid subscriberGuid)
-        {
-            var subscriber = _repositoryWrapper.SubscriberRepository.GetSubscriberByGuid(subscriberGuid);
-            UpDiddyApi.Models.Traitify traitify = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(assessmentId);
-            traitify.SubscriberId = subscriber.SubscriberId;
-            traitify.ModifyDate = DateTime.UtcNow;
-            traitify.Email = subscriber.Email;
-            await _repositoryWrapper.TraitifyRepository.SaveAsync();
-            Models.Action action = await _repositoryWrapper.ActionRepository.GetByNameAsync(UpDiddyLib.Helpers.Constants.Action.TraitifyAccountCreation);
-            EntityType entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync(EntityTypeConst.TraitifyAssessment);
-            await _trackingService.TrackSubscriberAction(subscriber.SubscriberId, action, entityType, traitify.Id);
-            await SendCompletionEmail(assessmentId, traitify.Email);
         }
 
         private async Task SendCompletionEmail(string assessmentId, string sendTo)
