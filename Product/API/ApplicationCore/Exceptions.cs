@@ -89,7 +89,16 @@ namespace UpDiddyApi.ApplicationCore.Exceptions
             : base(message, innerException) { }
     }
 
+     public class TraitifyException : Exception
+    {
+        public TraitifyException() : base() { }
+        public TraitifyException(string message) : base(message)
+        {
 
+        }
+        public TraitifyException(string message, TraitifyException innerException)
+            : base(message, innerException) { }
+    }
 
 
 }

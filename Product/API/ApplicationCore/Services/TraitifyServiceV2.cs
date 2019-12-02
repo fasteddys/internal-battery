@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Security.Cryptography.X509Certificates;
+using System;
 using AutoMapper;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
@@ -14,10 +15,11 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using static UpDiddyLib.Helpers.Constants;
 using EntityTypeConst = UpDiddyLib.Helpers.Constants.EventType;
-
+using UpDiddyLib.Domain.Models;
+using UpDiddyApi.ApplicationCore.Exceptions;
 namespace UpDiddyApi.ApplicationCore.Services
 {
-    public class TraitifyService : ITraitifyService
+    public class TraitifyServiceV2 : ITraitifyServiceV2
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IMapper _mapper;
@@ -32,7 +34,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly com.traitify.net.TraitifyLibrary.Traitify _traitify;
         private readonly ITrackingService _trackingService;
 
-        public TraitifyService(IRepositoryWrapper repositoryWrapper,
+        public TraitifyServiceV2(IRepositoryWrapper repositoryWrapper,
          IMapper mapper
          , ISubscriberService subscriberService
          , ILogger<TraitifyService> logger
@@ -56,56 +58,45 @@ namespace UpDiddyApi.ApplicationCore.Services
             _trackingService = trackingService;
         }
 
-        public async Task<TraitifyDto> StartNewAssesment(TraitifyDto dto)
+        public async Task<TraitifyResponseDto> StartNewAssesment(TraitifyRequestDto dto, Guid subscriberGuid)
         {
+            //If subscriber guid is not empty, it means an existing user is taking the assessment therefore the dto is not required.
+            Subscriber subscriber = null;
+            if (subscriberGuid != Guid.Empty)
+            {
+                subscriber = await _subscriberService.GetBySubscriberGuid(subscriberGuid);
+            }
+            else
+            {
+                if (dto == null)
+                {
+                    throw new NullReferenceException("TraitifyRequestDto cannot be null.");
+                }
+                else
+                {
+                    if (dto.FirstName == null || dto.LastName == null || dto.Email == null)
+                        throw new NullReferenceException("FirstName, LastName, and Email cannot be null or empty.");
+                }
+            }
             string deckId = _config["Traitify:DeckId"];
             var newAssessment = _traitify.CreateAssesment(deckId);
+            TraitifyResponseDto responseDto = new TraitifyResponseDto()
+            {
+                AssessmentId = newAssessment.id,
+                PublicKey = _publicKey,
+                Host = _host
+            };
             dto.AssessmentId = newAssessment.id;
-            dto.DeckId = deckId;
-            dto.PublicKey = _publicKey;
-            dto.Host = _host;
-            await CreateNewAssessment(dto);
-            return dto;
+            await CreateNewAssessment(dto, subscriber);
+            return responseDto;
         }
 
-        public async Task<TraitifyDto> GetByAssessmentId(string assessmentId)
+        public async Task CompleteAssessment(string assessmentId)
         {
-            var result = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(assessmentId);
-            return _mapper.Map<TraitifyDto>(result);
-        }
-
-        public async Task<TraitifyDto> GetAssessment(string assessmentId)
-        {
-            try
+            if (string.IsNullOrEmpty(assessmentId))
             {
-                var assessment = _traitify.GetAssessment(assessmentId);
-                TraitifyDto dto = new TraitifyDto()
-                {
-                    AssessmentId = assessmentId,
-                    PublicKey = _publicKey,
-                    Host = _host
-                };
-                if (assessment.completed_at != null)
-                {
-                    var completedAssessment = await GetByAssessmentId(assessmentId);
-                    dto.SubscriberGuid = completedAssessment.SubscriberGuid;
-                    dto.IsComplete = true;
-                    dto.IsRegistered = completedAssessment.SubscriberId != null ? true : false;
-                    dto.Email = completedAssessment.Email;
-                    dto.FirstName = completedAssessment.FirstName;
-                    dto.LastName = completedAssessment.LastName;
-                }
-                return dto;
+                throw new NullReferenceException("AssessmentId cannot be null or empty");
             }
-            catch (Exception e)
-            {
-                _logger.Log(LogLevel.Error, $"TraitifyController.GetByAssessmentId: An error occured while attempting retrieve assessment Message: {e.Message}", e);
-                return null;
-            }
-        }
-
-        public async Task<TraitifyDto> CompleteAssessment(string assessmentId)
-        {
             try
             {
                 var assessment = _traitify.GetAssessment(assessmentId);
@@ -113,6 +104,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     string results = await GetJsonResults(assessmentId);
                     UpDiddyApi.Models.Traitify traitify = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(assessmentId);
+                    if(traitify.CompleteDate != null)
+                        throw new TraitifyException("The assessment has already been completed");
                     traitify.CompleteDate = DateTime.UtcNow;
                     traitify.ResultData = results;
                     traitify.ResultLength = results.Length;
@@ -121,28 +114,23 @@ namespace UpDiddyApi.ApplicationCore.Services
                         await SendCompletionEmail(assessmentId, traitify.Email);
                     }
                     await _repositoryWrapper.TraitifyRepository.SaveAsync();
-                    TraitifyDto dto = new TraitifyDto
-                    {
-                        Email = traitify.Email
-                    };
-                    return dto;
+                }
+                else
+                {
+                    throw new TraitifyException("The assessment is not complete");
                 }
             }
             catch (Exception e)
             {
                 _logger.Log(LogLevel.Error, $"TraitifyController.CompleteAssessment: An error occured while attempting to complete the assessment  Message: {e.Message}", e);
-                return null;
+                throw new TraitifyException(e.Message);
             }
-            return null;
         }
 
-        public async Task CreateNewAssessment(TraitifyDto dto)
+        #region Private Functions
+        private async Task CreateNewAssessment(TraitifyRequestDto dto, Subscriber subscriber)
         {
-            Subscriber subscriber = null;
-            if (dto.SubscriberGuid != null)
-            {
-                subscriber = await _subscriberService.GetBySubscriberGuid(dto.SubscriberGuid.Value);
-            }
+
             UpDiddyApi.Models.Traitify traitify = new UpDiddyApi.Models.Traitify()
             {
                 Subscriber = subscriber != null ? subscriber : null,
@@ -150,19 +138,19 @@ namespace UpDiddyApi.ApplicationCore.Services
                 TraitifyGuid = Guid.NewGuid(),
                 CreateDate = DateTime.UtcNow,
                 AssessmentId = dto.AssessmentId,
-                FirstName = dto.FirstName,
-                LastName = dto.LastName,
-                Email = dto.Email,
-                DeckId = dto.DeckId
+                FirstName = subscriber == null ? dto.FirstName : subscriber.FirstName,
+                LastName = subscriber == null ? dto.LastName : subscriber.LastName,
+                Email = subscriber == null ? dto.Email : subscriber.Email,
+                DeckId = _config["Traitify:DeckId"]
             };
             await _repositoryWrapper.TraitifyRepository.Create(traitify);
             await _repositoryWrapper.TraitifyRepository.SaveAsync();
         }
 
-        public async Task CompleteSignup(string assessmentId, Guid subscriberGuid)
+        private async Task CompleteSignup(string assessmentId, Guid subscriberGuid)
         {
             var subscriber = _repositoryWrapper.SubscriberRepository.GetSubscriberByGuid(subscriberGuid);
-            UpDiddyApi.Models.Traitify traitify = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(assessmentId);            
+            UpDiddyApi.Models.Traitify traitify = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(assessmentId);
             traitify.SubscriberId = subscriber.SubscriberId;
             traitify.ModifyDate = DateTime.UtcNow;
             traitify.Email = subscriber.Email;
@@ -270,6 +258,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             return courses;
         }
+
+        #endregion
 
     }
 }

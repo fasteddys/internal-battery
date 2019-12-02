@@ -232,6 +232,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <returns></returns>
         public async Task<Guid> CreateSubscriberAsync(UpDiddyLib.Domain.Models.SubscriberDto subscriberDto)
         {
+            
             Models.Group group = null;
             var subscriberGuid = Guid.NewGuid();
 
@@ -267,7 +268,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (group == null)
                     groupId = group.GroupId;
                 // set up the gated file download and send the email
-                HandleGatedFileDownload(subscriberDto.GatedDownloadMaxAttemptsAllowed, subscriberDto.GatedDownloadFileUrl, groupId, subscriber.SubscriberId, subscriber.Email);
+                await HandleGatedFileDownload(subscriberDto.GatedDownloadMaxAttemptsAllowed, subscriberDto.GatedDownloadFileUrl, groupId, subscriber.SubscriberId, subscriber.Email);
             }
 
             return subscriberGuid;
