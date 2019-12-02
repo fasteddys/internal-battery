@@ -288,6 +288,8 @@ namespace UpDiddyApi
             services.AddScoped<ICourseFavoriteService, CourseFavoriteService>();
             services.AddScoped<IAvatarService, AvatarService>();
             services.AddScoped<ActionFilter>();
+            services.AddScoped<ITalentService, TalentService>();
+            services.AddScoped<ITalentFavoriteService, TalentFavoriteService>();
 
 
 
