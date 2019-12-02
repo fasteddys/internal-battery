@@ -290,7 +290,7 @@ namespace UpDiddyApi
             services.AddScoped<ActionFilter>();
             services.AddScoped<ITalentService, TalentService>();
             services.AddScoped<ITalentFavoriteService, TalentFavoriteService>();
-
+            services.AddScoped<ITalentNoteService, TalentNoteService>();
 
 
             #endregion

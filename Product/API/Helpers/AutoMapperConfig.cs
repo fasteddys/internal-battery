@@ -233,7 +233,10 @@ namespace UpDiddyApi.Helpers
                 .ForMember(x => x.EducationalDegree, opt => opt.MapFrom(src => src.EducationalDegree.Degree))
                 .ForMember(x => x.EducationalDegreeType, opt => opt.MapFrom(src => src.EducationalDegreeType.DegreeType));
 
-            CreateMap<SubscriberNotes, SubscriberNotesDto>().ReverseMap();
+            CreateMap<SubscriberNotes, SubscriberNotesDto>()
+                .ForMember(s => s.ModifiedDate, opt => opt.MapFrom(src => src.ModifyDate))
+                .ReverseMap();
+
             CreateMap<SubscriberNotification, SubscriberNotificationDto>().ReverseMap();
             CreateMap<Notification, NotificationDto>()
                 .ForMember(n => n.HasRead, opt => opt.Ignore());
