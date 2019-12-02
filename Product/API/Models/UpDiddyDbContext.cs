@@ -175,7 +175,6 @@ namespace UpDiddyApi.Models
         public DbSet<CourseFavorite> CourseFavorite { get; set; }
         public DbSet<CoursePageStatus> CoursePageStatus { get; set; }
         
-
         #region DBQueries
 
         public DbQuery<CampaignStatistic> CampaignStatistic { get; set; }
