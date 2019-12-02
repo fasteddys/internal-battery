@@ -21,6 +21,19 @@ namespace UpDiddyLib.Helpers
     static public class Utils
     {
 
+        public static bool IsPasswordPassesADB2CRequirements(string password)
+        {
+            return true;
+        }
+
+        public static bool IsPasswordPassesAuth0Requirements(string password)
+        {
+            Regex atLeastOneSpecialCharacter = new Regex(@"[!@#\$%\^&\*]{1}");
+            Regex noMoreThanTwoConsecutiveCharacters = new Regex(@"^((.)\2?(?!\2))+$");
+            
+
+            return noMoreThanTwoConsecutiveCharacters.IsMatch(password);
+        }
 
         public static int GetIntQueryParam(IQueryCollection queryInfo, string ParamName, int defaultValue = 0)
         {

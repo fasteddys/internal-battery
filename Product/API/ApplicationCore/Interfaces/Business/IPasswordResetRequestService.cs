@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyLib.Dto.User;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
    public interface IPasswordResetRequestService
     {
-        Task<Guid> CreatePasswordResetRequest(Guid subscriberGuid);
-        Task<bool> ConsumePasswordResetRequest(Guid passwordResetRequestGuid);
+        Task CreatePasswordResetRequest(Guid subscriberGuid);
+        Task<bool> ConsumePasswordResetRequest(ResetPasswordDto resetPasswordDto);
     }
 }

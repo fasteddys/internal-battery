@@ -523,6 +523,60 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             }
         }
 
+        public async Task<bool> ResetPasswordAsync(string userId, string newPassword)
+        {
+            bool isPasswordResetSuccessfully = false;
+
+            var subscriberByAuth0UserIdQuery = await _repositoryWrapper.SubscriberRepository.GetByConditionAsync(s => s.Auth0UserId == userId);
+            var subscriber = subscriberByAuth0UserIdQuery.FirstOrDefault();
+
+            if (subscriber == null && subscriber.SubscriberGuid.HasValue && !string.IsNullOrWhiteSpace(subscriber.Auth0UserId))
+                return isPasswordResetSuccessfully;
+
+            // todo: change type from string to bool?
+            var result = _graphClient.ChangeUserPassword(subscriber.SubscriberGuid.Value, newPassword);
+
+            // todo: check to see if this was successful before continuing - how to deal with one being reset and the other not?
+            var apiToken = await GetApiTokenAsync();
+            var managementApiClient = new ManagementApiClient(apiToken, _domain);
+            try
+            {
+                await managementApiClient.Users.UpdateAsync(userId, new UserUpdateRequest() { Password = newPassword });
+                isPasswordResetSuccessfully = true;
+
+            }
+            catch (ApiException ae)
+            {
+                _logger.LogWarning($"An Auth0 ApiException occurred in UserService.ResetPasswordAsync (will refresh token and retry one time): {ae.Message}", ae);
+                if (ae.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    try
+                    {
+                        // clear the token, get a new one, and try one more time
+                        ClearApiTokenAsync();
+                        apiToken = await GetApiTokenAsync();
+                        managementApiClient = new ManagementApiClient(apiToken, _domain);
+                        await managementApiClient.Users.UpdateAsync(userId, new UserUpdateRequest() { Password = newPassword });
+                        isPasswordResetSuccessfully = true;
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError($"An unexpected exception occurred in UserService.ResetPasswordAsync (will not be retried): {e.Message}", e);
+                    }
+                }
+                else
+                {
+                    _logger.LogError($"An exception occurred in UserService.ResetPasswordAsync (will not be retried): {ae.Message}", ae);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"An unexpected exception occurred in UserService.ResetPasswordAsync (will not be retried): {e.Message}", e);
+            }
+
+            return isPasswordResetSuccessfully;
+        }
+
         public async Task DeleteUserAsync(string userId)
         {
             var apiToken = await GetApiTokenAsync();

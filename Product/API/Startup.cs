@@ -288,8 +288,7 @@ namespace UpDiddyApi
             services.AddScoped<ICourseFavoriteService, CourseFavoriteService>();
             services.AddScoped<IAvatarService, AvatarService>();
             services.AddScoped<ActionFilter>();
-
-
+            services.AddScoped<IPasswordResetRequestService, PasswordResetRequestService>();
 
             #endregion
 

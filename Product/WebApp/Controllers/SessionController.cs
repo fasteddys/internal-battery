@@ -286,8 +286,33 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+        [HttpGet]
+        [Route("/session/changepassword/{passwordResetRequestGuid}")]
+        public async Task<IActionResult> ChangePassword(Guid passwordResetRequestGuid)
+        {
+            // todo: does it make sense to validate at this point to see if its a valid token?
+            return View(new ChangePasswordViewModel() { PasswordResetRequestGuid = passwordResetRequestGuid });
+        }
+
+        [HttpPost]
+        [Route("/session/submitpassword")]
+        public async Task<IActionResult> SubmitPassword(ChangePasswordViewModel vm)
+        {
+            if (Utils.IsPasswordPassesADB2CRequirements(vm.Password) && Utils.IsPasswordPassesAuth0Requirements(vm.Password))
+            {
+                var changePasswordResult = await _api.ConsumeCustomPasswordResetAsync(vm.PasswordResetRequestGuid, vm.Password);
+
+                if (changePasswordResult)
+                    return RedirectToAction(nameof(SessionController.SignIn)); // todo: add message to query string for toast message
+                else
+                    return View(nameof(SessionController.ChangePassword), vm);
+            }
+            else
+                return View(nameof(SessionController.ChangePassword), vm);
+        }
+
         [HttpPost("/session/resetpassword")]
-        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel vm)
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequestViewModel vm)
         {
             if (ModelState.IsValid)
             {
@@ -324,7 +349,7 @@ namespace UpDiddy.Controllers
                         }
                     }
 
-                    var isPasswordResetInitiatedSuccessfully = await _api.CustomPasswordResetAsync(vm.EmailAddress);
+                    var isPasswordResetInitiatedSuccessfully = await _api.CreateCustomPasswordResetAsync(vm.EmailAddress);
                     if (isPasswordResetInitiatedSuccessfully)
                         return Ok(new BasicResponseDto
                         {
