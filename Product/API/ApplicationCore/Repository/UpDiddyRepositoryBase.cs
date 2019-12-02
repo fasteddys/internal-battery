@@ -8,6 +8,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Reflection;
+ 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
     public class UpDiddyRepositoryBase<TEntity> : IUpDiddyRepositoryBase<TEntity> where TEntity : class
@@ -77,6 +78,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             return entity;
         }
+ 
+
 
         public async Task<TEntity> GetById(int id)
         {
@@ -85,7 +88,20 @@ namespace UpDiddyApi.ApplicationCore.Repository
             .FindAsync(id);
         }
 
-        public async Task<TEntity> GetByGuid(Guid guid)
+        public async Task<TEntity> GetByGuid(Guid guid, bool isIncludeLogicalDeletes = false )
+        {
+            if (isIncludeLogicalDeletes)
+                return await GetByGuidIncludeDeleted(guid);
+
+            PropertyInfo guidProp = typeof(TEntity).GetProperty(typeof(TEntity).Name + "Guid");
+            PropertyInfo isDeleted = typeof(TEntity).GetProperty("IsDeleted");
+            return await _dbContext.Set<TEntity>()
+             .Where(x => (Guid)guidProp.GetValue(x, null) == guid && (int) isDeleted.GetValue(x) == 0)
+             .FirstOrDefaultAsync();
+        }
+
+        
+        private async Task<TEntity> GetByGuidIncludeDeleted(Guid guid)
         {
             PropertyInfo guidProp = typeof(TEntity).GetProperty(typeof(TEntity).Name + "Guid");
             return await _dbContext.Set<TEntity>()
