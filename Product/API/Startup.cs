@@ -287,10 +287,12 @@ namespace UpDiddyApi
             services.AddScoped<IContactService, ContactService>();
             services.AddScoped<ICourseFavoriteService, CourseFavoriteService>();
             services.AddScoped<IAvatarService, AvatarService>();
+            services.AddScoped<ITraitifyServiceV2,TraitifyServiceV2>();
             services.AddScoped<ActionFilter>();
             services.AddScoped<ITalentService, TalentService>();
             services.AddScoped<ITalentFavoriteService, TalentFavoriteService>();
             services.AddScoped<ITalentNoteService, TalentNoteService>();
+
 
 
             #endregion

@@ -163,7 +163,7 @@ namespace UpDiddy.Controllers
                     Description = "Please enter all sign-up fields and try again."
                 });
             }
-            
+
             CreateUserDto createUserDto = new CreateUserDto
             {
                 SubscriberGuid = vm.SubscriberGuid.Value,
