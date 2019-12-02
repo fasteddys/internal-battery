@@ -8,6 +8,5 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     {
         Task CompleteAssessment(string assessmentId);
         Task<TraitifyResponseDto> StartNewAssesment(TraitifyRequestDto dto, Guid subscriberGuid);
-        Task CompleteSignup(string assessmentId, Subscriber subscriber);
     }
 }

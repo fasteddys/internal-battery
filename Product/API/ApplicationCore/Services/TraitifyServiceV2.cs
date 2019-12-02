@@ -17,26 +17,25 @@ using static UpDiddyLib.Helpers.Constants;
 using EntityTypeConst = UpDiddyLib.Helpers.Constants.EventType;
 using UpDiddyLib.Domain.Models;
 using UpDiddyApi.ApplicationCore.Exceptions;
+using UpDiddyApi.Helpers;
+
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class TraitifyServiceV2 : ITraitifyServiceV2
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IMapper _mapper;
-        private readonly ISubscriberService _subscriberService;
         private ILogger<TraitifyService> _logger;
         private readonly ZeroBounceApi _zeroBounceApi;
         private readonly IConfiguration _config;
         private readonly ISysEmail _sysEmail;
         private readonly string _publicKey;
         private readonly string _host;
-        private readonly string _resultUrl;
         private readonly com.traitify.net.TraitifyLibrary.Traitify _traitify;
         private readonly ITrackingService _trackingService;
 
         public TraitifyServiceV2(IRepositoryWrapper repositoryWrapper,
          IMapper mapper
-         , ISubscriberService subscriberService
          , ILogger<TraitifyService> logger
          , IConfiguration config
          , ISysEmail sysEmail
@@ -46,9 +45,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             string version = config["Traitify:Version"];
             _publicKey = config["Traitify:PublicKey"];
             _host = config["Traitify:HostUrl"];
-            _resultUrl = config["Traitify:ResultUrl"];
             _traitify = new com.traitify.net.TraitifyLibrary.Traitify(_host, _publicKey, secretKey, version);
-            _subscriberService = subscriberService;
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
             _logger = logger;
@@ -64,7 +61,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             Subscriber subscriber = null;
             if (subscriberGuid != Guid.Empty)
             {
-                subscriber = await _subscriberService.GetBySubscriberGuid(subscriberGuid);
+                subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
             }
             else
             {
@@ -102,7 +99,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 var assessment = _traitify.GetAssessment(assessmentId);
                 if (assessment.completed_at != null)
                 {
-                    string results = await GetJsonResults(assessmentId);
+                    string results = await TraitifyHelper.GetJsonResults(assessmentId, _config);
                     UpDiddyApi.Models.Traitify traitify = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(assessmentId);
                     if (traitify.CompleteDate != null)
                         throw new TraitifyException("The assessment has already been completed.");
@@ -111,7 +108,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     traitify.ResultLength = results.Length;
                     if (traitify.SubscriberId != null)
                     {
-                        await SendCompletionEmail(assessmentId, traitify.Email);
+                        await TraitifyHelper.SendCompletionEmail(assessmentId, traitify.Email, _repositoryWrapper, _sysEmail, _config, _zeroBounceApi);
                     }
                     await _repositoryWrapper.TraitifyRepository.SaveAsync();
                 }
@@ -126,27 +123,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new TraitifyException(e.Message);
             }
         }
-
-        public async Task CompleteSignup(string assessmentId, Subscriber subscriber)
-        {
-            try
-            {
-                UpDiddyApi.Models.Traitify traitify = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(assessmentId);
-                traitify.SubscriberId = subscriber.SubscriberId;
-                traitify.ModifyDate = DateTime.UtcNow;
-                traitify.Email = subscriber.Email;
-                await _repositoryWrapper.TraitifyRepository.SaveAsync();
-                Models.Action action = await _repositoryWrapper.ActionRepository.GetByNameAsync(UpDiddyLib.Helpers.Constants.Action.TraitifyAccountCreation);
-                EntityType entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync(EntityTypeConst.TraitifyAssessment);
-                await _trackingService.TrackSubscriberAction(subscriber.SubscriberId, action, entityType, traitify.Id);
-                await SendCompletionEmail(assessmentId, traitify.Email);
-            }
-            catch (Exception e)
-            {
-                _logger.Log(LogLevel.Error, $"TraitifyController.CompleteSignup: An error occured while attempting to complete signup Message: {e.Message}", e);
-            }
-        }
-
 
         #region Private Functions
         private async Task CreateNewAssessment(TraitifyRequestDto dto, Subscriber subscriber)
@@ -166,104 +142,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             };
             await _repositoryWrapper.TraitifyRepository.Create(traitify);
             await _repositoryWrapper.TraitifyRepository.SaveAsync();
-        }
-
-        private async Task SendCompletionEmail(string assessmentId, string sendTo)
-        {
-            string results = await GetJsonResults(assessmentId);
-            dynamic payload = await ProcessResult(results);
-            bool? isEmailValid = _zeroBounceApi.ValidateEmail(sendTo);
-            if (isEmailValid != null && isEmailValid.Value == true)
-            {
-                await _sysEmail.SendTemplatedEmailAsync(
-                                 sendTo,
-                                 _config["SysEmail:Transactional:TemplateIds:PersonalityAssessment-ResultsSummary"],
-                                 payload,
-                                 SendGridAccount.Transactional,
-                                 null,
-                                 null);
-            }
-        }
-
-        private async Task<string> GetJsonResults(string assessmentId)
-        {
-            string apiResponse = string.Empty;
-            var url = _resultUrl.Replace("{assessmentId}", assessmentId);
-            using (var httpClient = new HttpClient())
-            {
-                var byteArray = Encoding.ASCII.GetBytes($"{_publicKey}:x");
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-                using (var response = await httpClient.GetAsync(url))
-                {
-                    apiResponse = await response.Content.ReadAsStringAsync();
-                }
-            }
-            return apiResponse;
-        }
-
-        private async Task<dynamic> ProcessResult(string rawData)
-        {
-            var result = JObject.Parse(rawData);
-            dynamic jObj = new JObject();
-            jObj.blend = (JObject)result["personality_blend"];
-            jObj.types = (JArray)result["personality_types"];
-            jObj.courses = await GetSuggestedCourses(jObj.blend);
-            foreach (var type in jObj.types)
-            {
-                decimal score = (decimal)type["score"];
-                type["score"] = Math.Round(score, 0);
-            }
-            var traitRef = (JArray)result["personality_traits"];
-            var traits = new JArray();
-            foreach (var trait in traitRef)
-            {
-                var d = (decimal)trait["score"];
-                decimal roundScore = Math.Round(d, 0);
-                if (roundScore > 0)
-                {
-                    trait["score"] = roundScore;
-                    traits.Add(trait);
-                }
-            }
-            jObj.traits = traits;
-            return jObj;
-        }
-
-        private async Task<dynamic> GetSuggestedCourses(dynamic blend)
-        {
-            string type1 = blend["personality_type_1"].SelectToken("name").Value;
-            string type2 = blend["personality_type_2"].SelectToken("name").Value;
-            var mapping = await _repositoryWrapper.TraitifyCourseTopicBlendMappingRepository.GetByPersonalityTypes(type1, type2);
-            var courses = new JArray();
-            string baseUrl = _config["Environment:BaseUrl"];
-            baseUrl = baseUrl.Substring(0, (baseUrl.Length - 1));
-            if (mapping != null)
-            {
-                if (!string.IsNullOrEmpty(mapping.TopicOneName))
-                {
-                    dynamic course1 = new JObject();
-                    course1.imgUrl = mapping.TopicOneImgUrl;
-                    course1.courseUrl = baseUrl + mapping.TopicOneUrl;
-                    courses.Add(course1);
-                }
-
-                if (!string.IsNullOrEmpty(mapping.TopicTwoName))
-                {
-                    dynamic course2 = new JObject();
-                    course2.imgUrl = mapping.TopicTwoImgUrl;
-                    course2.courseUrl = baseUrl + mapping.TopicTwoUrl;
-                    courses.Add(course2);
-                }
-
-                if (!string.IsNullOrEmpty(mapping.TopicThreeName))
-                {
-                    dynamic course3 = new JObject();
-                    course3.imgUrl = mapping.TopicThreeImgUrl;
-                    course3.courseUrl = baseUrl + mapping.TopicThreeUrl;
-                    courses.Add(course3);
-                }
-            }
-            return courses;
         }
 
         #endregion
