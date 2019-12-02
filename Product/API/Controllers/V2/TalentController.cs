@@ -26,6 +26,7 @@ namespace UpDiddyApi.Controllers
         private readonly ITalentFavoriteService _talentFavoriteService = null;
         private readonly ITalentService _talentService = null;
         private IAuthorizationService _authorizationService;
+        private readonly ITalentNoteService _talentNoteService = null;
 
         public TalentController(UpDiddyDbContext db
         , IMapper mapper
@@ -35,7 +36,8 @@ namespace UpDiddyApi.Controllers
         , IRepositoryWrapper repositoryWrapper  
         , ITalentFavoriteService talentFavoriteService
         , ITalentService talentService
-        , IAuthorizationService authorizationService    )
+        , IAuthorizationService authorizationService 
+        , ITalentNoteService talentNoteService)
         {
             _db = db;
             _mapper = mapper;
@@ -44,6 +46,7 @@ namespace UpDiddyApi.Controllers
             _talentFavoriteService = talentFavoriteService;
             _talentService = talentService;
             _authorizationService = authorizationService;
+            _talentNoteService = talentNoteService;
         }
 
 
@@ -98,8 +101,6 @@ namespace UpDiddyApi.Controllers
 
         #endregion
 
-
-
         #region talent favorites
 
         [HttpGet]
@@ -131,6 +132,60 @@ namespace UpDiddyApi.Controllers
             return StatusCode(204);
         }
 
+        #endregion
+
+        #region talent notes
+
+
+        [HttpPost]
+        [Route("{talent:guid}/notes")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        public async Task<IActionResult> AddTalentNote([FromBody] SubscriberNotesDto subscriberNotesDto, Guid talent)
+        {
+            await _talentNoteService.CreateNote(GetSubscriberGuid(), talent, subscriberNotesDto);
+            return StatusCode(201);
+        }
+
+        [HttpPut]
+        [Route("{talent:guid}/notes/{note:guid}")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        public async Task<IActionResult> AddTalentNote([FromBody] SubscriberNotesDto subscriberNotesDto, Guid talent, Guid note)
+        {
+            await _talentNoteService.UpdateNote(GetSubscriberGuid(), talent, note, subscriberNotesDto);
+            return StatusCode(204);
+        }
+
+
+        [HttpDelete]
+        [Route("{talent:guid}/notes/{note:guid}")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        public async Task<IActionResult> DeleteTalentNote(Guid talent, Guid note)
+        {
+            await _talentNoteService.DeleteNote(GetSubscriberGuid(), note);
+            return StatusCode(204);
+        }
+
+        [HttpGet]
+        [Route("{talent:guid}/notes/{note:guid}")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        public async Task<IActionResult> GetTalentNote(Guid talent, Guid note)
+        {
+            SubscriberNotesDto rVal = await _talentNoteService.GetNote(GetSubscriberGuid(), note);
+            return Ok(rVal);
+        }
+
+
+
+        [HttpGet]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("{talent:guid}/notes")]
+        public async Task<IActionResult> TalentNoteList(Guid talent, int limit = 30, int offset = 0, string sort = "CreateDate", string order = "descending")
+        {
+
+            var rVal = await _talentNoteService.GetNotesForSubscriber(GetSubscriberGuid(), talent,limit, offset, sort, order);
+            return Ok(rVal);
+        }
+        
         #endregion
 
 

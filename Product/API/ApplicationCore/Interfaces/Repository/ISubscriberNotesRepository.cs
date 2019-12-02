@@ -12,5 +12,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task UpdateNotes(SubscriberNotes subscriberNotes);
         IQueryable<SubscriberNotes> GetAllSubscriberNotesQueryable();
         Task<SubscriberNotes> GetSubscriberNotesBySubscriberNotesGuid(Guid subscrberNotesGuid);
+
+        Task<List<SubscriberNotes>> GetNotesForSubscriber(Guid subscriberGuid, int limit = 30, int offset = 0, string sort = "CreateDate", string order = "descending");
     }
 }

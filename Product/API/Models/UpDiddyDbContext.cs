@@ -203,6 +203,8 @@ namespace UpDiddyApi.Models
         public DbQuery<SearchTermDto> KeywordSearchTerms { get; set; }
         public DbQuery<SearchTermDto> LocationSearchTerms { get; set; }
 
+        public DbQuery<SubscriberNotesDto> SubscriberNoteQuery { get; set; }
+
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

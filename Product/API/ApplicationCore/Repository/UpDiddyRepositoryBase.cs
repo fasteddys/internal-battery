@@ -88,7 +88,20 @@ namespace UpDiddyApi.ApplicationCore.Repository
             .FindAsync(id);
         }
 
-        public async Task<TEntity> GetByGuid(Guid guid)
+        public async Task<TEntity> GetByGuid(Guid guid, bool isIncludeLogicalDeletes = false )
+        {
+            if (isIncludeLogicalDeletes)
+                return await GetByGuidIncludeDeleted(guid);
+
+            PropertyInfo guidProp = typeof(TEntity).GetProperty(typeof(TEntity).Name + "Guid");
+            PropertyInfo isDeleted = typeof(TEntity).GetProperty("IsDeleted");
+            return await _dbContext.Set<TEntity>()
+             .Where(x => (Guid)guidProp.GetValue(x, null) == guid && (int) isDeleted.GetValue(x) == 0)
+             .FirstOrDefaultAsync();
+        }
+
+        
+        private async Task<TEntity> GetByGuidIncludeDeleted(Guid guid)
         {
             PropertyInfo guidProp = typeof(TEntity).GetProperty(typeof(TEntity).Name + "Guid");
             return await _dbContext.Set<TEntity>()
