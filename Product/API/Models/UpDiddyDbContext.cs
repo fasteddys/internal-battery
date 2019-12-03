@@ -175,6 +175,7 @@ namespace UpDiddyApi.Models
         public DbSet<CourseFavorite> CourseFavorite { get; set; }
         public DbSet<CoursePageStatus> CoursePageStatus { get; set; }
         public DbSet<PasswordResetRequest> PasswordResetRequest { get; set; }
+        public DbSet<TalentFavorite> TalentFavorite { get; set; }
 
         #region DBQueries
 
@@ -201,6 +202,8 @@ namespace UpDiddyApi.Models
         public DbQuery<SubscriberSignUpCourseEnrollmentStatistics> SubscriberSignUpCourseEnrollmentStatistics { get; set; }
         public DbQuery<SearchTermDto> KeywordSearchTerms { get; set; }
         public DbQuery<SearchTermDto> LocationSearchTerms { get; set; }
+
+        public DbQuery<SubscriberNotesDto> SubscriberNoteQuery { get; set; }
 
         #endregion
 

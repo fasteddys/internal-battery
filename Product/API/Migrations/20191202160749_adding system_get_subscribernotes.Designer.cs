@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191202160749_adding system_get_subscribernotes")]
+    partial class addingsystem_get_subscribernotes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2440,41 +2442,6 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("PartnerWebRedirect");
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.PasswordResetRequest", b =>
-                {
-                    b.Property<int>("PasswordResetRequestId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<DateTime>("ExpirationDate");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<Guid>("PasswordResetRequestGuid");
-
-                    b.Property<int>("RedemptionStatusId");
-
-                    b.Property<DateTime?>("ResetDate");
-
-                    b.Property<int>("SubscriberId");
-
-                    b.HasKey("PasswordResetRequestId");
-
-                    b.HasIndex("RedemptionStatusId");
-
-                    b.HasIndex("SubscriberId");
-
-                    b.ToTable("PasswordResetRequest");
-                });
-
             modelBuilder.Entity("UpDiddyApi.Models.Payment", b =>
                 {
                     b.Property<int>("PaymentId")
@@ -4684,19 +4651,6 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Partner")
                         .WithOne("WebRedirect")
                         .HasForeignKey("UpDiddyApi.Models.PartnerWebRedirect", "PartnerId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.PasswordResetRequest", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.RedemptionStatus", "RedemptionStatus")
-                        .WithMany()
-                        .HasForeignKey("RedemptionStatusId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany()
-                        .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

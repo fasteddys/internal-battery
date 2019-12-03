@@ -85,6 +85,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ITraitifyCourseTopicBlendMappingRepository _traitifyCourseTopicBlendMappingRepository;
         private ICourseFavoriteRepository _courseFavoriteRepository;
         private ISubscriberProfileStagingStoreRepository _subscriberProfileStagingRepository;
+        private ITalentFavoriteRepository _talentFavoriteRepository;
         private IPasswordResetRequestRepository _passwordResetRequestRepository;
 
         private readonly IConfiguration _configuration;
@@ -1031,5 +1032,20 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
             
         }
+
+
+        public ITalentFavoriteRepository TalentFavoriteRepository
+        {
+            get
+            {
+                if (_talentFavoriteRepository == null)
+                {
+                    _talentFavoriteRepository = new TalentFavoriteRepository(_dbContext);
+                }
+                return _talentFavoriteRepository;
+            }
+        }
+
+
     }
 }

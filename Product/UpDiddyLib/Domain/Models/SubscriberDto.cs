@@ -27,5 +27,8 @@ namespace UpDiddyLib.Domain.Models
         public string GatedDownloadFileUrl { get; set; }
 
         public int? GatedDownloadMaxAttemptsAllowed { get; set; }
+
+        public string AssessmentId { get; set; }
+
     }
 }

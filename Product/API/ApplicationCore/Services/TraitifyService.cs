@@ -162,8 +162,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task CompleteSignup(string assessmentId, Guid subscriberGuid)
         {
             var subscriber = _repositoryWrapper.SubscriberRepository.GetSubscriberByGuid(subscriberGuid);
-            UpDiddyApi.Models.Traitify traitify = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(assessmentId);
-            
+            UpDiddyApi.Models.Traitify traitify = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(assessmentId);            
             traitify.SubscriberId = subscriber.SubscriberId;
             traitify.ModifyDate = DateTime.UtcNow;
             traitify.Email = subscriber.Email;
