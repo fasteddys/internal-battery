@@ -76,16 +76,6 @@ namespace UpDiddyApi.Controllers
             }
         }
 
-        [HttpPost("change-password-adb2c")]
-        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
-        public async Task<IActionResult> ChangePasswordInADB2C([FromBody] UserDto userDto)
-        {
-            var subscriber = await _subscriberService.GetSubscriberByEmail(userDto.Email);
-            var result = await _graphClient.ChangeUserPassword(subscriber.SubscriberGuid.Value, userDto.Password);
-            throw new NotImplementedException();
-        }
-
-
         [HttpPost("check-adb2c-login")]
         [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
         public async Task<IActionResult> CheckADB2CLogin([FromBody] UserDto userDto)
@@ -171,6 +161,22 @@ namespace UpDiddyApi.Controllers
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = "Password reset was not completed successfully." });
         }
 
+        [HttpGet("check-custom-password-reset/{passwordResetRequestGuid}")]
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
+        public async Task<IActionResult> CheckValidityOfPasswordResetRequest(Guid passwordResetRequestGuid)
+        {
+            if(passwordResetRequestGuid == null || passwordResetRequestGuid == Guid.Empty)
+                return Ok(new BasicResponseDto() { StatusCode = 400, Description = "Password reset request is not valid." });
+
+            bool isPasswordResetRequestValid = await _passwordResetRequestService.CheckValidityOfPasswordResetRequest(passwordResetRequestGuid);
+
+
+            if (isPasswordResetRequestValid)
+                return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Password reset request is valid." });
+            else
+                return Ok(new BasicResponseDto() { StatusCode = 400, Description = "Password reset request is not valid." });
+        }
+        
         [HttpPost("create-user")]
         [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
         public async Task<IActionResult> CreateUserAsync([FromBody] CreateUserDto createUserDto)

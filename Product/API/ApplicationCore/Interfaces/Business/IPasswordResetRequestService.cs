@@ -10,5 +10,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     {
         Task CreatePasswordResetRequest(Guid subscriberGuid);
         Task<bool> ConsumePasswordResetRequest(ResetPasswordDto resetPasswordDto);
+        Task<bool> CheckValidityOfPasswordResetRequest(Guid passwordResetRequestGuid);
     }
 }

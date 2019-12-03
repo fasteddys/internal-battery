@@ -734,9 +734,9 @@ namespace UpDiddy.Api
                 return false;
         }
 
-        public async Task<bool> ChangeUserPasswordInADB2CAsync(string email, string password)
+        public async Task<bool> CheckValidityOfPasswordResetRequest(Guid passwordResetRequestGuid)
         {
-            var basicResponseDto = await PostAsync<BasicResponseDto>($"identity/change-password-adb2c", new UserDto() { Email = email, Password = password }, true);
+            var basicResponseDto = await GetAsync<BasicResponseDto>($"identity/check-custom-password-reset/" + passwordResetRequestGuid, true);
             if (basicResponseDto.StatusCode == 200)
                 return true;
             else

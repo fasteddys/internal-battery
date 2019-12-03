@@ -525,24 +525,37 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
 
         public async Task<bool> ResetPasswordAsync(string userId, string newPassword)
         {
-            bool isPasswordResetSuccessfully = false;
+            bool isAuth0PasswordReset = false;
+            bool isADB2CPasswordReset = false;
+
 
             var subscriberByAuth0UserIdQuery = await _repositoryWrapper.SubscriberRepository.GetByConditionAsync(s => s.Auth0UserId == userId);
             var subscriber = subscriberByAuth0UserIdQuery.FirstOrDefault();
 
             if (subscriber == null && subscriber.SubscriberGuid.HasValue && !string.IsNullOrWhiteSpace(subscriber.Auth0UserId))
-                return isPasswordResetSuccessfully;
+                return false;
 
-            // todo: change type from string to bool?
-            var result = _graphClient.ChangeUserPassword(subscriber.SubscriberGuid.Value, newPassword);
+            try
+            {
+                var result = await _graphClient.ChangeUserPassword(subscriber.SubscriberGuid.Value, newPassword);
+                if (string.IsNullOrEmpty(result))
+                    isADB2CPasswordReset = true;
+            }
+            catch(Exception e)
+            {
+                _logger.LogError($"An unexpected exception occurred in UserService.ResetPasswordAsync (will not be retried): {e.Message}", e);
+            }
 
-            // todo: check to see if this was successful before continuing - how to deal with one being reset and the other not?
+            // if we did not succesfully change the ADB2C password, abort immediately
+            if (!isADB2CPasswordReset)
+                return false;
+            
             var apiToken = await GetApiTokenAsync();
             var managementApiClient = new ManagementApiClient(apiToken, _domain);
             try
             {
                 await managementApiClient.Users.UpdateAsync(userId, new UserUpdateRequest() { Password = newPassword });
-                isPasswordResetSuccessfully = true;
+                isAuth0PasswordReset = true;
 
             }
             catch (ApiException ae)
@@ -557,7 +570,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                         apiToken = await GetApiTokenAsync();
                         managementApiClient = new ManagementApiClient(apiToken, _domain);
                         await managementApiClient.Users.UpdateAsync(userId, new UserUpdateRequest() { Password = newPassword });
-                        isPasswordResetSuccessfully = true;
+                        isAuth0PasswordReset = true;
                     }
                     catch (Exception e)
                     {
@@ -574,7 +587,12 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                 _logger.LogError($"An unexpected exception occurred in UserService.ResetPasswordAsync (will not be retried): {e.Message}", e);
             }
 
-            return isPasswordResetSuccessfully;
+            if(isAuth0PasswordReset != isADB2CPasswordReset)
+            {
+                _logger.LogCritical($"Password mismatch detected for user '{userId}': ADB2C reset = {isADB2CPasswordReset.ToString()}, Auth0 reset = {isAuth0PasswordReset.ToString()}");
+            }
+
+            return isAuth0PasswordReset && isADB2CPasswordReset;
         }
 
         public async Task DeleteUserAsync(string userId)

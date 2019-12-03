@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
+using UpDiddyLib.Helpers.CustomDataAnnotations;
 
 namespace UpDiddyLib.Dto.User
 {
@@ -10,7 +9,8 @@ namespace UpDiddyLib.Dto.User
         [Required]
         public Guid PasswordResetRequestGuid { get; set; }
         [Required]
-        public string Password { get; set; }
-        // todo: create regex to enforce pw requirements? should this validated in more than one place?
+        [ADB2CPasswordComplexityRequirement(ErrorMessage = "The password does not meet complexity requirements (1)")]
+        [Auth0PasswordComplexityRequirement(ErrorMessage = "The password does not meet complexity requirements (2)")]
+        public string Password { get; set; }        
     }
 }

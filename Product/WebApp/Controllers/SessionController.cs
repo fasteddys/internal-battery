@@ -290,22 +290,29 @@ namespace UpDiddy.Controllers
         [Route("/session/changepassword/{passwordResetRequestGuid}")]
         public async Task<IActionResult> ChangePassword(Guid passwordResetRequestGuid)
         {
-            // todo: does it make sense to validate at this point to see if its a valid token?
-            return View(new ChangePasswordViewModel() { PasswordResetRequestGuid = passwordResetRequestGuid });
+            var isPasswordResetRequestValid = await _api.CheckValidityOfPasswordResetRequest(passwordResetRequestGuid);
+
+            if (!isPasswordResetRequestValid)
+                return RedirectToAction(nameof(SessionController.ResetPassword), new { success = "false", message = "This password request is not valid." });
+            else
+                return View(new ChangePasswordViewModel() { PasswordResetRequestGuid = passwordResetRequestGuid });
         }
 
         [HttpPost]
         [Route("/session/submitpassword")]
         public async Task<IActionResult> SubmitPassword(ChangePasswordViewModel vm)
         {
-            if (Utils.IsPasswordPassesADB2CRequirements(vm.Password) && Utils.IsPasswordPassesAuth0Requirements(vm.Password))
+            if (ModelState.IsValid)
             {
                 var changePasswordResult = await _api.ConsumeCustomPasswordResetAsync(vm.PasswordResetRequestGuid, vm.Password);
 
                 if (changePasswordResult)
-                    return RedirectToAction(nameof(SessionController.SignIn)); // todo: add message to query string for toast message
+                    return RedirectToAction(nameof(SessionController.SignIn), new { success = "true", message = "Your password has been changed." });
                 else
+                {
+                    ModelState.AddModelError("CustomPasswordResetError", "There was a problem resetting the password.");
                     return View(nameof(SessionController.ChangePassword), vm);
+                }
             }
             else
                 return View(nameof(SessionController.ChangePassword), vm);
