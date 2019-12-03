@@ -27,7 +27,7 @@ namespace UpDiddyApi.Controllers
         private readonly IJobService _jobService;
         private readonly IB2CGraph _graphClient;
         private readonly IAPIGateway _adb2cApi;
-
+        private readonly IPasswordResetRequestService _passwordResetRequestService;
         public IdentityController(IServiceProvider services)
         {
             _mapper = services.GetService<IMapper>();
@@ -36,6 +36,7 @@ namespace UpDiddyApi.Controllers
             _jobService = services.GetService<IJobService>();
             _graphClient = services.GetService<IB2CGraph>();
             _adb2cApi = services.GetService<IAPIGateway>();
+            _passwordResetRequestService = services.GetService<IPasswordResetRequestService>();
         }
 
         // intentionally using HttpPost rather than HttpGet because of how IIS treats certain special characters in routes even if they are escaped (such as +)
@@ -74,7 +75,7 @@ namespace UpDiddyApi.Controllers
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = "A user with that email does not exist in ADB2C." });
             }
         }
-        
+
         [HttpPost("check-adb2c-login")]
         [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
         public async Task<IActionResult> CheckADB2CLogin([FromBody] UserDto userDto)
@@ -119,6 +120,63 @@ namespace UpDiddyApi.Controllers
             }
         }
 
+        [HttpPost("create-custom-password-reset")]
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
+        public async Task<IActionResult> CreateCustomPasswordResetAsync([FromBody] EmailDto emailDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var subscriber = await _subscriberService.GetSubscriberByEmail(emailDto.Email);
+
+            if (subscriber == null || !subscriber.SubscriberGuid.HasValue)
+                return Ok(new BasicResponseDto() { StatusCode = 400, Description = "Subscriber does not exist." });
+
+            try
+            {
+                await _passwordResetRequestService.CreatePasswordResetRequest(subscriber.SubscriberGuid.Value);
+            }
+            catch (Exception e)
+            {
+                return Ok(new BasicResponseDto() { StatusCode = 500, Description = e.Message });
+            }
+
+            return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Password reset request was initiated successfully." });
+        }
+
+        [HttpPost("consume-custom-password-reset")]
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
+        public async Task<IActionResult> ConsumeCustomPasswordResetAsync([FromBody] ResetPasswordDto resetPasswordDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            bool isPasswordResetRequestSuccessful = await _passwordResetRequestService.ConsumePasswordResetRequest(resetPasswordDto);
+
+            if (isPasswordResetRequestSuccessful)
+                return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Password reset completed successfully." });
+            else
+                return Ok(new BasicResponseDto() { StatusCode = 400, Description = "Password reset was not completed successfully." });
+        }
+
+        [HttpGet("check-custom-password-reset/{passwordResetRequestGuid}")]
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
+        public async Task<IActionResult> CheckValidityOfPasswordResetRequest(Guid passwordResetRequestGuid)
+        {
+            if(passwordResetRequestGuid == null || passwordResetRequestGuid == Guid.Empty)
+                return Ok(new BasicResponseDto() { StatusCode = 400, Description = "Password reset request is not valid." });
+
+            bool isPasswordResetRequestValid = await _passwordResetRequestService.CheckValidityOfPasswordResetRequest(passwordResetRequestGuid);
+
+
+            if (isPasswordResetRequestValid)
+                return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Password reset request is valid." });
+            else
+                return Ok(new BasicResponseDto() { StatusCode = 400, Description = "Password reset request is not valid." });
+        }
+        
         [HttpPost("create-user")]
         [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
         public async Task<IActionResult> CreateUserAsync([FromBody] CreateUserDto createUserDto)

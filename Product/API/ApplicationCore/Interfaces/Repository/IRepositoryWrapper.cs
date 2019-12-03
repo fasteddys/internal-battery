@@ -80,6 +80,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         ITraitifyCourseTopicBlendMappingRepository TraitifyCourseTopicBlendMappingRepository { get; }
         ICourseFavoriteRepository CourseFavoriteRepository { get; }
         ISubscriberProfileStagingStoreRepository SubscriberProfileStagingStoreRepository {get;}
+        IPasswordResetRequestRepository PasswordResetRequestRepository { get; }
         ITalentFavoriteRepository TalentFavoriteRepository { get; }
     }
 }
