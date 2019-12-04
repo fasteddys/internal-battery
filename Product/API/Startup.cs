@@ -229,6 +229,13 @@ namespace UpDiddyApi
 
             // sync job posting alerts between Hangfire and our database
             BackgroundJob.Enqueue<ScheduledJobs>(x => x.SyncJobPostingAlertsBetweenDbAndHangfire());
+
+            // update the related job skill matrix table once per day at 5 UTC
+            //RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheRelatedJobSkillMatrix(), Cron.Daily(5));
+
+            // testing only
+            BackgroundJob.Enqueue<ScheduledJobs>(x => x.CacheRelatedJobSkillMatrix());
+
             #endregion
 
             services.AddHttpClient(Constants.HttpGetClientName);

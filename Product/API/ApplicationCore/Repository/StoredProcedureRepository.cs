@@ -18,11 +18,27 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             _dbContext = dbContext;
         }
+        
+        public async Task CacheRelatedJobSkillMatrix()
+        {
+            var errorLine = new SqlParameter("@ErrorLine", SqlDbType.NVarChar, -1);
+            errorLine.Direction = ParameterDirection.Output;
+            var errorMessage = new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, -1);
+            errorMessage.Direction = ParameterDirection.Output;
+            var errorProcedure = new SqlParameter("@ErrorProcedure", SqlDbType.NVarChar, -1);
+            errorProcedure.Direction = ParameterDirection.Output;
 
+            var spParams = new object[] { errorLine, errorMessage, errorProcedure };
 
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"
+                EXEC [dbo].[System_Cache_RelatedJobSkillMatrix]
+                    @ErrorLine OUTPUT,
+                    @ErrorMessage OUTPUT,
+                    @ErrorProcedure OUTPUT", spParams);
 
-
-
+            if (errorLine.Value != DBNull.Value && errorMessage.Value != DBNull.Value && errorProcedure.Value != DBNull.Value)            
+                throw new ApplicationException($"An error occurred in {errorProcedure.Value.ToString()} at line {errorLine.Value.ToString()}: {errorMessage.Value.ToString()}");
+        }
 
         public async Task<List<CourseDetailDto>> GetCoursesBySkillHistogram(Dictionary<string, int> SkillHistogram, int NumCourses)
         {

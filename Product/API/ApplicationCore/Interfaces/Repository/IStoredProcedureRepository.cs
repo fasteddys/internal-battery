@@ -9,6 +9,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface IStoredProcedureRepository
     {
+        Task CacheRelatedJobSkillMatrix();
         Task<List<SearchTermDto>> GetKeywordSearchTermsAsync();
         Task<List<SearchTermDto>> GetLocationSearchTermsAsync();
         Task<List<JobAbandonmentStatistics>> GetJobAbandonmentStatisticsAsync(DateTime startDate, DateTime endDate);
@@ -24,9 +25,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<CourseDetailDto>> GetCourses(int limit, int offset, string sort, string order);
         Task<CourseDetailDto> GetCourse(Guid courseGuid);
         Task<List<CourseDetailDto>> GetFavoriteCourses(Guid subscriberGuid, int limit, int offset, string sort, string order);
-
         Task<List<SubscriberNotesDto>> GetSubscriberNotes(Guid subscriberGuid, Guid talentGuid, int limit, int offset, string sort, string order);
-
-
     }
 }
