@@ -16,5 +16,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
         Task<string> SendGraphPostRequest(string api, string json);
         Task<string> SendGraphGetRequest(string api, string query);
         Task<string> SendGraphDeleteRequest(string api);
+        Task<string> ChangeUserPassword(Guid subscriberGuid, string password);
     }
 }

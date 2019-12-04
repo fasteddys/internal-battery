@@ -16,6 +16,9 @@ namespace UpDiddy.Api
         Task<bool> IsUserExistsInAuth0Async(string email);
         Task<bool> CheckADB2CLoginAsync(string email, string password);
         Task<bool> MigrateUserAsync(CreateUserDto createUserDto);
+        Task<bool> CreateCustomPasswordResetAsync(string email);
+        Task<bool> ConsumeCustomPasswordResetAsync(Guid passwordResetRequestGuid, string newPassword);
+        Task<bool> CheckValidityOfPasswordResetRequest(Guid passwordResetRequestGuid);
         Task<BasicResponseDto> UpdateLastSignIn(Guid subscriberGuid);
         Task<BasicResponseDto> ExistingUserSignup(CreateUserDto createUserDto);
         Task<BasicResponseDto> CreateUserAsync(CreateUserDto createUserDto);

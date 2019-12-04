@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace UpDiddy.ViewModels
 {
-    public class ResetPasswordViewModel
+    public class ResetPasswordRequestViewModel
     {
         [Required]
         [EmailAddress]

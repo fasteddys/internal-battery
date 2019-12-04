@@ -293,6 +293,7 @@ namespace UpDiddyApi
             services.AddScoped<ITalentFavoriteService, TalentFavoriteService>();
             services.AddScoped<ITalentNoteService, TalentNoteService>();
             services.AddScoped<IButterCMSService, ButterCMSService>();
+            services.AddScoped<IPasswordResetRequestService, PasswordResetRequestService>();
 
 
 
