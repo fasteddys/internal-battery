@@ -8,11 +8,12 @@ namespace UpDiddyApi.Models
 {
     public class Vendor : BaseModel
     {
-        public int VendorId { get; set; } 
+        public int VendorId { get; set; }
         public Guid? VendorGuid { get; set; }
         [Required]
         public string Name { get; set; }
 
         public string LoginUrl { get; set; }
+        public string LogoUrl { get; set; }
     }
 }

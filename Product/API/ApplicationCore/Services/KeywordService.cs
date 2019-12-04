@@ -6,7 +6,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyLib.Dto;
 using UpDiddyApi.ApplicationCore.Interfaces;
-
+using UpDiddyApi.ApplicationCore.Exceptions;
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class KeywordService : IKeywordService
@@ -19,18 +19,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             _memoryCacheService = memoryCacheService;
         }
 
-        public async Task<List<SearchTermDto>> GetKeywordSearchTerms(string value)
+        public async Task<List<SearchTermDto>> GetKeywordSearchTerms()
         {
-            if (string.IsNullOrEmpty(value))
-                throw new NullReferenceException("Value cannot be null or empty");
-            string cacheKey = $"GetKeywordSearchTerms";
-            IList<SearchTermDto> rval = (IList<SearchTermDto>)_memoryCacheService.GetCacheValue(cacheKey);
-            if (rval == null)
-            {
-                rval = await _repositoryWrapper.StoredProcedureRepository.GetKeywordSearchTermsAsync();
-                _memoryCacheService.SetCacheValue(cacheKey, rval);
-            }
-            return rval?.Where(v => v.Value.Contains(value))?.ToList();
+            var keywords = await _repositoryWrapper.StoredProcedureRepository.GetKeywordSearchTermsAsync();
+            if (keywords == null)
+                throw new NotFoundException("Keywords not found");
+            return keywords;
         }
     }
 }

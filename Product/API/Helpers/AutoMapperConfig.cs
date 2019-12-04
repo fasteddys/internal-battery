@@ -45,7 +45,8 @@ namespace UpDiddyApi.Helpers
                 .ForMember(cud => cud.SubscriberGuid, u => u.Ignore())
                 .ReverseMap();
 
-            CreateMap<Topic, TopicDto>().ReverseMap();
+            CreateMap<Topic, UpDiddyLib.Dto.TopicDto>().ReverseMap();
+            CreateMap<Topic, UpDiddyLib.Domain.Models.TopicDto>().ReverseMap();
             CreateMap<Vendor, VendorDto>().ReverseMap();
             CreateMap<Enrollment, EnrollmentDto>().ReverseMap();
             CreateMap<WozCourseEnrollment, WozCourseEnrollmentDto>().ReverseMap();
@@ -91,6 +92,8 @@ namespace UpDiddyApi.Helpers
             CreateMap<ServiceOfferingPromoCodeRedemption, ServiceOfferingPromoCodeRedemptionDto>().ReverseMap();
             CreateMap<FileDownloadTracker, FileDownloadTrackerDto>().ReverseMap();
             CreateMap<Traitify, TraitifyDto>().ReverseMap();
+            CreateMap<Course, TopicCourseDto>()
+            .ForMember(c => c.VendorLogoUrl, opt => opt.MapFrom(src => src.Vendor.LogoUrl)).ReverseMap();
             CreateMap<JobPostingSkill, UpDiddyLib.Dto.SkillDto>()
             .ForMember(c => c.SkillGuid, opt => opt.MapFrom(src => src.Skill.SkillGuid))
             .ForMember(c => c.SkillName, opt => opt.MapFrom(src => src.Skill.SkillName))
