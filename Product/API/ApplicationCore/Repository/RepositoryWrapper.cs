@@ -88,13 +88,25 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ITalentFavoriteRepository _talentFavoriteRepository;
         private ICareerPathRepository _careerPathRepository;
         private ICareerPathCourseRepository _careerPathCourseRepository;
-
+        private IPasswordResetRequestRepository _passwordResetRequestRepository;
 
         private readonly IConfiguration _configuration;
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
             _configuration = configuration;
+        }
+
+        public IPasswordResetRequestRepository PasswordResetRequestRepository
+        {
+            get
+            {
+                if(_passwordResetRequestRepository == null)
+                {
+                    _passwordResetRequestRepository = new PasswordResetRequestRepository(_dbContext);
+                }
+                return _passwordResetRequestRepository;
+            }
         }
 
         public ICountryRepository Country

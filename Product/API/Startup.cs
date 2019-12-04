@@ -293,9 +293,7 @@ namespace UpDiddyApi
             services.AddScoped<ITalentFavoriteService, TalentFavoriteService>();
             services.AddScoped<ITalentNoteService, TalentNoteService>();
             services.AddScoped<ICareerPathService, CareerPathService>();
-
-
-
+            services.AddScoped<IPasswordResetRequestService, PasswordResetRequestService>();
 
             #endregion
 

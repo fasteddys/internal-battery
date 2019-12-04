@@ -3,19 +3,21 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191129150559_custom password reset")]
+    partial class custompasswordreset
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
+                .HasAnnotation("ProductVersion", "2.2.3-servicing-35854")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -383,66 +385,6 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("CampaignId");
 
                     b.ToTable("CampaignPhase");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.CareerPath", b =>
-                {
-                    b.Property<int>("CareerPathId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<Guid>("CareerPathGuid");
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<string>("Description");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<string>("Name");
-
-                    b.HasKey("CareerPathId");
-
-                    b.ToTable("CareerPath");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.CareerPathCourse", b =>
-                {
-                    b.Property<int>("CareerPathCourseId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<Guid>("CareerPathCourseGuid");
-
-                    b.Property<int>("CareerPathId");
-
-                    b.Property<int>("CourseId");
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<int>("Order");
-
-                    b.HasKey("CareerPathCourseId");
-
-                    b.HasIndex("CareerPathId");
-
-                    b.HasIndex("CourseId");
-
-                    b.ToTable("CareerPathCourse");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.CommunicationSubscription", b =>
@@ -3891,37 +3833,6 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("TagTopic");
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.TalentFavorite", b =>
-                {
-                    b.Property<int>("TalentFavoriteId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<int>("SubscriberId");
-
-                    b.Property<Guid>("TalentFavoriteGuid");
-
-                    b.Property<int>("TalentId");
-
-                    b.HasKey("TalentFavoriteId");
-
-                    b.HasIndex("SubscriberId");
-
-                    b.HasIndex("TalentId");
-
-                    b.ToTable("TalentFavorite");
-                });
-
             modelBuilder.Entity("UpDiddyApi.Models.Topic", b =>
                 {
                     b.Property<int>("TopicId")
@@ -4377,19 +4288,6 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Campaign", "Campaign")
                         .WithMany()
                         .HasForeignKey("CampaignId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.CareerPathCourse", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.CareerPath", "CareerPath")
-                        .WithMany()
-                        .HasForeignKey("CareerPathId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UpDiddyApi.Models.Course", "Course")
-                        .WithMany()
-                        .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -5048,19 +4946,6 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany("SubscriberWorkHistory")
                         .HasForeignKey("SubscriberId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.TalentFavorite", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany()
-                        .HasForeignKey("SubscriberId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UpDiddyApi.Models.Subscriber", "Talent")
-                        .WithMany()
-                        .HasForeignKey("TalentId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
