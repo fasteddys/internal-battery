@@ -14,9 +14,9 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCareerPaths(int limit, int offset, string sort, string order)
+        public async Task<IActionResult> GetCareerPaths()
         {            
-            var topics = await _topicService.GetTopics(limit, offset, sort, order);
+            var topics = await _topicService.GetTopics();
             return Ok(topics);
         }
 

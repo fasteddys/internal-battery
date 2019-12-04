@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyLib.Domain.Models;
-using UpDiddyLib.Dto;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Helpers;
@@ -27,9 +26,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             _configuration = configuration;
         }
 
-        public async Task<List<UpDiddyLib.Domain.Models.TopicDto>> GetTopics(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<List<UpDiddyLib.Domain.Models.TopicDto>> GetTopics()
         {
-            var careerPaths = await _repositoryWrapper.Topic.GetByConditionWithSorting(x => x.IsDeleted == 0, limit, offset, sort, order);
+            var careerPaths = await _repositoryWrapper.Topic.GetByConditionAsync(x => x.IsDeleted == 0);
             return _mapper.Map<List<UpDiddyLib.Domain.Models.TopicDto>>(careerPaths);
         }
 
@@ -54,6 +53,5 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new NotFoundException("Skills not found");
             return _mapper.Map<List<UpDiddyLib.Domain.Models.SkillDto>>(skills);
         }
-
     }
 }
