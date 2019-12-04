@@ -39,7 +39,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using UpDiddyApi.ApplicationCore.Services.CourseCrawling;
 using UpDiddyApi.ApplicationCore.Services.Identity.Interfaces;
 using UpDiddyApi.ApplicationCore.Services.Identity;
-
+using UpDiddyApi.ApplicationCore.ActionFilter;
 namespace UpDiddyApi
 {
     public class Startup
@@ -101,27 +101,27 @@ namespace UpDiddyApi
         public void ConfigureServices(IServiceCollection services)
         {
 
-            string domain = $"https://{Configuration["Auth0:Domain"]}/";
-            services.AddSingleton<Serilog.ILogger>(Logger);
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
-            {
-                options.Authority = domain;
-                options.Audience = Configuration["Auth0:ApiIdentifier"];
-            })
-            .AddAPIGatewayAuth(options => { });
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("IsRecruiterPolicy", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Recruiter" },domain)));
-                options.AddPolicy("IsCareerCircleAdmin", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Career Circle Administrator" },domain)));
-                options.AddPolicy("IsRecruiterOrAdmin", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Recruiter", "Career Circle Administrator" },domain)));          
-            });
+            string domain = $"https://{Configuration["Auth0:Domain"]}/";
+            services.AddSingleton<Serilog.ILogger>(Logger);
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.Authority = domain;
+                options.Audience = Configuration["Auth0:ApiIdentifier"];
+            })
+            .AddAPIGatewayAuth(options => { });
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("IsRecruiterPolicy", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Recruiter" }, domain)));
+                options.AddPolicy("IsCareerCircleAdmin", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Career Circle Administrator" }, domain)));
+                options.AddPolicy("IsRecruiterOrAdmin", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Recruiter", "Career Circle Administrator" }, domain)));
+            });
 
-            services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
+            services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
 
             // Get the connection string from the Azure secret vault
             var SqlConnection = Configuration["CareerCircleSqlConnection"];
@@ -287,6 +287,12 @@ namespace UpDiddyApi
             services.AddScoped<IContactService, ContactService>();
             services.AddScoped<ICourseFavoriteService, CourseFavoriteService>();
             services.AddScoped<IAvatarService, AvatarService>();
+            services.AddScoped<ITraitifyServiceV2,TraitifyServiceV2>();
+            services.AddScoped<ActionFilter>();
+            services.AddScoped<ITalentService, TalentService>();
+            services.AddScoped<ITalentFavoriteService, TalentFavoriteService>();
+            services.AddScoped<ITalentNoteService, TalentNoteService>();
+
 
 
             #endregion
@@ -350,7 +356,7 @@ namespace UpDiddyApi
                 routes.EnableDependencyInjection();
             });
 
-        
+
 
             // Added for SignalR
             app.UseSignalR(routes =>

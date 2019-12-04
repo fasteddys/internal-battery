@@ -3356,6 +3356,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("AvatarUrl");
 
+                    b.Property<string>("Biography");
+
                     b.Property<string>("City");
 
                     b.Property<string>("CloudTalentIndexInfo");
@@ -3421,6 +3423,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<int?>("StateId");
 
                     b.Property<Guid?>("SubscriberGuid");
+
+                    b.Property<string>("Title");
 
                     b.Property<string>("TwitterUrl");
 
@@ -3866,6 +3870,37 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("TagTopicId");
 
                     b.ToTable("TagTopic");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.TalentFavorite", b =>
+                {
+                    b.Property<int>("TalentFavoriteId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("SubscriberId");
+
+                    b.Property<Guid>("TalentFavoriteGuid");
+
+                    b.Property<int>("TalentId");
+
+                    b.HasKey("TalentFavoriteId");
+
+                    b.HasIndex("SubscriberId");
+
+                    b.HasIndex("TalentId");
+
+                    b.ToTable("TalentFavorite");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Topic", b =>
@@ -4988,6 +5023,19 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany("SubscriberWorkHistory")
                         .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.TalentFavorite", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Talent")
+                        .WithMany()
+                        .HasForeignKey("TalentId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

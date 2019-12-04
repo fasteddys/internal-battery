@@ -221,7 +221,8 @@ namespace UpDiddyApi.Helpers.GoogleProfile
             {
                 SkillDto skillDto = new SkillDto()
                 {
-                    SkillName = s.displayName
+                    SkillName = s.displayName,
+                    
                 };
                 rVal.Skills.Add(skillDto);
             }

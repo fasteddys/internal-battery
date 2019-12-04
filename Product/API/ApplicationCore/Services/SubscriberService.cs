@@ -28,7 +28,7 @@ using System.Text.RegularExpressions;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyLib.Domain;
 using UpDiddyLib.Domain.Models;
-
+using UpDiddyApi.Helpers;
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class SubscriberService : ISubscriberService
@@ -43,6 +43,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         private IHangfireService _hangfireService { get; set; }
         private IFileDownloadTrackerService _fileDownloadTrackerService { get; set; }
         private ISysEmail _sysEmail;
+        private readonly ZeroBounceApi _zeroBounceApi;
+
 
         public SubscriberService(UpDiddyDbContext context,
             IConfiguration configuration,
@@ -65,6 +67,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             _hangfireService = hangfireService;
             _fileDownloadTrackerService = fileDownloadTrackerService;
             _sysEmail = sysEmail;
+            _zeroBounceApi = new ZeroBounceApi(_configuration, _repository, _logger);
+            
         }
 
         public async Task<Subscriber> GetSubscriberByEmail(string email)
@@ -267,7 +271,12 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (group == null)
                     groupId = group.GroupId;
                 // set up the gated file download and send the email
-                HandleGatedFileDownload(subscriberDto.GatedDownloadMaxAttemptsAllowed, subscriberDto.GatedDownloadFileUrl, groupId, subscriber.SubscriberId, subscriber.Email);
+                await HandleGatedFileDownload(subscriberDto.GatedDownloadMaxAttemptsAllowed, subscriberDto.GatedDownloadFileUrl, groupId, subscriber.SubscriberId, subscriber.Email);
+            }
+
+            if (!string.IsNullOrEmpty(subscriberDto.AssessmentId))
+            {
+                await TraitifyHelper.CompleteSignup(subscriberDto.AssessmentId, subscriber, _logger, _repository, _sysEmail, _configuration, _zeroBounceApi);
             }
 
             return subscriberGuid;

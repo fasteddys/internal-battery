@@ -29,6 +29,14 @@ public class ExceptionMiddleware
         {
             await CreateResponse(400, ex, context);
         }
+        catch (JobPostingCreation ex)
+        {
+            await CreateResponse(400, ex, context);
+        }
+        catch (JobPostingUpdate ex)
+        {
+            await CreateResponse(400, ex, context);
+        }
         catch (FailedValidationException ex)
         {
             await CreateResponse(400, ex, context);
@@ -56,6 +64,10 @@ public class ExceptionMiddleware
         catch (InvalidOperationException ex)
         {
             await CreateResponse(401, ex, context);
+        }
+        catch (TraitifyException ex)
+        {
+            await CreateResponse(403, ex, context);
         }
         catch (Exception ex)
         {
