@@ -15,6 +15,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             _dbContext = dbContext;
         }
+
         public IQueryable<Skill> GetAllSkillsQueryable()
         {
             return GetAll();
@@ -46,6 +47,16 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return await (from s in _dbContext.Skill
                           where s.SkillName == name
                           select s).FirstOrDefaultAsync();
+        }
+
+        public async Task<List<Skill>> GetByTopicGuid(Guid topicGuid)
+        {
+            return await (from t in _dbContext.Topic
+                          join c in _dbContext.Course on t.TopicId equals c.TopicId
+                          join cs in _dbContext.CourseSkill on c.CourseId equals cs.CourseId
+                          join s in _dbContext.Skill on cs.SkillId equals s.SkillId
+                          where t.TopicGuid == topicGuid && t.IsDeleted == 0 && c.IsDeleted == 0 && cs.IsDeleted == 0
+                          select s).Distinct().ToListAsync();
         }
     }
 }

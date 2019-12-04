@@ -6,6 +6,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface IKeywordService
     {
-        Task<List<SearchTermDto>> GetKeywordSearchTerms(string keyword);
+        Task<List<SearchTermDto>> GetKeywordSearchTerms();
     }
 }
