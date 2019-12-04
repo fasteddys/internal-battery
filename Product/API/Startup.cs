@@ -292,6 +292,7 @@ namespace UpDiddyApi
             services.AddScoped<ITalentService, TalentService>();
             services.AddScoped<ITalentFavoriteService, TalentFavoriteService>();
             services.AddScoped<ITalentNoteService, TalentNoteService>();
+            services.AddScoped<IButterCMSService, ButterCMSService>();
 
 
 

@@ -176,7 +176,7 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Error, $"GoogleProfileInterface error deleting google profile for {profileUri}", profileUri);
+                _syslog.Log(LogLevel.Error, $"GoogleProfileInterface error deleting google profile for {profileUri} Exception = {e.Message}", profileUri);
                 errorMsg = e.Message;
             }
             return Rval;
