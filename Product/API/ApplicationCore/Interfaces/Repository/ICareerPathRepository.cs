@@ -8,6 +8,5 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface ICareerPathRepository : IUpDiddyRepositoryBase<CareerPath>
     {
-
     }
 }

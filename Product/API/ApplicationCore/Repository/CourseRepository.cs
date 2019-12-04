@@ -14,5 +14,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             _dbContext = dbContext;
         }
+
+        public async Task<List<Course>> GetCoursesByCareerPathGuid(Guid careerPathGuid)
+        {
+            return await (from cp in _dbContext.CareerPath
+                          join cpc in _dbContext.CareerPathCourse on cp.CareerPathId equals cpc.CareerPathId
+                          join c in _dbContext.Course on cpc.CourseId equals c.CourseId
+                          select c).ToListAsync();
+        }
     }
 }

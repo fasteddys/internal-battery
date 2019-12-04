@@ -8,6 +8,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface ICourseRepository : IUpDiddyRepositoryBase<Course>
     {
-
+        Task<List<Course>> GetCoursesByCareerPathGuid(Guid careerPathGuid);
     }
 }

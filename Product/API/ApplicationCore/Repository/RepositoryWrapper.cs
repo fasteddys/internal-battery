@@ -86,7 +86,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ICourseFavoriteRepository _courseFavoriteRepository;
         private ISubscriberProfileStagingStoreRepository _subscriberProfileStagingRepository;
         private ITalentFavoriteRepository _talentFavoriteRepository;
-
+        private ICareerPathRepository _careerPathRepository;
+        private ICareerPathCourseRepository _careerPathCourseRepository;
 
 
         private readonly IConfiguration _configuration;
@@ -1034,7 +1035,27 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 return _talentFavoriteRepository;
             }
         }
-
-
+        public ICareerPathRepository CareerPathRepository
+        {
+            get
+            {
+                if (_careerPathRepository == null)
+                {
+                    _careerPathRepository = new CareerPathRepository(_dbContext);
+                }
+                return _careerPathRepository;
+            }
+        }
+        public ICareerPathCourseRepository CareerPathCourseRepository
+        {
+            get
+            {
+                if (_careerPathCourseRepository == null)
+                {
+                    _careerPathCourseRepository = new CareerPathCourseRepository(_dbContext);
+                }
+                return _careerPathCourseRepository;
+            }
+        }
     }
 }

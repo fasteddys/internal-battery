@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-
 namespace UpDiddyApi.ApplicationCore.Repository
 {
 
@@ -20,6 +19,5 @@ namespace UpDiddyApi.ApplicationCore.Repository
             _dbContext = dbContext;
         }
 
-        
     }
 }

@@ -47,5 +47,16 @@ namespace UpDiddyApi.ApplicationCore.Repository
                           where s.SkillName == name
                           select s).FirstOrDefaultAsync();
         }
+
+        public async Task<List<Skill>> GetByCareerPathGuid(Guid careerPathGuid)
+        {
+            return await (from cp in _dbContext.CareerPath
+                          join cpc in _dbContext.CareerPathCourse on cp.CareerPathId equals cpc.CareerPathId
+                          join c in _dbContext.Course on cpc.CourseId equals c.CourseId
+                          join cs in _dbContext.CourseSkill on c.CourseId equals cs.CourseId
+                          join s in _dbContext.Skill on cs.SkillId equals s.SkillId
+                          where cp.CareerPathGuid == careerPathGuid && cp.IsDeleted == 0
+                          select s).ToListAsync();
+        }
     }
 }
