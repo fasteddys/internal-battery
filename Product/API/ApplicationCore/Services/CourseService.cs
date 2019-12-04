@@ -12,6 +12,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyApi.ApplicationCore.Exceptions;
+using UpDiddyApi.Helpers;
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class CourseService : ICourseService
@@ -36,7 +37,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             string limit = query["limit"];
             if (limit != null)
                 int.TryParse(limit, out MaxResults);
-            return await _repositoryWrapper.StoredProcedureRepository.GetCoursesRandom(MaxResults);
+            var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesRandom(MaxResults);
+            CourseUrlHelper.AssignVendorLogoUrlToCourse(courses,_config);
+            return courses;
         }
 
 
@@ -48,7 +51,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             string limit = query["limit"];
             if (limit != null)
                 int.TryParse(limit, out MaxResults);
-            return await _repositoryWrapper.StoredProcedureRepository.GetCoursesForJob(jobGuid, MaxResults);
+            var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesForJob(jobGuid, MaxResults);
+            CourseUrlHelper.AssignVendorLogoUrlToCourse(courses,_config);
+            return courses;
         }
 
 
@@ -57,6 +62,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCourses(limit, offset, sort, order);
             if (courses == null)
                 throw new NotFoundException("Courses not found");
+            CourseUrlHelper.AssignVendorLogoUrlToCourse(courses,_config);
             return (courses);
         }
 
@@ -67,6 +73,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var course = await _repositoryWrapper.StoredProcedureRepository.GetCourse(courseGuid);
             if (course == null)
                 throw new NotFoundException("Courses not found");
+            CourseUrlHelper.AssignVendorLogoUrlToCourse(course,_config);
             return (course);
         }
 
@@ -80,8 +87,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             string limit = query["limit"];
             if (limit != null)
                 int.TryParse(limit, out MaxResults);
-
-            return await _repositoryWrapper.StoredProcedureRepository.GetCoursesBySkillHistogram(SkillHistogram, MaxResults);
+            var courses = await  _repositoryWrapper.StoredProcedureRepository.GetCoursesBySkillHistogram(SkillHistogram, MaxResults);
+            CourseUrlHelper.AssignVendorLogoUrlToCourse(courses,_config);
+            return courses;
         }
 
 

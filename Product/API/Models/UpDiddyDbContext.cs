@@ -176,6 +176,7 @@ namespace UpDiddyApi.Models
         public DbSet<CoursePageStatus> CoursePageStatus { get; set; }
         public DbSet<City> City { get; set; }
         public DbSet<Postal> Postal { get; set; }
+        public DbSet<PasswordResetRequest> PasswordResetRequest { get; set; }
         public DbSet<TalentFavorite> TalentFavorite { get; set; }
 
         #region DBQueries

@@ -286,8 +286,40 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+        [HttpGet]
+        [Route("/session/changepassword/{passwordResetRequestGuid}")]
+        public async Task<IActionResult> ChangePassword(Guid passwordResetRequestGuid)
+        {
+            var isPasswordResetRequestValid = await _api.CheckValidityOfPasswordResetRequest(passwordResetRequestGuid);
+
+            if (!isPasswordResetRequestValid)
+                return RedirectToAction(nameof(SessionController.ResetPassword), new { success = "false", message = "This password request is not valid." });
+            else
+                return View(new ChangePasswordViewModel() { PasswordResetRequestGuid = passwordResetRequestGuid });
+        }
+
+        [HttpPost]
+        [Route("/session/submitpassword")]
+        public async Task<IActionResult> SubmitPassword(ChangePasswordViewModel vm)
+        {
+            if (ModelState.IsValid)
+            {
+                var changePasswordResult = await _api.ConsumeCustomPasswordResetAsync(vm.PasswordResetRequestGuid, vm.Password);
+
+                if (changePasswordResult)
+                    return RedirectToAction(nameof(SessionController.SignIn), new { success = "true", message = "Your password has been changed." });
+                else
+                {
+                    ModelState.AddModelError("CustomPasswordResetError", "There was a problem resetting the password.");
+                    return View(nameof(SessionController.ChangePassword), vm);
+                }
+            }
+            else
+                return View(nameof(SessionController.ChangePassword), vm);
+        }
+
         [HttpPost("/session/resetpassword")]
-        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel vm)
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequestViewModel vm)
         {
             if (ModelState.IsValid)
             {
@@ -324,15 +356,19 @@ namespace UpDiddy.Controllers
                         }
                     }
 
-                    // send the password reset request
-                    var connectionString = string.Empty;
-                    var changePasswordResponse = await _auth0Client.ChangePasswordAsync(new ChangePasswordRequest()
-                    {
-                        Email = vm.EmailAddress,
-                        ClientId = _auth0ClientId,
-                        Connection = _auth0Connection
-                    });
-
+                    var isPasswordResetInitiatedSuccessfully = await _api.CreateCustomPasswordResetAsync(vm.EmailAddress);
+                    if (isPasswordResetInitiatedSuccessfully)
+                        return Ok(new BasicResponseDto
+                        {
+                            StatusCode = 200,
+                            Description = "Password reset has been initiated."
+                        });
+                    else
+                        return BadRequest(new BasicResponseDto
+                        {
+                            StatusCode = 400,
+                            Description = "There was a problem initating the password reset."
+                        });
                 }
                 catch (Auth0.Core.Exceptions.ApiException ae)
                 {

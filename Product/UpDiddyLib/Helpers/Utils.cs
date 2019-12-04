@@ -20,7 +20,41 @@ namespace UpDiddyLib.Helpers
 {
     static public class Utils
     {
+        /// <summary>
+        /// Ensures that a new password conforms to our ADB2C complexity requirements:
+        /// Minimum 8 characters and maximum 16 characters in length 3 of 4 character classes - uppercase, lowercase, number, symbol. 
+        /// A static error message is used for password validation. This setting is legacy behavior. We recommend strong instead.
+        /// </summary>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        public static bool IsPasswordPassesADB2CRequirements(string password)
+        {
+            Regex legacyAdb2cPasswordComplexity = new Regex(@"(?=.{8,})((?=.*\d)(?=.*[a-z])(?=.*[A-Z])|(?=.*\d)(?=.*[a-zA-Z])(?=.*[\W_])|(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_])).*");
+            return legacyAdb2cPasswordComplexity.IsMatch(password);
+        }
 
+        /// <summary>
+        /// Ensures that a new password conforms to our Auth0 complexity requirements:
+        /// - No more than 2 identical characters in a row
+        /// - Special characters(!@#$%^&*)
+        /// - Lower case (a-z), upper case (A-Z) and numbers(0-9)
+        /// - Must have 1 characters in length
+        /// - Non-empty password required
+        /// </summary>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        public static bool IsPasswordPassesAuth0Requirements(string password)
+        {
+            Regex atLeastOneSpecialCharacter = new Regex(@"[!@#\$%\^&\*]{1}");
+            Regex noMoreThanTwoConsecutiveCharacters = new Regex(@"^((.)\2?(?!\2))+$");
+            Regex lowerCaseUpperCaseAndNumbers = new Regex(@"(?=.*\d)(?=.*[a-z])(?=.*[A-Z])");
+
+            return !string.IsNullOrWhiteSpace(password) &&
+                password.Length > 1 &&
+                atLeastOneSpecialCharacter.IsMatch(password) &&
+                noMoreThanTwoConsecutiveCharacters.IsMatch(password) &&
+                lowerCaseUpperCaseAndNumbers.IsMatch(password);
+        }
 
         public static int GetIntQueryParam(IQueryCollection queryInfo, string ParamName, int defaultValue = 0)
         {

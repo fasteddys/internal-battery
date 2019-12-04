@@ -6,8 +6,8 @@ using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
-    public interface ICourseRepository : IUpDiddyRepositoryBase<Course>
+    public interface IPasswordResetRequestRepository : IUpDiddyRepositoryBase<PasswordResetRequest>
     {
-        Task<List<Course>> GetCoursesByTopicGuid(Guid topicGuid);
+
     }
 }

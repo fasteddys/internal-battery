@@ -716,6 +716,33 @@ namespace UpDiddy.Api
                 return false;
         }
 
+        public async Task<bool> CreateCustomPasswordResetAsync(string email)
+        {
+            var basicResponseDto = await PostAsync<BasicResponseDto>($"identity/create-custom-password-reset", new EmailDto() { Email = email }, true);
+            if (basicResponseDto.StatusCode == 200)
+                return true;
+            else
+                return false;
+        }
+
+        public async Task<bool> ConsumeCustomPasswordResetAsync(Guid passwordResetRequestGuid, string newPassword)
+        {
+            var basicResponseDto = await PostAsync<BasicResponseDto>($"identity/consume-custom-password-reset", new ResetPasswordDto() { PasswordResetRequestGuid = passwordResetRequestGuid, Password = newPassword }, true);
+            if (basicResponseDto.StatusCode == 200)
+                return true;
+            else
+                return false;
+        }
+
+        public async Task<bool> CheckValidityOfPasswordResetRequest(Guid passwordResetRequestGuid)
+        {
+            var basicResponseDto = await GetAsync<BasicResponseDto>($"identity/check-custom-password-reset/" + passwordResetRequestGuid, true);
+            if (basicResponseDto.StatusCode == 200)
+                return true;
+            else
+                return false;
+        }
+
         public async Task<bool> IsUserExistsInAuth0Async(string email)
         {
             var basicResponseDto = await PostAsync<BasicResponseDto>($"identity/is-user-exists-auth0", new UserDto() { Email = email, Password = string.Empty }, true);
