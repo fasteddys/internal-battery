@@ -8,6 +8,8 @@ using UpDiddyApi.Models;
 using System.Data;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.User;
+using UpDiddyLib.Domain.Models;
+
 namespace UpDiddyApi.ApplicationCore.Repository
 {
     public class StoredProcedureRepository : IStoredProcedureRepository
@@ -18,7 +20,42 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             _dbContext = dbContext;
         }
-        
+
+        public async Task<List<RelatedJobDto>> GetJobsByCourse(Guid courseGuid, int limit, int offset, Guid? subscriberGuid = null)
+        {
+            var courseParam = new SqlParameter("@CourseGuid", SqlDbType.UniqueIdentifier);
+            courseParam.Value = courseGuid;
+
+            var subscriberParam = new SqlParameter("@SubscriberGuid", SqlDbType.UniqueIdentifier);
+            subscriberParam.Value = subscriberGuid.HasValue ? (object)subscriberGuid.Value : DBNull.Value;
+
+            var limitParam = new SqlParameter("@Limit", SqlDbType.Int);
+            limitParam.Value = limit;
+
+            var offsetParam = new SqlParameter("@Offset", SqlDbType.Int);
+            offsetParam.Value = offset;
+
+            var spParams = new object[] { courseParam, subscriberParam, limitParam, offsetParam };
+
+            return await _dbContext.RelatedJobs.FromSql<RelatedJobDto>("System_Get_JobsByCourse @CourseGuid, @SubscriberGuid, @Limit, @Offset", spParams).ToListAsync();
+        }
+
+        public async Task<List<RelatedJobDto>> GetJobsBySubscriber(Guid subscriberGuid, int limit, int offset)
+        {
+            var subscriberParam = new SqlParameter("@SubscriberGuid", SqlDbType.UniqueIdentifier);
+            subscriberParam.Value = subscriberGuid;
+
+            var limitParam = new SqlParameter("@Limit", SqlDbType.Int);
+            limitParam.Value = limit;
+
+            var offsetParam = new SqlParameter("@Offset", SqlDbType.Int);
+            offsetParam.Value = offset;
+
+            var spParams = new object[] { subscriberParam, limitParam, offsetParam };
+
+            return await _dbContext.RelatedJobs.FromSql<RelatedJobDto>("System_Get_JobsBySubscriber @SubscriberGuid, @Limit, @Offset", spParams).ToListAsync();
+        }
+
         public async Task CacheRelatedJobSkillMatrix()
         {
             var errorLine = new SqlParameter("@ErrorLine", SqlDbType.NVarChar, -1);
@@ -36,7 +73,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     @ErrorMessage OUTPUT,
                     @ErrorProcedure OUTPUT", spParams);
 
-            if (errorLine.Value != DBNull.Value && errorMessage.Value != DBNull.Value && errorProcedure.Value != DBNull.Value)            
+            if (errorLine.Value != DBNull.Value && errorMessage.Value != DBNull.Value && errorProcedure.Value != DBNull.Value)
                 throw new ApplicationException($"An error occurred in {errorProcedure.Value.ToString()} at line {errorLine.Value.ToString()}: {errorMessage.Value.ToString()}");
         }
 
@@ -286,6 +323,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return rval;
         }
 
- 
+
     }
 }

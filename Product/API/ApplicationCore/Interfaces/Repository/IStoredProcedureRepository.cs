@@ -4,11 +4,14 @@ using System.Threading.Tasks;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Dto;
+using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface IStoredProcedureRepository
     {
+        Task<List<RelatedJobDto>> GetJobsByCourse(Guid courseGuid, int limit, int offset, Guid? subscriberGuid = null);
+        Task<List<RelatedJobDto>> GetJobsBySubscriber(Guid subscriberGuid, int limit, int offset);
         Task CacheRelatedJobSkillMatrix();
         Task<List<SearchTermDto>> GetKeywordSearchTermsAsync();
         Task<List<SearchTermDto>> GetLocationSearchTermsAsync();

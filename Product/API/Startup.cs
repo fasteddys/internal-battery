@@ -231,10 +231,7 @@ namespace UpDiddyApi
             BackgroundJob.Enqueue<ScheduledJobs>(x => x.SyncJobPostingAlertsBetweenDbAndHangfire());
 
             // update the related job skill matrix table once per day at 5 UTC
-            //RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheRelatedJobSkillMatrix(), Cron.Daily(5));
-
-            // testing only
-            BackgroundJob.Enqueue<ScheduledJobs>(x => x.CacheRelatedJobSkillMatrix());
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheRelatedJobSkillMatrix(), Cron.Daily(5));
 
             #endregion
 

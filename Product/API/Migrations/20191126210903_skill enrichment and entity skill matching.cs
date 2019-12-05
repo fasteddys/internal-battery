@@ -370,6 +370,156 @@ BEGIN
 END
             ')");
 
+            migrationBuilder.Sql(@"EXEC('
+/*
+<remarks>
+2019.12.05 - Bill Koenig - Created
+</remarks>
+<description>
+Returns a list of jobs based on the skills that are associated with the subscriber provided. The skill list is enriched by including skills that appear in the related job skill matrix.
+Results are weighted according to the skill score. The operation supports a limit and offset. The results are further weighted according to the distance of each job from the 
+subscriber's location.
+</description>
+<example>
+EXEC [dbo].[System_Get_JobsBySubscriber] @SubscriberGuid = ''03FFCC3D-CC3A-414E-98E3-2FC5541CB6CB'', @Limit = 5, @Offset = 5
+</example>
+*/
+CREATE PROCEDURE [dbo].[System_Get_JobsBySubscriber] (
+	@SubscriberGuid UNIQUEIDENTIFIER,
+    @Limit INT,
+    @Offset INT
+)
+AS
+BEGIN 
+	SET NOCOUNT ON;
+	DECLARE @subscriberLatitude FLOAT, @subscriberLongitude FLOAT;
+
+	;WITH geoData AS (
+		SELECT s.StateId, c.CountryId, ci.[Name] City, p.Code PostalCode, p.Latitude, p.Longitude
+		FROM [State] s WITH(NOLOCK)
+		INNER JOIN Country c WITH(NOLOCK) ON s.CountryId = c.CountryId
+		INNER JOIN City ci WITH(NOLOCK) ON s.StateId = ci.StateId 
+		INNER JOIN Postal p WITH(NOLOCK) ON ci.CityId = p.CityId)
+	, subData AS (
+		SELECT StateId, City, PostalCode
+		FROM Subscriber WITH(NOLOCK)
+		WHERE SubscriberGuid = @SubscriberGuid)
+	, prioritizedGeo AS (
+		SELECT TOP 1 g.Latitude, g.Longitude, 3 [Priority]
+		FROM subData s
+		INNER JOIN geoData g ON s.StateId = g.StateId
+		UNION
+		SELECT TOP 1 g.Latitude, g.Longitude, 2
+		FROM subData s
+		INNER JOIN geoData g ON s.City = g.City AND s.StateId = g.StateId
+		UNION
+		SELECT TOP 1 g.Latitude, g.Longitude, 1
+		FROM subData s
+		INNER JOIN geoData g ON s.PostalCode = g.PostalCode)
+	SELECT TOP 1 @subscriberLatitude = LATITUDE, @subscriberLongitude = LONGITUDE
+	FROM prioritizedGeo
+	ORDER BY [Priority] ASC
+
+	IF(@subscriberLatitude IS NULL OR @subscriberLongitude IS NULL)
+	BEGIN
+		-- do not evaluate geo; return results based on weighted skill score only
+		;WITH subscriberSkills AS (
+			-- skills that are associated with the subscriber
+			SELECT ss.SkillId, k.SkillName
+			FROM Subscriber s
+			INNER JOIN SubscriberSkill ss WITH(NOLOCK) ON s.SubscriberId = ss.SubscriberId
+			INNER JOIN Skill k WITH(NOLOCK) ON ss.SkillId = k.SkillId
+			WHERE s.SubscriberGuid = @SubscriberGuid
+			AND ss.IsDeleted = 0)
+		, subscriberSkillsAndRelatedSkillsWithRank AS (
+			-- includes skills that were associated with the above skills in job results; uses their match index to rank them with the directly matched skills
+			SELECT rs.SkillId, rs.SkillName, rjsm.MatchIndex SkillScore
+			FROM subscriberSkills ss WITH(NOLOCK)
+			INNER JOIN [RelatedJobSkillMatrix] rjsm WITH(NOLOCK) ON ss.SkillId = rjsm.SkillId
+			INNER JOIN Skill rs WITH(NOLOCK) ON rjsm.RelatedSkillId = rs.SkillId
+			UNION 
+			SELECT ss.SkillId, ss.SkillName, ISNULL(rjsm.PopularityIndex, 10)
+			FROM subscriberSkills ss
+			LEFT JOIN RelatedJobSkillMatrix rjsm WITH(NOLOCK) ON ss.SkillId = rjsm.SkillId)
+		, allSkillsWithHighestRank AS (
+			-- chooses the highest index value for each skill (regardless whether it comes from the popularity index or match index)
+			SELECT SkillId, SkillName, MIN(SkillScore) HighestSkillScore
+			FROM subscriberSkillsAndRelatedSkillsWithRank 
+			GROUP BY SkillId, SkillName)
+		, jobsWithRank AS (
+			-- associates these finalized list of skills with jobs and adds a weighted rank based on the number of skills matched to the job and the score associated with each skill
+			SELECT jp.JobPostingGuid, jp.PostingDateUTC, c.CompanyName, c.LogoUrl, jp.Title, i.[Name] Industry, jc.[Name] JobCategory, jp.Country, jp.Province, jp.City, CAST(COUNT(aswhr.SkillId) AS DECIMAL) / CAST(AVG(aswhr.HighestSkillScore) AS DECIMAL) [WeightedSkillScore]
+			FROM allSkillsWithHighestRank aswhr
+			INNER JOIN JobPostingSkill jps WITH(NOLOCK) ON aswhr.SkillId = jps.SkillId
+			INNER JOIN JobPosting jp WITH(NOLOCK) ON jps.JobPostingId = jp.JobPostingId
+			INNER JOIN Company c WITH(NOLOCK) ON c.CompanyId = jp.CompanyId
+			LEFT JOIN Industry i WITH(NOLOCK) ON jp.IndustryId = i.IndustryId
+			LEFT JOIN JobCategory jc WITH(NOLOCK) ON jp.JobCategoryId = jc.JobCategoryId
+			WHERE jp.IsDeleted = 0 
+			AND jps.IsDeleted = 0
+			GROUP BY jp.JobPostingGuid, jp.PostingDateUTC, c.CompanyName, c.LogoUrl, jp.Title, i.[Name], jc.[Name], jp.Country, jp.Province, jp.City)
+		SELECT JobPostingGuid, PostingDateUTC, CompanyName, LogoUrl, Title, Industry, JobCategory, Country, Province, City, WeightedSkillScore, NULL DistanceInMeters, NULL DistanceIndex
+		FROM jobsWithRank jwr
+		ORDER BY WeightedSkillScore DESC		
+		OFFSET @Offset ROWS
+		FETCH FIRST @Limit ROWS ONLY
+	END
+	ELSE
+	BEGIN
+		-- sort by distance first then by weighted skill score
+		;WITH subscriberSkills AS (
+			-- skills that are associated with the subscriber
+			SELECT ss.SkillId, k.SkillName
+			FROM Subscriber s
+			INNER JOIN SubscriberSkill ss WITH(NOLOCK) ON s.SubscriberId = ss.SubscriberId
+			INNER JOIN Skill k WITH(NOLOCK) ON ss.SkillId = k.SkillId
+			WHERE s.SubscriberGuid = @SubscriberGuid
+			AND ss.IsDeleted = 0)
+		, subscriberSkillsAndRelatedSkillsWithRank AS (
+			-- includes skills that were associated with the above skills in job results; uses their match index to rank them with the directly matched skills
+			SELECT rs.SkillId, rs.SkillName, rjsm.MatchIndex SkillScore
+			FROM subscriberSkills ss WITH(NOLOCK)
+			INNER JOIN [RelatedJobSkillMatrix] rjsm WITH(NOLOCK) ON ss.SkillId = rjsm.SkillId
+			INNER JOIN Skill rs WITH(NOLOCK) ON rjsm.RelatedSkillId = rs.SkillId
+			UNION 
+			SELECT ss.SkillId, ss.SkillName, ISNULL(rjsm.PopularityIndex, 10)
+			FROM subscriberSkills ss
+			LEFT JOIN RelatedJobSkillMatrix rjsm WITH(NOLOCK) ON ss.SkillId = rjsm.SkillId)
+		, allSkillsWithHighestRank AS (
+			-- chooses the highest index value for each skill (regardless whether it comes from the popularity index or match index)
+			SELECT SkillId, SkillName, MIN(SkillScore) HighestSkillScore
+			FROM subscriberSkillsAndRelatedSkillsWithRank 
+			GROUP BY SkillId, SkillName)
+		, jobsWithSkillScore AS (
+			-- associates these finalized list of skills with jobs and adds a weighted rank based on the number of skills matched to the job and the score associated with each skill
+			SELECT jp.JobPostingGuid, jp.PostalId, jp.PostingDateUTC, c.CompanyName, c.LogoUrl, jp.Title, i.[Name] Industry, jc.[Name] JobCategory, jp.Country, jp.Province, jp.City, CAST(COUNT(aswhr.SkillId) AS DECIMAL) / CAST(AVG(aswhr.HighestSkillScore) AS DECIMAL) [WeightedSkillScore]
+			FROM allSkillsWithHighestRank aswhr
+			INNER JOIN JobPostingSkill jps WITH(NOLOCK) ON aswhr.SkillId = jps.SkillId
+			INNER JOIN JobPosting jp WITH(NOLOCK) ON jps.JobPostingId = jp.JobPostingId
+			INNER JOIN Company c WITH(NOLOCK) ON c.CompanyId = jp.CompanyId
+			LEFT JOIN Industry i WITH(NOLOCK) ON jp.IndustryId = i.IndustryId
+			LEFT JOIN JobCategory jc WITH(NOLOCK) ON jp.JobCategoryId = jc.JobCategoryId
+			WHERE jp.IsDeleted = 0 
+			AND jps.IsDeleted = 0
+			GROUP BY jp.JobPostingGuid, jp.PostalId, jp.PostingDateUTC, c.CompanyName, c.LogoUrl, jp.Title, i.[Name], jc.[Name], jp.Country, jp.Province, jp.City)
+		, jobsWithDistance AS (
+			SELECT JobPostingGuid, PostingDateUTC, CompanyName, LogoUrl, Title, Industry, JobCategory, Country, Province, jwss.City, WeightedSkillScore, dbo.fn_GetGeoDistance(@subscriberLatitude, @subscriberLongitude, p.Latitude, p.Longitude) [DistanceInMeters]
+			FROM jobsWithSkillScore jwss
+			INNER JOIN Postal p WITH(NOLOCK) ON jwss.PostalId = p.PostalId)
+		, jobsWithDistanceIndex AS (
+			-- the distance index groups jobs with similar distance so that we can perform a more complex sort that includes weighted skill score
+			SELECT JobPostingGuid, PostingDateUTC, CompanyName, LogoUrl, Title, Industry, JobCategory, Country, Province, City, WeightedSkillScore, DistanceInMeters, NTILE(10) OVER (ORDER BY DistanceInMeters ASC) [DistanceIndex]
+			FROM jobsWithDistance
+			WHERE DistanceInMeters IS NOT NULL)
+		SELECT JobPostingGuid, PostingDateUTC, CompanyName, LogoUrl, Title, Industry, JobCategory, Country, Province, City, WeightedSkillScore, DistanceInMeters, DistanceIndex
+		FROM jobsWithDistanceIndex
+		ORDER BY DistanceIndex ASC, WeightedSkillScore DESC
+		OFFSET @Offset ROWS
+		FETCH FIRST @Limit ROWS ONLY
+	END
+END
+            ')");
+
             migrationBuilder.Sql("ALTER TABLE [dbo].[JobPosting] ENABLE TRIGGER [TR_JobPosting_MatchPostal]");
         }
 
@@ -378,6 +528,7 @@ END
             migrationBuilder.Sql("DROP TABLE [dbo].[RelatedJobSkillMatrix]");
             migrationBuilder.Sql("DROP VIEW [dbo].[v_RelatedJobSkillMatrix]");
             migrationBuilder.Sql("DROP PROCEDURE [dbo].[System_Get_JobsByCourse]");
+            migrationBuilder.Sql("DROP PROCEDURE [dbo].[System_Get_JobsBySubscriber]");
             migrationBuilder.Sql("DROP FUNCTION [dbo].[fn_GetGeoDistance]");
             migrationBuilder.Sql("DROP FUNCTION [dbo].[fn_RelatedJobSkills]");
             migrationBuilder.Sql(@"DROP TRIGGER [dbo].[TR_JobPosting_MatchPostal]");

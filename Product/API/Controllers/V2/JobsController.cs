@@ -334,18 +334,30 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet]
         [Route("courses/{course:guid}/related")]
-        public async Task<IActionResult> GetRelatedJobsByCourse(Guid course)
+        public async Task<IActionResult> GetRelatedJobsByCourse(Guid course, int limit = 100, int offset = 0)
         {
-            // GetSubscriberGuid - if value exists, use for geo
-            throw new NotImplementedException();
+            List<RelatedJobDto> relatedJobs = null;
+            var subscriber = GetSubscriberGuid();
+
+            if (subscriber != Guid.Empty)
+                relatedJobs = await _jobPostingService.GetJobsByCourse(course, limit, offset, subscriber);
+            else
+                relatedJobs = await _jobPostingService.GetJobsByCourse(course, limit, offset);
+
+            return Ok(relatedJobs);
         }
         
         [HttpGet]
-        [Route("subscriber/related")]
-        public async Task<IActionResult> GetRelatedJobsForSubscriber()
+        [Route("subscribers/related")]
+        public async Task<IActionResult> GetRelatedJobsForSubscriber(int limit = 100, int offset = 0)
         {
-            // GetSubscriberGuid - if value exists, use for geo
-            throw new NotImplementedException();
+            var subscriber = GetSubscriberGuid();
+            if (subscriber == Guid.Empty)
+                throw new NotFoundException("Subscriber not found");
+
+            var relatedJobs = await _jobPostingService.GetJobsBySubscriber(subscriber, limit, offset);
+
+            return Ok(relatedJobs);
         }
 
         #endregion

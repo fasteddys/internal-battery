@@ -13,6 +13,5 @@ namespace UpDiddyLib.Domain.Models
         public string City { get; set; }
         public string Province { get; set; }
         public string SemanticJobPath { get; set; }
-
     }
 }
