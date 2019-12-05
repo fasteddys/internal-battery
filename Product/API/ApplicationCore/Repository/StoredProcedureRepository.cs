@@ -86,6 +86,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return await _dbContext.KeywordSearchTerms.FromSql<SearchTermDto>("System_Get_KeywordSearchTerms").ToListAsync();
         }
 
+
+        public async Task<List<SearchTermDto>> GetLocationdSearchTermsAsync()
+        {
+            return await _dbContext.KeywordSearchTerms.FromSql<SearchTermDto>("System_Get_LocationSearchTerms").ToListAsync();
+        }
+
         public async Task<List<SearchTermDto>> GetLocationSearchTermsAsync()
         {
             return await _dbContext.LocationSearchTerms.FromSql<SearchTermDto>("System_Get_LocationSearchTerms").ToListAsync();
