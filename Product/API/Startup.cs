@@ -294,6 +294,7 @@ namespace UpDiddyApi
             services.AddScoped<ITalentNoteService, TalentNoteService>();
             services.AddScoped<IButterCMSService, ButterCMSService>();
             services.AddScoped<IPasswordResetRequestService, PasswordResetRequestService>();
+            services.AddScoped<ITopicService, TopicService>();
 
 
 

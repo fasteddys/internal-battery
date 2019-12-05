@@ -6,8 +6,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyLib.Dto;
 using UpDiddyApi.ApplicationCore.Interfaces;
- 
-
+using UpDiddyApi.ApplicationCore.Exceptions;
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class KeywordService : IKeywordService
