@@ -267,10 +267,10 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             //Jim added steps to help with 
             bool isRemoved = false;
+            string errorMsg = string.Empty;
             int step = 0;
             try
             {
-                string errorMsg = string.Empty;
                 BasicResponseDto deleteStatus = null;
                 step = 1;
                 if (subscriber.CloudTalentUri != null && string.IsNullOrEmpty(subscriber.CloudTalentUri.Trim()) == false)
@@ -299,7 +299,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // Update job posting with index error
                 subscriber.IsDeleted = 1;
                 subscriber.ModifyDate = DateTime.UtcNow;
-                subscriber.CloudTalentIndexInfo = $"RemoveProfileFromIndex: error at step {step}" + e.Message;
+                subscriber.CloudTalentIndexInfo = $"RemoveProfileFromIndex: error at step {step} " + e.Message + " ErrorMsg = " + errorMsg;
                 subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.IndexError;
                 await _repositoryWrapper.SaveAsync();
                 _syslog.LogError(e, $"CloudTalent.RemoveProfileFromIndex Error at step {step}", e, subscriber);

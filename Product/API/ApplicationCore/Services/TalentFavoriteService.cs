@@ -12,7 +12,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyApi.ApplicationCore.Exceptions;
-using UpDiddyLib.Domain;
+using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
