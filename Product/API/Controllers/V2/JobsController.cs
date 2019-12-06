@@ -322,12 +322,7 @@ namespace UpDiddyApi.Controllers
             List<UpDiddyLib.Dto.JobPostingDto> postings = await _jobPostingService.GetJobPostingForSubscriber(GetSubscriberGuid());
             return Ok(postings);
         }
-
-
-
-
-
-
+        
         #endregion
 
         #region Related Entities

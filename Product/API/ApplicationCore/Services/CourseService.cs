@@ -13,6 +13,8 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.Helpers;
+using V2Models = UpDiddyLib.Domain.Models;
+
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class CourseService : ICourseService
@@ -27,7 +29,20 @@ namespace UpDiddyApi.ApplicationCore.Services
             _config = configuration;
         }
 
+        public async Task<List<V2Models.RelatedCourseDto>> GetCoursesByCourse(Guid courseGuid, int limit, int offset)
+        {
+            return await _repositoryWrapper.StoredProcedureRepository.GetCoursesByCourse(courseGuid, limit, offset);
+        }
 
+        public async Task<List<V2Models.RelatedCourseDto>> GetCoursesBySubscriber(Guid subscriberGuid, int limit, int offset)
+        {
+            return await _repositoryWrapper.StoredProcedureRepository.GetCoursesBySubscriber(subscriberGuid, limit, offset);
+        }
+
+        public async Task<List<V2Models.RelatedCourseDto>> GetCoursesByJob(Guid jobPostingGuid, int limit, int offset)
+        {
+            return await _repositoryWrapper.StoredProcedureRepository.GetCoursesByJob(jobPostingGuid, limit, offset);
+        }
 
         public async Task<List<CourseDetailDto>> GetCoursesRandom(IQueryCollection query)
         {
@@ -38,7 +53,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (limit != null)
                 int.TryParse(limit, out MaxResults);
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesRandom(MaxResults);
-            CourseUrlHelper.AssignVendorLogoUrlToCourse(courses,_config);
+            CourseUrlHelper.AssignVendorLogoUrlToCourse(courses, _config);
             return courses;
         }
 
@@ -52,7 +67,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (limit != null)
                 int.TryParse(limit, out MaxResults);
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesForJob(jobGuid, MaxResults);
-            CourseUrlHelper.AssignVendorLogoUrlToCourse(courses,_config);
+            CourseUrlHelper.AssignVendorLogoUrlToCourse(courses, _config);
             return courses;
         }
 
@@ -62,18 +77,18 @@ namespace UpDiddyApi.ApplicationCore.Services
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCourses(limit, offset, sort, order);
             if (courses == null)
                 throw new NotFoundException("Courses not found");
-            CourseUrlHelper.AssignVendorLogoUrlToCourse(courses,_config);
+            CourseUrlHelper.AssignVendorLogoUrlToCourse(courses, _config);
             return (courses);
         }
 
-         public async Task<CourseDetailDto> GetCourse(Guid courseGuid)
+        public async Task<CourseDetailDto> GetCourse(Guid courseGuid)
         {
-            if(courseGuid == null || courseGuid == Guid.Empty)
+            if (courseGuid == null || courseGuid == Guid.Empty)
                 throw new NullReferenceException("CourseGuid cannot be null");
             var course = await _repositoryWrapper.StoredProcedureRepository.GetCourse(courseGuid);
             if (course == null)
                 throw new NotFoundException("Courses not found");
-            CourseUrlHelper.AssignVendorLogoUrlToCourse(course,_config);
+            CourseUrlHelper.AssignVendorLogoUrlToCourse(course, _config);
             return (course);
         }
 
@@ -87,8 +102,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             string limit = query["limit"];
             if (limit != null)
                 int.TryParse(limit, out MaxResults);
-            var courses = await  _repositoryWrapper.StoredProcedureRepository.GetCoursesBySkillHistogram(SkillHistogram, MaxResults);
-            CourseUrlHelper.AssignVendorLogoUrlToCourse(courses,_config);
+            var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesBySkillHistogram(SkillHistogram, MaxResults);
+            CourseUrlHelper.AssignVendorLogoUrlToCourse(courses, _config);
             return courses;
         }
 

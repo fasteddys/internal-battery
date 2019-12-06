@@ -199,6 +199,7 @@ namespace UpDiddyApi.Models
         public DbQuery<SubscriberInitialSourceDto> SubscriberInitialSource { get; set; }
         public DbQuery<CourseDetailDto> CourseDetails { get; set; }
         public DbQuery<RelatedJobDto> RelatedJobs { get; set; }
+        public DbQuery<RelatedCourseDto> RelatedCourses { get; set; }
 
 
         public DbQuery<JobDto> SubscriberJobFavorites { get; set; }

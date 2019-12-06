@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace UpDiddyLib.Domain.Models
@@ -16,7 +17,10 @@ namespace UpDiddyLib.Domain.Models
         public string Country { get; set; }
         public string Province { get; set; }
         public string City { get; set; }
-        public decimal? WeightedSkillScore { get; set; }
-        public decimal? DistanceInMeters { get; set; }
+        [Column(TypeName = "decimal(10,5)")]
+        public Decimal? WeightedSkillScore { get; set; }
+        [Column(TypeName = "decimal(10,2)")]
+        public Decimal? DistanceInMeters { get; set; }
+        public int? DistanceIndex { get; set; }
     }
 }

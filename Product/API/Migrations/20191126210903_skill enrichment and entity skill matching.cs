@@ -149,10 +149,10 @@ AS
             ')");
 
             migrationBuilder.Sql(@"EXEC('
-
 /*
 <remarks>
 2019.11.22 - Bill Koenig - Created
+2019.12.06 - Bill Koenig - Adjusted data types to fix mapping issues in EF
 </remarks>
 <description>
 Returns a list of jobs based on the skills that are associated with the course provided. The skill list is enriched by including skills that appear in the related job skill matrix.
@@ -161,7 +161,7 @@ to the distance of each job from the subscriber''s location.
 </description>
 <example>
 EXEC [dbo].[System_Get_JobsByCourse] @CourseGuid = ''EC7243F5-3117-447F-A945-92835500F364'', @SubscriberGuid = ''03FFCC3D-CC3A-414E-98E3-2FC5541CB6CB'', @Limit = 5, @Offset = 5
-EXEC [dbo].[System_Get_JobsByCourse] @CourseGuid = ''EC7243F5-3117-447F-A945-92835500F364'', @SubscriberGuid = NULL, @Limit = 50, @Offset = 0
+EXEC [dbo].[System_Get_JobsByCourse] @CourseGuid = ''EC7243F5-3117-447F-A945-92835500F364'', @SubscriberGuid = NULL, @Limit = 100, @Offset = 0
 </example>
 */
 CREATE PROCEDURE [dbo].[System_Get_JobsByCourse] (
@@ -232,7 +232,7 @@ BEGIN
 			GROUP BY SkillId, SkillName)
 		, jobsWithRank AS (
 			-- associates these finalized list of skills with jobs and adds a weighted rank based on the number of skills matched to the job and the score associated with each skill
-			SELECT jp.JobPostingGuid, jp.PostingDateUTC, c.CompanyName, c.LogoUrl, jp.Title, i.[Name] Industry, jc.[Name] JobCategory, jp.Country, jp.Province, jp.City, CAST(COUNT(aswhr.SkillId) AS DECIMAL) / CAST(AVG(aswhr.HighestSkillScore) AS DECIMAL) [WeightedSkillScore]
+			SELECT jp.JobPostingGuid, jp.PostingDateUTC, c.CompanyName, c.LogoUrl, jp.Title, i.[Name] Industry, jc.[Name] JobCategory, jp.Country, jp.Province, jp.City, CAST(CAST(COUNT(aswhr.SkillId) AS DECIMAL) / CAST(AVG(aswhr.HighestSkillScore) AS DECIMAL) AS DECIMAL(10,5)) [WeightedSkillScore]
 			FROM allSkillsWithHighestRank aswhr
 			INNER JOIN JobPostingSkill jps WITH(NOLOCK) ON aswhr.SkillId = jps.SkillId
 			INNER JOIN JobPosting jp WITH(NOLOCK) ON jps.JobPostingId = jp.JobPostingId
@@ -276,7 +276,7 @@ BEGIN
 			GROUP BY SkillId, SkillName)
 		, jobsWithSkillScore AS (
 			-- associates these finalized list of skills with jobs and adds a weighted rank based on the number of skills matched to the job and the score associated with each skill
-			SELECT jp.JobPostingGuid, jp.PostalId, jp.PostingDateUTC, c.CompanyName, c.LogoUrl, jp.Title, i.[Name] Industry, jc.[Name] JobCategory, jp.Country, jp.Province, jp.City, CAST(COUNT(aswhr.SkillId) AS DECIMAL) / CAST(AVG(aswhr.HighestSkillScore) AS DECIMAL) [WeightedSkillScore]
+			SELECT jp.JobPostingGuid, jp.PostalId, jp.PostingDateUTC, c.CompanyName, c.LogoUrl, jp.Title, i.[Name] Industry, jc.[Name] JobCategory, jp.Country, jp.Province, jp.City, CAST(CAST(COUNT(aswhr.SkillId) AS DECIMAL) / CAST(AVG(aswhr.HighestSkillScore) AS DECIMAL) AS DECIMAL(10,5)) [WeightedSkillScore]
 			FROM allSkillsWithHighestRank aswhr
 			INNER JOIN JobPostingSkill jps WITH(NOLOCK) ON aswhr.SkillId = jps.SkillId
 			INNER JOIN JobPosting jp WITH(NOLOCK) ON jps.JobPostingId = jp.JobPostingId
@@ -287,12 +287,12 @@ BEGIN
 			AND jps.IsDeleted = 0
 			GROUP BY jp.JobPostingGuid, jp.PostalId, jp.PostingDateUTC, c.CompanyName, c.LogoUrl, jp.Title, i.[Name], jc.[Name], jp.Country, jp.Province, jp.City)
 		, jobsWithDistance AS (
-			SELECT JobPostingGuid, PostingDateUTC, CompanyName, LogoUrl, Title, Industry, JobCategory, Country, Province, jwss.City, WeightedSkillScore, dbo.fn_GetGeoDistance(@subscriberLatitude, @subscriberLongitude, p.Latitude, p.Longitude) [DistanceInMeters]
+			SELECT JobPostingGuid, PostingDateUTC, CompanyName, LogoUrl, Title, Industry, JobCategory, Country, Province, jwss.City, WeightedSkillScore, CAST(dbo.fn_GetGeoDistance(@subscriberLatitude, @subscriberLongitude, p.Latitude, p.Longitude) AS DECIMAL(10,2)) [DistanceInMeters]
 			FROM jobsWithSkillScore jwss
 			INNER JOIN Postal p WITH(NOLOCK) ON jwss.PostalId = p.PostalId)
 		, jobsWithDistanceIndex AS (
 			-- the distance index groups jobs with similar distance so that we can perform a more complex sort that includes weighted skill score
-			SELECT JobPostingGuid, PostingDateUTC, CompanyName, LogoUrl, Title, Industry, JobCategory, Country, Province, City, WeightedSkillScore, DistanceInMeters, NTILE(10) OVER (ORDER BY DistanceInMeters ASC) [DistanceIndex]
+			SELECT JobPostingGuid, PostingDateUTC, CompanyName, LogoUrl, Title, Industry, JobCategory, Country, Province, City, WeightedSkillScore, DistanceInMeters, CAST(NTILE(10) OVER (ORDER BY DistanceInMeters ASC) AS INT) [DistanceIndex]
 			FROM jobsWithDistance
 			WHERE DistanceInMeters IS NOT NULL)
 		SELECT JobPostingGuid, PostingDateUTC, CompanyName, LogoUrl, Title, Industry, JobCategory, Country, Province, City, WeightedSkillScore, DistanceInMeters, DistanceIndex
@@ -301,72 +301,6 @@ BEGIN
 		OFFSET @Offset ROWS
 		FETCH FIRST @Limit ROWS ONLY
 	END
-END    
-            ')");
-
-            migrationBuilder.Sql(@"EXEC('
-/*
-<remarks>
-2019.11.26 - Bill Koenig - Created
-</remarks>
-<description>
-Finds the postal record which is the best match for a given job based on the fields that have been populated for the job. The prioritization for the match
-is a postal code match first, a city and state match second, and a state match third. Modifications to deleted jobs have no effect, nor do inserts or updates
-that do not include a geo field in the job record.
-</description>
-<example>
-UPDATE dbo.JobPosting SET postalcode = 90210 WHERE JobPostingId = 10245
-</example>
-*/
-CREATE TRIGGER [dbo].[TR_JobPosting_MatchPostal]
-    ON [dbo].[JobPosting]
-    AFTER INSERT, UPDATE
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	IF UPDATE(PostalCode) OR UPDATE(City) OR UPDATE (Province)
-	BEGIN
-		WITH geoData AS (
-			SELECT p.PostalId, p.Code [PostalCode], ci.CityId, ci.[Name] City, s.StateId, s.Code StateCode, s.[Name] StateName, co.CountryId, co.Code2 [Country]
-			FROM [State] s WITH(NOLOCK)
-			INNER JOIN Country co WITH(NOLOCK) ON s.CountryId = co.CountryId
-			INNER JOIN City ci WITH(NOLOCK) ON s.StateId = ci.StateId 
-			INNER JOIN Postal p WITH(NOLOCK) ON ci.CityId = p.CityId)
-		, jobData AS (
-			SELECT j.JobPostingId, j.Province, j.City, j.PostalCode
-			FROM JobPosting j WITH(NOLOCK)
-			INNER JOIN Inserted i ON j.JobPostingId = i.JobPostingId
-			WHERE i.IsDeleted = 0)
-		, jobAndGeoData AS (
-			SELECT j.JobPostingId, g.PostalId, 3 [Priority]
-			FROM jobData j
-			INNER JOIN geoData g ON j.Province = g.StateCode OR j.Province = g.StateName
-			UNION
-			SELECT j.JobPostingId, g.PostalId, 2
-			FROM jobData j
-			INNER JOIN geoData g ON j.City = g.City AND (j.Province = g.StateCode OR j.Province = g.StateName)
-			UNION
-			SELECT j.JobPostingId, g.PostalId, 1
-			FROM jobData j
-			INNER JOIN geoData g ON j.PostalCode = g.PostalCode)
-		, prioritizedJobAndGeoData AS (
-			SELECT JobPostingId, PostalId, [Priority], ROW_NUMBER() OVER (PARTITION BY JobPostingId ORDER BY [Priority] ASC) [RowNum]
-			FROM jobAndGeoData)
-		, bestMatchGeo AS (
-			SELECT JobPostingId, PostalId 
-			FROM prioritizedJobAndGeoData
-			WHERE RowNum = 1)
-		UPDATE 
-			j 
-		SET 
-			PostalId = bmg.PostalId
-			, ModifyDate = GETUTCDATE()
-			, ModifyGuid = ''00000000-0000-0000-0000-000000000000''
-		FROM 
-			dbo.JobPosting j
-			INNER JOIN bestMatchGeo bmg ON j.JobPostingId = bmg.JobPostingId
-	END 
 END
             ')");
 
@@ -374,14 +308,15 @@ END
 /*
 <remarks>
 2019.12.05 - Bill Koenig - Created
+2019.12.06 - Bill Koenig - Adjusted data types to fix mapping issues in EF
 </remarks>
 <description>
 Returns a list of jobs based on the skills that are associated with the subscriber provided. The skill list is enriched by including skills that appear in the related job skill matrix.
 Results are weighted according to the skill score. The operation supports a limit and offset. The results are further weighted according to the distance of each job from the 
-subscriber's location.
+subscriber''s location.
 </description>
 <example>
-EXEC [dbo].[System_Get_JobsBySubscriber] @SubscriberGuid = ''03FFCC3D-CC3A-414E-98E3-2FC5541CB6CB'', @Limit = 5, @Offset = 5
+EXEC [dbo].[System_Get_JobsBySubscriber] @SubscriberGuid = ''03FFCC3D-CC3A-414E-98E3-2FC5541CB6CB'', @Limit = 15, @Offset = 0
 </example>
 */
 CREATE PROCEDURE [dbo].[System_Get_JobsBySubscriber] (
@@ -448,7 +383,7 @@ BEGIN
 			GROUP BY SkillId, SkillName)
 		, jobsWithRank AS (
 			-- associates these finalized list of skills with jobs and adds a weighted rank based on the number of skills matched to the job and the score associated with each skill
-			SELECT jp.JobPostingGuid, jp.PostingDateUTC, c.CompanyName, c.LogoUrl, jp.Title, i.[Name] Industry, jc.[Name] JobCategory, jp.Country, jp.Province, jp.City, CAST(COUNT(aswhr.SkillId) AS DECIMAL) / CAST(AVG(aswhr.HighestSkillScore) AS DECIMAL) [WeightedSkillScore]
+			SELECT jp.JobPostingGuid, jp.PostingDateUTC, c.CompanyName, c.LogoUrl, jp.Title, i.[Name] Industry, jc.[Name] JobCategory, jp.Country, jp.Province, jp.City, CAST(CAST(COUNT(aswhr.SkillId) AS DECIMAL) / CAST(AVG(aswhr.HighestSkillScore) AS DECIMAL) AS DECIMAL(10,5)) [WeightedSkillScore]
 			FROM allSkillsWithHighestRank aswhr
 			INNER JOIN JobPostingSkill jps WITH(NOLOCK) ON aswhr.SkillId = jps.SkillId
 			INNER JOIN JobPosting jp WITH(NOLOCK) ON jps.JobPostingId = jp.JobPostingId
@@ -492,7 +427,7 @@ BEGIN
 			GROUP BY SkillId, SkillName)
 		, jobsWithSkillScore AS (
 			-- associates these finalized list of skills with jobs and adds a weighted rank based on the number of skills matched to the job and the score associated with each skill
-			SELECT jp.JobPostingGuid, jp.PostalId, jp.PostingDateUTC, c.CompanyName, c.LogoUrl, jp.Title, i.[Name] Industry, jc.[Name] JobCategory, jp.Country, jp.Province, jp.City, CAST(COUNT(aswhr.SkillId) AS DECIMAL) / CAST(AVG(aswhr.HighestSkillScore) AS DECIMAL) [WeightedSkillScore]
+			SELECT jp.JobPostingGuid, jp.PostalId, jp.PostingDateUTC, c.CompanyName, c.LogoUrl, jp.Title, i.[Name] Industry, jc.[Name] JobCategory, jp.Country, jp.Province, jp.City, CAST(CAST(COUNT(aswhr.SkillId) AS DECIMAL) / CAST(AVG(aswhr.HighestSkillScore) AS DECIMAL) AS DECIMAL(10,5)) [WeightedSkillScore]
 			FROM allSkillsWithHighestRank aswhr
 			INNER JOIN JobPostingSkill jps WITH(NOLOCK) ON aswhr.SkillId = jps.SkillId
 			INNER JOIN JobPosting jp WITH(NOLOCK) ON jps.JobPostingId = jp.JobPostingId
@@ -503,12 +438,12 @@ BEGIN
 			AND jps.IsDeleted = 0
 			GROUP BY jp.JobPostingGuid, jp.PostalId, jp.PostingDateUTC, c.CompanyName, c.LogoUrl, jp.Title, i.[Name], jc.[Name], jp.Country, jp.Province, jp.City)
 		, jobsWithDistance AS (
-			SELECT JobPostingGuid, PostingDateUTC, CompanyName, LogoUrl, Title, Industry, JobCategory, Country, Province, jwss.City, WeightedSkillScore, dbo.fn_GetGeoDistance(@subscriberLatitude, @subscriberLongitude, p.Latitude, p.Longitude) [DistanceInMeters]
+			SELECT JobPostingGuid, PostingDateUTC, CompanyName, LogoUrl, Title, Industry, JobCategory, Country, Province, jwss.City, WeightedSkillScore, CAST(dbo.fn_GetGeoDistance(@subscriberLatitude, @subscriberLongitude, p.Latitude, p.Longitude) AS DECIMAL(10,2)) [DistanceInMeters]
 			FROM jobsWithSkillScore jwss
 			INNER JOIN Postal p WITH(NOLOCK) ON jwss.PostalId = p.PostalId)
 		, jobsWithDistanceIndex AS (
 			-- the distance index groups jobs with similar distance so that we can perform a more complex sort that includes weighted skill score
-			SELECT JobPostingGuid, PostingDateUTC, CompanyName, LogoUrl, Title, Industry, JobCategory, Country, Province, City, WeightedSkillScore, DistanceInMeters, NTILE(10) OVER (ORDER BY DistanceInMeters ASC) [DistanceIndex]
+			SELECT JobPostingGuid, PostingDateUTC, CompanyName, LogoUrl, Title, Industry, JobCategory, Country, Province, City, WeightedSkillScore, DistanceInMeters, CAST(NTILE(10) OVER (ORDER BY DistanceInMeters ASC) AS INT) [DistanceIndex]
 			FROM jobsWithDistance
 			WHERE DistanceInMeters IS NOT NULL)
 		SELECT JobPostingGuid, PostingDateUTC, CompanyName, LogoUrl, Title, Industry, JobCategory, Country, Province, City, WeightedSkillScore, DistanceInMeters, DistanceIndex
@@ -517,6 +452,199 @@ BEGIN
 		OFFSET @Offset ROWS
 		FETCH FIRST @Limit ROWS ONLY
 	END
+END
+            ')");
+
+            migrationBuilder.Sql(@"EXEC('
+/*
+<remarks>
+2019.12.06 - Bill Koenig - Created
+</remarks>
+<description>
+Returns a list of courses based on the skills that are associated with the course provided. The skill list is enriched by including skills that appear in the related job skill matrix.
+Results are weighted according to the skill score. The operation supports a limit and offset. 
+</description>
+<example>
+EXEC [dbo].[System_Get_CoursesByCourse] @CourseGuid = ''EC7243F5-3117-447F-A945-92835500F364'', @Limit = 15, @Offset = 0
+</example>
+*/
+CREATE PROCEDURE [dbo].[System_Get_CoursesByCourse] (
+	@CourseGuid UNIQUEIDENTIFIER,
+    @Limit INT,
+    @Offset INT
+)
+AS
+BEGIN 
+	SET NOCOUNT ON;
+	
+	;WITH courseSkills AS (
+		-- skills that are associated with the subscriber
+		SELECT cs.SkillId, s.SkillName
+		FROM Course c
+		INNER JOIN CourseSkill cs WITH(NOLOCK) ON c.CourseId = cs.CourseId
+		INNER JOIN Skill s WITH(NOLOCK) ON cs.SkillId = s.SkillId
+		WHERE c.CourseGuid = @CourseGuid
+		AND cs.IsDeleted = 0)
+	, courseSkillsAndRelatedSkillsWithRank AS (
+		-- includes skills that were associated with the above skills in job results; uses their match index to rank them with the directly matched skills
+		SELECT rs.SkillId, rs.SkillName, rjsm.MatchIndex SkillScore
+		FROM courseSkills cs WITH(NOLOCK)
+		INNER JOIN [RelatedJobSkillMatrix] rjsm WITH(NOLOCK) ON cs.SkillId = rjsm.SkillId
+		INNER JOIN Skill rs WITH(NOLOCK) ON rjsm.RelatedSkillId = rs.SkillId
+		UNION 
+		SELECT cs.SkillId, cs.SkillName, ISNULL(rjsm.PopularityIndex, 10)
+		FROM courseSkills cs
+		LEFT JOIN RelatedJobSkillMatrix rjsm WITH(NOLOCK) ON cs.SkillId = rjsm.SkillId)
+	, allSkillsWithHighestRank AS (
+		-- chooses the highest index value for each skill (regardless whether it comes from the popularity index or match index)
+		SELECT SkillId, SkillName, MIN(SkillScore) HighestSkillScore
+		FROM courseSkillsAndRelatedSkillsWithRank 
+		GROUP BY SkillId, SkillName)
+	, coursesWithRank AS (
+		-- associates these finalized list of skills with courses and adds a weighted rank based on the number of skills matched to the course and the score associated with each skill
+		SELECT c.CourseGuid, c.[Name] CourseName, c.[Description] CourseDescription, c.TabletImage CourseLogoUrl, v.[Name] VendorName, v.LogoUrl VendorLogoUrl, CAST(CAST(COUNT(aswhr.SkillId) AS DECIMAL) / CAST(AVG(aswhr.HighestSkillScore) AS DECIMAL) AS DECIMAL(10,5)) [WeightedSkillScore]
+		FROM allSkillsWithHighestRank aswhr
+		INNER JOIN CourseSkill cs WITH(NOLOCK) ON aswhr.SkillId = cs.SkillId
+		INNER JOIN Course c WITH(NOLOCK) ON cs.CourseId = c.CourseId
+		INNER JOIN Vendor v WITH(NOLOCK) ON c.VendorId = v.VendorId
+		WHERE c.IsDeleted = 0 
+		AND cs.IsDeleted = 0
+		AND c.CourseGuid <> @CourseGuid
+		GROUP BY c.CourseGuid, c.[Name], c.[Description], c.TabletImage, v.[Name], v.LogoUrl)
+	SELECT CourseGuid, CourseName, CourseDescription, CourseLogoUrl, VendorName, VendorLogoUrl, WeightedSkillScore
+	FROM coursesWithRank cwr
+	ORDER BY WeightedSkillScore DESC		
+	OFFSET @Offset ROWS
+	FETCH FIRST @Limit ROWS ONLY
+	
+END
+            ')");
+
+            migrationBuilder.Sql(@"EXEC('
+/*
+<remarks>
+2019.12.06 - Bill Koenig - Created
+</remarks>
+<description>
+Returns a list of courses based on the skills that are associated with the course provided. The skill list is enriched by including skills that appear in the related job skill matrix.
+Results are weighted according to the skill score. The operation supports a limit and offset. 
+</description>
+<example>
+EXEC [dbo].[System_Get_CoursesByJob] @JobPostingGuid = ''46B539E4-E54B-4E68-ABB1-8AC674F8FD87'', @Limit = 5, @Offset = 0
+</example>
+*/
+CREATE PROCEDURE [dbo].[System_Get_CoursesByJob] (
+	@JobPostingGuid UNIQUEIDENTIFIER,
+    @Limit INT,
+    @Offset INT
+)
+AS
+BEGIN 
+	SET NOCOUNT ON;
+	
+	;WITH jobSkills AS (
+		-- skills that are associated with the subscriber
+		SELECT s.SkillId, s.SkillName
+		FROM JobPosting j
+		INNER JOIN JobPostingSkill jps WITH(NOLOCK) ON jps.JobPostingId = j.JobPostingId
+		INNER JOIN Skill s WITH(NOLOCK) ON jps.SkillId = s.SkillId
+		WHERE j.JobPostingGuid = @JobPostingGuid
+		AND jps.IsDeleted = 0)
+	, jobSkillsAndRelatedSkillsWithRank AS (
+		-- includes skills that were associated with the above skills in job results; uses their match index to rank them with the directly matched skills
+		SELECT rs.SkillId, rs.SkillName, rjsm.MatchIndex SkillScore
+		FROM jobSkills js WITH(NOLOCK)
+		INNER JOIN [RelatedJobSkillMatrix] rjsm WITH(NOLOCK) ON js.SkillId = rjsm.SkillId
+		INNER JOIN Skill rs WITH(NOLOCK) ON rjsm.RelatedSkillId = rs.SkillId
+		UNION 
+		SELECT js.SkillId, js.SkillName, ISNULL(rjsm.PopularityIndex, 10)
+		FROM jobSkills js
+		LEFT JOIN RelatedJobSkillMatrix rjsm WITH(NOLOCK) ON js.SkillId = rjsm.SkillId)
+	, allSkillsWithHighestRank AS (
+		-- chooses the highest index value for each skill (regardless whether it comes from the popularity index or match index)
+		SELECT SkillId, SkillName, MIN(SkillScore) HighestSkillScore
+		FROM jobSkillsAndRelatedSkillsWithRank 
+		GROUP BY SkillId, SkillName)
+	, coursesWithRank AS (
+		-- associates these finalized list of skills with courses and adds a weighted rank based on the number of skills matched to the course and the score associated with each skill
+		SELECT c.CourseGuid, c.[Name] CourseName, c.[Description] CourseDescription, c.TabletImage CourseLogoUrl, v.[Name] VendorName, v.LogoUrl VendorLogoUrl, CAST(CAST(COUNT(aswhr.SkillId) AS DECIMAL) / CAST(AVG(aswhr.HighestSkillScore) AS DECIMAL) AS DECIMAL(10,5)) [WeightedSkillScore]
+		FROM allSkillsWithHighestRank aswhr
+		INNER JOIN CourseSkill cs WITH(NOLOCK) ON aswhr.SkillId = cs.SkillId
+		INNER JOIN Course c WITH(NOLOCK) ON cs.CourseId = c.CourseId
+		INNER JOIN Vendor v WITH(NOLOCK) ON c.VendorId = v.VendorId
+		WHERE c.IsDeleted = 0 
+		AND cs.IsDeleted = 0
+		GROUP BY c.CourseGuid, c.[Name], c.[Description], c.TabletImage, v.[Name], v.LogoUrl)
+	SELECT CourseGuid, CourseName, CourseDescription, CourseLogoUrl, VendorName, VendorLogoUrl, WeightedSkillScore
+	FROM coursesWithRank cwr
+	ORDER BY WeightedSkillScore DESC		
+	OFFSET @Offset ROWS
+	FETCH FIRST @Limit ROWS ONLY
+	
+END
+            ')");
+
+            migrationBuilder.Sql(@"EXEC('
+/*
+<remarks>
+2019.12.06 - Bill Koenig - Created
+</remarks>
+<description>
+Returns a list of courses based on the skills that are associated with the subscriber provided. The skill list is enriched by including skills that appear in the related job skill matrix.
+Results are weighted according to the skill score. The operation supports a limit and offset. 
+</description>
+<example>
+EXEC [dbo].[System_Get_CoursesBySubscriber] @SubscriberGuid = ''03FFCC3D-CC3A-414E-98E3-2FC5541CB6CB'', @Limit = 15, @Offset = 0
+</example>
+*/
+CREATE PROCEDURE [dbo].[System_Get_CoursesBySubscriber] (
+	@SubscriberGuid UNIQUEIDENTIFIER,
+    @Limit INT,
+    @Offset INT
+)
+AS
+BEGIN 
+	SET NOCOUNT ON;
+
+	-- do not evaluate geo; return results based on weighted skill score only
+	;WITH subscriberSkills AS (
+		-- skills that are associated with the subscriber
+		SELECT ss.SkillId, k.SkillName
+		FROM Subscriber s
+		INNER JOIN SubscriberSkill ss WITH(NOLOCK) ON s.SubscriberId = ss.SubscriberId
+		INNER JOIN Skill k WITH(NOLOCK) ON ss.SkillId = k.SkillId
+		WHERE s.SubscriberGuid = @SubscriberGuid
+		AND ss.IsDeleted = 0)
+	, subscriberSkillsAndRelatedSkillsWithRank AS (
+		-- includes skills that were associated with the above skills in job results; uses their match index to rank them with the directly matched skills
+		SELECT rs.SkillId, rs.SkillName, rjsm.MatchIndex SkillScore
+		FROM subscriberSkills ss WITH(NOLOCK)
+		INNER JOIN [RelatedJobSkillMatrix] rjsm WITH(NOLOCK) ON ss.SkillId = rjsm.SkillId
+		INNER JOIN Skill rs WITH(NOLOCK) ON rjsm.RelatedSkillId = rs.SkillId
+		UNION 
+		SELECT ss.SkillId, ss.SkillName, ISNULL(rjsm.PopularityIndex, 10)
+		FROM subscriberSkills ss
+		LEFT JOIN RelatedJobSkillMatrix rjsm WITH(NOLOCK) ON ss.SkillId = rjsm.SkillId)
+	, allSkillsWithHighestRank AS (
+		-- chooses the highest index value for each skill (regardless whether it comes from the popularity index or match index)
+		SELECT SkillId, SkillName, MIN(SkillScore) HighestSkillScore
+		FROM subscriberSkillsAndRelatedSkillsWithRank 
+		GROUP BY SkillId, SkillName)
+	, coursesWithRank AS (
+		-- associates these finalized list of skills with courses and adds a weighted rank based on the number of skills matched to the course and the score associated with each skill
+		SELECT c.CourseGuid, c.[Name] CourseName, c.[Description] CourseDescription, c.TabletImage CourseLogoUrl, v.[Name] VendorName, v.LogoUrl VendorLogoUrl, CAST(CAST(COUNT(aswhr.SkillId) AS DECIMAL) / CAST(AVG(aswhr.HighestSkillScore) AS DECIMAL) AS DECIMAL(10,5)) [WeightedSkillScore]
+		FROM allSkillsWithHighestRank aswhr
+		INNER JOIN CourseSkill cs WITH(NOLOCK) ON aswhr.SkillId = cs.SkillId
+		INNER JOIN Course c WITH(NOLOCK) ON cs.CourseId = c.CourseId
+		INNER JOIN Vendor v WITH(NOLOCK) ON c.VendorId = v.VendorId
+		WHERE c.IsDeleted = 0 
+		AND cs.IsDeleted = 0
+		GROUP BY c.CourseGuid, c.[Name], c.[Description], c.TabletImage, v.[Name], v.LogoUrl)
+	SELECT CourseGuid, CourseName, CourseDescription, CourseLogoUrl, VendorName, VendorLogoUrl, WeightedSkillScore
+	FROM coursesWithRank cwr
+	ORDER BY WeightedSkillScore DESC		
+	OFFSET @Offset ROWS
+	FETCH FIRST @Limit ROWS ONLY
 END
             ')");
 
@@ -529,9 +657,12 @@ END
             migrationBuilder.Sql("DROP VIEW [dbo].[v_RelatedJobSkillMatrix]");
             migrationBuilder.Sql("DROP PROCEDURE [dbo].[System_Get_JobsByCourse]");
             migrationBuilder.Sql("DROP PROCEDURE [dbo].[System_Get_JobsBySubscriber]");
+            migrationBuilder.Sql("DROP PROCEDURE [dbo].[System_Get_CoursesByCourse]");
+            migrationBuilder.Sql("DROP PROCEDURE [dbo].[System_Get_CoursesBySubscriber]");
+            migrationBuilder.Sql("DROP PROCEDURE [dbo].[System_Get_CoursesByJob]");
             migrationBuilder.Sql("DROP FUNCTION [dbo].[fn_GetGeoDistance]");
             migrationBuilder.Sql("DROP FUNCTION [dbo].[fn_RelatedJobSkills]");
-            migrationBuilder.Sql(@"DROP TRIGGER [dbo].[TR_JobPosting_MatchPostal]");
+            migrationBuilder.Sql("DROP TRIGGER [dbo].[TR_JobPosting_MatchPostal]");
         }
     }
 }
