@@ -10,16 +10,31 @@ namespace UpDiddyApi.ApplicationCore.Repository
 {
     public class StateRepository : UpDiddyRepositoryBase<State>, IStateRepository
     {
+
+
+        private readonly UpDiddyDbContext _dbContext;
+
         public StateRepository(UpDiddyDbContext dbContext) : base(dbContext)
         {
-
+            _dbContext = dbContext;
         }
+
+
+        public async Task<State> GetStateBySubscriberGuid(Guid subscriberGuid)
+        {
+            return await (from s in _dbContext.State join
+                          su in _dbContext.Subscriber on s.StateId equals su.StateId
+                          where su.SubscriberGuid == subscriberGuid
+                          select s).FirstOrDefaultAsync();
+        }
+
 
         public async Task<IEnumerable<State>> GetAllStatesAsync()
         {
             var states = GetAll();
             return await states
                                .Include(s => s.Country)
+                               .Where(x => x.IsDeleted == 0)
                                .ToListAsync();                             
         }
 
@@ -40,6 +55,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
                                .Where(s => s.IsDeleted == 0 && s.Country.Sequence == 1)
                                .OrderBy(s=>s.Sequence)
                                .ToListAsync();
+        }
+
+         public async Task<State> GetByStateGuid(Guid stateGuid)
+        {
+            return await (from s in _dbContext.State 
+                          where s.StateGuid == stateGuid
+                          select s).FirstOrDefaultAsync();
         }
     }
 }

@@ -17,8 +17,8 @@ namespace UpDiddyApi.Helpers.Job
         {
             JobQueryDto jobQuery = new JobQueryDto();
 
-            PageSize = GetIntQueryParam(query, "limit", PageSize);
-            int PageNum = GetIntQueryParam(query, "offset"); 
+            PageSize = GetIntQueryParam(query, "limit", PageSize);            
+            int PageNum = (GetIntQueryParam(query, "offset") / PageSize) + 1; 
             jobQuery.IncludeCouseSkillsHistogram = GetIntQueryParam(query, "includeskillshistogram");
 
 
@@ -231,6 +231,8 @@ namespace UpDiddyApi.Helpers.Job
             // empty string -> not specified 
             return string.Empty;
         }
+
+ 
 
         static private int GetIntQueryParam(IQueryCollection queryInfo, string ParamName, int urlComponentValue = 0)
         {

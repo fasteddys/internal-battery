@@ -4,7 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
 using UpDiddyLib.Helpers;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using Microsoft.EntityFrameworkCore;
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class EducationalDegreeTypeFactory
@@ -22,44 +23,53 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return rVal;
         }
 
-        public static async Task<EducationalDegreeType> GetOrDefault(UpDiddyDbContext db, string degreeType)
+        public static async Task<EducationalDegreeType> GetOrDefault(IRepositoryWrapper repositoryWrapper, string degreeType)
         {
             degreeType = degreeType.Trim();
 
-            EducationalDegreeType educationalDegreeType = db.EducationalDegreeType
+            EducationalDegreeType educationalDegreeType = await repositoryWrapper.EducationalDegreeTypeRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.DegreeType == degreeType)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             if (educationalDegreeType == null)
             {
-                educationalDegreeType = await GetOrAdd(db, Constants.NotSpecifedOption );
+                educationalDegreeType = await GetOrAdd(repositoryWrapper, Constants.NotSpecifedOption);
             }
             return educationalDegreeType;
         }
 
 
-        public static async Task<EducationalDegreeType> GetOrAdd(UpDiddyDbContext db, string degreeType)
+        public static async Task<EducationalDegreeType> GetOrAdd(IRepositoryWrapper repositoryWrapper, string degreeType)
         {
             degreeType = degreeType.Trim();
 
-            EducationalDegreeType educationalDegreeType = db.EducationalDegreeType
+            EducationalDegreeType educationalDegreeType = await repositoryWrapper.EducationalDegreeTypeRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.DegreeType == degreeType)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             if (educationalDegreeType == null)
             {
                 educationalDegreeType = CreateEducationalDegreeType(degreeType);
-                db.EducationalDegreeType.Add(educationalDegreeType);
-                await db.SaveChangesAsync();
+                await repositoryWrapper.EducationalDegreeTypeRepository.Create(educationalDegreeType);
+                await repositoryWrapper.EducationalDegreeTypeRepository.SaveAsync();
             }
             return educationalDegreeType;
         }
 
-        public static EducationalDegreeType GetEducationalDegreeTypeByDegreeType(UpDiddyDbContext db, string degreeType)
+        public static async Task<EducationalDegreeType> GetEducationalDegreeTypeByDegreeType(IRepositoryWrapper repositoryWrapper, string degreeType)
         {
-            return db.EducationalDegreeType
+            return await repositoryWrapper.EducationalDegreeTypeRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.DegreeType == degreeType)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
+
+
+        public static async Task<EducationalDegreeType> GetEducationalDegreeTypeByDegreeTypeAsync(IRepositoryWrapper repositoryWrapper, string degreeType)
+        {
+            return await repositoryWrapper.EducationalDegreeTypeRepository.GetAllWithTracking()
+                .Where(s => s.IsDeleted == 0 && s.DegreeType == degreeType)
+                .FirstOrDefaultAsync();
+        }
+
     }
 }

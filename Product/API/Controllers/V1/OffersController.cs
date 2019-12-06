@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -10,11 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using UpDiddyApi.Authorization;
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
@@ -29,7 +25,7 @@ using System.Web;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Shared;
 using Hangfire;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 namespace UpDiddyApi.Controllers
 {
     [Route("api/[controller]")]
@@ -40,11 +36,11 @@ namespace UpDiddyApi.Controllers
         private readonly IConfiguration _configuration;
         private readonly ILogger _syslog;
         private readonly IDistributedCache _cache;
-        private IB2CGraph _graphClient;
         private IAuthorizationService _authorizationService;
         private ICloudStorage _cloudStorage;
         private ISysEmail _sysEmail;
         private readonly IHangfireService _hangfireService;
+        private readonly IRepositoryWrapper _repositoryWrapper;
 
 
         public OffersController(UpDiddyDbContext db,
@@ -52,23 +48,23 @@ namespace UpDiddyApi.Controllers
             IConfiguration configuration,
             ILogger<SubscriberController> sysLog,
             IDistributedCache distributedCache,
-            IB2CGraph client,
             ICloudStorage cloudStorage,
             IAuthorizationService authorizationService,
             IDistributedCache cache,
             ISysEmail sysEmail,
-            IHangfireService hangfireService)
+            IHangfireService hangfireService,
+            IRepositoryWrapper repositoryWrapper)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
             _syslog = sysLog;
-            _graphClient = client;
             _cloudStorage = cloudStorage;
             _authorizationService = authorizationService;
             _sysEmail = sysEmail;
             _cache = cache;
             _hangfireService = hangfireService;
+            _repositoryWrapper = repositoryWrapper;
         }
 
         [HttpGet]
@@ -106,7 +102,8 @@ namespace UpDiddyApi.Controllers
                 return Unauthorized();
 
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (!SubscriberFactory.IsEligibleForOffers(_db, loggedInUserGuid, _syslog, _mapper, User.Identity))
+            var isEligible = await SubscriberFactory.IsEligibleForOffers(_repositoryWrapper, loggedInUserGuid, _syslog, _mapper, User.Identity);
+            if (!isEligible)
                 return Unauthorized();
 
             OfferDto offer = await _db.Offer
@@ -124,11 +121,11 @@ namespace UpDiddyApi.Controllers
                 return Unauthorized();
 
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, loggedInUserGuid);
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repositoryWrapper, loggedInUserGuid);
             if (subscriber == null)
                 return Unauthorized();
-            
-            if (!SubscriberFactory.IsEligibleForOffers(_db, loggedInUserGuid, _syslog, _mapper, User.Identity))
+            var isEligible = await SubscriberFactory.IsEligibleForOffers(_repositoryWrapper, loggedInUserGuid, _syslog, _mapper, User.Identity);
+            if (!isEligible)
                 return Unauthorized();
 
             OfferDto offer = _db.Offer
@@ -140,7 +137,7 @@ namespace UpDiddyApi.Controllers
             if (offer == null)
                 return NotFound();
             else
-                new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "Partner offer", "Offer", offer.OfferGuid);
+                new SubscriberActionFactory(_repositoryWrapper, _db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "Partner offer", "Offer", offer.OfferGuid);
 
             _hangfireService.Enqueue(() =>
                 _sysEmail.SendTemplatedEmailAsync(subscriber.Email, _configuration["SysEmail:Transactional:TemplateIds:SubscriberOffer-Redemption"], offer, Constants.SendGridAccount.Transactional, null, null, null, null));

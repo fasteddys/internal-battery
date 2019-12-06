@@ -60,7 +60,6 @@
                 url: $(this).attr("action"),
                 data: $(this).serialize()
             }).done(res => {
-                $('.signup-modal a').attr('href', res.description);
                 $('.signup-modal').modal();
                 $('.signup-modal').on('hidden.bs.modal', function (e) {
                     window.location.href = res.description;
@@ -88,7 +87,6 @@ $("#ExistingUserComponent form").submit(function (e) {
         url: $(this).attr("action"),
         data: $(this).serialize()
     }).done(res => {
-        $('.signup-modal a').attr('href', res.description);
         $('.signup-modal').modal();
         $('.signup-modal').on('hidden.bs.modal', function (e) {
             window.location.href = res.description;

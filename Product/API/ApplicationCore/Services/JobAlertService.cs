@@ -10,12 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using UpDiddyApi.Models;
 using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Interfaces;
-using UpDiddyApi.Helpers.Job;
-using Microsoft.Extensions.Logging;
-using System.Net.Http;
-using Google.Apis.CloudTalentSolution.v3.Data;
-using UpDiddyLib.Shared.GoogleJobs;
-using Microsoft.AspNetCore.Http;
 using UpDiddyLib.Domain.Models;
 using Hangfire;
 using Newtonsoft.Json;
@@ -28,9 +22,9 @@ namespace UpDiddyApi.ApplicationCore.Services
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
 
-        private IHangfireService _hangfireService;
+        private readonly IHangfireService _hangfireService;
 
-        public JobAlertService(HangfireService hangfireService, IRepositoryWrapper repositoryWrapper)
+        public JobAlertService(IHangfireService hangfireService, IRepositoryWrapper repositoryWrapper)
         {
             _repositoryWrapper = repositoryWrapper;
             _hangfireService = hangfireService;
@@ -38,45 +32,24 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task CreateJobAlert(Guid subscriberGuid, JobAlertDto jobAlertDto)
         {
-
             try
             {
-                JobQueryDto jobQueryDto = new JobQueryDto();
-                jobQueryDto.Keywords = jobAlertDto.Keywords;
-                jobQueryDto.Location = jobQueryDto.Location;
-                var alerts = await _repositoryWrapper.JobPostingAlertRepository.GetAllJobPostingAlertsBySubscriber(subscriberGuid);
-                if (alerts.ToList().Count >= 4)
-                {
-                    throw new MaximumReachedException("Subscriber has exceeded the maximum number of job exception");
-                }
-
-                DateTime utcDate = DateTime.UtcNow;
-                DateTime localExecutionDate = new DateTime(
-                    utcDate.Year,
-                    utcDate.Month,
-                    jobAlertDto.Frequency == "Weekly" ? utcDate.Next(jobAlertDto.ExecutionDayOfWeek.Value).Day : utcDate.Day,
-                    utcDate.Hour,
-                    utcDate.Minute,
-                    0);
-
-
-                string cronSchedule = null;
-
-                switch (jobAlertDto.Frequency)
-                {
-                    case "Daily":
-                        cronSchedule = Cron.Daily(localExecutionDate.Hour, localExecutionDate.Minute);
-                        break;
-                    case "Weekly":
-                        cronSchedule = Cron.Weekly(localExecutionDate.DayOfWeek, localExecutionDate.Hour, localExecutionDate.Minute);
-                        break;
-                    default:
-                        throw new NotSupportedException($"Unrecognized value for 'Frequency' parameter: {jobAlertDto.Frequency}");
-                }
                 var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+
+                if (subscriber == null)
+                    throw new NotFoundException("Subscriber not found");
+
+                JobQueryDto jobQueryDto = CreateJobQueryDto(jobAlertDto);
+                var alerts = await _repositoryWrapper.JobPostingAlertRepository.GetAllJobPostingAlertsBySubscriber(subscriberGuid);
+
+                if (alerts.ToList().Count >= 5)
+                    throw new MaximumReachedException("Subscriber has exceeded the maximum number of job exception");
+
+                DateTime localExecutionDate = CreateLocalExecutionDate(jobAlertDto.Frequency, jobAlertDto.ExecutionDayOfWeek);
+                string cronSchedule = CreateCronSchedule(jobAlertDto.Frequency, localExecutionDate);
                 int subscriberId = subscriber.SubscriberId;
                 Guid jobPostingAlertGuid = Guid.NewGuid();
-                await _repositoryWrapper.JobPostingAlertRepository.Create(new JobPostingAlert()
+                JobPostingAlert jobPostingAlert = new JobPostingAlert()
                 {
                     CreateDate = DateTime.UtcNow,
                     CreateGuid = Guid.Empty,
@@ -89,8 +62,10 @@ namespace UpDiddyApi.ApplicationCore.Services
                     JobPostingAlertGuid = jobPostingAlertGuid,
                     JobQueryDto = JObject.FromObject(jobQueryDto),
                     SubscriberId = subscriberId
-                });
-                await _repositoryWrapper.JobPostingAlertRepository.SaveAsync();
+                };
+
+                await _repositoryWrapper.JobPostingAlertRepository.Create(jobPostingAlert);
+                await _repositoryWrapper.SaveAsync();
                 _hangfireService.AddOrUpdate<ScheduledJobs>($"jobPostingAlert:{jobPostingAlertGuid}", sj => sj.ExecuteJobPostingAlert(jobPostingAlertGuid), cronSchedule);
 
             }
@@ -100,6 +75,27 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
+        public async Task UpdateJobAlert(Guid subscriberGuid, Guid jobAlertGuid, JobAlertDto jobAlertDto)
+        {
+            JobPostingAlert jobPostingAlert = await _repositoryWrapper.JobPostingAlertRepository.GetJobPostingAlertBySubscriberGuidAndJobPostingAlertGuid(subscriberGuid, jobAlertGuid);
+            if (jobPostingAlert == null)
+            {
+                throw new NotFoundException("Job Posting Alert not found");
+            }
+            JobQueryDto jobQueryDto = CreateJobQueryDto(jobAlertDto);
+            DateTime localExecutionDate = CreateLocalExecutionDate(jobAlertDto.Frequency, jobAlertDto.ExecutionDayOfWeek);
+            string cronSchedule = CreateCronSchedule(jobAlertDto.Frequency, localExecutionDate);
+            jobPostingAlert.Description = jobAlertDto.Description;
+            jobPostingAlert.JobQueryDto = JObject.FromObject(jobQueryDto);
+            jobPostingAlert.ExecutionDayOfWeek = jobAlertDto?.Frequency == "Weekly" ? (DayOfWeek?)localExecutionDate.DayOfWeek : null;
+            jobPostingAlert.ExecutionHour = localExecutionDate.Hour;
+            jobPostingAlert.ExecutionMinute = localExecutionDate.Minute;
+            jobPostingAlert.Frequency = (Frequency)Enum.Parse(typeof(Frequency), jobAlertDto.Frequency);
+            jobPostingAlert.ModifyDate = DateTime.UtcNow;
+            _repositoryWrapper.JobPostingAlertRepository.Update(jobPostingAlert);
+            await _repositoryWrapper.SaveAsync();
+            _hangfireService.AddOrUpdate<ScheduledJobs>($"jobPostingAlert:{jobPostingAlert.JobPostingAlertGuid}", sj => sj.ExecuteJobPostingAlert(jobPostingAlert.JobPostingAlertGuid), cronSchedule);
+        }
 
         public async Task<List<JobAlertDto>> GetJobAlert(Guid subscriberGuid)
         {
@@ -108,16 +104,13 @@ namespace UpDiddyApi.ApplicationCore.Services
                    .Select(jpa => new JobAlertDto()
                    {
                        Description = jpa.Description,
-                       ExecutionDayOfWeek = jpa.ExecutionDayOfWeek,
+                       ExecutionDayOfWeek = jpa.ExecutionDayOfWeek.HasValue ? jpa.ExecutionDayOfWeek.Value.ToString() : null,
                        Frequency = jpa.Frequency.ToString(),
                        JobAlertGuid = jpa.JobPostingAlertGuid,
                        Keywords = JsonConvert.DeserializeObject<JobQueryDto>(jpa.JobQueryDto.ToString()).Keywords,
                        Location = JsonConvert.DeserializeObject<JobQueryDto>(jpa.JobQueryDto.ToString()).Location,
                    }).ToList();
-            if (jobPostingAlerts.Count == 0)
-            {
-                throw new NotFoundException("Job alerts could not be found");
-            }
+
             return jobPostingAlerts;
         }
 
@@ -133,8 +126,64 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 throw new UnauthorizedAccessException();
             }
+
             alert.IsDeleted = 1;
+            _repositoryWrapper.JobPostingAlertRepository.Update(alert);
             await _repositoryWrapper.JobPostingAlertRepository.SaveAsync();
+            _hangfireService.RemoveIfExists($"jobPostingAlert:{jobAlertGuid}");
         }
+
+        #region Private Helper Functions
+
+        private JobQueryDto CreateJobQueryDto(JobAlertDto alertDto)
+        {
+            JobQueryDto jobQueryDto = new JobQueryDto();
+            jobQueryDto.Keywords = alertDto.Keywords;
+            jobQueryDto.Location = string.IsNullOrEmpty(alertDto.Location) ? string.Empty : alertDto.Location;
+            jobQueryDto.ExcludeCustomProperties = 1;
+            jobQueryDto.ExcludeFacets = 1;
+            jobQueryDto.PageSize = 20;
+            jobQueryDto.NumPages = 1;
+            return jobQueryDto;
+        }
+
+        private DateTime CreateLocalExecutionDate(string frequency, string executionDayOfWeek)
+        {
+            DateTime utcDate = DateTime.UtcNow;
+            DayOfWeek dayOfWeek;
+            bool isValid = DayOfWeek.TryParse(executionDayOfWeek, out dayOfWeek);
+            if (!isValid)
+            {
+                throw new NotSupportedException($"Unrecognized value for 'ExecutionDayOfWeek' parameter: {executionDayOfWeek}");
+            }
+            DateTime localExecutionDate = new DateTime(
+                   utcDate.Year,
+                   utcDate.Month,
+                   frequency == "Weekly" ? utcDate.Next(dayOfWeek).Day : utcDate.Day,
+                   utcDate.Hour,
+                   utcDate.Minute,
+                   0);
+            return localExecutionDate;
+        }
+
+        private string CreateCronSchedule(string frequency, DateTime localExecutionDate)
+        {
+            string cronSchedule = null;
+
+            switch (frequency)
+            {
+                case "Daily":
+                    cronSchedule = Cron.Daily(localExecutionDate.Hour, localExecutionDate.Minute);
+                    break;
+                case "Weekly":
+                    cronSchedule = Cron.Weekly(localExecutionDate.DayOfWeek, localExecutionDate.Hour, localExecutionDate.Minute);
+                    break;
+                default:
+                    throw new NotSupportedException($"Unrecognized value for 'Frequency' parameter: {frequency}");
+            }
+
+            return cronSchedule;
+        }
+        #endregion
     }
 }

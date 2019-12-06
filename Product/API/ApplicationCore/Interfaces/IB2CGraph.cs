@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces
 {
+    [Obsolete("This can be removed once we are satisfied with the ADB2C -> Auth0 migration", false)]
     public interface IB2CGraph
     {
         Task<IList<Group>> GetUserGroupsByObjectId(string objectId);
@@ -15,5 +16,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
         Task<string> SendGraphPostRequest(string api, string json);
         Task<string> SendGraphGetRequest(string api, string query);
         Task<string> SendGraphDeleteRequest(string api);
+        Task<string> ChangeUserPassword(Guid subscriberGuid, string password);
     }
 }

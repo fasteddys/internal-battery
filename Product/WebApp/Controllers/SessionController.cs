@@ -12,177 +12,473 @@ using System.Linq;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using System; 
+using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using UpDiddy.ViewModels;
+using Auth0.AuthenticationApi;
+using Microsoft.Extensions.Configuration;
+using Auth0.AuthenticationApi.Models;
+using System.Collections.Generic;
+using UpDiddy.Api;
+using UpDiddyLib.Dto.User;
+using UpDiddyLib.Dto;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddy.Controllers
 {
     public class SessionController : Controller
-    { 
+    {
         private ILogger _syslog = null;
-        IDistributedCache _cache = null;
-        IMemoryCache _memoryCache = null;
-        public SessionController(IOptions<AzureAdB2COptions> b2cOptions, ILogger<SessionController> sysLog, IDistributedCache distributedCache, IMemoryCache memoryCache)
+        private IDistributedCache _cache = null;
+        private IMemoryCache _memoryCache = null;
+        private IApi _api = null;
+        private AuthenticationApiClient _auth0Client = null;
+        private string _auth0Domain = null;
+        private string _auth0ClientId = null;
+        private string _auth0ClientSecret = null;
+        private string _auth0Audience = null;
+        private string _auth0Connection = null;
+
+        public SessionController(ILogger<SessionController> sysLog, IDistributedCache distributedCache, IMemoryCache memoryCache, IConfiguration configuration, IApi api)
         {
-            AzureAdB2COptions = b2cOptions.Value;
             _syslog = sysLog;
             _cache = distributedCache;
             _memoryCache = memoryCache;
+            _api = api;
+            _auth0Client = new AuthenticationApiClient(new Uri($"https://{configuration["Auth0:Domain"]}/"));
+            _auth0Domain = $"https://{configuration["Auth0:Domain"]}";
+            _auth0ClientId = configuration["Auth0:ClientId"];
+            _auth0ClientSecret = configuration["Auth0:ClientSecret"];
+            _auth0Audience = configuration["Auth0:Audience"];
+            _auth0Connection = configuration["Auth0:Connection"];
         }
 
-        public AzureAdB2COptions AzureAdB2COptions { get; set; }
-
-
         [HttpGet]
-        public IActionResult SignInAndEnroll()
+        [Route("/session/signup")]
+        public IActionResult SignUp(string returnUrl = "/")
         {
-            SetAzureAdB2CCulture();
-            var redirectUrl = Url.Action(nameof(HomeController.LoggingIn), "Home");
-            return Challenge(
-                new AuthenticationProperties { RedirectUri = redirectUrl },
-                OpenIdConnectDefaults.AuthenticationScheme);
+            return View(new SignUpViewModel());
         }
 
-
-        [HttpGet]
-        public IActionResult SignIn([FromQuery] string redirectUri)
+        [HttpPost]
+        [Route("/session/signup")]
+        public async Task<IActionResult> SignUp(SignUpViewModel vm, [FromQuery] string returnUrl = "/session/signin")
         {
-            SetAzureAdB2CCulture();
-            /** 
-             * Due to iOS issues, we need to introduce a landing page so that the call to
-             * our profile page is coming from the same HTTPcontext session as our site.
-             * */
-            if(string.IsNullOrEmpty(redirectUri))
-                redirectUri = Url.Action(nameof(HomeController.LoggingIn), "Home");
+            bool modelHasAllFields = !string.IsNullOrEmpty(vm.Email) &&
+                !string.IsNullOrEmpty(vm.Password) &&
+                !string.IsNullOrEmpty(vm.ReenterPassword);
 
-            return Challenge(
-                new AuthenticationProperties { RedirectUri = redirectUri},
-                OpenIdConnectDefaults.AuthenticationScheme);
+            if (vm.IsWaitList)
+            {
+                modelHasAllFields = !string.IsNullOrEmpty(vm.FirstName) &&
+                !string.IsNullOrEmpty(vm.LastName);
+            }
+
+            if (!modelHasAllFields)
+            {
+                return BadRequest(new BasicResponseDto
+                {
+                    StatusCode = 400,
+                    Description = "Please enter all sign-up fields and try again."
+                });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new BasicResponseDto
+                {
+                    StatusCode = 400,
+                    Description = "Unfortunately, an error has occured with your submission. Please try again."
+                });
+            }
+
+            if (!vm.Password.Equals(vm.ReenterPassword))
+            {
+                return BadRequest(new BasicResponseDto
+                {
+                    StatusCode = 403,
+                    Description = "User's passwords do not match."
+                });
+            }
+
+            CreateUserDto createUserDto = new CreateUserDto
+            {
+                Email = vm.Email,
+                Password = vm.Password,
+                FirstName = vm.FirstName,
+                LastName = vm.LastName,
+                PhoneNumber = vm.PhoneNumber,
+                ReferrerUrl = Request.Headers["Referer"].ToString(),
+                JobReferralCode = Request.Cookies["referrerCode"] == null ? null : Request.Cookies["referrerCode"].ToString(),
+                PartnerGuid = vm.PartnerGuid,
+                IsAgreeToMarketingEmails = vm.IsAgreeToMarketingEmails,
+                IsGatedDownload = vm.IsGatedDownload,
+                GatedDownloadFileUrl = vm.GatedDownloadFileUrl,
+                GatedDownloadMaxAttemptsAllowed = vm.GatedFileDownloadMaxAttemptsAllowed
+            };
+
+            try
+            {
+                BasicResponseDto basicResponseDto = await _api.CreateUserAsync(createUserDto);
+
+                if (basicResponseDto.StatusCode == 200)
+                {
+                    return Ok(basicResponseDto);
+                }
+                else
+                {
+                    return StatusCode(500, new BasicResponseDto()
+                    {
+                        StatusCode = 500,
+                        Description = basicResponseDto.Description
+                    });
+                }
+            }
+            catch (ApiException e)
+            {
+                return StatusCode(500, new BasicResponseDto
+                {
+                    StatusCode = 500,
+                    Description = e.ResponseDto.Description
+                });
+            }
+        }
+
+        [HttpPost]
+        [Route("/session/existing-user-sign-up")]
+        public async Task<IActionResult> ExistingUserSignUp(SignUpViewModel vm, [FromQuery] string returnUrl = "/session/signin")
+        {
+            bool modelHasAllFields = !string.IsNullOrEmpty(vm.Email);
+
+            if (vm.IsWaitList)
+                modelHasAllFields = !string.IsNullOrEmpty(vm.FirstName) && !string.IsNullOrEmpty(vm.LastName);
+
+            if (!modelHasAllFields)
+            {
+                return BadRequest(new BasicResponseDto
+                {
+                    StatusCode = 400,
+                    Description = "Please enter all sign-up fields and try again."
+                });
+            }
+
+            CreateUserDto createUserDto = new CreateUserDto
+            {
+                SubscriberGuid = vm.SubscriberGuid.Value,
+                Email = vm.Email,
+                FirstName = vm.IsWaitList ? vm.FirstName : null,
+                LastName = vm.IsWaitList ? vm.LastName : null,
+                PhoneNumber = vm.IsWaitList ? vm.PhoneNumber : null,
+                ReferrerUrl = Request.Headers["Referer"].ToString(),
+                JobReferralCode = Request.Cookies["referrerCode"] == null ? null : Request.Cookies["referrerCode"].ToString(),
+                PartnerGuid = vm.PartnerGuid,
+                IsGatedDownload = vm.IsGatedDownload,
+                GatedDownloadFileUrl = vm.GatedDownloadFileUrl,
+                GatedDownloadMaxAttemptsAllowed = vm.GatedFileDownloadMaxAttemptsAllowed
+            };
+
+            try
+            {
+                BasicResponseDto basicResponseDto = await _api.ExistingUserSignup(createUserDto);
+
+                if (basicResponseDto.StatusCode == 200)
+                {
+                    return Ok(basicResponseDto);
+                }
+                else
+                {
+                    return StatusCode(400, new BasicResponseDto()
+                    {
+                        StatusCode = 400,
+                        Description = basicResponseDto.Description
+                    });
+                }
+            }
+            catch (ApiException e)
+            {
+                return StatusCode(500, new BasicResponseDto
+                {
+                    StatusCode = 500,
+                    Description = e.ResponseDto.Description
+                });
+            }
         }
 
         [HttpGet]
+        [Route("/session/signin")]
+        public IActionResult SignIn(string returnUrl = "/Home/Profile")
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            return View();
+        }
+
+        [HttpPost]
+        [Route("/session/signin")]
+        public async Task<IActionResult> SignIn(SignInViewModel vm, [FromQuery] string returnUrl = "/Home/Profile")
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var isUserExistsInAuth0 = await _api.IsUserExistsInAuth0Async(vm.EmailAddress);
+                    if (isUserExistsInAuth0)
+                    {
+                        await ExecuteAuth0SignInAsync(vm.EmailAddress, vm.Password);
+                        return RedirectToLocal(returnUrl);
+                    }
+                    else
+                    {
+                        var isUserExistsInADB2C = await _api.IsUserExistsInADB2CAsync(vm.EmailAddress);
+                        if (isUserExistsInADB2C)
+                        {
+                            // attempt login to adb2c with user's credentials.
+                            bool isADB2CLoginValid = await _api.CheckADB2CLoginAsync(vm.EmailAddress, vm.Password);
+
+                            if (isADB2CLoginValid)
+                            {
+                                // perform the user migration
+                                var isMigrationSuccessful = await _api.MigrateUserAsync(new CreateUserDto() { Email = vm.EmailAddress, Password = vm.Password });
+
+                                if (isMigrationSuccessful)
+                                {
+                                    // log the user in using their newly created auth0 account
+                                    await ExecuteAuth0SignInAsync(vm.EmailAddress, vm.Password);
+                                    return RedirectToLocal(returnUrl);
+                                }
+                                else
+                                {
+                                    // intentionally being vague about the error
+                                    ModelState.AddModelError("", "An internal error occurred.");
+                                }
+                            }
+                            else
+                            {
+                                ModelState.AddModelError("", "Invalid username or password.");
+                            }
+                        }
+                        else
+                        {
+                            // no account found
+                            ModelState.AddModelError("", "No account found with that email address.");
+                        }
+                    }
+                }
+                catch (Auth0.Core.Exceptions.ApiException ae)
+                {
+                    ModelState.AddModelError("", ae.Message);
+                }
+                catch (Exception e)
+                {
+                    _syslog.LogError($"An unexpected error occurred in SessionController.SignIn: {e.Message}", e);
+                    ModelState.AddModelError("", "An unexpected error occurred.");
+                }
+            }
+
+            return View(vm);
+        }
+
+        [HttpGet]
+        [Route("/session/resetpassword")]
         public IActionResult ResetPassword()
         {
-            SetAzureAdB2CCulture();
-            var redirectUrl = Url.Action(nameof(SessionController.SignOut), "Session");
-            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
-            properties.Items[AzureAdB2COptions.PolicyAuthenticationProperty] = AzureAdB2COptions.ResetPasswordPolicyId;
-            return Challenge(properties, OpenIdConnectDefaults.AuthenticationScheme);
-        }
-
-        [HttpGet]
-        public IActionResult EditProfile()
-        {
-            SetAzureAdB2CCulture();
-            var redirectUrl = Url.Action(nameof(HomeController.Index), "Home");
-            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
-            properties.Items[AzureAdB2COptions.PolicyAuthenticationProperty] = AzureAdB2COptions.EditProfilePolicyId;
-            return Challenge(properties, OpenIdConnectDefaults.AuthenticationScheme);
-        }
-
-        [HttpGet]
-        public IActionResult SignOut()
-        {
-            HttpContext.Session.Clear();
-            SetAzureAdB2CCulture();
-            var callbackUrl = Url.Action(nameof(SignedOut), "Session", values: null, protocol: Request.Scheme);
-            return SignOut(new AuthenticationProperties { RedirectUri = callbackUrl },
-                CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
-        }
-
-
-
-        [HttpGet]
-        public IActionResult SignedOut()
-        {
-            if (User.Identity.IsAuthenticated)
-            {
-                // Redirect to home page if the user is authenticated.
-                return RedirectToAction(nameof(HomeController.Index), "Home");
-            }
-
             return View();
         }
 
-
-
         [HttpGet]
-        public IActionResult AuthRequired()
+        [Route("/session/changepassword/{passwordResetRequestGuid}")]
+        public async Task<IActionResult> ChangePassword(Guid passwordResetRequestGuid)
         {
-            HttpContext.Session.Clear();
-            SetAzureAdB2CCulture();
-            var callbackUrl = Url.Action(nameof(AuthenticationRequired), "Session", values: null, protocol: Request.Scheme);
-            return SignOut(new AuthenticationProperties { RedirectUri = callbackUrl },
-                CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
+            var isPasswordResetRequestValid = await _api.CheckValidityOfPasswordResetRequest(passwordResetRequestGuid);
+
+            if (!isPasswordResetRequestValid)
+                return RedirectToAction(nameof(SessionController.ResetPassword), new { success = "false", message = "This password request is not valid." });
+            else
+                return View(new ChangePasswordViewModel() { PasswordResetRequestGuid = passwordResetRequestGuid });
         }
 
-
-
-        [HttpGet]
-        public IActionResult AuthenticationRequired()
+        [HttpPost]
+        [Route("/session/submitpassword")]
+        public async Task<IActionResult> SubmitPassword(ChangePasswordViewModel vm)
         {
-            if (User.Identity.IsAuthenticated)
+            if (ModelState.IsValid)
             {
-                // Redirect to home page if the user is authenticated.
-               // return RedirectToAction(nameof(HomeController.Index), "Home");
+                var changePasswordResult = await _api.ConsumeCustomPasswordResetAsync(vm.PasswordResetRequestGuid, vm.Password);
+
+                if (changePasswordResult)
+                    return RedirectToAction(nameof(SessionController.SignIn), new { success = "true", message = "Your password has been changed." });
+                else
+                {
+                    ModelState.AddModelError("CustomPasswordResetError", "There was a problem resetting the password.");
+                    return View(nameof(SessionController.ChangePassword), vm);
+                }
+            }
+            else
+                return View(nameof(SessionController.ChangePassword), vm);
+        }
+
+        [HttpPost("/session/resetpassword")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequestViewModel vm)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var isUserExistsInAuth0 = await _api.IsUserExistsInAuth0Async(vm.EmailAddress);
+                    if (!isUserExistsInAuth0)
+                    {
+                        var isUserExistsInADB2C = await _api.IsUserExistsInADB2CAsync(vm.EmailAddress);
+
+                        if (isUserExistsInADB2C)
+                        {
+                            // perform the migration with a random password
+                            var randomPassword = Utils.GeneratePassword(true, true, true, true, 20);
+                            var isMigrationSuccessful = await _api.MigrateUserAsync(new CreateUserDto() { Email = vm.EmailAddress, Password = randomPassword });
+                            if (!isMigrationSuccessful)
+                            {
+                                _syslog.LogError($"There was a problem migrating a user prior to changing their password.", null);
+                                return BadRequest(new BasicResponseDto
+                                {
+                                    StatusCode = 400,
+                                    Description = "There was a problem reseting your password."
+                                });
+                            }
+                        }
+                        else
+                        {
+                            // user doesn't exist in either environment
+                            return BadRequest(new BasicResponseDto
+                            {
+                                StatusCode = 400,
+                                Description = "Email address is not recognized."
+                            });
+                        }
+                    }
+
+                    var isPasswordResetInitiatedSuccessfully = await _api.CreateCustomPasswordResetAsync(vm.EmailAddress);
+                    if (isPasswordResetInitiatedSuccessfully)
+                        return Ok(new BasicResponseDto
+                        {
+                            StatusCode = 200,
+                            Description = "Password reset has been initiated."
+                        });
+                    else
+                        return BadRequest(new BasicResponseDto
+                        {
+                            StatusCode = 400,
+                            Description = "There was a problem initating the password reset."
+                        });
+                }
+                catch (Auth0.Core.Exceptions.ApiException ae)
+                {
+                    _syslog.LogError($"There was a problem resetting a user's password: {ae.Message}", ae);
+                    return BadRequest(new BasicResponseDto
+                    {
+                        StatusCode = 400,
+                        Description = "There was a problem resetting your password."
+                    });
+                }
+                catch (Exception e)
+                {
+                    _syslog.LogError($"An unexpected error occurred in SessionController.ResetPassword: {e.Message}", e);
+                    return BadRequest(new BasicResponseDto
+                    {
+                        StatusCode = 400,
+                        Description = "An unexpected error occurred."
+                    });
+                }
             }
 
-            return View();
+            return View(vm);
         }
 
-
-        private void  SetAzureAdB2CCulture()
+        [HttpGet]
+        [Route("/session/signout")]
+        public async Task SignOut()
         {
-            // Get the current culture and assign it to Azure options so identity screens will be localized
-            var requestCulture = HttpContext.Features.Get<IRequestCultureFeature>();
-            AzureAdB2COptions.UiLocales = requestCulture.RequestCulture.Culture.Name;
+            await HttpContext.SignOutAsync("Auth0", new AuthenticationProperties
+            {
+                RedirectUri = Url.Action("Index", "Home")
+            });
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        }
+
+        public IActionResult AccessDenied()
+        {
+            return View();
         }
 
         [HttpGet]
         [Authorize]
         [Route("[controller]/token")]
-        public async Task<IActionResult> TokenAsync()
+        public IActionResult TokenAsync()
         {
-            // Retrieve the token with the specified scopes
-            // Retrieve the token with the specified scopes
-            var scope = AzureAdB2COptions.ApiScopes.Split(' ');
-            string signedInUserID = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            IConfidentialClientApplication app = ConfidentialClientApplicationBuilder
-                .Create(AzureAdB2COptions.ClientId)
-                .WithB2CAuthority(AzureAdB2COptions.Authority)
-                .WithRedirectUri(AzureAdB2COptions.RedirectUri)
-                .WithClientSecret(AzureAdB2COptions.ClientSecret)
-                .Build();
-     
-            new MSALSessionCache(signedInUserID,_cache,_memoryCache).EnablePersistence(app.UserTokenCache);
-    
-            var accounts = await app.GetAccountsAsync();
-            if (accounts.Count() == 0)
-            {
-                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, "MSAL_SessionController.TokenAsync unable to locate account");
-            }
-
-            AuthenticationResult result = await app.AcquireTokenSilent(scope, accounts.FirstOrDefault()).ExecuteAsync();
-
-            // temp code to log jwt info, specifically expiration dates 
-            try
-            {
-                string scopes = string.Empty;
-                foreach (string s in result.Scopes)
-                    scopes += s + ";";
-                string LogInfo = $"MSAL_SessionController.TokenAsync Token ExpiresOn: {result.ExpiresOn} Token ExtendedExpiresOn: {result.ExtendedExpiresOn} Access Token Length: {result.AccessToken.Length}  Scopes: {scopes}  User: {result.UniqueId} )";
-                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, LogInfo);
-            }
-            catch (Exception ex)
-            {
-                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_SessionController.TokenAsync Error logging info {ex.Message}");
-            }
-
-
-
-            return Ok(new { accessToken = result.AccessToken, expiresOn = result.ExpiresOn, uniqueId = result.UniqueId });
+            var subscriberGuid = HttpContext.User.Claims.Where(x => x.Type == ClaimTypes.NameIdentifier).FirstOrDefault().Value.ToString();
+            var accessToken = HttpContext.User.Claims.Where(x => x.Type == "access_token").FirstOrDefault().Value.ToString();
+            var expiresOn = HttpContext.User.Claims.Where(x => x.Type == ClaimTypes.Expiration).FirstOrDefault().Value.ToString();
+            return Ok(new { accessToken = accessToken, expiresOn = expiresOn, uniqueId = subscriberGuid });
         }
+
+        #region Helpers
+
+        private async Task ExecuteAuth0SignInAsync(string email, string password)
+        {
+            var result = await _auth0Client.GetTokenAsync(new ResourceOwnerTokenRequest
+            {
+                ClientId = _auth0ClientId,
+                ClientSecret = _auth0ClientSecret,
+                Scope = "openid profile email",
+                Realm = _auth0Connection,
+                Username = email,
+                Password = password,
+                Audience = _auth0Audience
+            });
+
+            var user = await _auth0Client.GetUserInfoAsync(result.AccessToken);
+            var firstClaimValue = user.AdditionalClaims.Where(x => x.Key == ClaimTypes.NameIdentifier).FirstOrDefault();
+            Guid subscriberGuid;
+            if (firstClaimValue.Value != null && Guid.TryParse(firstClaimValue.Value.ToString(), out subscriberGuid))
+            {
+                var expiresOn = DateTime.UtcNow.AddSeconds(result.ExpiresIn);
+
+                List<Claim> claims = new List<Claim>();
+                claims.Add(new Claim(ClaimTypes.NameIdentifier, subscriberGuid.ToString()));
+                claims.Add(new Claim(ClaimTypes.Name, user.FullName));
+                claims.Add(new Claim("access_token", result.AccessToken));
+                claims.Add(new Claim(ClaimTypes.Expiration, expiresOn.ToString()));
+
+                var permissionClaim = user.AdditionalClaims.Where(x => x.Key == ClaimTypes.Role).FirstOrDefault().Value.ToList();
+                string permissions = string.Empty;
+
+                foreach (var permission in permissionClaim)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, permission.ToString(), ClaimValueTypes.String, _auth0Domain));
+                }
+
+                var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
+
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
+                await _api.UpdateLastSignIn(subscriberGuid);
+            }
+            else
+            {
+                throw new ApplicationException("Unable to identify the subscriber.");
+            }
+        }
+
+        private IActionResult RedirectToLocal(string returnUrl)
+        {
+            if (Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+            else
+            {
+                return RedirectToAction(nameof(HomeController.Index), "Home");
+            }
+        }
+
+        #endregion
     }
 }

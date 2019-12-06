@@ -13,6 +13,7 @@ using UpDiddyApi.Workflow;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using System.Data;
 using System.Data.SqlClient;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 
 namespace UpDiddyApi.ApplicationCore.Factory
 {
@@ -24,7 +25,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// <param name="db"></param>
         /// <param name="jobPostingId"></param>
         /// <param name="jobPostingDto"></param>
-        public static void UpdateJobPostingSkills(UpDiddyDbContext db, int jobPostingId, List<SkillDto> jobPostingSkills)
+        public static void UpdateJobPostingSkills(IRepositoryWrapper repositoryWrapper, int jobPostingId, List<SkillDto> jobPostingSkills)
         {
             var jobPostingIdParam = new SqlParameter("@JobPostingId", jobPostingId);
 
@@ -44,7 +45,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             var spParams = new object[] { jobPostingIdParam, skillGuids };
 
-            var rowsAffected = db.Database.ExecuteSqlCommand(@"
+            var rowsAffected = repositoryWrapper.JobPostingSkillRepository.ExecuteSQL(@"
                 EXEC [dbo].[System_Update_JobPostingSkills] 
                     @JobPostingId,
 	                @SkillGuids", spParams);
@@ -95,10 +96,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return jobPostingUrl;
         }
 
-        public static List<JobPosting> GetAllJobPostingsForSitemap(UpDiddyDbContext db)
+        public static async Task<List<JobPosting>> GetAllJobPostingsForSitemap(IRepositoryWrapper repositoryWrapper)
         {
             // note that this doesn't include all related entities; only those that we need to build the semantic url
-            return db.JobPosting
+            return await repositoryWrapper.JobPosting.GetAllWithTracking()
                 .Include(jp => jp.Industry)
                 .Include(jp => jp.JobCategory)
                 .Where(s => s.IsDeleted == 0)
@@ -112,19 +113,19 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     City = jp.City,
                     ModifyDate = jp.ModifyDate.HasValue ? jp.ModifyDate.Value : jp.CreateDate
                 })
-                .ToList();
+                .ToListAsync();
         }
 
-        public static bool DeleteJob(UpDiddyDbContext db, Guid jobPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, IHangfireService _hangfireService)
+        public static bool DeleteJob(IRepositoryWrapper repositoryWrapper, Guid jobPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, IHangfireService _hangfireService)
         {
 
-            JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(db, jobPostingGuid);
+            JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(repositoryWrapper, jobPostingGuid).Result;
             if (jobPosting == null)
             {
                 ErrorMsg = $"Job posting {jobPostingGuid} does not exist";
                 return false;
             }
-            Recruiter recruiter = RecruiterFactory.GetRecruiterById(db, jobPosting.RecruiterId.Value);
+            Recruiter recruiter = RecruiterFactory.GetRecruiterById(repositoryWrapper, jobPosting.RecruiterId.Value).Result;
             if (recruiter == null)
             {
                 ErrorMsg = $"Recruiter {jobPosting.RecruiterId.Value} rec not found";
@@ -143,14 +144,14 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return true;
         }
 
-        public static bool PostJob(UpDiddyDbContext db, int recruiterId, JobPostingDto jobPostingDto, ref Guid newPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, bool isAcceptsNewSkills, IHangfireService _hangfireService)
+        public static bool PostJob(IRepositoryWrapper repositoryWrapper, int recruiterId, JobPostingDto jobPostingDto, ref Guid newPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, bool isAcceptsNewSkills, IHangfireService _hangfireService)
         {
             if (isAcceptsNewSkills && jobPostingDto?.JobPostingSkills != null)
             {
                 var updatedSkills = new List<SkillDto>();
                 foreach (var skillDto in jobPostingDto.JobPostingSkills)
                 {
-                    var skill = SkillFactory.GetOrAdd(db, skillDto.SkillName);
+                    var skill = SkillFactory.GetOrAdd(repositoryWrapper, skillDto.SkillName).Result;
                     if (!updatedSkills.Exists(s => s.SkillGuid == skill.SkillGuid))
                         updatedSkills.Add(new SkillDto()
                         {
@@ -161,10 +162,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 jobPostingDto.JobPostingSkills = updatedSkills;
             }
 
-            return PostJob(db, recruiterId, jobPostingDto, ref newPostingGuid, ref ErrorMsg, syslog, mapper, configuration, _hangfireService);
+            return PostJob(repositoryWrapper, recruiterId, jobPostingDto, ref newPostingGuid, ref ErrorMsg, syslog, mapper, configuration, _hangfireService);
         }
 
-        public static bool PostJob(UpDiddyDbContext db, int recruiterId, JobPostingDto jobPostingDto, ref Guid newPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, IHangfireService _hangfireService)
+        public static bool PostJob(IRepositoryWrapper repositoryWrapper, int recruiterId, JobPostingDto jobPostingDto, ref Guid newPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, IHangfireService _hangfireService)
         {
             int postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
 
@@ -190,7 +191,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             JobPostingFactory.SetDefaultsForAddNew(jobPosting);
             // Asscociate related objects that were passed by guid
             // todo find a more efficient way to do this
-            JobPostingFactory.MapRelatedObjects(db, jobPosting, jobPostingDto);
+            JobPostingFactory.MapRelatedObjects(repositoryWrapper, jobPosting, jobPostingDto).Wait();
 
             string msg = string.Empty;
 
@@ -212,10 +213,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
             // save the job to sql server 
             // todo make saving the job posting and skills more efficient with a stored procedure 
-            db.JobPosting.Add(jobPosting);
-            db.SaveChanges();
+            repositoryWrapper.JobPosting.Create(jobPosting);
+            repositoryWrapper.JobPosting.SaveAsync();
             // update associated job posting skills
-            JobPostingFactory.UpdateJobPostingSkills(db, jobPosting.JobPostingId, jobPostingDto?.JobPostingSkills);
+            JobPostingFactory.UpdateJobPostingSkills(repositoryWrapper, jobPosting.JobPostingId, jobPostingDto?.JobPostingSkills);
             //index active jobs into google 
             if (jobPosting.JobStatus == (int)JobPostingStatus.Active)
                 _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(jobPosting.JobPostingGuid));
@@ -230,9 +231,9 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
 
 
-        public static JobPosting GetJobPostingById(UpDiddyDbContext db, int jobPostingId)
+        public static async Task<JobPosting> GetJobPostingById(IRepositoryWrapper repositoryWrapper, int jobPostingId)
         {
-            return db.JobPosting
+            return await repositoryWrapper.JobPosting.GetAllWithTracking()
                 .Include(c => c.Company)
                 .Include(c => c.Industry)
                 .Include(c => c.SecurityClearance)
@@ -243,7 +244,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Include(c => c.JobCategory)
                 .Include(c => c.Recruiter.Subscriber)
                 .Where(s => s.IsDeleted == 0 && s.JobPostingId == jobPostingId)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
 
@@ -253,9 +254,9 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// Get a job posting by guid
         /// </summary>       
         /// <returns></returns>        
-        public static List<JobPosting> GetJobPostingsForSubscriber(UpDiddyDbContext db, Guid guid)
+        public static async Task<List<JobPosting>> GetJobPostingsForSubscriber(IRepositoryWrapper repositoryWrapper, Guid guid)
         {
-            return db.JobPosting
+            return await repositoryWrapper.JobPosting.GetAllWithTracking()
                 .Include(c => c.Company)
                 .Include(c => c.Industry)
                 .Include(c => c.SecurityClearance)
@@ -267,7 +268,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Include(c => c.Recruiter.Subscriber)
                 .Where(s => s.IsDeleted == 0 && s.Recruiter.Subscriber.SubscriberGuid == guid)
                 .OrderByDescending(s => s.CreateDate)
-                .ToList();
+                .ToListAsync();
         }
 
 
@@ -277,30 +278,9 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// Get a job posting by guid
         /// </summary>       
         /// <returns></returns>        
-        public static JobPosting GetJobPostingByGuidWithRelatedObjects(UpDiddyDbContext db, Guid guid)
+        public static async Task<JobPosting> GetJobPostingByGuidWithRelatedObjects(IRepositoryWrapper repositoryWrapper, Guid guid)
         {
-            return db.JobPosting
-                .Include(c => c.Company)
-                .Include(c => c.Industry)
-                .Include(c => c.SecurityClearance)
-                .Include(c => c.EmploymentType)
-                .Include(c => c.ExperienceLevel)
-                .Include(c => c.EducationLevel)
-                .Include(c => c.CompensationType)
-                .Include(c => c.JobCategory)
-                .Include(c => c.Recruiter.Subscriber)
-                .Include(c => c.JobPostingSkills).ThenInclude(ss => ss.Skill)
-                .Where(s => s.IsDeleted == 0 && s.JobPostingGuid == guid)
-                .FirstOrDefault();
-        }
-
-        /// <summary>
-        /// Get a job posting by guid
-        /// </summary>       
-        /// <returns></returns>        
-        public static async Task<JobPosting> GetJobPostingByGuidWithRelatedObjectsAsync(UpDiddyDbContext db, Guid guid)
-        {
-            return await db.JobPosting
+            return await repositoryWrapper.JobPosting.GetAllWithTracking()
                 .Include(c => c.Company)
                 .Include(c => c.Industry)
                 .Include(c => c.SecurityClearance)
@@ -315,6 +295,27 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .FirstOrDefaultAsync();
         }
 
+        /// <summary>
+        /// Get a job posting by guid
+        /// </summary>       
+        /// <returns></returns>        
+        public static async Task<JobPosting> GetJobPostingByGuidWithRelatedObjectsAsync(IRepositoryWrapper repositoryWrapper, Guid guid)
+        {
+            return await repositoryWrapper.JobPosting.GetAllWithTracking()
+                .Include(c => c.Company)
+                .Include(c => c.Industry)
+                .Include(c => c.SecurityClearance)
+                .Include(c => c.EmploymentType)
+                .Include(c => c.ExperienceLevel)
+                .Include(c => c.EducationLevel)
+                .Include(c => c.CompensationType)
+                .Include(c => c.JobCategory)
+                .Include(c => c.Recruiter.Subscriber)
+                .Include(c => c.JobPostingSkills).ThenInclude(ss => ss.Skill)
+                .Where(s => s.JobPostingGuid == guid)
+                .FirstOrDefaultAsync();
+        }
+
 
 
 
@@ -322,24 +323,24 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// Get a job posting by guid
         /// </summary>       
         /// <returns></returns>        
-        public static JobPosting GetJobPostingByGuid(UpDiddyDbContext db, Guid guid)
+        public static async Task<JobPosting> GetJobPostingByGuid(IRepositoryWrapper repositoryWrapper, Guid guid)
         {
-            return db.JobPosting
+            return await repositoryWrapper.JobPosting.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.JobPostingGuid == guid)
                 .Include(s => s.Recruiter).ThenInclude(r => r.Subscriber)
                 .Include(s => s.Company)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
         /// <summary>
         /// Get an expired job posting by guid
         /// </summary>       
         /// <returns></returns>        
-        public static JobPosting GetExpiredJobPostingByGuid(UpDiddyDbContext db, Guid guid)
+        public static async Task<JobPosting> GetExpiredJobPostingByGuid(IRepositoryWrapper repositoryWrapper, Guid guid)
         {
-            return db.JobPosting
+            return await repositoryWrapper.JobPosting.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 1 && s.JobPostingGuid == guid)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
 
@@ -368,25 +369,25 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
             return jobPosting.StreetAddress + " " + jobPosting.City + " " + jobPosting.Province + " " + jobPosting.PostalCode;
         }
-        public static List<JobPostingSkill> GetPostingSkills(UpDiddyDbContext db, JobPosting jobPosting)
+        public static async Task<List<JobPostingSkill>> GetPostingSkills(IRepositoryWrapper repositoryWrapper, JobPosting jobPosting)
         {
-            return db.JobPostingSkill
+             return await repositoryWrapper.JobPostingSkillRepository.GetAllWithTracking()
                 .Include(c => c.Skill)
                 .Where(s => s.IsDeleted == 0 && s.JobPostingId == jobPosting.JobPostingId)
-                .ToList();
+                .ToListAsync();
         }
 
         [Obsolete("This method of modifying job skills is slow and should not be used.", true)]
-        public static void UpdatePostingSkills(UpDiddyDbContext db, JobPosting jobPosting, JobPostingDto jobPostingDto)
+        public static async Task UpdatePostingSkills(IRepositoryWrapper repositoryWrapper, JobPosting jobPosting, JobPostingDto jobPostingDto)
         {
-            JobPostingSkillFactory.DeleteSkillsForPosting(db, jobPosting.JobPostingId);
+            await JobPostingSkillFactory.DeleteSkillsForPosting(repositoryWrapper, jobPosting.JobPostingId);
             if (jobPostingDto.JobPostingSkills == null)
                 return;
             foreach (SkillDto skillDto in jobPostingDto.JobPostingSkills)
             {
-                JobPostingSkillFactory.Add(db, jobPosting.JobPostingId, skillDto.SkillGuid.Value);
+                await JobPostingSkillFactory.Add(repositoryWrapper, jobPosting.JobPostingId, skillDto.SkillGuid.Value);
             }
-            db.SaveChanges();
+            await repositoryWrapper.JobPostingSkillRepository.SaveAsync();
         }
 
 
@@ -473,14 +474,14 @@ namespace UpDiddyApi.ApplicationCore.Factory
         }
         
         [Obsolete("This method of modifying job skills is slow and should not be used.", true)]
-        public static void CopyPostingSkills(UpDiddyDbContext db, int sourcePostingId, int destinationPostingId)
+        public static async Task CopyPostingSkills(IRepositoryWrapper repositoryWrapper, int sourcePostingId, int destinationPostingId)
         {
-            List<JobPostingSkill> skills = JobPostingSkillFactory.GetSkillsForPosting(db, sourcePostingId);
+            List<JobPostingSkill> skills = await JobPostingSkillFactory.GetSkillsForPosting(repositoryWrapper, sourcePostingId);
             foreach (JobPostingSkill s in skills)
             {
-                JobPostingSkillFactory.Add(db, destinationPostingId, s.Skill.SkillGuid.Value);
+                await JobPostingSkillFactory.Add(repositoryWrapper, destinationPostingId, s.Skill.SkillGuid.Value);
             }
-            db.SaveChanges();
+           await repositoryWrapper.JobPostingSkillRepository.SaveAsync();
         }
 
 
@@ -489,11 +490,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// <summary>
         /// Save posting skills - todo use stored procedure to make this more efficient 
         /// </summary>
-        /// <param name="db"></param>
+        /// <param name="repositoryWrapper"></param>
         /// <param name="jobPosting"></param>
         /// <param name="jobPostingDto"></param>
+        /// <returns></returns>
         [Obsolete("This method of modifying job skills is slow and should not be used.", true)]
-        public static void SavePostingSkills(UpDiddyDbContext db, JobPosting jobPosting, JobPostingDto jobPostingDto)
+        public static async Task SavePostingSkills(IRepositoryWrapper repositoryWrapper, JobPosting jobPosting, JobPostingDto jobPostingDto)
         {
 
             if (jobPostingDto.JobPostingSkills == null)
@@ -501,9 +503,9 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             foreach (SkillDto skillDto in jobPostingDto.JobPostingSkills)
             {
-                JobPostingSkillFactory.Add(db, jobPosting.JobPostingId, skillDto.SkillGuid.Value);
+                await JobPostingSkillFactory.Add(repositoryWrapper, jobPosting.JobPostingId, skillDto.SkillGuid.Value);
             }
-            db.SaveChanges();
+            await repositoryWrapper.JobPostingSkillRepository.SaveAsync();
         }
         /// <summary>
         /// Wire up the integer ids of all the navigation objects.   
@@ -511,16 +513,16 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// to the front end so they can pass it back and eliminate this step b) research EF to see if we can use navigation properties on GUIDS 
         /// rather than dumb int ids c) use a stored procedure to make this more efficient
         /// </summary>
-        /// <param name="db"></param>
+        /// <param name="repositoryWrapper"></param>
         /// <param name="jobPosting"></param>
         /// <param name="jobPostingDto"></param>
-        public static void MapRelatedObjects(UpDiddyDbContext db, JobPosting jobPosting, JobPostingDto jobPostingDto)
+        public static async Task MapRelatedObjects(IRepositoryWrapper repositoryWrapper, JobPosting jobPosting, JobPostingDto jobPostingDto)
         {
 
             // map subscriber 
             if (jobPostingDto.Recruiter.Subscriber != null)
             {
-                Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(db, jobPostingDto.Recruiter.Subscriber.SubscriberGuid.Value);
+                Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(repositoryWrapper, jobPostingDto.Recruiter.Subscriber.SubscriberGuid.Value);
                 if (subscriber != null)
                     jobPosting.Recruiter.SubscriberId = subscriber.SubscriberId;
             }
@@ -528,49 +530,49 @@ namespace UpDiddyApi.ApplicationCore.Factory
             // map company id 
             if (jobPostingDto.Company != null)
             {
-                Company company = CompanyFactory.GetCompanyByGuid(db, jobPostingDto.Company.CompanyGuid);
+                Company company = await CompanyFactory.GetCompanyByGuid(repositoryWrapper, jobPostingDto.Company.CompanyGuid);
                 if (company != null)
                     jobPosting.CompanyId = company.CompanyId;
             }
             // map industry id
             if (jobPostingDto.Industry != null)
             {
-                Industry industry = IndustryFactory.GetIndustryByGuid(db, jobPostingDto.Industry.IndustryGuid);
+                Industry industry = await IndustryFactory.GetIndustryByGuid(repositoryWrapper, jobPostingDto.Industry.IndustryGuid);
                 if (industry != null)
                     jobPosting.IndustryId = industry.IndustryId;
             }
             // map security clearance 
             if (jobPostingDto.SecurityClearance != null)
             {
-                SecurityClearance securityClearance = SecurityClearanceFactory.GetSecurityClearanceByGuid(db, jobPostingDto.SecurityClearance.SecurityClearanceGuid);
+                SecurityClearance securityClearance = await SecurityClearanceFactory.GetSecurityClearanceByGuid(repositoryWrapper, jobPostingDto.SecurityClearance.SecurityClearanceGuid);
                 if (securityClearance != null)
                     jobPosting.SecurityClearanceId = securityClearance.SecurityClearanceId;
             }
             // map employment type
             if (jobPostingDto.EmploymentType != null)
             {
-                EmploymentType employmentType = EmploymentTypeFactory.GetEmploymentTypeByGuid(db, jobPostingDto.EmploymentType.EmploymentTypeGuid);
+                EmploymentType employmentType = await EmploymentTypeFactory.GetEmploymentTypeByGuid(repositoryWrapper, jobPostingDto.EmploymentType.EmploymentTypeGuid);
                 if (employmentType != null)
                     jobPosting.EmploymentTypeId = employmentType.EmploymentTypeId;
             }
             // map educational level type
             if (jobPostingDto.EducationLevel != null)
             {
-                EducationLevel educationLevel = EducationLevelFactory.GetEducationLevelByGuid(db, jobPostingDto.EducationLevel.EducationLevelGuid);
+                EducationLevel educationLevel = await EducationLevelFactory.GetEducationLevelByGuid(repositoryWrapper, jobPostingDto.EducationLevel.EducationLevelGuid);
                 if (educationLevel != null)
                     jobPosting.EducationLevelId = educationLevel.EducationLevelId;
             }
             // map level experience type
             if (jobPostingDto.ExperienceLevel != null)
             {
-                ExperienceLevel experienceLevel = ExperienceLevelFactory.GetExperienceLevelByGuid(db, jobPostingDto.ExperienceLevel.ExperienceLevelGuid);
+                ExperienceLevel experienceLevel = await ExperienceLevelFactory.GetExperienceLevelByGuid(repositoryWrapper, jobPostingDto.ExperienceLevel.ExperienceLevelGuid);
                 if (experienceLevel != null)
                     jobPosting.ExperienceLevelId = experienceLevel.ExperienceLevelId;
             }
             // map job category
             if (jobPostingDto.JobCategory != null)
             {
-                JobCategory jobCategory = JobCategoryFactory.GetJobCategoryByGuid(db, jobPostingDto.JobCategory.JobCategoryGuid);
+                JobCategory jobCategory = await JobCategoryFactory.GetJobCategoryByGuid(repositoryWrapper, jobPostingDto.JobCategory.JobCategoryGuid);
                 if (jobCategory != null)
                     jobPosting.JobCategoryId = jobCategory.JobCategoryId;
             }
@@ -578,7 +580,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             // map compensation type 
             if (jobPostingDto.CompensationType != null)
             {
-                CompensationType compensationType = CompensationTypeFactory.GetCompensationTypeByGuid(db, jobPostingDto.CompensationType.CompensationTypeGuid);
+                CompensationType compensationType = await CompensationTypeFactory.GetCompensationTypeByGuid(repositoryWrapper, jobPostingDto.CompensationType.CompensationTypeGuid);
                 if (compensationType != null)
                     jobPosting.CompensationTypeId = compensationType.CompensationTypeId;
             }
@@ -587,9 +589,9 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         }
 
-        public static JobPosting CopyJobPosting(UpDiddyDbContext db, JobPosting jobPosting, int postingTTL)
+        public static async Task<JobPosting> CopyJobPosting(IRepositoryWrapper repositoryWrapper, JobPosting jobPosting, int postingTTL)
         {
-            db.Entry(jobPosting).State = EntityState.Detached;
+            repositoryWrapper.JobPosting.GetEntry(jobPosting).State = EntityState.Detached;
             // use factory method to make sure all the base data values are set just 
             // in case the caller didn't set them
             BaseModelFactory.SetDefaultsForAddNew(jobPosting);
@@ -619,23 +621,23 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 jobPosting.PostingExpirationDateUTC = DateTime.UtcNow.AddDays(postingTTL);
             }
 
-            db.JobPosting.Add(jobPosting);
-            db.SaveChanges();
+            await repositoryWrapper.JobPosting.Create(jobPosting);
+            await repositoryWrapper.JobPosting.SaveAsync();
             // get existing skills from job posting and add them to the new job posting
             var jobPostingSkills = jobPosting.JobPostingSkills.Select(s => new SkillDto() { SkillGuid = s.Skill.SkillGuid }).ToList();
-            JobPostingFactory.UpdateJobPostingSkills(db, jobPosting.JobPostingId, jobPostingSkills);
+            JobPostingFactory.UpdateJobPostingSkills(repositoryWrapper, jobPosting.JobPostingId, jobPostingSkills);
 
             return jobPosting;
         }
 
-        public static bool UpdateJobPosting(UpDiddyDbContext db, Guid jobPostingGuid, JobPostingDto jobPostingDto, ref string ErrorMsg, bool isAcceptsNewSkills, IHangfireService _hangfireService)
+        public static bool UpdateJobPosting(IRepositoryWrapper repositoryWrapper, Guid jobPostingGuid, JobPostingDto jobPostingDto, ref string ErrorMsg, bool isAcceptsNewSkills, IHangfireService _hangfireService)
         {
             if (isAcceptsNewSkills && jobPostingDto?.JobPostingSkills != null)
             {
                 var updatedSkills = new List<SkillDto>();
                 foreach (var skillDto in jobPostingDto.JobPostingSkills)
                 {
-                    var skill = SkillFactory.GetOrAdd(db, skillDto.SkillName);
+                    var skill = SkillFactory.GetOrAdd(repositoryWrapper, skillDto.SkillName).Result;
                     if (!updatedSkills.Exists(s => s.SkillGuid == skill.SkillGuid))
                         updatedSkills.Add(new SkillDto()
                         {
@@ -646,16 +648,23 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 jobPostingDto.JobPostingSkills = updatedSkills;
             }
 
-            return UpdateJobPosting(db, jobPostingGuid, jobPostingDto, ref ErrorMsg, _hangfireService);
+            return UpdateJobPosting(repositoryWrapper, jobPostingGuid, jobPostingDto, ref ErrorMsg, _hangfireService);
         }
 
-        public static bool UpdateJobPosting(UpDiddyDbContext db, Guid jobPostingGuid, JobPostingDto jobPostingDto, ref string ErrorMsg, IHangfireService _hangfireService)
+        public static bool UpdateJobPosting(IRepositoryWrapper repositoryWrapper, Guid jobPostingGuid, JobPostingDto jobPostingDto, ref string ErrorMsg, IHangfireService _hangfireService)
         {
 
             try
             {
                 // Retreive the current state of the job posting 
-                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(db, jobPostingDto.JobPostingGuid.Value);
+                JobPosting jobPosting = null;
+
+                // for backward compatability, try and find the posting by the value specified in the jobposting DTO, if not it's not specified try and find int based on the passed job posting guid
+                if (jobPostingDto.JobPostingGuid != null )
+                    jobPosting =  JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(repositoryWrapper, jobPostingDto.JobPostingGuid.Value).Result;
+                else
+                    jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(repositoryWrapper, jobPostingGuid).Result;
+
                 if (jobPosting == null)
                 {
                     ErrorMsg = $"{jobPostingDto.JobPostingGuid} is not a valid jobposting guid";
@@ -665,7 +674,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 if (jobPosting.ThirdPartyApply)
                 {
                     // update the recruiter information if it has changed since the last time the job page was inspected
-                    RecruiterFactory.GetAddOrUpdate(db, jobPostingDto.Recruiter.Email, jobPostingDto.Recruiter.FirstName, jobPostingDto.Recruiter.LastName, jobPostingDto.Recruiter.PhoneNumber, null);
+                    RecruiterFactory.GetAddOrUpdate(repositoryWrapper, jobPostingDto.Recruiter.Email, jobPostingDto.Recruiter.FirstName, jobPostingDto.Recruiter.LastName, jobPostingDto.Recruiter.PhoneNumber, null).Wait();
                 }
 
                 jobPosting.Title = jobPostingDto.Title;
@@ -694,7 +703,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     jobPosting.CompanyId = null;
                 else if (jobPostingDto.Company?.CompanyGuid != jobPosting.Company?.CompanyGuid)
                 {
-                    Company Company = CompanyFactory.GetCompanyByGuid(db, jobPostingDto.Company.CompanyGuid);
+                    Company Company = CompanyFactory.GetCompanyByGuid(repositoryWrapper, jobPostingDto.Company.CompanyGuid).Result;
                     if (Company != null)
                         jobPosting.CompanyId = Company.CompanyId;
                     else
@@ -705,7 +714,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     jobPosting.IndustryId = null;
                 else if (jobPostingDto.Industry?.IndustryGuid != jobPosting.Industry?.IndustryGuid)
                 {
-                    Industry industry = IndustryFactory.GetIndustryByGuid(db, jobPostingDto.Industry.IndustryGuid);
+                    Industry industry = IndustryFactory.GetIndustryByGuid(repositoryWrapper, jobPostingDto.Industry.IndustryGuid).Result;
                     if (industry != null)
                         jobPosting.IndustryId = industry.IndustryId;
                     else
@@ -716,7 +725,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     jobPosting.JobCategoryId = null;
                 else if (jobPostingDto.JobCategory?.JobCategoryGuid != jobPosting.JobCategory?.JobCategoryGuid)
                 {
-                    JobCategory JobCategory = JobCategoryFactory.GetJobCategoryByGuid(db, jobPostingDto.JobCategory.JobCategoryGuid);
+                    JobCategory JobCategory = JobCategoryFactory.GetJobCategoryByGuid(repositoryWrapper, jobPostingDto.JobCategory.JobCategoryGuid).Result;
                     if (JobCategory != null)
                         jobPosting.JobCategoryId = JobCategory.JobCategoryId;
                     else
@@ -727,7 +736,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     jobPosting.SecurityClearanceId = null;
                 else if (jobPostingDto.SecurityClearance?.SecurityClearanceGuid != jobPosting.SecurityClearance?.SecurityClearanceGuid)
                 {
-                    SecurityClearance SecurityClearance = SecurityClearanceFactory.GetSecurityClearanceByGuid(db, jobPostingDto.SecurityClearance.SecurityClearanceGuid);
+                    SecurityClearance SecurityClearance = SecurityClearanceFactory.GetSecurityClearanceByGuid(repositoryWrapper, jobPostingDto.SecurityClearance.SecurityClearanceGuid).Result;
                     if (SecurityClearance != null)
                         jobPosting.SecurityClearanceId = SecurityClearance.SecurityClearanceId;
                     else
@@ -738,7 +747,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     jobPosting.EmploymentTypeId = null;
                 else if (jobPostingDto.EmploymentType?.EmploymentTypeGuid != jobPosting.EmploymentType?.EmploymentTypeGuid)
                 {
-                    EmploymentType EmploymentType = EmploymentTypeFactory.GetEmploymentTypeByGuid(db, jobPostingDto.EmploymentType.EmploymentTypeGuid);
+                    EmploymentType EmploymentType = EmploymentTypeFactory.GetEmploymentTypeByGuid(repositoryWrapper, jobPostingDto.EmploymentType.EmploymentTypeGuid).Result;
                     if (EmploymentType != null)
                         jobPosting.EmploymentTypeId = EmploymentType.EmploymentTypeId;
                     else
@@ -749,7 +758,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     jobPosting.EducationLevelId = null;
                 else if (jobPostingDto.EducationLevel?.EducationLevelGuid != jobPosting.EducationLevel?.EducationLevelGuid)
                 {
-                    EducationLevel EducationLevel = EducationLevelFactory.GetEducationLevelByGuid(db, jobPostingDto.EducationLevel.EducationLevelGuid);
+                    EducationLevel EducationLevel = EducationLevelFactory.GetEducationLevelByGuid(repositoryWrapper, jobPostingDto.EducationLevel.EducationLevelGuid).Result;
                     if (EducationLevel != null)
                         jobPosting.EducationLevelId = EducationLevel.EducationLevelId;
                     else
@@ -760,7 +769,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     jobPosting.ExperienceLevelId = null;
                 else if (jobPostingDto.ExperienceLevel?.ExperienceLevelGuid != jobPosting.ExperienceLevel?.ExperienceLevelGuid)
                 {
-                    ExperienceLevel ExperienceLevel = ExperienceLevelFactory.GetExperienceLevelByGuid(db, jobPostingDto.ExperienceLevel.ExperienceLevelGuid);
+                    ExperienceLevel ExperienceLevel = ExperienceLevelFactory.GetExperienceLevelByGuid(repositoryWrapper, jobPostingDto.ExperienceLevel.ExperienceLevelGuid).Result;
                     if (ExperienceLevel != null)
                         jobPosting.ExperienceLevelId = ExperienceLevel.ExperienceLevelId;
                     else
@@ -772,7 +781,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     jobPosting.CompensationTypeId = null;
                 else if (jobPostingDto.CompensationType?.CompensationTypeGuid != jobPosting.CompensationType?.CompensationTypeGuid)
                 {
-                    CompensationType CompensationType = CompensationTypeFactory.GetCompensationTypeByGuid(db, jobPostingDto.CompensationType.CompensationTypeGuid);
+                    CompensationType CompensationType = CompensationTypeFactory.GetCompensationTypeByGuid(repositoryWrapper, jobPostingDto.CompensationType.CompensationTypeGuid).Result;
                     if (CompensationType != null)
                         jobPosting.CompensationTypeId = CompensationType.CompensationTypeId;
                     else
@@ -780,10 +789,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 }
 
 
-                db.SaveChanges();
+                repositoryWrapper.SaveAsync().Wait();
 
                 // update associated job posting skills
-                JobPostingFactory.UpdateJobPostingSkills(db, jobPosting.JobPostingId, jobPostingDto.JobPostingSkills);
+                JobPostingFactory.UpdateJobPostingSkills(repositoryWrapper, jobPosting.JobPostingId, jobPostingDto.JobPostingSkills);
 
                 // index active jobs in cloud talent 
                 if (jobPosting.JobStatus == (int)JobPostingStatus.Active)

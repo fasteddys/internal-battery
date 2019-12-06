@@ -2,7 +2,12 @@
 using UpDiddyLib.Dto;
 using System.Net;
 using System.Text;
-
+using Microsoft.Extensions.Configuration;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using System.Reflection;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System;
 namespace UpDiddyApi.Helpers.Job
 {
     public class JobUrlHelper
@@ -19,9 +24,9 @@ namespace UpDiddyApi.Helpers.Job
             {
 
                 case "admin_1":
-                    return MapQueryStringFacet(JobNavigatorUrl, "province", FacetQueryParam(facetValue));                    
-                case "city":        
-                    return MapCityFacetAsQueryParam(JobNavigatorUrl,facetValue);                    
+                    return MapQueryStringFacet(JobNavigatorUrl, "province", FacetQueryParam(facetValue));
+                case "city":
+                    return MapCityFacetAsQueryParam(JobNavigatorUrl, facetValue);
                 default:
                     return MapQueryStringFacet(JobNavigatorUrl, facetName.ToLower(), FacetQueryParam(facetValue));
 
@@ -31,25 +36,25 @@ namespace UpDiddyApi.Helpers.Job
             }
 
 
-            
+
         }
 
 
 
         public static string MapFacetToUrl(JobQueryDto query, string facetName, string facetValue, string IndustryUrl, string LocationUrl, string TopLevelDomain)
         {
-           
+
             string rVal = "Unknown Facet!";
             switch (facetName.ToLower())
             {
                 case "jobcategory":
-                    rVal =  UrlComponentReplace(LocationUrl, 3, facetValue);
+                    rVal = UrlComponentReplace(LocationUrl, 3, facetValue);
                     break;
                 case "industry":
                     rVal = UrlComponentReplace(IndustryUrl, 2, facetValue);
                     break;
                 case "skills":
-                    rVal =  UrlComponentReplace(LocationUrl, 7, facetValue);
+                    rVal = UrlComponentReplace(LocationUrl, 7, facetValue);
                     break;
                 case "city":
                     rVal = MapCityFacet(LocationUrl, facetValue);
@@ -67,7 +72,7 @@ namespace UpDiddyApi.Helpers.Job
                     rVal = rVal = MapQueryStringFacet(LocationUrl, "education-level", facetValue);
                     break;
                 case "admin_1":
-                    rVal =  UrlComponentReplace(LocationUrl, 3, facetValue);
+                    rVal = UrlComponentReplace(LocationUrl, 3, facetValue);
                     break;
                 case "company_display_name":
                     rVal = MapQueryStringFacet(LocationUrl, "companyname", facetValue);
@@ -101,13 +106,13 @@ namespace UpDiddyApi.Helpers.Job
             string rVal = defUrl + "?";
             string[] info = facetValue.Split(",");
             rVal += "city=" + FacetQueryParam(info[0]);
-            rVal += "&province=" + FacetQueryParam(info[1]) ;
+            rVal += "&province=" + FacetQueryParam(info[1]);
             return rVal;
 
         }
 
 
-        public static string MapQueryStringFacet(string defUrl, string queryStringName, string facetValue )
+        public static string MapQueryStringFacet(string defUrl, string queryStringName, string facetValue)
         {
             StringBuilder rVal = new StringBuilder();
             rVal.Append(defUrl);
@@ -117,7 +122,7 @@ namespace UpDiddyApi.Helpers.Job
             rVal.Append(FacetQueryParam(facetValue));
             return rVal.ToString();
         }
-      
+
         #endregion
 
         #region Default Urls 
@@ -220,21 +225,21 @@ namespace UpDiddyApi.Helpers.Job
         /// <param name="index"></param>
         /// <param name="newValue"></param>
         /// <returns></returns>
-        static private string UrlComponentReplace ( string Url, int index, string newValue)
-        {            
+        static private string UrlComponentReplace(string Url, int index, string newValue)
+        {
             StringBuilder rVal = new StringBuilder();
 
             string[] urlComponents = Url.Split('/');
             int currentIndex = 0;
             foreach (string s in urlComponents)
             {
-                if ( currentIndex > 0 )
+                if (currentIndex > 0)
                     rVal.Append("/");
 
                 if (currentIndex == index)
                     rVal.Append(FacetQueryParam(newValue));
                 else
-                    rVal.Append(s);                
+                    rVal.Append(s);
                 ++currentIndex;
             }
             return rVal.ToString();
@@ -248,6 +253,38 @@ namespace UpDiddyApi.Helpers.Job
         static private string FacetQueryParam(string facetInfo)
         {
             return WebUtility.UrlEncode(facetInfo.Trim().ToLower());
+        }
+
+        public static async Task AssignCompanyLogoUrlToJobsList<T>(List<T> jobs, IConfiguration config, ICompanyService companyService) where T : class
+        {
+            foreach (var job in jobs)
+            {
+                await AssignCompanyLogoUrlToJob(job, config, companyService);
+            }
+        }
+
+        public static async Task AssignCompanyLogoUrlToJob<T>(T job, IConfiguration config, ICompanyService companyService) where T : class
+        {
+            Type t = job.GetType();
+            PropertyInfo companyNameProp = t.GetProperty("CompanyName");
+            if (companyNameProp != null)
+            {
+                string companyName = (string)companyNameProp.GetValue(job);
+                var company = await companyService.GetByCompanyName(companyName);
+                if (!string.IsNullOrWhiteSpace(company?.LogoUrl))
+                {
+                    PropertyInfo logoUrlProperty = t.GetProperty("CompanyLogoUrl");
+                    if (logoUrlProperty != null)
+                    {
+                        logoUrlProperty.SetValue(job, SetCompanyLogoUrl(company.LogoUrl, config));
+                    }
+                }
+            }
+        }
+
+        public static string SetCompanyLogoUrl(string logoUrl, IConfiguration config)
+        {
+            return config["StorageAccount:AssetBaseUrl"] + "Company/" + logoUrl;
         }
 
         #endregion

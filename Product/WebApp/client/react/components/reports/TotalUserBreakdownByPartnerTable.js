@@ -153,6 +153,7 @@ class TotalUserBreakdownByPartner extends React.Component {
                             }
                         ]}
                         showPagination={false}
+                        pageSize={data.length}
                         className="-striped -highlight"
                         minRows={4}
                         noDataText="No Records"

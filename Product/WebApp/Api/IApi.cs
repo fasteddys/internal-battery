@@ -5,12 +5,23 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Dto.Reporting;
+using UpDiddyLib.Dto.User;
 using Microsoft.AspNetCore.Http;
 
 namespace UpDiddy.Api
 {
     public interface IApi
     {
+        Task<bool> IsUserExistsInADB2CAsync(string email);
+        Task<bool> IsUserExistsInAuth0Async(string email);
+        Task<bool> CheckADB2CLoginAsync(string email, string password);
+        Task<bool> MigrateUserAsync(CreateUserDto createUserDto);
+        Task<bool> CreateCustomPasswordResetAsync(string email);
+        Task<bool> ConsumeCustomPasswordResetAsync(Guid passwordResetRequestGuid, string newPassword);
+        Task<bool> CheckValidityOfPasswordResetRequest(Guid passwordResetRequestGuid);
+        Task<BasicResponseDto> UpdateLastSignIn(Guid subscriberGuid);
+        Task<BasicResponseDto> ExistingUserSignup(CreateUserDto createUserDto);
+        Task<BasicResponseDto> CreateUserAsync(CreateUserDto createUserDto);
         Task<IList<TopicDto>> TopicsAsync();
         Task<TopicDto> TopicByIdAsync(int TopicId);
         Task<TopicDto> TopicBySlugAsync(string TopicSlug);
@@ -43,7 +54,6 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> UpdateProfileInformationAsync(SubscriberDto Subscriber);
         Task<BasicResponseDto> UpdateOnboardingStatusAsync();
         Task<Guid> EnrollStudentAndObtainEnrollmentGUIDAsync(EnrollmentFlowDto enrollmentFlowDto);
-        Task<SubscriberDto> CreateSubscriberAsync(string source, string referralCode);
         Task<bool> DeleteSubscriberAsync(Guid subscriberGuid, Guid cloudIdentifier);
         Task<WozCourseProgressDto> UpdateStudentCourseProgressAsync(bool FutureSchedule);
         Task<BraintreeResponseDto> SubmitBraintreePaymentAsync(BraintreePaymentDto BraintreePaymentDto);
@@ -67,10 +77,6 @@ namespace UpDiddy.Api
         Task<SubscriberEducationHistoryDto> DeleteEducationHistoryAsync(Guid subscriberGuid, Guid educationHistory);
         Task<IList<SubscriberWorkHistoryDto>> GetWorkHistoryAsync(Guid subscriberGuid);
         Task<IList<SubscriberEducationHistoryDto>> GetEducationHistoryAsync(Guid subscriberGuid);
-        Task<BasicResponseDto> UpdateSubscriberContactAsync(Guid partnerContactGuid, SignUpDto signUpDto);
-        Task<BasicResponseDto> ExpressUpdateSubscriberContactAsync(SignUpDto signUpDto);
-        Task<BasicResponseDto> ExistingUserGroupSignup (SignUpDto signUpDto);
-
         Task<CourseDto> GetCourseByCampaignGuidAsync(Guid CampaignGuid);
         Task<SubscriberEducationHistoryDto> AddEducationalHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto workHistory);
         Task<BasicResponseDto> AddJobPostingAsync(JobPostingDto jobPosting);
@@ -82,8 +88,6 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> DeleteJobPosting(Guid jobPostingGuid);
         Task<ContactDto> ContactAsync(Guid partnerContactGuid);
         Task<LinkedInProfileDto> GetLinkedInProfileAsync();
-        Task<SubscriberADGroupsDto> MyGroupsAsync();
-        Task<BasicResponseDto> VerifyEmailAsync(Guid token);
         Task<IList<CampaignDto>> GetCampaignsAsync();
         Task<CampaignDto> GetCampaignAsync(Guid campaignGuid);
         Task<CampaignPartnerContactDto> GetCampaignPartnerContactAsync(string tinyId);
@@ -116,7 +120,7 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> DeletePartnerAsync(Guid PartnerGuid);
         Task<IList<NotificationDto>> GetNotificationsAsync();
         Task<NotificationDto> GetNotificationAsync(Guid notificationGuid);
-        Task<NotificationDto> CreateNotificationAsync(NotificationDto notificationDto);
+        Task<NewNotificationDto> CreateNotificationAsync(NewNotificationDto newNotificationDto);
         Task<BasicResponseDto> UpdateNotificationAsync(NotificationDto notificationDto);
         Task<BasicResponseDto> DeleteNotificationAsync(Guid NotificationGuid);
         Task<BasicResponseDto> UpdateSubscriberNotificationAsync(Guid SubscriberGuid, NotificationDto notificationDto);
@@ -126,6 +130,8 @@ namespace UpDiddy.Api
         Task<IList<JobSiteScrapeStatisticDto>> JobScrapeStatisticsSearchAsync(int numRecords);
         Task<List<JobPostingCountReportDto>> GetActiveJobPostCountPerCompanyByDatesAsynch(DateTime? startPostDate, DateTime? endPostDate);
         Task<List<FailedSubscriberDto>> GetFailedSubscribersSummaryAsync();
+        Task<List<GroupDto>> GetGroupsAsync();
+
         #endregion
 
         #region Marketing
@@ -164,7 +170,7 @@ namespace UpDiddy.Api
         Task<TraitifyDto> StartNewTraitifyAssessment(TraitifyDto dto);
         Task<TraitifyDto> GetTraitifyByAssessmentId(string assessmentId);
         Task<TraitifyDto> CompleteAssessment(string assessmentId);
-        Task<BasicResponseDto> TraitifySignUp(string assessmentId); 
+        Task<BasicResponseDto> AssociateSubscriberWithAssessment(string assessmentId, Guid subscriberGuid);
         #endregion
 
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);

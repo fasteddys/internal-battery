@@ -8,13 +8,9 @@ namespace UpDiddyLib.Domain.Models
     {
 
 
-
         public List<string> Skills = new List<string>();
 
- 
-
         public string Country { get; set; }
-
 
         public string City { get; set; }
 
@@ -52,24 +48,18 @@ namespace UpDiddyLib.Domain.Models
 
         public string EmploymentType { get; set; }
 
-        public string ThirdPartyApplyUrl { get; set; }
+        public string ThirdPartyApplicationUrl { get; set; }
         public DateTime ModifyDate { get; set; }
-
 
         public long TelecommutePercentage { get; set; }
  
         public bool ThirdPartyApply { get; set; }
  
         public string Industry { get; set; }
-
- 
+     
         public string JobCategory { get; set; }
+
+        public string Title { get; set; }
  
- 
-
-
-         
-
-
     }
 }

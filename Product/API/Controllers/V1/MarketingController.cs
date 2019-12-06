@@ -19,7 +19,7 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Helpers;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 namespace UpDiddyApi.Controllers
 {
     public class MarketingController : ControllerBase
@@ -30,16 +30,16 @@ namespace UpDiddyApi.Controllers
         private readonly string _queueConnection = string.Empty;
         protected internal ILogger _syslog = null;
         private readonly IHttpClientFactory _httpClientFactory = null;
+        private readonly IRepositoryWrapper _repositoryWrapper;
 
-        public MarketingController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<ProfileController> sysLog, IHttpClientFactory httpClientFactory)
+        public MarketingController(UpDiddyDbContext db,IRepositoryWrapper repositoryWrapper, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<ProfileController> sysLog, IHttpClientFactory httpClientFactory)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
             _syslog = sysLog;
             _httpClientFactory = httpClientFactory;
-
-
+            _repositoryWrapper = repositoryWrapper;            
         }
 
         #region Campaigns 
@@ -133,12 +133,12 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/campaign/{CampaignGuid}/publish-contact/{ContactListname}")]
         public async Task<IActionResult> CreateProviderContactList(Guid campaignGuid, string ContactListName)
         {
-            var campaign = CampaignFactory.GetCampaignByGuid(_db, campaignGuid);
+            var campaign = await CampaignFactory.GetCampaignByGuid(_repositoryWrapper, campaignGuid);
             if (campaign == null)
                 return BadRequest();
             ContactListName = WebUtility.UrlDecode(ContactListName);
 
-            IList<EmailContactDto> TheList = await _db.CampaignPartnerContact
+            IList<EmailContactDto> TheList = await _repositoryWrapper.CampaignPartnerContactRepository.GetAll()
                 .Include(cpc => cpc.PartnerContact).ThenInclude(pc => pc.Contact).ThenInclude(c => c.Subscriber)
                 .Where(c => c.IsDeleted == 0 && c.CampaignId == campaign.CampaignId)
                 .Select(cpc => new EmailContactDto
@@ -164,9 +164,9 @@ namespace UpDiddyApi.Controllers
         [HttpPut]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("api/[controller]/campaign/{CampaignGuid}/contact")]
-        public IActionResult AddContacts(Guid campaignGuid, [FromBody] IList<Guid> contacts)
+        public async Task<IActionResult> AddContacts(Guid campaignGuid, [FromBody] IList<Guid> contacts)
         {
-            var campaign = CampaignFactory.GetCampaignByGuid(_db, campaignGuid);
+            var campaign = await CampaignFactory.GetCampaignByGuid(_repositoryWrapper, campaignGuid);
             if (campaign == null)
                 return BadRequest();
 
@@ -196,9 +196,9 @@ namespace UpDiddyApi.Controllers
         [HttpDelete]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("api/[controller]/campaign/{CampaignGuid}/contact")]
-        public IActionResult RemoveContacts(Guid campaignGuid, [FromBody] IList<Guid> contacts)
+        public async Task<IActionResult> RemoveContacts(Guid campaignGuid, [FromBody] IList<Guid> contacts)
         {
-            var campaign = CampaignFactory.GetCampaignByGuid(_db, campaignGuid);
+            var campaign = await CampaignFactory.GetCampaignByGuid(_repositoryWrapper, campaignGuid);
             if (campaign == null)
                 return BadRequest();
 

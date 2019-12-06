@@ -10,9 +10,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
 {
     public class CompanyRepository : UpDiddyRepositoryBase<Company>, ICompanyRepository
     {
+        private readonly UpDiddyDbContext _dbContext;
         public CompanyRepository(UpDiddyDbContext dbContext) : base(dbContext)
         {
-
+                _dbContext = dbContext;
         }
 
         public async Task AddCompany(Company company)
@@ -40,6 +41,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             Update(company);
             await SaveAsync();
+        }
+
+        public async Task<List<Company>> GetAllCompanyEntities()
+        {
+            return await (from e in _dbContext.Company
+                          where e.IsDeleted == 0
+                          select e ).ToListAsync();
         }
     }
 }

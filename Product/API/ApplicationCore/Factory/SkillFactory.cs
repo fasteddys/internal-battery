@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using Microsoft.EntityFrameworkCore;
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class SkillFactory
     {
 
-        public static  Skill CreateSkill(string skillName)
+        public static Skill CreateSkill(string skillName)
         {
             Skill rVal = new Skill();
             rVal.SkillName = skillName;
@@ -23,29 +24,29 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return rVal;
         }
 
-        static public Skill GetOrAdd(UpDiddyDbContext db, string skillName)
+        static public async Task<Skill> GetOrAdd(IRepositoryWrapper repositoryWrapper, string skillName)
         {
             skillName = skillName.Trim().ToLower();
 
-            Skill skill = db.Skill
+            Skill skill = repositoryWrapper.SkillRepository.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.SkillName == skillName)
                 .FirstOrDefault();
 
             if (skill == null)
             {
-                skill =  CreateSkill(skillName);
-                db.Skill.Add(skill);
-                db.SaveChanges();
+                skill = CreateSkill(skillName);
+                await repositoryWrapper.SkillRepository.Create(skill);
+                await repositoryWrapper.SkillRepository.SaveAsync();
             }
             return skill;
         }
 
 
-        static public Skill GetSkillByGuid(UpDiddyDbContext db, Guid skillGuid)
+        static public async Task<Skill> GetSkillByGuid(IRepositoryWrapper repositoryWrapper, Guid skillGuid)
         {
-             return db.Skill
-                .Where(s => s.IsDeleted == 0 && s.SkillGuid == skillGuid)
-                .FirstOrDefault();            
+            return await repositoryWrapper.SkillRepository.GetAllWithTracking()
+               .Where(s => s.IsDeleted == 0 && s.SkillGuid == skillGuid)
+               .FirstOrDefaultAsync();
         }
 
 

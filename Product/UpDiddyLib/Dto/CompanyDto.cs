@@ -4,9 +4,8 @@ using System.Text;
 
 namespace UpDiddyLib.Dto
 {
-   public class CompanyDto : BaseDto
+   public class CompanyDto 
     {
-      
         public Guid CompanyGuid { get; set; }
         public string CompanyName { get; set; }
         public string JobPageBoilerplate { get; set; }

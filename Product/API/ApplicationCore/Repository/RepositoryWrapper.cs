@@ -1,5 +1,7 @@
 ﻿using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -63,12 +65,46 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ITraitifyRepository _traitifyRepository;
         private IFileDownloadTrackerRepository _fileDownloadTrackerRepository;
         private IPartnerTypeRepository _partnerTypeRepository;
+        private IJobPostingSkillRepository _jobPostingSkillRepository;
+        private ICampaignPartnerContactRepository _campaignParnerContactRepository;
+        private ICampaignRepository _campaignRepository;
+        private ISubscriberWorkHistoryRepository _subscriberWorkHistoryRepository;
+        private ISubscriberSkillRepository _subscriberSkillRepository;
+        private ISubscriberEducationHistoryRepository _subscriberEducationHistoryRepository;
+        private IIndustryRepository _industryRepository;
+
+        private ISecurityClearanceRepository _securityClearanceRepository;
+        private IEmploymentTypeRepository _employmentTypeRepository;
+        private IEducationalDegreeRepository _educationalDegreeRepository;
+        private IEducationalDegreeTypeRepository _educationalDegreeTypeRepository;
+        private IEducationalInstitutionRepository _educationalInstitutionRepository;
+        private IEducationLevelRepository _educationLevelRepository;
+        private IExperienceLevelRepository _experienceLevelRepository;
+        private ICompensationTypeRepository _compensationTypeRepository;
+        private IRecruiterCompanyRepository _recruiterCompanyRepository;
         private ITraitifyCourseTopicBlendMappingRepository _traitifyCourseTopicBlendMappingRepository;
+        private ICourseFavoriteRepository _courseFavoriteRepository;
+        private ISubscriberProfileStagingStoreRepository _subscriberProfileStagingRepository;
+        private ITalentFavoriteRepository _talentFavoriteRepository;
+        private IPasswordResetRequestRepository _passwordResetRequestRepository;
 
-
-        public RepositoryWrapper(UpDiddyDbContext dbContext)
+        private readonly IConfiguration _configuration;
+        public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
+            _configuration = configuration;
+        }
+
+        public IPasswordResetRequestRepository PasswordResetRequestRepository
+        {
+            get
+            {
+                if(_passwordResetRequestRepository == null)
+                {
+                    _passwordResetRequestRepository = new PasswordResetRequestRepository(_dbContext);
+                }
+                return _passwordResetRequestRepository;
+            }
         }
 
         public ICountryRepository Country
@@ -149,7 +185,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             {
                 if (_jobPostingFavoriteRepository == null)
                 {
-                    _jobPostingFavoriteRepository = new JobPostingFavoriteRepository(_dbContext);
+                    _jobPostingFavoriteRepository = new JobPostingFavoriteRepository(_dbContext, _configuration);
                 }
                 return _jobPostingFavoriteRepository;
             }
@@ -189,18 +225,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _recruiterActionRepository = new RecruiterActionRepository(_dbContext);
                 }
                 return _recruiterActionRepository;
-            }
-        }
-
-        public ISubscriberRepository Subscriber
-        {
-            get
-            {
-                if (_subscriberRepository == null)
-                {
-                    _subscriberRepository = new SubscriberRepository(_dbContext, SubscriberGroupRepository, GroupPartnerRepository, PartnerRepository);
-                }
-                return _subscriberRepository;
             }
         }
 
@@ -775,6 +799,204 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         }
 
+        public IJobPostingSkillRepository JobPostingSkillRepository
+        {
+            get
+            {
+                if (_jobPostingSkillRepository == null)
+                {
+                    _jobPostingSkillRepository = new JobPostingSkillRepository(_dbContext);
+                }
+                return _jobPostingSkillRepository;
+            }
+        }
+
+        public ICampaignPartnerContactRepository CampaignPartnerContactRepository
+        {
+            get
+            {
+                if (_campaignParnerContactRepository == null)
+                {
+                    _campaignParnerContactRepository = new CampaignPartnerContactRepository(_dbContext);
+                }
+                return _campaignParnerContactRepository;
+            }
+        }
+
+        public ICampaignRepository CampaignRepository
+        {
+            get
+            {
+                if (_campaignRepository == null)
+                {
+                    _campaignRepository = new CampaignRepository(_dbContext);
+                }
+                return _campaignRepository;
+            }
+        }
+
+        public ISubscriberWorkHistoryRepository SubscriberWorkHistoryRepository
+        {
+            get
+            {
+                if (_subscriberWorkHistoryRepository == null)
+                {
+                    _subscriberWorkHistoryRepository = new SubscriberWorkHistoryRepository(_dbContext);
+                }
+                return _subscriberWorkHistoryRepository;
+            }
+        }
+
+        public ISubscriberSkillRepository SubscriberSkillRepository
+        {
+            get
+            {
+                if (_subscriberSkillRepository == null)
+                {
+                    _subscriberSkillRepository = new SubscriberSkillRepository(_dbContext);
+                }
+                return _subscriberSkillRepository;
+            }
+        }
+
+        public ISubscriberEducationHistoryRepository SubscriberEducationHistoryRepository
+        {
+            get
+            {
+                if (_subscriberEducationHistoryRepository == null)
+                {
+                    _subscriberEducationHistoryRepository = new SubscriberEducationHistoryRepository(_dbContext);
+                }
+                return _subscriberEducationHistoryRepository;
+            }
+        }
+
+        public IIndustryRepository IndustryRepository
+        {
+            get
+            {
+                if (_industryRepository == null)
+                {
+                    _industryRepository = new IndustryRepository(_dbContext);
+                }
+                return _industryRepository;
+            }
+        }
+
+        public ISecurityClearanceRepository SecurityClearanceRepository
+        {
+            get
+            {
+                if (_securityClearanceRepository == null)
+                {
+                    _securityClearanceRepository = new SecurityClearanceRepository(_dbContext);
+                }
+                return _securityClearanceRepository;
+            }
+        }
+
+        public IEmploymentTypeRepository EmploymentTypeRepository
+        {
+            get
+            {
+                if (_employmentTypeRepository == null)
+                {
+                    _employmentTypeRepository = new EmploymentTypeRepository(_dbContext);
+                }
+                return _employmentTypeRepository;
+            }
+        }
+
+        public IEducationalDegreeRepository EducationalDegreeRepository
+        {
+            get
+            {
+                if (_educationalDegreeRepository == null)
+                {
+                    _educationalDegreeRepository = new EducationalDegreeRepository(_dbContext);
+                }
+                return _educationalDegreeRepository;
+            }
+        }
+
+        public IEducationalDegreeTypeRepository EducationalDegreeTypeRepository
+        {
+            get
+            {
+                if (_educationalDegreeTypeRepository == null)
+                {
+                    _educationalDegreeTypeRepository = new EducationalDegreeTypeRepository(_dbContext);
+                }
+                return _educationalDegreeTypeRepository;
+            }
+        }
+
+        public IEducationalInstitutionRepository EducationalInstitutionRepository
+        {
+            get
+            {
+                if (_educationalInstitutionRepository == null)
+                {
+                    _educationalInstitutionRepository = new EducationalInstitutionRepository(_dbContext);
+                }
+                return _educationalInstitutionRepository;
+            }
+        }
+
+        public IEducationLevelRepository EducationLevelRepository
+        {
+            get
+            {
+                if (_educationLevelRepository == null)
+                {
+                    _educationLevelRepository = new EducationLevelRepository(_dbContext);
+                }
+                return _educationLevelRepository;
+            }
+        }
+
+        public IExperienceLevelRepository ExperienceLevelRepository
+        {
+            get
+            {
+                if (_experienceLevelRepository == null)
+                {
+                    _experienceLevelRepository = new ExperienceLevelRepository(_dbContext);
+                }
+                return _experienceLevelRepository;
+            }
+        }
+
+        public ICompensationTypeRepository CompensationTypeRepository
+        {
+            get
+            {
+                if (_compensationTypeRepository == null)
+                {
+                    _compensationTypeRepository = new CompensationTypeRepository(_dbContext);
+                }
+                return _compensationTypeRepository;
+            }
+        }
+
+        public IRecruiterCompanyRepository RecruiterCompanyRepository
+        {
+            get
+            {
+                if (_recruiterCompanyRepository == null)
+                {
+                    _recruiterCompanyRepository = new RecruiterCompanyRepository(_dbContext);
+                }
+                return _recruiterCompanyRepository;
+            }
+        }
+
+        public async Task SaveAsync()
+        {
+            await _dbContext.SaveChangesAsync();
+
+        }
+
         public ITraitifyCourseTopicBlendMappingRepository TraitifyCourseTopicBlendMappingRepository
         {
             get
@@ -786,5 +1008,44 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 return _traitifyCourseTopicBlendMappingRepository;
             }
         }
+
+        public ICourseFavoriteRepository CourseFavoriteRepository
+        {
+            get
+            {
+                if (_courseFavoriteRepository == null)
+                {
+                    _courseFavoriteRepository = new CourseFavoriteRepository(_dbContext);
+                }
+                return _courseFavoriteRepository;
+            }
+        }
+
+        public ISubscriberProfileStagingStoreRepository SubscriberProfileStagingStoreRepository 
+        {
+            get{
+                  if (_subscriberProfileStagingRepository == null)
+                {
+                    _subscriberProfileStagingRepository = new SubscriberProfileStagingStoreRepository(_dbContext);
+                }
+                return _subscriberProfileStagingRepository;
+            }
+            
+        }
+
+
+        public ITalentFavoriteRepository TalentFavoriteRepository
+        {
+            get
+            {
+                if (_talentFavoriteRepository == null)
+                {
+                    _talentFavoriteRepository = new TalentFavoriteRepository(_dbContext);
+                }
+                return _talentFavoriteRepository;
+            }
+        }
+
+
     }
 }

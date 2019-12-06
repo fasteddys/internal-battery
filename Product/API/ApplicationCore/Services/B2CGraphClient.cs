@@ -16,6 +16,7 @@ using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
+    [Obsolete("This can be removed once we are satisfied with the ADB2C -> Auth0 migration", false)]
     public class B2CGraphClient : IB2CGraph
     {
         private string clientId { get; set; }
@@ -105,6 +106,12 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             // todo: do we care about the response?
             return await SendGraphPatchRequest($"/users/{subscriberGuid}", "{ \"accountEnabled\" : false}");
+        }
+
+        public async Task<string> ChangeUserPassword(Guid subscriberGuid, string password)
+        {
+            string jsonBody = "{\"passwordProfile\":{\"password\":\"" + password + "\",\"forceChangePasswordNextLogin\":false},\"passwordPolicies\":\"DisablePasswordExpiration\"}";
+            return await SendGraphPatchRequest($"/users/{subscriberGuid}", jsonBody);
         }
 
         public async Task<string> SendGraphGetRequest(string api, string query)

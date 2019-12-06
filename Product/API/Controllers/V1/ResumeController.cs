@@ -80,8 +80,6 @@ namespace UpDiddyApi.Controllers
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Success!" });
         }
 
-
-
         [Authorize]
         [HttpPost]
         [Route("resolve-profile-merge/{resumeParseGuid}")]
@@ -95,18 +93,16 @@ namespace UpDiddyApi.Controllers
                 return BadRequest(new BasicResponseDto() { StatusCode = 404, Description = $"ResumeParse {resumeParseGuid} not found!" });
 
             // Get subscriber 
-            Subscriber subscriber = SubscriberFactory.GetSubscriberById(_db, resumeParse.SubscriberId);
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberById(_repositoryWrapper, resumeParse.SubscriberId);
 
             if (subscriberGuid != subscriber.SubscriberGuid)
                 return BadRequest(new BasicResponseDto() { StatusCode = 401, Description = "Requester does not own resume parse" });
 
 
-            await ResumeParseFactory.ResolveProfileMerge(_repositoryWrapper, _db, _mapper, _syslog, resumeParse, subscriber, mergeInfo);
+            await ResumeParseFactory.ResolveProfileMerge(_repositoryWrapper, _mapper, _syslog, resumeParse, subscriber, mergeInfo);
 
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Success!" });
         }
-
-
 
         [Authorize]
         [HttpGet]
@@ -121,7 +117,7 @@ namespace UpDiddyApi.Controllers
             if (resumeParse == null )
                 return BadRequest(new BasicResponseDto() { StatusCode = 404, Description = $"Resume parse {parseMergeGuid} does not exist" });
 
-            Subscriber subscriber = SubscriberFactory.GetSubscriberById(_db, resumeParse.SubscriberId);
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberById(_repositoryWrapper, resumeParse.SubscriberId);
 
             if (subscriber == null)
                 return BadRequest(new BasicResponseDto() { StatusCode = 404, Description = $"Subscriber   {resumeParse.SubscriberId} does not exist" });
@@ -147,7 +143,7 @@ namespace UpDiddyApi.Controllers
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            Subscriber subscriber = await SubscriberFactory.GetSubscriberByGuid(_repositoryWrapper, subscriberGuid);
             if (subscriber == null)
             {
                 return NotFound(new { code = 404, message = $"Subscriber {subscriberGuid} not found" });
@@ -163,7 +159,5 @@ namespace UpDiddyApi.Controllers
 
             return NotFound(new { code = 404, message = $"Subscriber {subscriberGuid} not found" });
         }
-
-
     }
 }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
- 
+ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 
 namespace UpDiddyApi.ApplicationCore.Factory
 {
@@ -154,6 +154,24 @@ namespace UpDiddyApi.ApplicationCore.Factory
             db.SubscriberProfileStagingStore.Add(stagingStore);
             db.SaveChanges();
         }
+
+        public static async Task Save(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, string srcName, string format, string data)
+        {
+            SubscriberProfileStagingStore stagingStore = new SubscriberProfileStagingStore();
+            stagingStore.CreateDate = DateTime.UtcNow;
+            stagingStore.ModifyDate = DateTime.UtcNow;
+            stagingStore.ModifyGuid = Guid.Empty;
+            stagingStore.ModifyGuid = Guid.Empty;
+            stagingStore.SubscriberId = subscriber.SubscriberId;
+            stagingStore.ProfileSource = srcName;
+            stagingStore.ProfileFormat = format;
+            stagingStore.ProfileData = data;
+            stagingStore.Status = (int)ProfileDataStatus.Acquired;
+
+            await repositoryWrapper.SubscriberProfileStagingStoreRepository.Create(stagingStore);
+            await repositoryWrapper.SaveAsync();
+        }
+
 
         #endregion
 

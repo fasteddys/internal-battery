@@ -3,31 +3,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using Microsoft.EntityFrameworkCore;
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class CourseVariantFactory 
     {
 
-        public static CourseVariant GetCourseVariantById(UpDiddyDbContext db, int courseVariantId)
+        public static async Task<CourseVariant> GetCourseVariantById(IRepositoryWrapper repositoryWrapper, int courseVariantId)
         {
-            return db.CourseVariant
+            return await repositoryWrapper.CourseVariant.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.CourseVariantId == courseVariantId)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
         }
 
-        public static string GetCourseVariantCourseSlug(UpDiddyDbContext db, int courseVariantId)
+        public static async Task<string> GetCourseVariantCourseSlug(IRepositoryWrapper repositoryWrapper, int courseVariantId)
         {
 
-            var newObj = db.CourseVariant
-               .Join(db.Course,
+            var newObj = repositoryWrapper.CourseVariant.GetAllWithTracking()
+               .Join(repositoryWrapper.Course.GetAllWithTracking(),
                    courseVariant => courseVariant.CourseId,
                    course => course.CourseId,
                    (courseVariant, course) => new { course, courseVariant })
                 .Where(x => x.courseVariant.CourseVariantId == courseVariantId)
                 .Select(m => new { slug = m.course.Slug });
 
-            string courseSlug = newObj.Select(n => n.slug).FirstOrDefault();
+            string courseSlug = await newObj.Select(n => n.slug).FirstOrDefaultAsync();
             return courseSlug;
         }
 

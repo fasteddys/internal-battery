@@ -8,62 +8,108 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-
+using UpDiddyApi.ApplicationCore.Exceptions;
+using UpDiddyApi.Helpers.Job;
+using Microsoft.Extensions.Configuration;
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class CompanyService : ICompanyService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IMapper _mapper;
-        public CompanyService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
+        private readonly IConfiguration _config;
+        public CompanyService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IConfiguration config)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
+            _config = config;
         }
 
         public async Task AddCompanyAsync(CompanyDto companyDto)
         {
-            var company=_mapper.Map<Company>(companyDto);
-
-            //assign companyGuid
+            //TODO Address company logo URL in the future. Possibly a byte array represending the image which will be uploaded to azure blob storage 
+            if (companyDto == null)
+                throw new NullReferenceException("CompanyDto cannot be null");
+            var company = _mapper.Map<Company>(companyDto);
             company.CompanyGuid = Guid.NewGuid();
+            company.CreateDate = DateTime.Now;
+            company.LogoUrl = string.Empty;
             BaseModelFactory.SetDefaultsForAddNew(company);
-
-           await  _repositoryWrapper.Company.AddCompany(company);
+            await _repositoryWrapper.Company.AddCompany(company);
         }
 
         public async Task EditCompanyAsync(CompanyDto companyDto)
         {
+            if (companyDto == null)
+                throw new NullReferenceException("CompanyDto cannot be null");
             var company = await _repositoryWrapper.Company.GetCompanyByCompanyGuid(companyDto.CompanyGuid);
-            if(company!=null)
+            if (company == null)
+                throw new NotFoundException("Company not found");
+            if (company != null)
             {
                 company.CompanyName = companyDto.CompanyName;
                 company.IsHiringAgency = companyDto.IsHiringAgency;
                 company.IsJobPoster = companyDto.IsJobPoster;
                 company.ModifyDate = DateTime.Now;
-
                 await _repositoryWrapper.Company.UpdateCompany(company);
             }
         }
 
         public async Task DeleteCompanyAsync(Guid companyGuid)
         {
-            var company = await _repositoryWrapper.Company.GetCompanyByCompanyGuid(companyGuid);
+            if (companyGuid == null || companyGuid == Guid.Empty)
+                throw new NullReferenceException("CompanyGuid cannot be null");
+            var company = await _repositoryWrapper.Company.GetByGuid(companyGuid);
+            if (company == null)
+                throw new NotFoundException("Company not found");
             if (company != null)
             {
-                //set isDeleted to 1 to delete the record
                 company.IsDeleted = 1;
                 company.ModifyDate = DateTime.Now;
-
-                await _repositoryWrapper.Company.UpdateCompany(company);
+                await _repositoryWrapper.SaveAsync();
             }
         }
 
         public async Task<List<CompanyDto>> GetCompaniesAsync()
         {
-            var queryableCompanies =  _repositoryWrapper.Company.GetAllCompanies();
+            var queryableCompanies = _repositoryWrapper.Company.GetAllCompanies();
             //get only non deleted records
-            return _mapper.Map<List<CompanyDto>>(await queryableCompanies.Where(c=>c.IsDeleted==0 && c.CompanyGuid!=Guid.Empty).ToListAsync());
+            return _mapper.Map<List<CompanyDto>>(await queryableCompanies.Where(c => c.IsDeleted == 0 && c.CompanyGuid != Guid.Empty).ToListAsync());
+        }
+
+        public async Task<List<CompanyDto>> GetCompanies(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        {
+            var companies = await _repositoryWrapper.Company.GetByConditionWithSorting(x => x.IsDeleted == 0, limit, offset, sort, order);
+            if (companies == null)
+                throw new NotFoundException("Companies not found");
+            foreach (var c in companies)
+            {
+                c.LogoUrl = JobUrlHelper.SetCompanyLogoUrl(c.LogoUrl, _config);
+            }
+            return _mapper.Map<List<CompanyDto>>(companies);
+        }
+
+        public async Task<CompanyDto> GetById(int id)
+        {
+            var entity = await _repositoryWrapper.Company.GetById(id);
+            return _mapper.Map<CompanyDto>(entity);
+        }
+
+        public async Task<CompanyDto> GetByCompanyName(string companyName)
+        {
+            var context = _repositoryWrapper.Company.GetAll();
+            return _mapper.Map<CompanyDto>(await context.Where(x => x.CompanyName == companyName).FirstOrDefaultAsync());
+        }
+
+        public async Task<CompanyDto> GetByCompanyGuid(Guid companyGuid)
+        {
+            if (companyGuid == null || companyGuid == Guid.Empty)
+                throw new NullReferenceException("companyGuid cannot be null");
+            var company = await _repositoryWrapper.Company.GetByGuid(companyGuid);
+            if (company == null)
+                throw new NotFoundException("company cannot be found");
+            company.LogoUrl = JobUrlHelper.SetCompanyLogoUrl(company.LogoUrl, _config);
+            return _mapper.Map<CompanyDto>(company);
         }
     }
 }

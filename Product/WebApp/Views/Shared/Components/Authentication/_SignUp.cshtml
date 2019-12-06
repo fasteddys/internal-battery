@@ -3,51 +3,53 @@
 @model SignUpViewModel
 
 @{
-    string _form = Model.IsExpressSignUp ? "ExpressSignUpForm" : "SignUpForm";
-    string _aspAction = Model.IsExpressSignUp ? "express-sign-up" : "sign-up";
-    var redirectUrl = "/";
+    var returnUrl = "/";
     if(!String.IsNullOrEmpty(Model.CampaignSlug))
     {
-        redirectUrl = "campaign/" + Model.CampaignSlug;
+        returnUrl = "/campaign/" + Model.CampaignSlug;
     }
 }
 
 <div id="SignUpComponent">
-    <form id="@_form" asp-controller="Campaign" asp-action="@_aspAction" data-action="@_aspAction">
+    <form id="SignUpForm" asp-controller="session" asp-action="signup" data-action="signup">
         @{
-            if (!Model.IsExpressSignUp)
+            if (Model.PartnerGuid != Guid.Empty && Model.PartnerGuid != null)
             {
-                <input type="hidden" asp-for="PartnerContactGuid" name="PartnerContactGuid" value="@Model.PartnerContactGuid" form="SignUpForm" />
-                <input type="hidden" asp-for="CampaignGuid" name="CampaignGuid" value="@Model.CampaignGuid" form="SignUpForm" />
-                <input type="hidden" asp-for="CampaignPhase" name="CampaignPhase" value="@WebUtility.UrlEncode(Model.CampaignPhase)" form="SignUpForm" />
+                <input type="hidden" asp-for="PartnerGuid" name="PartnerGuid" value="@Model.PartnerGuid" form="SignUpForm" />
             }
         }
-        <div class="row">                                                  
+        <div class="row">
             @if (Model.IsWaitList)
             {
                 <div id="SignUpFirstName" class="col-12 sign-up-input no-padding">
-                    <input class="wide-input" placeholder="Your first name" form="@_form" name="FirstName" asp-for="FirstName" required />
+                    <input class="form-control input-lg" placeholder="Your first name" form="SignUpForm" name="FirstName" asp-for="FirstName" required />
                 </div>
                 <div id="SignUpLastName" class="col-12 sign-up-input no-padding">
-                    <input class="wide-input" placeholder="Your last name" form="@_form" name="LastName" asp-for="LastName" required />
+                    <input class="form-control input-lg" placeholder="Your last name" form="SignUpForm" name="LastName" asp-for="LastName" required />
                 </div>
                 <div id="SignUpPhone" class="col-12 sign-up-input no-padding">
-                    <input class="wide-input" placeholder="Your phone number (optional)" type="text" maxlength="16" form="@_form" name="PhoneNumber" asp-for="PhoneNumber" />
+                    <input class="form-control input-lg" placeholder="Your phone number (optional)" type="text" maxlength="16" form="SignUpForm" name="PhoneNumber" asp-for="PhoneNumber" />
                 </div>
             }
             <div id="SignUpEmail" class="col-12 sign-up-input no-padding">
-                <input class="wide-input" placeholder="Your email" form="@_form" data-val="true" name="Email" asp-for="Email" required />
+                <input class="form-control input-lg" placeholder="Email Address" form="SignUpForm" data-val="true" name="Email" asp-for="Email" required />
             </div>
             <div id="SignUpPassword" class="col-12 sign-up-input no-padding">
-                <input class="wide-input" placeholder="Password" type="password" form="@_form" name="Password" asp-for="Password" required />
+                <input class="form-control input-lg" placeholder="Password" type="password" form="SignUpForm" name="Password" asp-for="Password" required />
             </div>
             <div id="SignUpPasswordRetype" class="col-12 sign-up-input no-padding">
-                <input class="wide-input" placeholder="Re-enter password" type="password" form="@_form" name="ReenterPassword" asp-for="ReenterPassword" required />
+                <input class="form-control input-lg" placeholder="Re-enter password" type="password" form="SignUpForm" name="ReenterPassword" asp-for="ReenterPassword" required />
             </div>
             <div>
                 <div class="form-check sign-up-input">
                     <input type="checkbox" class="form-check-input" id="termsAndConditionsCheck" value="agree" required>
-                    <label class="form-check-label text-left" for="termsAndConditionsCheck">I agree to CareerCircle website <a target="_blank" href="/Home/TermsOfService">terms and conditions</a></label>
+                    <label class="form-check-label text-left" for="termsAndConditionsCheck">I agree to CareerCircle website <a target="_blank" href="/Home/TermsOfService">terms and conditions.</a></label>
+                </div>
+            </div>
+            <div>
+                <div class="form-check sign-up-input">
+                    <input type="checkbox" class="form-check-input" id="isAgreeToMarketingEmails" form="SignUpForm" name="IsAgreeToMarketingEmails" asp-for="IsAgreeToMarketingEmails">
+                    <label class="form-check-label text-left" for="isAgreeToMarketingEmails">I would like to receive emails about new offers and promotions from CareerCircle.</label>
                 </div>
             </div>
             <div id="SignUpAction" class="col-12 no-padding">
@@ -55,25 +57,22 @@
                     Text = string.IsNullOrEmpty(Model.SignUpButtonText) ? "Sign Up Now" : Model.SignUpButtonText,
                     SkewDirection = "skew-left-to-right",
                     ChosenColorScheme = "cc-cscheme-darkred",
-                    Form = _form,
+                    Form = "SignUpForm",
                     ButtonAction = ActionButtonViewModel.Action.SUBMIT
                 })
             </div>
-            @if(!string.IsNullOrEmpty(Model.CampaignSlug))
+            @if (!string.IsNullOrEmpty(Model.CampaignSlug))
             {
-                   <div class="col-12 pt-4">
-                     <p>Existing User? Click here to @Html.ActionLink("log in", "signin","session", new { redirectUri = @redirectUrl, rel = "nofollow"  })</p>
-                   </div>
-            }
-         
-            @if (!string.IsNullOrWhiteSpace(Model.ObfuscatedEmail))
-            {
-                <div class="col-12 no-padding notification">
-                    You must use the following email: @Model.ObfuscatedEmail
+                <div class="col-12 pt-4">
+                    <p>Existing User? Click here to @Html.ActionLink("log in", "signin", "session", new { returnUrl = returnUrl, rel = "nofollow" })</p>
                 </div>
-            } 
+            }
         </div>
+        @Html.HiddenFor(x => Model.IsGatedDownload)
+        @Html.HiddenFor(x => Model.GatedDownloadFileUrl)
+        @Html.HiddenFor(x => Model.GatedFileDownloadMaxAttemptsAllowed)
         @Html.HiddenFor(x => Model.CampaignSlug)
+        @Html.HiddenFor(x => Model.IsWaitList)
         @Html.HiddenFor(x => Model.SubscriberGuid)
     </form>
     <div class="modal signup-modal text-cc-secondary" tabindex="-1" role="dialog">
@@ -83,10 +82,10 @@
                     <h5 class="modal-title">
                         @if(!string.IsNullOrEmpty(Model.SuccessHeader))
                         {
-                            @Html.Raw(Model.SuccessHeader);
+                        @Html.Raw(Model.SuccessHeader);
                         }else
                         {
-                            @Html.Raw("Thank You!");
+                        @Html.Raw("You're almost done!");
                         }
                     </h5>
                 </div>
@@ -97,11 +96,11 @@
                     }
                     else
                     {
-                        @Html.Raw("<p>You have signed up successfully. You will now be redirected to the login page.</p>");
+                        @Html.Raw("<p>Please check your email and click on the verification link. This action is required before logging in for the first time.</p>");
                     }
                 </div>
                 <div class="modal-footer">
-                    <a href="/Session/SignIn" class="btn btn-primary">Continue</a>
+                    <a href="/session/signin" class="btn btn-primary">Continue</a>
                 </div>
             </div>
         </div>

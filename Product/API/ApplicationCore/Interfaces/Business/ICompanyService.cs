@@ -8,7 +8,11 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface ICompanyService
     {
+        Task<CompanyDto> GetById(int id);
         Task<List<CompanyDto>> GetCompaniesAsync();
+        Task<List<CompanyDto>> GetCompanies(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending");
+        Task<CompanyDto> GetByCompanyName(string companyName);
+        Task<CompanyDto> GetByCompanyGuid(Guid companyGuid);
         Task AddCompanyAsync(CompanyDto companyDto);
         Task EditCompanyAsync(CompanyDto companyDto);
         Task DeleteCompanyAsync(Guid companyGuid);

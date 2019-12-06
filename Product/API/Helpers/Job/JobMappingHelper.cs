@@ -17,7 +17,7 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using System.Globalization;
 using System.Threading;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 namespace UpDiddyApi.Helpers.Job
 {
     /// <summary>
@@ -37,7 +37,7 @@ namespace UpDiddyApi.Helpers.Job
             rVal.JobPostingGuid = postingGuid; 
             rVal.CompanyName = matchingJob.Job.CompanyDisplayName;
             rVal.Title = matchingJob.Job.Title; 
-            rVal.PostingDateUTC = DateTime.Parse(matchingJob.Job.PostingCreateTime.ToString());
+            rVal.PostingDateUTC = DateTime.Parse(matchingJob.Job.PostingCreateTime.ToString());            
             // map location that was indexed into google -- do not use a foreach loop since it's sloooooow (might be string concat0
    
 
@@ -175,15 +175,8 @@ namespace UpDiddyApi.Helpers.Job
         static public List<JobQueryFacetDto> MapFacetsAsQueryStrings(IConfiguration config, JobQueryDto jobQuery, CloudTalentSolution.SearchJobsResponse searchJobsResponse)
         {
             List<JobQueryFacetDto> rVal = new List<JobQueryFacetDto>();
-
-
-
             
-            string JobNavigatorUrl = config["CloudTalent:JobNavigatorUrl"].ToString(); 
- 
- 
-
-
+            string JobNavigatorUrl = config["CloudTalent:JobNavigatorUrl"].ToString();   
             //Culture Info for facets
             CultureInfo cultureInfo = Thread.CurrentThread.CurrentCulture;
             TextInfo textInfo = cultureInfo.TextInfo;
@@ -460,7 +453,7 @@ namespace UpDiddyApi.Helpers.Job
 
         /// <param name="jobPosting"></param>
         /// <returns></returns>
-        static public CloudTalentSolution.Job CreateGoogleJob(UpDiddyDbContext db, JobPosting jobPosting)
+        static public async Task<CloudTalentSolution.Job> CreateGoogleJob(IRepositoryWrapper repositoryWrapper, JobPosting jobPosting)
         {
             // Set default application instructions as required by Google
             CloudTalentSolution.ApplicationInfo applicationInfo = new CloudTalentSolution.ApplicationInfo()
@@ -469,7 +462,7 @@ namespace UpDiddyApi.Helpers.Job
             };
 
             // Create custom job posting attributes 
-            IDictionary<string, CloudTalentSolution.CustomAttribute> customAttributes = CreateGoogleJobCustomAttributes(db, jobPosting);
+            IDictionary<string, CloudTalentSolution.CustomAttribute> customAttributes = await CreateGoogleJobCustomAttributes(repositoryWrapper, jobPosting);
 
             // Set the jobs expire timestamp
             string ExpireTimestamp = Utils.GetTimestampAsString(jobPosting.PostingExpirationDateUTC);
@@ -534,6 +527,9 @@ namespace UpDiddyApi.Helpers.Job
 
         #region Helper functions 
 
+
+       
+
         static private long MapCustomLongAttribute(IDictionary<string, CloudTalentSolution.CustomAttribute> attributes, string attributeName)
         {
             long rVal = 0;
@@ -568,7 +564,7 @@ namespace UpDiddyApi.Helpers.Job
         /// </summary>
         /// <param name="jobPosting"></param>
         /// <returns></returns>
-        static private IDictionary<string, CloudTalentSolution.CustomAttribute> CreateGoogleJobCustomAttributes(UpDiddyDbContext db, JobPosting jobPosting)
+        static private async Task<IDictionary<string, CloudTalentSolution.CustomAttribute>> CreateGoogleJobCustomAttributes(IRepositoryWrapper repositoryWrapper, JobPosting jobPosting)
         {
 
             IDictionary<string, CloudTalentSolution.CustomAttribute> rVal = new Dictionary<string, CloudTalentSolution.CustomAttribute>();
@@ -700,7 +696,7 @@ namespace UpDiddyApi.Helpers.Job
             };
             rVal.Add("TelecommutePercentage", TelecommutePercentage);
 
-            var jobSkills = JobPostingFactory.GetPostingSkills(db, jobPosting);
+            var jobSkills = await JobPostingFactory.GetPostingSkills(repositoryWrapper, jobPosting);
             List<string> skillsList = new List<string>();
             foreach (JobPostingSkill jps in jobSkills)
             {
@@ -774,6 +770,8 @@ namespace UpDiddyApi.Helpers.Job
 
             return rVal;
         }
+        
+        
 
     }
 

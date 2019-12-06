@@ -82,7 +82,7 @@
          @if(!_readOnly)
          {
             <div class="col-12 pt-4 d-flex justify-content-center">
-               <p>Existing User? Click here to @Html.ActionLink("log in", "signin","session", new { redirectUri = "/traitify", rel = "nofollow"  })</p>
+               <p>Existing User? Click here to @Html.ActionLink("log in", "signin","session", new { returnUrl = "/traitify", rel = "nofollow"  })</p>
             </div>
          }
          @Html.HiddenFor(x => x.SubscriberGuid)

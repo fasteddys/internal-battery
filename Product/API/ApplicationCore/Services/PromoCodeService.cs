@@ -27,14 +27,14 @@ namespace UpDiddyApi.ApplicationCore.Services
         private ISysEmail _sysEmail;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private IHangfireService _hangfireService;
-        private readonly CloudTalent _cloudTalent = null;
+        private readonly ICloudTalentService _cloudTalentService;
         private readonly UpDiddyDbContext _db = null;
         private readonly ILogger _syslog;
         private readonly IHttpClientFactory _httpClientFactory = null;
         private readonly ICompanyService _companyService;
         private readonly ISubscriberService _subscriberService;
 
-        public PromoCodeService(IServiceProvider services, IHangfireService hangfireService)
+        public PromoCodeService(IServiceProvider services, IHangfireService hangfireService, ICloudTalentService cloudTalentService)
         {
             _services = services;
 
@@ -48,7 +48,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _companyService = services.GetService<ICompanyService>();
             _subscriberService = services.GetService<ISubscriberService>();
             _hangfireService = hangfireService;
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
+            _cloudTalentService = cloudTalentService;
         }
 
         /// <summary>

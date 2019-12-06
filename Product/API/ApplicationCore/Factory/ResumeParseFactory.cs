@@ -16,7 +16,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
     {
 
 
-        public static async Task<bool> ResolveProfileMerge(IRepositoryWrapper repositoryWrapper, UpDiddyDbContext db,  IMapper mapper, ILogger syslog, ResumeParse resumeParse, Subscriber subscriber, string mergeInfo)
+        public static async Task<bool> ResolveProfileMerge(IRepositoryWrapper repositoryWrapper, IMapper mapper, ILogger syslog, ResumeParse resumeParse, Subscriber subscriber, string mergeInfo)
         {
 
             string[] updates = mergeInfo.Split(',');
@@ -38,13 +38,61 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     {
                         resultGuidStr = updateType.Replace("rb_", string.Empty);
                         resumeParseResult = await repositoryWrapper.ResumeParseResultRepository.GetResumeParseResultByGuidAsync(Guid.Parse(resultGuidStr));
-                        await _resolveRadioQuestion(repositoryWrapper,  db, subscriber, resumeParseResult, updateData);
+                        await _resolveRadioQuestion(repositoryWrapper,  subscriber, resumeParseResult, updateData);
                     }
                     else if (updateType.StartsWith("chk_"))
                     {
                         resultGuidStr = updateType.Replace("chk_", string.Empty);
                         resumeParseResult = await repositoryWrapper.ResumeParseResultRepository.GetResumeParseResultByGuidAsync(Guid.Parse(resultGuidStr));
-                        await _resolveCheckQuestion(repositoryWrapper, db, subscriber, resumeParseResult, updateData);
+                        await _resolveCheckQuestion(repositoryWrapper, subscriber, resumeParseResult, updateData);
+
+                    }
+                }
+                catch
+                {
+                    syslog.Log(LogLevel.Information, $"***** ResumeParseFactory.ResolveProfileMerge error resolving parse merge for subscriber : {subscriber.SubscriberGuid} for resume parse  {resumeParse.ResumeParseGuid}");                
+                }    
+            }
+            // marked the subscriber as modified 
+            subscriber.ModifyDate = DateTime.UtcNow;
+            // mark all unmerged results as ResumeParseStatus.Declined since these items were check boxes questions that were left unchecked and not passed
+            // in the mergeInfo data since they did not httpPost on the front end.
+            await ResumeParseFactory.DeclineUnMergedParseResults(repositoryWrapper, resumeParse);
+            // mark the resume parse record as merged
+            resumeParse.ParseStatus = (int)ResumeParseStatus.MergeComplete;
+            resumeParse.RequiresMerge = 0;
+            resumeParse.ModifyDate = DateTime.UtcNow;
+            await repositoryWrapper.ResumeParseRepository.SaveAsync();
+            return true;
+        }
+
+        public static async Task<bool> ResolveProfileMerge(IRepositoryWrapper repositoryWrapper, IMapper mapper, ILogger syslog, ResumeParse resumeParse, Subscriber subscriber, List<string> mergeInfo)
+        {
+
+            foreach (string update in mergeInfo)
+            {
+                // wrap in try for fault tolerance
+                try
+                {
+                    if (update.Trim() == string.Empty)
+                        continue;
+
+                    string[] updateInfo = update.Split(';');
+                    string updateType = updateInfo[0];
+                    string updateData = updateInfo[1];
+                    string resultGuidStr = string.Empty;
+                    ResumeParseResult resumeParseResult = null;
+                    if (updateType.StartsWith("rb_"))
+                    {
+                        resultGuidStr = updateType.Replace("rb_", string.Empty);
+                        resumeParseResult = await repositoryWrapper.ResumeParseResultRepository.GetResumeParseResultByGuidAsync(Guid.Parse(resultGuidStr));
+                        await _resolveRadioQuestion(repositoryWrapper,  subscriber, resumeParseResult, updateData);
+                    }
+                    else if (updateType.StartsWith("chk_"))
+                    {
+                        resultGuidStr = updateType.Replace("chk_", string.Empty);
+                        resumeParseResult = await repositoryWrapper.ResumeParseResultRepository.GetResumeParseResultByGuidAsync(Guid.Parse(resultGuidStr));
+                        await _resolveCheckQuestion(repositoryWrapper, subscriber, resumeParseResult, updateData);
 
                     }
                 }
@@ -117,13 +165,13 @@ namespace UpDiddyApi.ApplicationCore.Factory
         #region private helper functions
 
         // todo - fix this - its ugggly!
-        private static async Task<bool> _resolveRadioQuestionReferenceProperty(IRepositoryWrapper repositoryWrapper, UpDiddyDbContext db, Subscriber subscriber, ResumeParseResult resumeParseResult, string info)
+        private static async Task<bool> _resolveRadioQuestionReferenceProperty(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, ResumeParseResult resumeParseResult, string info)
         {
             // short circult on existing 
             if ( info == "existing")
             {
                 resumeParseResult.ParseStatus = (int)ResumeParseStatus.Declined;
-                 await db.SaveChangesAsync();
+                await repositoryWrapper.SaveAsync();
                 return true;
             }
 
@@ -132,7 +180,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 switch (info)
                 {
                     case "parsed":
-                        State state = StateFactory.GetStateByStateCode(db, resumeParseResult.ParsedValue.Trim());
+                        State state = await StateFactory.GetStateByStateCode(repositoryWrapper, resumeParseResult.ParsedValue.Trim());
                         if (state != null)
                         {
                             subscriber.StateId = state.StateId;
@@ -152,8 +200,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
             else if (resumeParseResult.TargetTypeName == "SubscriberEducationHistory.EducationalDegreeId")
             {
-                SubscriberEducationHistory subscriberEducationHistory = SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(db, resumeParseResult.ExistingObjectGuid);
-                EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(db, resumeParseResult.ParsedValue.Trim());
+                SubscriberEducationHistory subscriberEducationHistory = await SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(repositoryWrapper, resumeParseResult.ExistingObjectGuid);
+                EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(repositoryWrapper, resumeParseResult.ParsedValue.Trim());
 
                 switch (info)
                 {
@@ -176,7 +224,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
                         break;
                     case "neither":  
-                        educationalDegree =  await EducationalDegreeFactory.GetOrAdd(db, Constants.NotSpecifedOption );
+                        educationalDegree =  await EducationalDegreeFactory.GetOrAdd(repositoryWrapper, Constants.NotSpecifedOption );
                         subscriberEducationHistory.EducationalDegreeId = educationalDegree.EducationalDegreeId;
                         resumeParseResult.ParseStatus = (int)ResumeParseStatus.Declined;
                         break;
@@ -185,12 +233,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
             else if (resumeParseResult.TargetTypeName == "SubscriberEducationHistory.EducationalDegreeTypeId")
             {
-                SubscriberEducationHistory subscriberEducationHistory = subscriberEducationHistory = SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(db, resumeParseResult.ExistingObjectGuid);
+                SubscriberEducationHistory subscriberEducationHistory = subscriberEducationHistory = await SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(repositoryWrapper, resumeParseResult.ExistingObjectGuid);
                 if (subscriberEducationHistory == null)
                 {
                     resumeParseResult.ParseStatus = (int)ResumeParseStatus.Error;
                     resumeParseResult.ProcessingMessage = $"Could not locate SubscriberEducationHistory with guid of {resumeParseResult.ExistingObjectGuid}";
-                    await db.SaveChangesAsync();
+                    await repositoryWrapper.SaveAsync();
                     return false;
                 }             
             
@@ -200,7 +248,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 {
                     case "parsed":
                        
-                       educationalDegreeType = EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(db, resumeParseResult.ParsedValue.Trim());
+                       educationalDegreeType = await EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(repositoryWrapper, resumeParseResult.ParsedValue.Trim());
                         if (educationalDegreeType != null )
                         {
                             subscriberEducationHistory.EducationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
@@ -220,7 +268,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
                         break;
                     case "neither":
-                        educationalDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(db, Constants.NotSpecifedOption);
+                        educationalDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(repositoryWrapper, Constants.NotSpecifedOption);
                         subscriberEducationHistory.EducationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
                         resumeParseResult.ParseStatus = (int)ResumeParseStatus.Declined;
                         break;
@@ -229,14 +277,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             }
 
-            int numUpdates = await db.SaveChangesAsync();
-
-
+            await repositoryWrapper.SaveAsync();
             return true;
         }
 
 
-         private static async Task<bool> _resolveRadioQuestion(IRepositoryWrapper repositoryWrapper, UpDiddyDbContext db, Subscriber subscriber, ResumeParseResult resumeParseResult, string info)
+         private static async Task<bool> _resolveRadioQuestion(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, ResumeParseResult resumeParseResult, string info)
         {
             try
             {
@@ -247,18 +293,18 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 // todo find better way for these referenced objects 
                 if (resumeParseResult.TargetTypeName.Contains('.' ) )
                 {
-                    return await _resolveRadioQuestionReferenceProperty(repositoryWrapper, db, subscriber, resumeParseResult, info);
+                    return await _resolveRadioQuestionReferenceProperty(repositoryWrapper, subscriber, resumeParseResult, info);
                 }
 
                 if (resumeParseResult.TargetTypeName == "SubscriberWorkHistory")
                 {
                     type = Type.GetType("UpDiddyApi.Models.SubscriberWorkHistory");
-                    obj = SubscriberWorkHistoryFactory.GetWorkHistoryByGuid(db, resumeParseResult.ExistingObjectGuid);
+                    obj = SubscriberWorkHistoryFactory.GetWorkHistoryByGuid(repositoryWrapper, resumeParseResult.ExistingObjectGuid);
                 }                    
                 else if (resumeParseResult.TargetTypeName == "SubscriberEducationHistory")
                 {
                     type = Type.GetType("UpDiddyApi.Models.SubscriberEducationHistory");
-                    obj = SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(db, resumeParseResult.ExistingObjectGuid);
+                    obj = SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(repositoryWrapper, resumeParseResult.ExistingObjectGuid);
                 }
                 
                 PropertyInfo propertyInfo = type.GetProperty(resumeParseResult.TargetProperty);
@@ -286,7 +332,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     }
 
                 }
-                int numUpdates = await db.SaveChangesAsync();
+                await repositoryWrapper.SaveAsync();
                 return true;
             }
             catch (Exception ex)
@@ -294,7 +340,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
                 resumeParseResult.ParseStatus = (int)ResumeParseStatus.Error;
                 resumeParseResult.ProcessingMessage = ex.Message;
-                await db.SaveChangesAsync();
+                await repositoryWrapper.SaveAsync();
 
                 return false;
             }
@@ -304,19 +350,18 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
 
 
-        private static async Task<bool> _resolveCheckQuestion(IRepositoryWrapper repositoryWrapper, UpDiddyDbContext db,  Subscriber subscriber, ResumeParseResult resumeParseResult, string info)
+        private static async Task<bool> _resolveCheckQuestion(IRepositoryWrapper repositoryWrapper,  Subscriber subscriber, ResumeParseResult resumeParseResult, string info)
         {
             try
             {
                
                 if ( resumeParseResult.TargetTypeName == "SubscriberSkill" )
                 {
-                    Skill skill = SkillFactory.GetOrAdd(db, info);
-                    SubscriberSkillFactory.AddSkillForSubscriber(db, subscriber, skill);
+                    Skill skill = await SkillFactory.GetOrAdd(repositoryWrapper, info);
+                    await SubscriberSkillFactory.AddSkillForSubscriber(repositoryWrapper, subscriber, skill);
                 }
                 resumeParseResult.ParseStatus = (int) ResumeParseStatus.Merged;
-                int numUpdates = await db.SaveChangesAsync();
-
+                await repositoryWrapper.SaveAsync();
                 return true;
             }
             catch ( Exception ex )
@@ -324,7 +369,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                  
                  resumeParseResult.ParseStatus = (int)ResumeParseStatus.Error;
                  resumeParseResult.ProcessingMessage = ex.Message;
-                 await db.SaveChangesAsync();
+                await repositoryWrapper.SaveAsync();
               
                 return false;
             }

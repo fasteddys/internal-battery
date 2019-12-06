@@ -12,7 +12,7 @@ using ButterCMS.Models;
 using UpDiddyLib.Helpers;
 using UpDiddyLib.Dto.Marketing;
 using System.Linq;
-
+using UpDiddyLib.Dto.User;
 
 namespace UpDiddy.Controllers
 {
@@ -115,21 +115,22 @@ namespace UpDiddy.Controllers
             try
             {
                 TraitifyDto traitifyDto = await _Api.GetTraitifyByAssessmentId(model.AssessmentId);
-                SignUpDto signUpDto = new SignUpDto
+                CreateUserDto createUserDto = new CreateUserDto()
                 {
-                    firstName = traitifyDto.FirstName,
-                    lastName = traitifyDto.LastName,
-                    email = model.Email,
-                    password = model.Password,
-                    traitifyAssessmentId = model.AssessmentId,
-                    referer = _configuration["Environment:BaseUrl"] + "traitify",
-                    verifyUrl = _configuration["Environment:BaseUrl"].TrimEnd('/') + "/email/confirm-verification/",
+                    Email = model.Email,
+                    Password = model.Password,
+                    FirstName = traitifyDto.FirstName,
+                    LastName = traitifyDto.LastName,
+                    PartnerGuid = model.PartnerGuid,
+                    ReferrerUrl = _configuration["Environment:BaseUrl"] + "traitify",
+                    IsGatedDownload = false
                 };
-                BasicResponseDto subscriberResponse = await _Api.ExpressUpdateSubscriberContactAsync(signUpDto);
+                BasicResponseDto subscriberResponse = await _Api.CreateUserAsync(createUserDto);
                 switch (subscriberResponse.StatusCode)
                 {
-
                     case 200:
+                        var subscriberGuid = Guid.Parse(subscriberResponse.Data.subscriberGuid.ToString());
+                        _Api.AssociateSubscriberWithAssessment(traitifyDto.AssessmentId, subscriberGuid);
                         return Ok(new BasicResponseDto
                         {
                             StatusCode = subscriberResponse.StatusCode,
@@ -212,6 +213,9 @@ namespace UpDiddy.Controllers
             model.SignupHeroContent = landingPage.Data.Fields.SignupHeroContent;
             model.SignupHeroTitle = landingPage.Data.Fields.SignupHeroTitle;
             model.ResultFooterText = landingPage.Data.Fields.ResultFooterText;
+            Guid partnerGuid;
+            if (Guid.TryParse(landingPage.Data.Fields.Partner.Guid, out partnerGuid))
+                model.PartnerGuid = partnerGuid;
             return model;
         }
 

@@ -24,7 +24,6 @@ namespace UpDiddyApi.Controllers
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly ILogger _syslog;
-        private IB2CGraph _graphClient;
         private IAuthorizationService _authorizationService;
         private ICloudStorage _cloudStorage;
 
@@ -33,7 +32,6 @@ namespace UpDiddyApi.Controllers
             IConfiguration configuration,
             ILogger<SubscriberController> sysLog,
             IDistributedCache distributedCache,
-            IB2CGraph client,
             ICloudStorage cloudStorage,
             IAuthorizationService authorizationService)
         {
@@ -41,7 +39,6 @@ namespace UpDiddyApi.Controllers
             _mapper = mapper;
             _configuration = configuration;
             _syslog = sysLog;
-            _graphClient = client;
             _cloudStorage = cloudStorage;
             _authorizationService = authorizationService;
         }
@@ -168,5 +165,10 @@ namespace UpDiddyApi.Controllers
                 return Unauthorized();
             }
         }
+
+
+        
+
+
     }
 }

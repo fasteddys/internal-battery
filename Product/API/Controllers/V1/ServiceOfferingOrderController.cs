@@ -60,14 +60,14 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]")]
         public IActionResult CreateOrder( [FromBody] ServiceOfferingTransactionDto serviceOfferingTransactionDto)
         {
-            Guid subscriberGuid = Guid.Empty;
-                       
-            // check to see if the request is authenticated if so get the guid of the subscriber that is logged in
-            if (HttpContext.User.FindFirst(ClaimTypes.NameIdentifier) != null )
-                subscriberGuid =  Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            Guid subscriberGuid = Guid.Empty;                       
 
             string Msg = "Order processed";
             int statusCode = 200;
+            if (serviceOfferingTransactionDto?.CreateUserDto?.SubscriberGuid != null && serviceOfferingTransactionDto?.CreateUserDto?.SubscriberGuid != Guid.Empty)
+                subscriberGuid = serviceOfferingTransactionDto.CreateUserDto.SubscriberGuid;
+            else if (serviceOfferingTransactionDto?.ServiceOfferingOrderDto?.Subscriber?.SubscriberGuid != null && serviceOfferingTransactionDto?.ServiceOfferingOrderDto?.Subscriber?.SubscriberGuid != Guid.Empty)
+                subscriberGuid = serviceOfferingTransactionDto.ServiceOfferingOrderDto.Subscriber.SubscriberGuid.Value;
             _serviceOfferingOrderService.ProcessOrder(serviceOfferingTransactionDto, subscriberGuid, ref statusCode, ref Msg);
             return Ok(new BasicResponseDto() { StatusCode = statusCode, Description = Msg });
 		

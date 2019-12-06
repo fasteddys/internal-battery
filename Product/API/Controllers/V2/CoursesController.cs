@@ -1,34 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Models;
-using UpDiddyLib.Dto;
-using UpDiddyLib.MessageQueue;
-using Microsoft.EntityFrameworkCore;
 using UpDiddyApi.ApplicationCore;
 using UpDiddyLib.Helpers;
 using System.Net.Http;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
-using System.Security.Claims;
-using Hangfire;
-using UpDiddyApi.Workflow;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
-
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 namespace UpDiddyApi.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class CoursesController : ControllerBase
+    [Route("/V2/[controller]/")]
+    public class CoursesController : BaseApiController
     {
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
@@ -42,9 +32,20 @@ namespace UpDiddyApi.Controllers
         private readonly IHangfireService _hangfireService;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly ICourseService _courseService;
+        private readonly ICourseFavoriteService _courseFavoriteService;
 
 
-        public CoursesController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, ILogger<CourseController> syslog, IDistributedCache distributedCache, IHangfireService hangfireService, IRepositoryWrapper repositoryWrapper, ICourseService courseService)
+        public CoursesController(UpDiddyDbContext db
+        , IMapper mapper
+        , IConfiguration configuration
+        , ISysEmail sysemail
+        , IHttpClientFactory httpClientFactory
+        , ILogger<CourseController> syslog
+        , IDistributedCache distributedCache
+        , IHangfireService hangfireService
+        , IRepositoryWrapper repositoryWrapper
+        , ICourseService courseService
+        , ICourseFavoriteService courseFavoriteService)
         {
             _db = db;
             _mapper = mapper;
@@ -57,36 +58,81 @@ namespace UpDiddyApi.Controllers
             _distributedCache = distributedCache;
             _repositoryWrapper = repositoryWrapper;
             _courseService = courseService;
+            _courseFavoriteService = courseFavoriteService;
         }
 
-
-
         [HttpGet]
-        [Route("/V2/[controller]/random")]
+        [Route("random")]
         public async Task<IActionResult> Random(Guid JobGuid)
         {
             return Ok(await _courseService.GetCoursesRandom(Request.Query));
         }
 
-
-
         [HttpGet]
-        [Route("/V2/[controller]/job/{JobGuid}/related")]
+        [Route("job/{JobGuid:guid}/related")]
         public async Task<IActionResult> Search(Guid JobGuid)
         {
-            return Ok(await _courseService.GetCoursesForJob(JobGuid,Request.Query)  );
+            return Ok(await _courseService.GetCoursesForJob(JobGuid, Request.Query));
         }
-
-
 
         [HttpPost]
-        [Route("/V2/[controller]/skill/related")]
-        public async Task<IActionResult> SearchBySkills([FromBody] Dictionary<string,int> SkillHistogram)
-        {       
-           return Ok(await _courseService.GetCoursesBySkillHistogram(SkillHistogram, Request.Query));
+        [Route("skill/related")]
+        public async Task<IActionResult> SearchBySkills([FromBody] Dictionary<string, int> SkillHistogram)
+        {
+            return Ok(await _courseService.GetCoursesBySkillHistogram(SkillHistogram, Request.Query));
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetCourses(int limit, int offset, string sort, string order)
+        {
+            var courses = await _courseService.GetCourses(limit, offset, sort, order);
+            return Ok(courses);
+        }
 
+        [HttpGet]
+        [Route("{course:guid}")]
+        public async Task<IActionResult> GetCourse(Guid course)
+        {
+            var courses = await _courseService.GetCourse(course);
+            return Ok(courses);
+        }
 
+        [HttpGet]
+        [Route("favorites")]
+        [Authorize]
+        public async Task<IActionResult> GetFavoriteCourses(int limit, int offset, string sort, string order)
+        {
+            var isFavorite = await _courseFavoriteService.GetFavoriteCourses(GetSubscriberGuid(), limit, offset, sort, order);
+            return Ok(isFavorite);
+        }
+
+        [HttpGet]
+        [Route("{course}/favorites")]
+        [Authorize]
+        public async Task<IActionResult> IsCourseAddedToFavorite(Guid course)
+        {
+            var isFavorite = await _courseFavoriteService.IsCourseAddedToFavorite(GetSubscriberGuid(), course);
+            return Ok(isFavorite);
+        }
+
+        [HttpPost]
+        [Route("{course:guid}/favorites")]
+        [Authorize]
+
+        public async Task<IActionResult> AddCourseFavorite(Guid course)
+        {
+            await _courseFavoriteService.AddToFavorite(GetSubscriberGuid(), course);
+            return StatusCode(201);
+        }
+
+        [HttpDelete]
+        [Route("{course:guid}/favorites")]
+        [Authorize]
+
+        public async Task<IActionResult> RemoveCourseFavorite(Guid course)
+        {
+            await _courseFavoriteService.RemoveFromFavorite(GetSubscriberGuid(), course);
+            return StatusCode(204);
+        }
     }
 }

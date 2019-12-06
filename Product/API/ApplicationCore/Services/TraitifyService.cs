@@ -159,16 +159,17 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _repositoryWrapper.TraitifyRepository.SaveAsync();
         }
 
-        public async Task CompleteSignup(string assessmentId, string email,  int subscriberId)
+        public async Task CompleteSignup(string assessmentId, Guid subscriberGuid)
         {
-            UpDiddyApi.Models.Traitify traitify = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(assessmentId);
-            traitify.SubscriberId = subscriberId;
+            var subscriber = _repositoryWrapper.SubscriberRepository.GetSubscriberByGuid(subscriberGuid);
+            UpDiddyApi.Models.Traitify traitify = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(assessmentId);            
+            traitify.SubscriberId = subscriber.SubscriberId;
             traitify.ModifyDate = DateTime.UtcNow;
-            traitify.Email = email;
+            traitify.Email = subscriber.Email;
             await _repositoryWrapper.TraitifyRepository.SaveAsync();
             Models.Action action = await _repositoryWrapper.ActionRepository.GetByNameAsync(UpDiddyLib.Helpers.Constants.Action.TraitifyAccountCreation);
             EntityType entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync(EntityTypeConst.TraitifyAssessment);
-            await _trackingService.TrackSubscriberAction(subscriberId, action, entityType, traitify.Id);
+            await _trackingService.TrackSubscriberAction(subscriber.SubscriberId, action, entityType, traitify.Id);
             await SendCompletionEmail(assessmentId, traitify.Email);
         }
 

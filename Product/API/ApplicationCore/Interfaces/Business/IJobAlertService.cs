@@ -6,8 +6,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface IJobAlertService
     {
-        Task CreateJobAlert(Guid subscriberGuid, JobAlertDto JobAlertDto);
+        Task CreateJobAlert(Guid subscriberGuid, JobAlertDto jobAlertDto);
         Task<List<JobAlertDto>> GetJobAlert(Guid subscriberGuid);
-      //  Task DeleteJobAlert(Guid jobAlertGuid);
+        Task UpdateJobAlert(Guid subscriberGuid, Guid jobAlertGuid, JobAlertDto jobAlertDto);
+        Task DeleteJobAlert(Guid subscriberGuid, Guid jobAlertGuid);
     }
 }

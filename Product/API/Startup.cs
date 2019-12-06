@@ -14,7 +14,6 @@ using UpDiddyApi.Workflow;
 using Hangfire.SqlServer;
 using System;
 using UpDiddyLib.Helpers;
-using System.Net.Http;
 using UpDiddyLib.Shared;
 using Microsoft.ApplicationInsights.SnapshotCollector;
 using Microsoft.Extensions.Options;
@@ -38,7 +37,9 @@ using UpDiddyApi.ApplicationCore.Repository;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore.StaticFiles;
 using UpDiddyApi.ApplicationCore.Services.CourseCrawling;
-
+using UpDiddyApi.ApplicationCore.Services.Identity.Interfaces;
+using UpDiddyApi.ApplicationCore.Services.Identity;
+using UpDiddyApi.ApplicationCore.ActionFilter;
 namespace UpDiddyApi
 {
     public class Startup
@@ -99,31 +100,28 @@ namespace UpDiddyApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<Serilog.ILogger>(Logger);
 
+            string domain = $"https://{Configuration["Auth0:Domain"]}/";
+            services.AddSingleton<Serilog.ILogger>(Logger);
             services.AddAuthentication(options =>
             {
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-            .AddJwtBearer(jwtOptions =>
+            .AddJwtBearer(options =>
             {
-                jwtOptions.Authority = $"https://login.microsoftonline.com/tfp/{Configuration["AzureAdB2C:Tenant"]}/{Configuration["AzureAdB2C:Policy"]}/v2.0/";
-                jwtOptions.Audience = Configuration["AzureAdB2C:ClientId"];
-                jwtOptions.Events = new JwtBearerEvents
-                {
-                    OnAuthenticationFailed = AuthenticationFailed
-                };
+                options.Authority = domain;
+                options.Audience = Configuration["Auth0:ApiIdentifier"];
             })
             .AddAPIGatewayAuth(options => { });
-
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("IsRecruiterPolicy", policy => policy.AddRequirements(new GroupRequirement(new string[] { "Recruiter" })));
-                options.AddPolicy("IsCareerCircleAdmin", policy => policy.AddRequirements(new GroupRequirement(new string[] { "Career Circle Administrator" })));
-                options.AddPolicy("IsUserAdmin", policy => policy.AddRequirements(new GroupRequirement(new string[] { "Career Circle User Admin" })));
-                options.AddPolicy("IsRecruiterOrAdmin", policy => policy.AddRequirements(new GroupRequirement(new string[] { "Recruiter", "Career Circle Administrator" })));
+                options.AddPolicy("IsRecruiterPolicy", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Recruiter" }, domain)));
+                options.AddPolicy("IsCareerCircleAdmin", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Career Circle Administrator" }, domain)));
+                options.AddPolicy("IsRecruiterOrAdmin", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Recruiter", "Career Circle Administrator" }, domain)));
             });
-            services.AddSingleton<IAuthorizationHandler, GroupAuthorizationHandler>();
+
+            services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
 
             // Get the connection string from the Azure secret vault
             var SqlConnection = Configuration["CareerCircleSqlConnection"];
@@ -143,7 +141,6 @@ namespace UpDiddyApi
                        .AllowAnyMethod()
                        .AllowAnyHeader();
             }));
-
             //configure MimeTypeService
             var provider = new FileExtensionContentTypeProvider();
             services.AddSingleton<IMimeMappingService>(new MimeMappingService(provider));
@@ -200,7 +197,7 @@ namespace UpDiddyApi
 
             // remove TinyIds from old CampaignPartnerContact records
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DeactivateCampaignPartnerContacts(), Cron.Daily());
-           
+
             if (_currentEnvironment.IsProduction())
             {
                 // run the job crawl in production Monday through Friday once per day at 15:00 UTC
@@ -212,7 +209,7 @@ namespace UpDiddyApi
             {
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.Weekly(DayOfWeek.Sunday, 4));
             }
-            
+
             // LOCAL TESTING ONLY - DO NOT UNCOMMENT THIS CODE!
             // BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
 
@@ -249,8 +246,10 @@ namespace UpDiddyApi
 
             services.AddTransient<IB2CGraph, B2CGraphClient>();
             services.AddHttpClient<IB2CGraph, B2CGraphClient>();
-
+            services.AddScoped<IProfileService, ProfileService>();
             services.AddScoped<ISubscriberService, SubscriberService>();
+            services.AddScoped<ISubscriberEducationalHistoryService, SubscriberEducationalHistoryService>();
+            services.AddScoped<ISubscriberWorkHistoryService, SubscriberWorkHistoryService>();
             services.AddScoped<IReportingService, ReportingService>();
             services.AddScoped<IJobService, JobService>();
             services.AddScoped<ITrackingService, TrackingService>();
@@ -261,7 +260,7 @@ namespace UpDiddyApi
             services.AddScoped<IServiceOfferingOrderService, ServiceOfferingOrderService>();
             services.AddScoped<IPromoCodeService, PromoCodeService>();
             services.AddScoped<IBraintreeService, BraintreeService>();
-
+            services.AddScoped<IUserService, UserService>();
             services.AddScoped<ICourseService, CourseService>();
             services.AddScoped<ICompanyService, CompanyService>();
             services.AddScoped<IRecruiterService, RecruiterService>();
@@ -271,8 +270,34 @@ namespace UpDiddyApi
             services.AddScoped<IHangfireService, HangfireService>();
             services.AddScoped<IMemoryCacheService, MemoryCacheService>();
             services.AddScoped<IServiceOfferingPromoCodeRedemptionService, ServiceOfferingPromoCodeRedemptionService>();
+            services.AddScoped<IJobFavoriteService, JobFavoriteService>();
+            services.AddScoped<IJobSearchService, JobSearchService>();
+            services.AddScoped<ICloudTalentService, CloudTalentService>();
+            services.AddScoped<ISkillService, SkillService>();
             services.AddScoped<IFileDownloadTrackerService, FileDownloadTrackerService>();
             services.AddScoped<IJobAlertService, JobAlertService>();
+            services.AddScoped<IResumeService, ResumeService>();
+            services.AddScoped<IKeywordService, KeywordService>();
+            services.AddScoped<ICountryService, CountryService>();
+            services.AddScoped<IStateService, StateService>();
+            services.AddScoped<IEmploymentTypeService, EmploymentTypeService>();
+            services.AddScoped<IExperienceLevelService, ExperienceLevelService>();
+            services.AddScoped<ICompensationTypeService, CompensationTypeService>();
+            services.AddScoped<ISecurityClearanceService, SecurityClearanceService>();
+            services.AddScoped<IContactService, ContactService>();
+            services.AddScoped<ICourseFavoriteService, CourseFavoriteService>();
+            services.AddScoped<IAvatarService, AvatarService>();
+            services.AddScoped<ITraitifyServiceV2,TraitifyServiceV2>();
+            services.AddScoped<ActionFilter>();
+            services.AddScoped<ITalentService, TalentService>();
+            services.AddScoped<ITalentFavoriteService, TalentFavoriteService>();
+            services.AddScoped<ITalentNoteService, TalentNoteService>();
+            services.AddScoped<IButterCMSService, ButterCMSService>();
+            services.AddScoped<IPasswordResetRequestService, PasswordResetRequestService>();
+            services.AddScoped<ITopicService, TopicService>();
+
+
+
             #endregion
 
             // Configure SnapshotCollector from application settings
@@ -308,7 +333,7 @@ namespace UpDiddyApi
 
             ScopeRead = Configuration["AzureAdB2C:ScopeRead"];
             ScopeWrite = Configuration["AzureAdB2C:ScopeWrite"];
-
+            app.UseExceptionMiddleware();
             app.UseAuthentication();
 
             app.UseCors("Cors");
@@ -333,6 +358,8 @@ namespace UpDiddyApi
                 routes.Filter().OrderBy().Count();
                 routes.EnableDependencyInjection();
             });
+
+
 
             // Added for SignalR
             app.UseSignalR(routes =>

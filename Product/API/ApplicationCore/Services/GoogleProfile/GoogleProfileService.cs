@@ -11,20 +11,18 @@ using UpDiddyApi.Helpers.GoogleProfile;
 using System.Net;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
-
+using Microsoft.Extensions.Configuration;
 namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
 {
     public class GoogleProfileService : BusinessVendorBase, IGoogleProfileService
     {
-     
+
         #region Class
 
 
-        public GoogleProfileService(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger sysLog, IHttpClientFactory httpClientFactory)
+        public GoogleProfileService(IConfiguration configuration, ILogger sysLog, IHttpClientFactory httpClientFactory)
         {
-            _db = context;
-            _mapper = mapper;
-            _apiBaseUri = configuration["CloudTalent:ProfileBaseUrl"]; 
+            _apiBaseUri = configuration["CloudTalent:ProfileBaseUrl"];
             _syslog = sysLog;
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
@@ -40,7 +38,6 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
             BasicResponseDto Rval = null;
             try
             {
-            
                 string ResponseJson = string.Empty;
                 ExecuteProfileApiGet("tenant", ref ResponseJson);
                 Rval = Newtonsoft.Json.JsonConvert.DeserializeObject<BasicResponseDto>(ResponseJson);
@@ -112,14 +109,14 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
             catch (Exception e)
             {
                 _syslog.Log(LogLevel.Error, $"GoogleProfileInterface error: {e.Message} while adding google profile for {googleCloudProfile.externalId}", googleCloudProfile);
-                errorMsg = e.Message; 
+                errorMsg = e.Message;
             }
             return Rval;
         }
 
 
 
-        public bool UpdateProfile(GoogleCloudProfile googleCloudProfile, ref string  errorMsg)
+        public bool UpdateProfile(GoogleCloudProfile googleCloudProfile, ref string errorMsg)
         {
             bool Rval = true;
             try
@@ -132,11 +129,12 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
                 });
                 string ResponseJson = string.Empty;
                 ExecuteProfileApiPut("profile", Json, ref ResponseJson);
-                var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<BasicResponseDto>(ResponseJson);                
+                var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<BasicResponseDto>(ResponseJson);
                 if (ResponseObject.StatusCode != 200)
-                    throw new Exception(ResponseObject.Description); 
+                    throw new Exception(ResponseObject.Description);
             }
-            catch (Exception e) {
+            catch (Exception e)
+            {
                 _syslog.Log(LogLevel.Error, $"GoogleProfileInterface error updating google profile for {googleCloudProfile.externalId}", googleCloudProfile);
                 errorMsg = e.Message;
                 Rval = false;
@@ -149,9 +147,9 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
             BasicResponseDto Rval = null;
             try
             {
-                string ResponseJson = string.Empty;         
+                string ResponseJson = string.Empty;
                 string encodedUri = WebUtility.UrlEncode(profileUri);
-                ExecuteProfileApiGet($"profile\\{encodedUri}",  ref ResponseJson);
+                ExecuteProfileApiGet($"profile\\{encodedUri}", ref ResponseJson);
                 Rval = Newtonsoft.Json.JsonConvert.DeserializeObject<BasicResponseDto>(ResponseJson);
                 if (Rval.StatusCode != 200)
                     throw new Exception(Rval.Description);
@@ -178,7 +176,7 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Error, $"GoogleProfileInterface error deleting google profile for {profileUri}", profileUri);
+                _syslog.Log(LogLevel.Error, $"GoogleProfileInterface error deleting google profile for {profileUri} Exception = {e.Message}", profileUri);
                 errorMsg = e.Message;
             }
             return Rval;
