@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
+using UpDiddyLib.Domain.Models;
 namespace UpDiddyApi.Helpers.Job
 {
     public class JobUrlHelper
@@ -255,31 +256,23 @@ namespace UpDiddyApi.Helpers.Job
             return WebUtility.UrlEncode(facetInfo.Trim().ToLower());
         }
 
-        public static async Task AssignCompanyLogoUrlToJobsList<T>(List<T> jobs, IConfiguration config, ICompanyService companyService) where T : class
+        public static async Task AssignCompanyLogoUrlToJobsList<T>(List<T> jobs, IConfiguration config, ICompanyService companyService) where T : JobBaseDto
         {
             foreach (var job in jobs)
             {
-                await AssignCompanyLogoUrlToJob(job, config, companyService);
+                await SetJobCompanyLogoUrl(job, config, companyService);
             }
         }
 
-        public static async Task AssignCompanyLogoUrlToJob<T>(T job, IConfiguration config, ICompanyService companyService) where T : class
+        public static async Task AssignCompanyLogoUrlToJob(JobBaseDto job, IConfiguration config, ICompanyService companyService)
         {
-            Type t = job.GetType();
-            PropertyInfo companyNameProp = t.GetProperty("CompanyName");
-            if (companyNameProp != null)
-            {
-                string companyName = (string)companyNameProp.GetValue(job);
-                var company = await companyService.GetByCompanyName(companyName);
-                if (!string.IsNullOrWhiteSpace(company?.LogoUrl))
-                {
-                    PropertyInfo logoUrlProperty = t.GetProperty("CompanyLogoUrl");
-                    if (logoUrlProperty != null)
-                    {
-                        logoUrlProperty.SetValue(job, SetCompanyLogoUrl(company.LogoUrl, config));
-                    }
-                }
-            }
+            await SetJobCompanyLogoUrl(job, config, companyService);
+        }
+
+        public static async Task SetJobCompanyLogoUrl(JobBaseDto job, IConfiguration config, ICompanyService companyService)
+        {
+            var company = await companyService.GetByCompanyName(job.CompanyName);
+            job.CompanyLogoUrl = SetCompanyLogoUrl(company.LogoUrl, config);
         }
 
         public static string SetCompanyLogoUrl(string logoUrl, IConfiguration config)

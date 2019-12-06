@@ -8,6 +8,7 @@ using UpDiddyLib.Domain.Models;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Helpers;
+using UpDiddyLib.Dto;
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class TopicService : ITopicService
@@ -26,21 +27,31 @@ namespace UpDiddyApi.ApplicationCore.Services
             _configuration = configuration;
         }
 
-        public async Task<List<UpDiddyLib.Domain.Models.TopicDto>> GetTopics()
+        public async Task<List<UpDiddyLib.Domain.Models.TopicDto>> GetTopics(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var careerPaths = await _repositoryWrapper.Topic.GetByConditionAsync(x => x.IsDeleted == 0);
+            var careerPaths = await _repositoryWrapper.Topic.GetByConditionWithSorting(x => x.IsDeleted == 0, limit, offset, sort, order);
             return _mapper.Map<List<UpDiddyLib.Domain.Models.TopicDto>>(careerPaths);
         }
 
-        public async Task<List<TopicCourseDto>> GetTopicCourses(Guid topicGuid)
+        public async Task<UpDiddyLib.Domain.Models.TopicDto> GetTopic(Guid topicGuid)
+        {
+            if (topicGuid == null || topicGuid == Guid.Empty)
+                throw new NullReferenceException("TopicGuid cannot be null");
+            var careerPath = await _repositoryWrapper.Topic.GetByGuid(topicGuid);
+            if(careerPath == null)
+                throw new NotFoundException("Topic does not exist");
+            return _mapper.Map<UpDiddyLib.Domain.Models.TopicDto>(careerPath);
+        }
+
+        public async Task<List<CourseDetailDto>> GetTopicCourses(Guid topicGuid)
         {
             if (topicGuid == null || topicGuid == Guid.Empty)
                 throw new NullReferenceException("TopicGuid cannot be null");
             var courses = await _repositoryWrapper.Course.GetCoursesByTopicGuid(topicGuid);
             if (courses == null)
-                throw new NotFoundException("TopicGuid not found");
-            var coursesDto = _mapper.Map<List<TopicCourseDto>>(courses);
-            CourseUrlHelper.AssignVendorLogoUrlToCourse(coursesDto,_configuration);
+                throw new NotFoundException("Courses does not exist");
+            var coursesDto = _mapper.Map<List<CourseDetailDto>>(courses);
+            CourseUrlHelper.SetVendorAndThumbnailUrl(coursesDto,_configuration);
             return coursesDto;
         }
 

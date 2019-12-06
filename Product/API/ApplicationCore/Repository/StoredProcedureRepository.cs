@@ -8,6 +8,8 @@ using UpDiddyApi.Models;
 using System.Data;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.User;
+using UpDiddyLib.Domain.Models;
+
 namespace UpDiddyApi.ApplicationCore.Repository
 {
     public class StoredProcedureRepository : IStoredProcedureRepository

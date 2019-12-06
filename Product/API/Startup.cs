@@ -295,9 +295,7 @@ namespace UpDiddyApi
             services.AddScoped<IButterCMSService, ButterCMSService>();
             services.AddScoped<IPasswordResetRequestService, PasswordResetRequestService>();
             services.AddScoped<ITopicService, TopicService>();
-
-
-
+            services.AddScoped<ICourseLevelService, CourseLevelService>();
             #endregion
 
             // Configure SnapshotCollector from application settings

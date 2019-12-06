@@ -10,9 +10,10 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
-using UpDiddyLib.Dto;
+using UpDiddyLib.Domain.Models;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.Helpers;
+using UpDiddyLib.Dto;
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class CourseService : ICourseService
@@ -38,7 +39,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (limit != null)
                 int.TryParse(limit, out MaxResults);
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesRandom(MaxResults);
-            CourseUrlHelper.AssignVendorLogoUrlToCourse(courses,_config);
+            CourseUrlHelper.SetVendorAndThumbnailUrl(courses,_config);
             return courses;
         }
 
@@ -52,7 +53,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (limit != null)
                 int.TryParse(limit, out MaxResults);
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesForJob(jobGuid, MaxResults);
-            CourseUrlHelper.AssignVendorLogoUrlToCourse(courses,_config);
+            CourseUrlHelper.SetVendorAndThumbnailUrl(courses,_config);
             return courses;
         }
 
@@ -62,7 +63,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCourses(limit, offset, sort, order);
             if (courses == null)
                 throw new NotFoundException("Courses not found");
-            CourseUrlHelper.AssignVendorLogoUrlToCourse(courses,_config);
+            CourseUrlHelper.SetVendorAndThumbnailUrl(courses,_config);
             return (courses);
         }
 
@@ -73,11 +74,14 @@ namespace UpDiddyApi.ApplicationCore.Services
             var course = await _repositoryWrapper.StoredProcedureRepository.GetCourse(courseGuid);
             if (course == null)
                 throw new NotFoundException("Courses not found");
-            CourseUrlHelper.AssignVendorLogoUrlToCourse(course,_config);
+            CourseUrlHelper.SetVendorAndThumbnailUrl(course,_config);
             return (course);
         }
 
-
+        public async Task<int> GetCoursesCount()
+        {
+            return await _repositoryWrapper.Course.GetCoursesCount();
+        }
 
         public async Task<List<CourseDetailDto>> GetCoursesBySkillHistogram(Dictionary<string, int> SkillHistogram, IQueryCollection query)
         {
@@ -88,13 +92,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (limit != null)
                 int.TryParse(limit, out MaxResults);
             var courses = await  _repositoryWrapper.StoredProcedureRepository.GetCoursesBySkillHistogram(SkillHistogram, MaxResults);
-            CourseUrlHelper.AssignVendorLogoUrlToCourse(courses,_config);
+            CourseUrlHelper.SetVendorAndThumbnailUrl(courses,_config);
             return courses;
         }
-
-
-
-
 
         /// <summary>
         /// Handles the creation of a course. 
@@ -186,7 +186,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             });
         }
 
-
         #region Private Members
 
         /// <summary>
@@ -254,7 +253,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// </summary>
         /// <param name="skills"></param>
         /// <returns>A list of skill identifiers to be associated with the course being created/updated.</returns>
-        private async Task<List<Guid>> GetSkillGuidsAsync(List<SkillDto> skills)
+        private async Task<List<Guid>> GetSkillGuidsAsync(List<UpDiddyLib.Dto.SkillDto> skills)
         {
             List<Guid> skillGuids = new List<Guid>();
             // lookup skills

@@ -244,6 +244,48 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
         #endregion
+
+        #region CareerPath
+
+        public async Task<TopicDto> GetSubscriberCareerPath(Guid subscriberGuid)
+        {
+            var subscriber = await _repository.SubscriberRepository.GetByGuid(subscriberGuid);
+            if (subscriber == null)
+                throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
+            TopicDto dto = null;
+            if (subscriber.TopicId != null)
+            {
+                var topic = await _repository.Topic.GetById(subscriber.TopicId.Value);
+                if (topic != null)
+                {
+                    dto = _mapper.Map<TopicDto>(topic);
+                }
+                else
+                {
+                    throw new NotFoundException($"Topic does not exist");
+                }
+            }
+            else
+            {
+                throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not have a selected career path");
+            }
+            return dto;
+        }
+
+        public async Task UpdateSubscriberCareerPath(Guid topicGuid, Guid subscriberGuid)
+        {
+            var subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
+            if (subscriber == null)
+                throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
+            var topic = await _repository.Topic.GetByGuid(topicGuid);
+            if (topic == null)
+                throw new NotFoundException($"Topic does not exist exist");
+            subscriber.Topic = topic;
+            subscriber.TopicId = topic.TopicId;
+            await _repository.SaveAsync();
+        }
+
+        #endregion
     }
 
 }
