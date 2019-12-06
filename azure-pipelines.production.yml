@@ -21,7 +21,6 @@ trigger:
       - Product/API/*
       - Product/CCProfileService/*
 
-
 # disable CI builds for pull requests for now
 pr: none
 
@@ -29,7 +28,6 @@ steps:
 - script: |
     dotnet restore Product/WebApp
   displayName: Restore NuGet Packages
-
 
 - task: UseNode@1
   inputs:
