@@ -26,6 +26,14 @@ trigger:
 pr: none
 
 steps:
+# dotnet core 2.2.x
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '2.2.x'
+  displayName: Specify dotnet core 2.2.x sdk
+
+steps:
 - script: |
     dotnet restore Product/WebApp
   displayName: Restore NuGet Packages
