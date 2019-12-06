@@ -35,7 +35,6 @@ namespace UpDiddyLib.Domain.Models
 
         public DateTime ApplicationDeadlineUTC { get; set; }
 
-        public string CompanyName { get; set; }
         public string Description { get; set; }
 
         public string ExperienceLevel { get; set; }
