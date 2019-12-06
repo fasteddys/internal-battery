@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace UpDiddyLib.Domain
+namespace UpDiddyLib.Domain.Models
 {
     public class TalentFavoriteDto
     {

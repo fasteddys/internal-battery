@@ -137,9 +137,18 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet]
         [Route("search/keyword")]
-        public async Task<IActionResult> GetKeywordSearchTerms()
+        public async Task<IActionResult> GetKeywordSearchTerms(string value)
+        {            
+            var rVal = await _keywordService.GetKeywordSearchTerms(value);
+            return Ok(rVal);
+        }
+
+
+        [HttpGet]
+        [Route("search/location")]
+        public async Task<IActionResult> GetLocationSearchTerms(string value)
         {
-            var rVal = await _keywordService.GetKeywordSearchTerms();
+            var rVal = await _keywordService.GetLocationSearchTerms(value);
             return Ok(rVal);
         }
 
