@@ -78,7 +78,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             return (course);
         }
 
-
+        public async Task<int> GetCoursesCount()
+        {
+            return await _repositoryWrapper.Course.GetCoursesCount();
+        }
 
         public async Task<List<CourseDetailDto>> GetCoursesBySkillHistogram(Dictionary<string, int> SkillHistogram, IQueryCollection query)
         {
@@ -92,10 +95,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             CourseUrlHelper.SetVendorAndThumbnailUrl(courses,_config);
             return courses;
         }
-
-
-
-
 
         /// <summary>
         /// Handles the creation of a course. 
@@ -186,7 +185,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                 TagGuids = tagGuids
             });
         }
-
 
         #region Private Members
 
