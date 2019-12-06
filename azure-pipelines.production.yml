@@ -3,7 +3,7 @@
 # build name format
 name: rc.webapp.$(date:yyyyMMdd)$(rev:.r)
 pool:
-  vmImage: 'ubuntu-16.04'
+  vmImage: 'ubuntu-latest'
 
 variables:
   buildConfiguration: 'Release'
@@ -30,6 +30,7 @@ steps:
     dotnet restore Product/WebApp
   displayName: Restore NuGet Packages
 
+
 - task: UseNode@1
   inputs:
     version: '10.12.0'
@@ -50,6 +51,12 @@ steps:
 - script: |
     npm run gulp compile
   displayName: Compile sass, javascript and copy fonts
+  workingDirectory: Product/WebApp
+
+# run webpack for react (see package.json scripts.build)
+- script: |
+    npm run build
+  displayName: Build js bundle (react)
   workingDirectory: Product/WebApp
 
 - script: |
