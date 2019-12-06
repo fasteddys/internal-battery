@@ -7,7 +7,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface ITopicService
     {
-        Task<List<TopicDto>> GetTopics();
+        Task<List<TopicDto>> GetTopics(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending");
+        Task<TopicDto> GetTopic(Guid topicGuid);
         Task<List<CourseDetailDto>> GetTopicCourses(Guid topicGuid);
         Task<List<SkillDto>> GetTopicSkills(Guid topicGuid);
     }
