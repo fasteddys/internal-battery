@@ -648,6 +648,73 @@ BEGIN
 END
             ')");
 
+            migrationBuilder.Sql(@"EXEC('
+
+/*
+<remarks>
+2019.11.26 - Bill Koenig - Created
+</remarks>
+<description>
+Finds the postal record which is the best match for a given job based on the fields that have been populated for the job. The prioritization for the match
+is a postal code match first, a city and state match second, and a state match third. Modifications to deleted jobs have no effect, nor do inserts or updates
+that do not include a geo field in the job record.
+</description>
+<example>
+UPDATE dbo.JobPosting SET postalcode = 90210 WHERE JobPostingId = 10245
+</example>
+*/
+CREATE TRIGGER TR_JobPosting_MatchPostal
+    ON dbo.JobPosting
+    AFTER INSERT, UPDATE
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	IF UPDATE(PostalCode) OR UPDATE(City) OR UPDATE (Province)
+	BEGIN
+		WITH geoData AS (
+			SELECT p.PostalId, p.Code [PostalCode], ci.CityId, ci.[Name] City, s.StateId, s.Code StateCode, s.[Name] StateName, co.CountryId, co.Code2 [Country]
+			FROM [State] s WITH(NOLOCK)
+			INNER JOIN Country co WITH(NOLOCK) ON s.CountryId = co.CountryId
+			INNER JOIN City ci WITH(NOLOCK) ON s.StateId = ci.StateId 
+			INNER JOIN Postal p WITH(NOLOCK) ON ci.CityId = p.CityId)
+		, jobData AS (
+			SELECT j.JobPostingId, j.Province, j.City, j.PostalCode
+			FROM JobPosting j WITH(NOLOCK)
+			INNER JOIN Inserted i ON j.JobPostingId = i.JobPostingId
+			WHERE i.IsDeleted = 0)
+		, jobAndGeoData AS (
+			SELECT j.JobPostingId, g.PostalId, 3 [Priority]
+			FROM jobData j
+			INNER JOIN geoData g ON j.Province = g.StateCode OR j.Province = g.StateName
+			UNION
+			SELECT j.JobPostingId, g.PostalId, 2
+			FROM jobData j
+			INNER JOIN geoData g ON j.City = g.City AND (j.Province = g.StateCode OR j.Province = g.StateName)
+			UNION
+			SELECT j.JobPostingId, g.PostalId, 1
+			FROM jobData j
+			INNER JOIN geoData g ON j.PostalCode = g.PostalCode)
+		, prioritizedJobAndGeoData AS (
+			SELECT JobPostingId, PostalId, [Priority], ROW_NUMBER() OVER (PARTITION BY JobPostingId ORDER BY [Priority] ASC) [RowNum]
+			FROM jobAndGeoData)
+		, bestMatchGeo AS (
+			SELECT JobPostingId, PostalId 
+			FROM prioritizedJobAndGeoData
+			WHERE RowNum = 1)
+		UPDATE 
+			j 
+		SET 
+			PostalId = bmg.PostalId
+			, ModifyDate = GETUTCDATE()
+			, ModifyGuid = ''00000000-0000-0000-0000-000000000000''
+		FROM 
+			dbo.JobPosting j
+			INNER JOIN bestMatchGeo bmg ON j.JobPostingId = bmg.JobPostingId
+	END 
+END 
+            ')");
+
             migrationBuilder.Sql("ALTER TABLE [dbo].[JobPosting] ENABLE TRIGGER [TR_JobPosting_MatchPostal]");
         }
 
