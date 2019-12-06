@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyLib.Dto;
-
+using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyLib.Dto
 {
-    public class JobViewDto
+    public class JobViewDto : JobBaseDto
     {
 
         /// <summary>
@@ -48,8 +48,6 @@ namespace UpDiddyLib.Dto
         /// </summary>
         public string CloudTalentUri { get; set; }
 
-        public string CompanyLogoUrl { get; set; }
-        public string  CompanyName { get; set; }
         /// <summary>
         /// Guid of industry associated with the job 
         /// </summary>

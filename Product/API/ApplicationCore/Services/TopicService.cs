@@ -8,6 +8,7 @@ using UpDiddyLib.Domain.Models;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Helpers;
+using UpDiddyLib.Dto;
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class TopicService : ITopicService
@@ -32,15 +33,15 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _mapper.Map<List<UpDiddyLib.Domain.Models.TopicDto>>(careerPaths);
         }
 
-        public async Task<List<TopicCourseDto>> GetTopicCourses(Guid topicGuid)
+        public async Task<List<CourseDetailDto>> GetTopicCourses(Guid topicGuid)
         {
             if (topicGuid == null || topicGuid == Guid.Empty)
                 throw new NullReferenceException("TopicGuid cannot be null");
             var courses = await _repositoryWrapper.Course.GetCoursesByTopicGuid(topicGuid);
             if (courses == null)
                 throw new NotFoundException("TopicGuid not found");
-            var coursesDto = _mapper.Map<List<TopicCourseDto>>(courses);
-            CourseUrlHelper.AssignVendorLogoUrlToCourse(coursesDto,_configuration);
+            var coursesDto = _mapper.Map<List<CourseDetailDto>>(courses);
+            CourseUrlHelper.SetVendorAndThumbnailUrl(coursesDto,_configuration);
             return coursesDto;
         }
 

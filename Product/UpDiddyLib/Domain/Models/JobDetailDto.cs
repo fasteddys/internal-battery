@@ -4,7 +4,7 @@ using System.Text;
 
 namespace UpDiddyLib.Domain.Models
 {
-    public class JobDetailDto
+    public class JobDetailDto : JobBaseDto
     {
 
 
@@ -34,9 +34,6 @@ namespace UpDiddyLib.Domain.Models
         public DateTime PostingExpirationDateUTC { get; set; }
 
         public DateTime ApplicationDeadlineUTC { get; set; }
-
-
-        public string CompanyLogoUrl { get; set; }
 
         public string CompanyName { get; set; }
         public string Description { get; set; }

@@ -33,6 +33,8 @@ namespace UpDiddyLib.Domain.Models
         public string Title {get;set;}
         [StringLength(200)]
         public string Biography {get;set;}
-               
+
+        public Guid TopicGuid { get; set; }
+
     }
 }

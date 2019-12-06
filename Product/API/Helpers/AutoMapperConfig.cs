@@ -92,8 +92,10 @@ namespace UpDiddyApi.Helpers
             CreateMap<ServiceOfferingPromoCodeRedemption, ServiceOfferingPromoCodeRedemptionDto>().ReverseMap();
             CreateMap<FileDownloadTracker, FileDownloadTrackerDto>().ReverseMap();
             CreateMap<Traitify, TraitifyDto>().ReverseMap();
-            CreateMap<Course, TopicCourseDto>()
-            .ForMember(c => c.VendorLogoUrl, opt => opt.MapFrom(src => src.Vendor.LogoUrl)).ReverseMap();
+            CreateMap<Course, CourseDetailDto>()
+                .ForMember(c => c.VendorLogoUrl, opt => opt.MapFrom(src => src.Vendor.LogoUrl))
+                .ForMember(c => c.ThumbnailUrl, opt => opt.MapFrom(src => src.TabletImage))
+                .ReverseMap();
             CreateMap<JobPostingSkill, UpDiddyLib.Dto.SkillDto>()
             .ForMember(c => c.SkillGuid, opt => opt.MapFrom(src => src.Skill.SkillGuid))
             .ForMember(c => c.SkillName, opt => opt.MapFrom(src => src.Skill.SkillName))

@@ -7,8 +7,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface ITopicService
     {
-        Task<List<UpDiddyLib.Domain.Models.TopicDto>> GetTopics();
-        Task<List<TopicCourseDto>> GetTopicCourses(Guid topicGuid);
-        Task<List<UpDiddyLib.Domain.Models.SkillDto>> GetTopicSkills(Guid topicGuid);
+        Task<List<TopicDto>> GetTopics();
+        Task<List<CourseDetailDto>> GetTopicCourses(Guid topicGuid);
+        Task<List<SkillDto>> GetTopicSkills(Guid topicGuid);
     }
 }

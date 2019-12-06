@@ -326,11 +326,6 @@ namespace UpDiddyApi.Controllers
             return Ok(postings);
         }
 
-
-
-
-
-
         #endregion
 
     }

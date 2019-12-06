@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Dto;
+using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
@@ -24,9 +25,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<CourseDetailDto>> GetCourses(int limit, int offset, string sort, string order);
         Task<CourseDetailDto> GetCourse(Guid courseGuid);
         Task<List<CourseDetailDto>> GetFavoriteCourses(Guid subscriberGuid, int limit, int offset, string sort, string order);
-
         Task<List<SubscriberNotesDto>> GetSubscriberNotes(Guid subscriberGuid, Guid talentGuid, int limit, int offset, string sort, string order);
-
-
     }
 }
