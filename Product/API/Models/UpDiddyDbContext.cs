@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Models.Views;
+using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.User;
 
@@ -204,6 +205,9 @@ namespace UpDiddyApi.Models
         public DbQuery<SearchTermDto> LocationSearchTerms { get; set; }
 
         public DbQuery<SubscriberNotesDto> SubscriberNoteQuery { get; set; }
+
+
+        public DbQuery<SubscriberCourseDto> SubscriberCourses { get; set; }
 
         #endregion
 
