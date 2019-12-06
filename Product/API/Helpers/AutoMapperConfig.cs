@@ -84,7 +84,7 @@ namespace UpDiddyApi.Helpers
             CreateMap<ResumeParse, ResumeParseDto>().ReverseMap();
             CreateMap<ResumeParseResult, ResumeParseResultDto>().ReverseMap();
             CreateMap<Subscriber, FailedSubscriberDto>().ReverseMap();
-
+            CreateMap<CourseLevel, CourseLevelDto>().ReverseMap();
             CreateMap<RedemptionStatus, RedemptionStatusDto>().ReverseMap();
             CreateMap<ServiceOffering, ServiceOfferingDto>().ReverseMap();
             CreateMap<ServiceOfferingItem, ServiceOfferingItemDto>().ReverseMap();

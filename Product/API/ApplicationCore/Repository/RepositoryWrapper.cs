@@ -75,7 +75,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ISubscriberSkillRepository _subscriberSkillRepository;
         private ISubscriberEducationHistoryRepository _subscriberEducationHistoryRepository;
         private IIndustryRepository _industryRepository;
-
         private ISecurityClearanceRepository _securityClearanceRepository;
         private IEmploymentTypeRepository _employmentTypeRepository;
         private IEducationalDegreeRepository _educationalDegreeRepository;
@@ -90,9 +89,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ISubscriberProfileStagingStoreRepository _subscriberProfileStagingRepository;
         private ITalentFavoriteRepository _talentFavoriteRepository;
         private IPasswordResetRequestRepository _passwordResetRequestRepository;
-
         private ICourseLevelRepository _courseLevelRepository;
-
         private readonly IConfiguration _configuration;
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
         {
@@ -1065,8 +1062,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var now = DateTime.UtcNow;
             foreach (var change in modifiedEntities)
             {
-                var modifyDateProp = change.Entity.GetType().GetProperty("modifyDate");
-                modifyDateProp.SetValue(change, now);
+                var modifyDateProp = change.Entity.GetType().GetProperty("ModifyDate");
+                modifyDateProp.SetValue(change.Entity, now);
             }
             await this._dbContext.SaveChangesAsync();
         }
