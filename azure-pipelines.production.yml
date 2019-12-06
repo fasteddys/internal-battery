@@ -26,22 +26,9 @@ trigger:
 pr: none
 
 steps:
-# dotnet core 2.2.x
-
-steps:
 - script: |
     dotnet restore Product/WebApp
   displayName: Restore NuGet Packages
-
-- script: |
-    npm install
-  displayName: Install Node Package Dependencies
-  workingDirectory: Product/WebApp
-
-- script: |
-    npm run bower install
-  displayName: Install Client Side Dependencies
-  workingDirectory: Product/WebApp
 
 - task: UseNode@1
   inputs:
@@ -53,6 +40,13 @@ steps:
   displayName: Install Gulp
   workingDirectory: Product/WebApp
 
+# install bower dependencies (see bower.json)
+- script: |
+    npm run bower install
+  displayName: Install Client Side Dependencies
+  workingDirectory: Product/WebApp
+
+# run gulp compile task (see gulpfile.js compile task)
 - script: |
     npm run gulp compile
   displayName: Compile sass, javascript and copy fonts
