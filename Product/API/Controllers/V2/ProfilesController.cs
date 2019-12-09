@@ -335,5 +335,30 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         #endregion
+
+        #region CareerPath
+        
+        [HttpGet]
+        [Route("careerpath/")]
+        [Authorize]
+        public async Task<IActionResult> GetCareerPath()
+        {
+
+            var careerPath = await _profileService.GetSubscriberCareerPath(GetSubscriberGuid());
+            return Ok(careerPath);
+        }
+
+        [HttpPut]
+        [Route("careerpath/{careerPath:guid}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateCareerPath(Guid careerPath)
+        {
+
+            await _profileService.UpdateSubscriberCareerPath(careerPath, GetSubscriberGuid());
+            return StatusCode(204);
+        }
+
+        #endregion
+
     }
 }

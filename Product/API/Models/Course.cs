@@ -33,6 +33,8 @@ namespace UpDiddyApi.Models
         public List<CourseVariant> CourseVariants { get; set; }
         public List<CourseSkill> CourseSkills { get; set; }
         public bool IsExternal { get; set; }
+        public CourseLevel CourseLevel { get; set; }
+        public int? CourseLevelId { get; set; }
     }
 
     [NotMapped]
