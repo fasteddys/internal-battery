@@ -14,6 +14,7 @@ namespace UpDiddyApi.Migrations
                 nullable: false,
                 defaultValue: true);
 
+/*  removing this as it breaks future migrations now that the column has been renamed
             // find subscribers that need to verify their email still
             migrationBuilder.Sql(@"
                 update Subscriber set IsVerified = 0 where SubscriberId in
@@ -22,7 +23,7 @@ namespace UpDiddyApi.Migrations
 	                        inner join SubscriberProfileStagingStore store on store.SubscriberId = sub.SubscriberId
 	                    Where ProfileSource = 'CareerCircle')
             ");
-
+*/
             migrationBuilder.CreateTable(
                 name: "EmailVerification",
                 columns: table => new
