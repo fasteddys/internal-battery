@@ -19,5 +19,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
         Task<IList<string>> GetBlogCategorySlugsAsync();
         Task<IList<string>> GetBlogTagSlugsAsync();
         Task<int> GetNumberOfBlogPostPagesAsync();
+
+        Task<PostResponse> GetBlogPage(int pageNum, int pageSize);
     }
 }
