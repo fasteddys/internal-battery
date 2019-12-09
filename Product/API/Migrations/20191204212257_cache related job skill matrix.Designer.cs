@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191204212257_cache related job skill matrix")]
+    partial class cacherelatedjobskillmatrix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -652,8 +654,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("CourseGuid");
 
-                    b.Property<int?>("CourseLevelId");
-
                     b.Property<DateTime>("CreateDate");
 
                     b.Property<Guid>("CreateGuid");
@@ -693,8 +693,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<string>("VideoUrl");
 
                     b.HasKey("CourseId");
-
-                    b.HasIndex("CourseLevelId");
 
                     b.HasIndex("VendorId");
 
@@ -760,35 +758,6 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("SubscriberId");
 
                     b.ToTable("CourseFavorite");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.CourseLevel", b =>
-                {
-                    b.Property<int>("CourseLevelId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<Guid>("CourseLevelGuid");
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<string>("Description");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<string>("Name");
-
-                    b.Property<int>("SortOrder");
-
-                    b.HasKey("CourseLevelId");
-
-                    b.ToTable("CourseLevel");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.CoursePage", b =>
@@ -3494,15 +3463,11 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("Title");
 
-                    b.Property<int?>("TopicId");
-
                     b.Property<string>("TwitterUrl");
 
                     b.HasKey("SubscriberId");
 
                     b.HasIndex("StateId");
-
-                    b.HasIndex("TopicId");
 
                     b.ToTable("Subscriber");
                 });
@@ -4452,10 +4417,6 @@ namespace UpDiddyApi.Migrations
 
             modelBuilder.Entity("UpDiddyApi.Models.Course", b =>
                 {
-                    b.HasOne("UpDiddyApi.Models.CourseLevel", "CourseLevel")
-                        .WithMany()
-                        .HasForeignKey("CourseLevelId");
-
                     b.HasOne("UpDiddyApi.Models.Vendor", "Vendor")
                         .WithMany()
                         .HasForeignKey("VendorId")
@@ -4993,10 +4954,6 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.State", "State")
                         .WithMany()
                         .HasForeignKey("StateId");
-
-                    b.HasOne("UpDiddyApi.Models.Topic", "Topic")
-                        .WithMany()
-                        .HasForeignKey("TopicId");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberAction", b =>

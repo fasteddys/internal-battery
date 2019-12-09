@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Domain.Models;
 
@@ -10,6 +11,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface ICourseService
     {
+        Task<List<RelatedCourseDto>> GetCoursesByCourse(Guid courseGuid, int limit, int offset);
+        Task<List<RelatedCourseDto>> GetCoursesBySubscriber(Guid subscriberGuid, int limit, int offset);
+        Task<List<RelatedCourseDto>> GetCoursesByJob(Guid subscriberGuid, int limit, int offset);
         Task<int> AddCourseAsync(CourseDto courseDto);
         Task<int> EditCourseAsync(CourseDto courseDto);
         Task DeleteCourseAsync(Guid courseGuid);

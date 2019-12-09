@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -10,10 +9,11 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
-using UpDiddyLib.Domain.Models;
+using UpDiddyLib.Dto;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.Helpers;
-using UpDiddyLib.Dto;
+using UpDiddyLib.Domain.Models;
+
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class CourseService : ICourseService
@@ -28,7 +28,20 @@ namespace UpDiddyApi.ApplicationCore.Services
             _config = configuration;
         }
 
+        public async Task<List<RelatedCourseDto>> GetCoursesByCourse(Guid courseGuid, int limit, int offset)
+        {
+            return await _repositoryWrapper.StoredProcedureRepository.GetCoursesByCourse(courseGuid, limit, offset);
+        }
 
+        public async Task<List<RelatedCourseDto>> GetCoursesBySubscriber(Guid subscriberGuid, int limit, int offset)
+        {
+            return await _repositoryWrapper.StoredProcedureRepository.GetCoursesBySubscriber(subscriberGuid, limit, offset);
+        }
+
+        public async Task<List<RelatedCourseDto>> GetCoursesByJob(Guid jobPostingGuid, int limit, int offset)
+        {
+            return await _repositoryWrapper.StoredProcedureRepository.GetCoursesByJob(jobPostingGuid, limit, offset);
+        }
 
         public async Task<List<CourseDetailDto>> GetCoursesRandom(IQueryCollection query)
         {
@@ -67,9 +80,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             return (courses);
         }
 
-         public async Task<CourseDetailDto> GetCourse(Guid courseGuid)
+        public async Task<CourseDetailDto> GetCourse(Guid courseGuid)
         {
-            if(courseGuid == null || courseGuid == Guid.Empty)
+            if (courseGuid == null || courseGuid == Guid.Empty)
                 throw new NullReferenceException("CourseGuid cannot be null");
             var course = await _repositoryWrapper.StoredProcedureRepository.GetCourse(courseGuid);
             if (course == null)

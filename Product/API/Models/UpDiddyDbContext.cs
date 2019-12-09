@@ -174,6 +174,8 @@ namespace UpDiddyApi.Models
         public DbSet<CoursePage> CoursePage { get; set; }
         public DbSet<CourseFavorite> CourseFavorite { get; set; }
         public DbSet<CoursePageStatus> CoursePageStatus { get; set; }
+        public DbSet<City> City { get; set; }
+        public DbSet<Postal> Postal { get; set; }
         public DbSet<PasswordResetRequest> PasswordResetRequest { get; set; }
         public DbSet<TalentFavorite> TalentFavorite { get; set; }
         public DbSet<CourseLevel> CourseLevel { get; set; }
@@ -196,6 +198,10 @@ namespace UpDiddyApi.Models
         public DbQuery<SubscriberSourceDto> SubscriberSourcesDetails { get; set; }
         public DbQuery<SubscriberInitialSourceDto> SubscriberInitialSource { get; set; }
         public DbQuery<CourseDetailDto> CourseDetails { get; set; }
+        public DbQuery<RelatedJobDto> RelatedJobs { get; set; }
+        public DbQuery<RelatedCourseDto> RelatedCourses { get; set; }
+
+
         public DbQuery<JobDto> SubscriberJobFavorites { get; set; }
         public DbQuery<SubscriberSignUpCourseEnrollmentStatistics> SubscriberSignUpCourseEnrollmentStatistics { get; set; }
         public DbQuery<SearchTermDto> KeywordSearchTerms { get; set; }
@@ -206,6 +212,16 @@ namespace UpDiddyApi.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Postal>()
+                .HasIndex(p => new { p.CityId, p.Code })
+                .HasName("UIX_Postal_City_Code")
+                .IsUnique(true);
+
+            modelBuilder.Entity<City>()
+                .HasIndex(c => new { c.StateId, c.Name })
+                .HasName("UIX_City_State_Name")
+                .IsUnique(true);
+
             modelBuilder.Entity<CourseSite>()
                 .HasIndex(c => c.Name)
                 .HasName("UIX_CourseSite_Name")

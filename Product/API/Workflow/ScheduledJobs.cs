@@ -1113,6 +1113,19 @@ namespace UpDiddyApi.Workflow
         #endregion
 
         #region CareerCircle Jobs 
+        
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        public async Task CacheRelatedJobSkillMatrix()
+        {
+            try
+            {
+                await _repositoryWrapper.StoredProcedureRepository.CacheRelatedJobSkillMatrix();
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.CacheRelatedJobSkillMatrix encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+            }
+        }
 
         [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public void ExecuteJobPostingAlert(Guid jobPostingAlertGuid)
