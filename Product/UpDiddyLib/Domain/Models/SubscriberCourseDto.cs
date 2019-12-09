@@ -13,9 +13,7 @@ namespace UpDiddyLib.Domain.Models
         public string Description { get; set; }
 
         public string CourseLevel { get; set; }
-
-        public int NumLessons { get; set; }
-
+ 
         public string VendorName { get; set; }
 
         public Guid VendorGuid { get; set; }
