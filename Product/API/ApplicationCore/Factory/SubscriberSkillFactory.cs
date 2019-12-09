@@ -29,7 +29,6 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     // if the skill was logically deleted, remove that flag and mark it as modified
                     existingSkill.IsDeleted = 0;
                     existingSkill.ModifyDate = DateTime.UtcNow;
-                    await repositoryWrapper.SubscriberSkillRepository.Create(existingSkill);
                 }
                 else
                 {
