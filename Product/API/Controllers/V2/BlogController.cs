@@ -22,7 +22,7 @@ using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.Controllers.V2
 {
-    [Route("/V2/butter/")]
+    [Route("/V2/blog/")]
     [ApiController]
     public class BlogController : ControllerBase
     {
@@ -54,90 +54,58 @@ namespace UpDiddyApi.Controllers.V2
         #endregion
 
         [HttpGet]
-        [Route("/blog")]
-        [Route("/blog/{page?}")]
-        public async Task<IActionResult> IndexAsync(int page = 1)
+        [Route("page/{page?}")]
+        public async Task<IActionResult> GetBlogs(int page = 1, int pageSize= 10)
         {
-            var response = await _butterCMSService.GetBlogs(page, Constants.CMS.BLOG_PAGINATION_PAGE_COUNT); 
+            var response = await _butterCMSService.GetBlogsAsync(page, pageSize); 
             return Ok(response);
         }
 
 
-        /*
+     
 
         [HttpGet]
-        [Route("/blog/post/{slug}")]
-        public async Task<IActionResult> ShowPostAsync(string slug)
+        [Route("slug/{slug}")]
+        public async Task<IActionResult> GetBlogBySlug(string slug)
         {
-            var response = await _butterCMSClient.RetrievePostAsync(slug);
+            var response = await _butterCMSService.GetBlogBySlugAsync(slug);
+            return Ok(response);
+        }
 
-            string Keywords = string.Empty;
-            bool isFirst = true;
-            foreach (Category c in response.Data.Categories)
-            {
-                if (isFirst)
-                {
-                    Keywords += c.Name;
-                    isFirst = false;
-                }
-                else
-                    Keywords += ", " + c.Name;
-            }
-
-            ViewData[Constants.Seo.TITLE] = response.Data.SeoTitle + Constants.CMS.BLOG_TITLE_TAG_SUFFIX;
-            ViewData[Constants.Seo.META_DESCRIPTION] = response.Data.MetaDescription;
-            ViewData[Constants.Seo.META_KEYWORDS] = Keywords;
-            ViewData[Constants.Seo.OG_TITLE] = response.Data.SeoTitle + Constants.CMS.BLOG_TITLE_TAG_SUFFIX;
-            ViewData[Constants.Seo.OG_DESCRIPTION] = response.Data.MetaDescription;
-            ViewData[Constants.Seo.OG_IMAGE] = response.Data.FeaturedImage;
-            return View("Post", response);
+    
+        [HttpGet]
+        [Route("search")]
+        public async Task<IActionResult> SearchBlogs(string query)
+        {
+               var response = await _butterCMSService.SearchBlogsAsync(query);
+               return Ok(response);
         }
 
         [HttpGet]
-        [Route("/blog/search")]
-        public async Task<IActionResult> SearchPostsAsync(string query)
+        [Route("tag/{tag}")]
+        public async Task<IActionResult> GetPostsByTag(string tag)
         {
-            PostsResponse response;
-            if (!string.IsNullOrEmpty(query))
-            {
-                response = await _butterCMSClient.SearchPostsAsync(query: query);
-            }
-            else
-            {
-                response = await _butterCMSClient.ListPostsAsync(1, 10);
-            }
-            return View("Posts", response);
+            var response = await _butterCMSService.GetBlogsByTagAsync(tag);
+            return Ok(response);
         }
 
         [HttpGet]
-        [Route("/blog/tag/{tag}")]
-        public async Task<IActionResult> GetPostsByTagAsync(string tag)
+        [Route("category/{category}")]
+        public async Task<IActionResult> GetPostsByCategory(string category)
         {
-            PostsResponse response = await _butterCMSClient.ListPostsAsync(tagSlug: tag);
-            return View("Posts", response);
+            var response = await _butterCMSService.GetBlogsByCategoryAsync(category);
+            return Ok(response);
         }
 
         [HttpGet]
-        [Route("/blog/category/{category}")]
-        public async Task<IActionResult> GetPostsByCategoryAsync(string category)
-        {
-            PostsResponse response = await _butterCMSClient.ListPostsAsync(categorySlug: category);
-            return View("Posts", response);
-        }
-
-        [HttpGet]
-        [Route("/blog/author/{author}")]
+        [Route("author/{author}")]
         public async Task<IActionResult> GetPostsByAuthorAsync(string author)
         {
-            ViewData["ShowAuthorInfo"] = true;
-            PostsResponse response = await _butterCMSClient.ListPostsAsync(authorSlug: author);
-            if (response?.Data?.Count() == 0)
-                return NotFound();
-            return View("Posts", response);
+            var response = await _butterCMSService.GetBlogsByCategoryAsync(author);
+            return Ok(response);
         }
 
-    */
-
+ 
 
     }
 }
