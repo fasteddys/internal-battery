@@ -3,19 +3,21 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191205195929_subsciber_topic_and_course_level")]
+    partial class subsciber_topic_and_course_level
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.3-servicing-35854")
+                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -383,39 +385,6 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("CampaignId");
 
                     b.ToTable("CampaignPhase");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.City", b =>
-                {
-                    b.Property<int>("CityId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<Guid?>("CityGuid");
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50);
-
-                    b.Property<int>("StateId");
-
-                    b.HasKey("CityId");
-
-                    b.HasIndex("StateId", "Name")
-                        .IsUnique()
-                        .HasName("UIX_City_State_Name");
-
-                    b.ToTable("City");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.CommunicationSubscription", b =>
@@ -1783,8 +1752,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("PostalCode");
 
-                    b.Property<int?>("PostalId");
-
                     b.Property<DateTime>("PostingDateUTC");
 
                     b.Property<DateTime>("PostingExpirationDateUTC");
@@ -1822,8 +1789,6 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("IndustryId");
 
                     b.HasIndex("JobCategoryId");
-
-                    b.HasIndex("PostalId");
 
                     b.HasIndex("RecruiterId");
 
@@ -2629,45 +2594,6 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("PaymentStatusId");
 
                     b.ToTable("PaymentStatus");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.Postal", b =>
-                {
-                    b.Property<int>("PostalId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("CityId");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(10);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<decimal>("Latitude")
-                        .HasColumnType("decimal(12,9)");
-
-                    b.Property<decimal>("Longitude")
-                        .HasColumnType("decimal(12,9)");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<Guid?>("PostalGuid");
-
-                    b.HasKey("PostalId");
-
-                    b.HasIndex("CityId", "Code")
-                        .IsUnique()
-                        .HasName("UIX_Postal_City_Code");
-
-                    b.ToTable("Postal");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.PromoCode", b =>
@@ -4435,14 +4361,6 @@ namespace UpDiddyApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.City", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.State", "State")
-                        .WithMany()
-                        .HasForeignKey("StateId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
             modelBuilder.Entity("UpDiddyApi.Models.Contact", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
@@ -4637,10 +4555,6 @@ namespace UpDiddyApi.Migrations
                         .WithMany()
                         .HasForeignKey("JobCategoryId");
 
-                    b.HasOne("UpDiddyApi.Models.Postal", "Postal")
-                        .WithMany()
-                        .HasForeignKey("PostalId");
-
                     b.HasOne("UpDiddyApi.Models.Recruiter", "Recruiter")
                         .WithMany()
                         .HasForeignKey("RecruiterId");
@@ -4828,14 +4742,6 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany()
                         .HasForeignKey("SubscriberId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.Postal", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.City", "City")
-                        .WithMany()
-                        .HasForeignKey("CityId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

@@ -101,6 +101,14 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
+        [Route("count")]
+        public async Task<IActionResult> GetCoursesCount()
+        {
+            var count = await _courseService.GetCoursesCount();
+            return Ok(count);
+        }
+
+        [HttpGet]
         [Route("favorites")]
         [Authorize]
         public async Task<IActionResult> GetFavoriteCourses(int limit, int offset, string sort, string order)

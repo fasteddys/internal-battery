@@ -9,5 +9,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     public interface ICourseRepository : IUpDiddyRepositoryBase<Course>
     {
         Task<List<Course>> GetCoursesByTopicGuid(Guid topicGuid);
+        Task<int> GetCoursesCount();
     }
 }

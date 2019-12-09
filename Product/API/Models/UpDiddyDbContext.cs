@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Models.Views;
-using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Domain.Models;
@@ -179,6 +178,8 @@ namespace UpDiddyApi.Models
         public DbSet<Postal> Postal { get; set; }
         public DbSet<PasswordResetRequest> PasswordResetRequest { get; set; }
         public DbSet<TalentFavorite> TalentFavorite { get; set; }
+        public DbSet<CourseLevel> CourseLevel { get; set; }
+
 
         #region DBQueries
 
@@ -195,7 +196,6 @@ namespace UpDiddyApi.Models
         public DbQuery<JobAbandonmentStatistics> JobAbandonmentStatistics { get; set; }
         public DbQuery<JobCountPerProvince> JobCountPerProvince { get; set; }
         public DbQuery<SubscriberSourceDto> SubscriberSourcesDetails { get; set; }
-
         public DbQuery<SubscriberInitialSourceDto> SubscriberInitialSource { get; set; }
         public DbQuery<CourseDetailDto> CourseDetails { get; set; }
         public DbQuery<RelatedJobDto> RelatedJobs { get; set; }
@@ -206,7 +206,6 @@ namespace UpDiddyApi.Models
         public DbQuery<SubscriberSignUpCourseEnrollmentStatistics> SubscriberSignUpCourseEnrollmentStatistics { get; set; }
         public DbQuery<SearchTermDto> KeywordSearchTerms { get; set; }
         public DbQuery<SearchTermDto> LocationSearchTerms { get; set; }
-
         public DbQuery<SubscriberNotesDto> SubscriberNoteQuery { get; set; }
 
         #endregion

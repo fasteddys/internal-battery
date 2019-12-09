@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using UpDiddyLib.Dto;
+using UpDiddyLib.Domain.Models;
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface ICourseFavoriteService

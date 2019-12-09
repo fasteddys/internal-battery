@@ -2,35 +2,28 @@
 using System.Reflection;
 using System.Collections.Generic;
 using System;
+using UpDiddyLib.Domain.Models;
 namespace UpDiddyApi.Helpers
 {
     public class CourseUrlHelper
     {
-        public static void AssignVendorLogoUrlToCourse<T>(List<T> courses, IConfiguration config) where T : class
+        public static void SetVendorAndThumbnailUrl<T>(List<T> courses, IConfiguration config) where T : CourseBaseDto
         {
             foreach (var course in courses)
             {
-                AssignVendorLogoUrlToCourse(course, config);
+                SetUrl(course, config);
             }
         }
 
-        public static void AssignVendorLogoUrlToCourse<T>(T course, IConfiguration config) where T : class
+        public static void SetVendorAndThumbnailUrl(CourseBaseDto course, IConfiguration config)
         {
-            Type t = course.GetType();
-            PropertyInfo vendorLogoUrlProp = t.GetProperty("VendorLogoUrl");
-            if (vendorLogoUrlProp != null)
-            {
-                string logoUrl = (string)vendorLogoUrlProp.GetValue(course, null);
-                if (!string.IsNullOrEmpty(logoUrl))
-                {
-                    vendorLogoUrlProp.SetValue(course, SetVendorLogoUrl(logoUrl, config));
-                }
-            }
+            SetUrl(course, config);
         }
 
-        public static string SetVendorLogoUrl(string logoUrl, IConfiguration config)
+        public static void SetUrl(CourseBaseDto course, IConfiguration config)
         {
-            return config["StorageAccount:AssetBaseUrl"] + "Vendor/" + logoUrl;
+            course.ThumbnailUrl = config["StorageAccount:AssetBaseUrl"] + "Course/" + course.ThumbnailUrl;
+            course.VendorLogoUrl = config["StorageAccount:AssetBaseUrl"] + "Vendor/" + course.VendorLogoUrl;
         }
     }
 }

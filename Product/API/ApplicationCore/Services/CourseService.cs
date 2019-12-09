@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -13,7 +12,7 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.Helpers;
-using V2Models = UpDiddyLib.Domain.Models;
+using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -29,17 +28,17 @@ namespace UpDiddyApi.ApplicationCore.Services
             _config = configuration;
         }
 
-        public async Task<List<V2Models.RelatedCourseDto>> GetCoursesByCourse(Guid courseGuid, int limit, int offset)
+        public async Task<List<RelatedCourseDto>> GetCoursesByCourse(Guid courseGuid, int limit, int offset)
         {
             return await _repositoryWrapper.StoredProcedureRepository.GetCoursesByCourse(courseGuid, limit, offset);
         }
 
-        public async Task<List<V2Models.RelatedCourseDto>> GetCoursesBySubscriber(Guid subscriberGuid, int limit, int offset)
+        public async Task<List<RelatedCourseDto>> GetCoursesBySubscriber(Guid subscriberGuid, int limit, int offset)
         {
             return await _repositoryWrapper.StoredProcedureRepository.GetCoursesBySubscriber(subscriberGuid, limit, offset);
         }
 
-        public async Task<List<V2Models.RelatedCourseDto>> GetCoursesByJob(Guid jobPostingGuid, int limit, int offset)
+        public async Task<List<RelatedCourseDto>> GetCoursesByJob(Guid jobPostingGuid, int limit, int offset)
         {
             return await _repositoryWrapper.StoredProcedureRepository.GetCoursesByJob(jobPostingGuid, limit, offset);
         }
@@ -53,7 +52,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (limit != null)
                 int.TryParse(limit, out MaxResults);
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesRandom(MaxResults);
-            CourseUrlHelper.AssignVendorLogoUrlToCourse(courses, _config);
+            CourseUrlHelper.SetVendorAndThumbnailUrl(courses,_config);
             return courses;
         }
 
@@ -67,7 +66,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (limit != null)
                 int.TryParse(limit, out MaxResults);
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesForJob(jobGuid, MaxResults);
-            CourseUrlHelper.AssignVendorLogoUrlToCourse(courses, _config);
+            CourseUrlHelper.SetVendorAndThumbnailUrl(courses,_config);
             return courses;
         }
 
@@ -77,7 +76,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCourses(limit, offset, sort, order);
             if (courses == null)
                 throw new NotFoundException("Courses not found");
-            CourseUrlHelper.AssignVendorLogoUrlToCourse(courses, _config);
+            CourseUrlHelper.SetVendorAndThumbnailUrl(courses,_config);
             return (courses);
         }
 
@@ -88,11 +87,14 @@ namespace UpDiddyApi.ApplicationCore.Services
             var course = await _repositoryWrapper.StoredProcedureRepository.GetCourse(courseGuid);
             if (course == null)
                 throw new NotFoundException("Courses not found");
-            CourseUrlHelper.AssignVendorLogoUrlToCourse(course, _config);
+            CourseUrlHelper.SetVendorAndThumbnailUrl(course,_config);
             return (course);
         }
 
-
+        public async Task<int> GetCoursesCount()
+        {
+            return await _repositoryWrapper.Course.GetCoursesCount();
+        }
 
         public async Task<List<CourseDetailDto>> GetCoursesBySkillHistogram(Dictionary<string, int> SkillHistogram, IQueryCollection query)
         {
@@ -102,14 +104,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             string limit = query["limit"];
             if (limit != null)
                 int.TryParse(limit, out MaxResults);
-            var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesBySkillHistogram(SkillHistogram, MaxResults);
-            CourseUrlHelper.AssignVendorLogoUrlToCourse(courses, _config);
+            var courses = await  _repositoryWrapper.StoredProcedureRepository.GetCoursesBySkillHistogram(SkillHistogram, MaxResults);
+            CourseUrlHelper.SetVendorAndThumbnailUrl(courses,_config);
             return courses;
         }
-
-
-
-
 
         /// <summary>
         /// Handles the creation of a course. 
@@ -201,7 +199,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             });
         }
 
-
         #region Private Members
 
         /// <summary>
@@ -269,7 +266,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// </summary>
         /// <param name="skills"></param>
         /// <returns>A list of skill identifiers to be associated with the course being created/updated.</returns>
-        private async Task<List<Guid>> GetSkillGuidsAsync(List<SkillDto> skills)
+        private async Task<List<Guid>> GetSkillGuidsAsync(List<UpDiddyLib.Dto.SkillDto> skills)
         {
             List<Guid> skillGuids = new List<Guid>();
             // lookup skills
