@@ -379,5 +379,23 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
 
+        // todo jab talk to jyoti about vendor logo url and course level/num lessons to update sproc
+
+ 
+        public async Task<List<SubscriberCourseDto>> GetSubscriberCourses(Guid subscriberGuid, int excludeCompleted, int excludeActive)
+
+        {
+            var spParams = new object[] {
+                new SqlParameter("@SubscriberGuid", subscriberGuid),
+                new SqlParameter("@ExcludeCompleted", excludeCompleted),
+                new SqlParameter("@ExcludeActive", excludeActive)
+                };
+
+            List<SubscriberCourseDto> rval = null;
+            rval = await _dbContext.SubscriberCourses.FromSql<SubscriberCourseDto>("System_Get_SubscriberCourses @SubscriberGuid, @ExcludeCompleted, @ExcludeActive", spParams).ToListAsync();
+            return rval;
+        }
+
+
     }
 }
