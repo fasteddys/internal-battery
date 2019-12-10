@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191126150325_city and postal")]
+    partial class cityandpostal
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -652,8 +654,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("CourseGuid");
 
-                    b.Property<int?>("CourseLevelId");
-
                     b.Property<DateTime>("CreateDate");
 
                     b.Property<Guid>("CreateGuid");
@@ -693,8 +693,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<string>("VideoUrl");
 
                     b.HasKey("CourseId");
-
-                    b.HasIndex("CourseLevelId");
 
                     b.HasIndex("VendorId");
 
@@ -760,35 +758,6 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("SubscriberId");
 
                     b.ToTable("CourseFavorite");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.CourseLevel", b =>
-                {
-                    b.Property<int>("CourseLevelId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<Guid>("CourseLevelGuid");
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<string>("Description");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<string>("Name");
-
-                    b.Property<int>("SortOrder");
-
-                    b.HasKey("CourseLevelId");
-
-                    b.ToTable("CourseLevel");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.CoursePage", b =>
@@ -1239,8 +1208,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<Guid?>("EnrollmentGuid");
 
                     b.Property<int>("EnrollmentStatusId");
-
-                    b.Property<int>("Grade");
 
                     b.Property<int>("IsDeleted");
 
@@ -1785,8 +1752,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("PostalCode");
 
-                    b.Property<int?>("PostalId");
-
                     b.Property<DateTime>("PostingDateUTC");
 
                     b.Property<DateTime>("PostingExpirationDateUTC");
@@ -1824,8 +1789,6 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("IndustryId");
 
                     b.HasIndex("JobCategoryId");
-
-                    b.HasIndex("PostalId");
 
                     b.HasIndex("RecruiterId");
 
@@ -2510,41 +2473,6 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("PartnerId");
 
                     b.ToTable("PartnerWebRedirect");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.PasswordResetRequest", b =>
-                {
-                    b.Property<int>("PasswordResetRequestId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<DateTime>("ExpirationDate");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<Guid>("PasswordResetRequestGuid");
-
-                    b.Property<int>("RedemptionStatusId");
-
-                    b.Property<DateTime?>("ResetDate");
-
-                    b.Property<int>("SubscriberId");
-
-                    b.HasKey("PasswordResetRequestId");
-
-                    b.HasIndex("RedemptionStatusId");
-
-                    b.HasIndex("SubscriberId");
-
-                    b.ToTable("PasswordResetRequest");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Payment", b =>
@@ -3426,8 +3354,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("AvatarUrl");
 
-                    b.Property<string>("Biography");
-
                     b.Property<string>("City");
 
                     b.Property<string>("CloudTalentIndexInfo");
@@ -3494,17 +3420,11 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("SubscriberGuid");
 
-                    b.Property<string>("Title");
-
-                    b.Property<int?>("TopicId");
-
                     b.Property<string>("TwitterUrl");
 
                     b.HasKey("SubscriberId");
 
                     b.HasIndex("StateId");
-
-                    b.HasIndex("TopicId");
 
                     b.ToTable("Subscriber");
                 });
@@ -3946,37 +3866,6 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("TagTopic");
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.TalentFavorite", b =>
-                {
-                    b.Property<int>("TalentFavoriteId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<int>("SubscriberId");
-
-                    b.Property<Guid>("TalentFavoriteGuid");
-
-                    b.Property<int>("TalentId");
-
-                    b.HasKey("TalentFavoriteId");
-
-                    b.HasIndex("SubscriberId");
-
-                    b.HasIndex("TalentId");
-
-                    b.ToTable("TalentFavorite");
-                });
-
             modelBuilder.Entity("UpDiddyApi.Models.Topic", b =>
                 {
                     b.Property<int>("TopicId")
@@ -4119,8 +4008,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<int>("IsDeleted");
 
                     b.Property<string>("LoginUrl");
-
-                    b.Property<string>("LogoUrl");
 
                     b.Property<DateTime?>("ModifyDate");
 
@@ -4454,10 +4341,6 @@ namespace UpDiddyApi.Migrations
 
             modelBuilder.Entity("UpDiddyApi.Models.Course", b =>
                 {
-                    b.HasOne("UpDiddyApi.Models.CourseLevel", "CourseLevel")
-                        .WithMany()
-                        .HasForeignKey("CourseLevelId");
-
                     b.HasOne("UpDiddyApi.Models.Vendor", "Vendor")
                         .WithMany()
                         .HasForeignKey("VendorId")
@@ -4639,10 +4522,6 @@ namespace UpDiddyApi.Migrations
                         .WithMany()
                         .HasForeignKey("JobCategoryId");
 
-                    b.HasOne("UpDiddyApi.Models.Postal", "Postal")
-                        .WithMany()
-                        .HasForeignKey("PostalId");
-
                     b.HasOne("UpDiddyApi.Models.Recruiter", "Recruiter")
                         .WithMany()
                         .HasForeignKey("RecruiterId");
@@ -4820,19 +4699,6 @@ namespace UpDiddyApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.PasswordResetRequest", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.RedemptionStatus", "RedemptionStatus")
-                        .WithMany()
-                        .HasForeignKey("RedemptionStatusId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany()
-                        .HasForeignKey("SubscriberId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
             modelBuilder.Entity("UpDiddyApi.Models.Postal", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.City", "City")
@@ -4995,10 +4861,6 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.State", "State")
                         .WithMany()
                         .HasForeignKey("StateId");
-
-                    b.HasOne("UpDiddyApi.Models.Topic", "Topic")
-                        .WithMany()
-                        .HasForeignKey("TopicId");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberAction", b =>
@@ -5120,19 +4982,6 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany("SubscriberWorkHistory")
                         .HasForeignKey("SubscriberId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.TalentFavorite", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany()
-                        .HasForeignKey("SubscriberId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UpDiddyApi.Models.Subscriber", "Talent")
-                        .WithMany()
-                        .HasForeignKey("TalentId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

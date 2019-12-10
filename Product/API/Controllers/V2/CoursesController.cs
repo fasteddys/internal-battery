@@ -15,6 +15,9 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using UpDiddyLib.Domain.Models;
+using UpDiddyApi.ApplicationCore.Exceptions;
+
 namespace UpDiddyApi.Controllers
 {
     [Route("/V2/[controller]/")]
@@ -142,5 +145,44 @@ namespace UpDiddyApi.Controllers
             await _courseFavoriteService.RemoveFromFavorite(GetSubscriberGuid(), course);
             return StatusCode(204);
         }
+
+        #region Related Entities
+
+        [HttpGet]
+        [Route("courses/{course:guid}/related")]
+        public async Task<IActionResult> GetRelatedCoursesByCourse(Guid course, int limit = 100, int offset = 0)
+        {
+            List<RelatedCourseDto> relatedCourses = null;
+
+            relatedCourses = await _courseService.GetCoursesByCourse(course, limit, offset);
+
+            return Ok(relatedCourses);
+        }
+
+        [HttpGet]
+        [Route("jobs/{job:guid}/related")]
+        public async Task<IActionResult> GetRelatedCoursesByJob(Guid job, int limit = 100, int offset = 0)
+        {
+            List<RelatedCourseDto> relatedCourses = null;
+
+            relatedCourses = await _courseService.GetCoursesByJob(job, limit, offset);
+
+            return Ok(relatedCourses);
+        }
+
+        [HttpGet]
+        [Route("subscribers/related")]
+        public async Task<IActionResult> GetRelatedCoursesForSubscriber(int limit = 100, int offset = 0)
+        {
+            var subscriber = GetSubscriberGuid();
+            if (subscriber == Guid.Empty)
+                throw new NotFoundException("Subscriber not found");
+
+            var relatedCourses = await _courseService.GetCoursesBySubscriber(subscriber, limit, offset);
+
+            return Ok(relatedCourses);
+        }
+
+        #endregion
     }
 }

@@ -24,7 +24,6 @@ namespace UpDiddyApi.Controllers
     [Route("/V2/[controller]/")]
     public class JobsController : BaseApiController
     {
-
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
@@ -81,7 +80,6 @@ namespace UpDiddyApi.Controllers
 
         #endregion
 
-
         #region CloudTalentTracking
 
         [HttpPost]
@@ -111,7 +109,6 @@ namespace UpDiddyApi.Controllers
         #endregion
 
         #region Job Browse 
-
 
         [HttpGet]
         [Route("browse-location")]
@@ -334,8 +331,39 @@ namespace UpDiddyApi.Controllers
             List<UpDiddyLib.Dto.JobPostingDto> postings = await _jobPostingService.GetJobPostingForSubscriber(GetSubscriberGuid());
             return Ok(postings);
         }
-
+        
         #endregion
 
+        #region Related Entities
+
+        [HttpGet]
+        [Route("courses/{course:guid}/related")]
+        public async Task<IActionResult> GetRelatedJobsByCourse(Guid course, int limit = 100, int offset = 0)
+        {
+            List<RelatedJobDto> relatedJobs = null;
+            var subscriber = GetSubscriberGuid();
+
+            if (subscriber != Guid.Empty)
+                relatedJobs = await _jobPostingService.GetJobsByCourse(course, limit, offset, subscriber);
+            else
+                relatedJobs = await _jobPostingService.GetJobsByCourse(course, limit, offset);
+
+            return Ok(relatedJobs);
+        }
+        
+        [HttpGet]
+        [Route("subscribers/related")]
+        public async Task<IActionResult> GetRelatedJobsForSubscriber(int limit = 100, int offset = 0)
+        {
+            var subscriber = GetSubscriberGuid();
+            if (subscriber == Guid.Empty)
+                throw new NotFoundException("Subscriber not found");
+
+            var relatedJobs = await _jobPostingService.GetJobsBySubscriber(subscriber, limit, offset);
+
+            return Ok(relatedJobs);
+        }
+
+        #endregion
     }
 }
