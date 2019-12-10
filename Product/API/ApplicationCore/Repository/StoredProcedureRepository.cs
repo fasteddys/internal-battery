@@ -89,6 +89,25 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return await _dbContext.RelatedJobs.FromSql<RelatedJobDto>("System_Get_JobsByCourse @CourseGuid, @SubscriberGuid, @Limit, @Offset", spParams).ToListAsync();
         }
 
+        public async Task<List<RelatedJobDto>> GetJobsByTopic(Guid topicGuid, int limit, int offset, Guid? subscriberGuid = null)
+        {
+            var topicParam = new SqlParameter("@TopicGuid", SqlDbType.UniqueIdentifier);
+            topicParam.Value = topicGuid;
+
+            var subscriberParam = new SqlParameter("@SubscriberGuid", SqlDbType.UniqueIdentifier);
+            subscriberParam.Value = subscriberGuid.HasValue ? (object)subscriberGuid.Value : DBNull.Value;
+
+            var limitParam = new SqlParameter("@Limit", SqlDbType.Int);
+            limitParam.Value = limit;
+
+            var offsetParam = new SqlParameter("@Offset", SqlDbType.Int);
+            offsetParam.Value = offset;
+
+            var spParams = new object[] { topicParam, subscriberParam, limitParam, offsetParam };
+
+            return await _dbContext.RelatedJobs.FromSql<RelatedJobDto>("System_Get_JobsByTopic @TopicGuid, @SubscriberGuid, @Limit, @Offset", spParams).ToListAsync();
+        }
+
         public async Task<List<RelatedJobDto>> GetJobsBySubscriber(Guid subscriberGuid, int limit, int offset)
         {
             var subscriberParam = new SqlParameter("@SubscriberGuid", SqlDbType.UniqueIdentifier);

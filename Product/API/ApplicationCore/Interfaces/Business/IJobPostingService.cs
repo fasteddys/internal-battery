@@ -4,13 +4,13 @@ using System.Threading.Tasks;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.User;
-using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface IJobPostingService
     {
         Task<List<RelatedJobDto>> GetJobsByCourse(Guid courseGuid, int limit, int offset, Guid? subscriberGuid = null);
+        Task<List<CareerPathJobDto>> CareCareerPathJobForSubscriber(Guid topicGuid, int limit, int offset, Guid subscriberGuid);
         Task<List<RelatedJobDto>> GetJobsBySubscriber(Guid subscriberGuid, int limit, int offset);
         Task<List<JobPostingCountDto>> GetJobCountPerProvinceAsync();
         Task<List<JobDto>> GetSubscriberJobFavorites(int SubscriberId);
