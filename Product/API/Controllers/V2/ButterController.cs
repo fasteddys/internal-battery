@@ -87,45 +87,7 @@ namespace UpDiddyApi.Controllers.V2
             return Ok();
         }
 
-        [HttpGet]
-        [Route("blog/site-map")]
-        public async Task<IActionResult> GetButterSiteMap()
-        {
-            var rVal = await _butterCMSService.GetButterSitemapAsync();
-            return Ok(rVal);
-        }
 
-        [HttpGet]
-        [Route("blog/author-slugs")]
-        public async Task<IActionResult> GetBlogAuthorSlugs()
-        {
-            var rVal = await _butterCMSService.GetBlogAuthorSlugsAsync();
-            return Ok(rVal);
-        }
-
-        [HttpGet]
-        [Route("blog/category-slugs")]
-        public async Task<IActionResult> GetBlogCategorySlugs()
-        {
-            var rVal = await _butterCMSService.GetBlogCategorySlugsAsync();
-            return Ok(rVal);
-        }
-
-        [HttpGet]
-        [Route("blog/tag-slugs")]
-        public async Task<IActionResult> GetBlogTagSlugs()
-        {
-            var rVal = await _butterCMSService.GetBlogTagSlugsAsync();
-            return Ok(rVal);
-        }
-
-        [HttpGet]
-        [Route("blog/page-count")]
-        public async Task<IActionResult> GetBlogPageCount()
-        {
-            int rVal = await _butterCMSService.GetNumberOfBlogPostPagesAsync();
-            return Ok(rVal);
-        }
 
 
     }
