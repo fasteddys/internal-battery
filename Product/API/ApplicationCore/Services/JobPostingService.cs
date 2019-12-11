@@ -17,8 +17,7 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Helpers;
 using UpDiddyApi.Workflow;
-using UpDiddyLib.Domain.Models;
-
+using UpDiddyApi.Helpers.Job;
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class JobPostingService : IJobPostingService
@@ -44,6 +43,20 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<List<RelatedJobDto>> GetJobsByCourse(Guid courseGuid, int limit, int offset, Guid? subscriberGuid = null)
         {
             return await _repositoryWrapper.StoredProcedureRepository.GetJobsByCourse(courseGuid, limit, offset, subscriberGuid);            
+        }
+
+        public async Task<List<CareerPathJobDto>> CareCareerPathJobForSubscriber(Guid topicGuid, int limit, int offset, Guid subscriberGuid)
+        {
+            var subscriber = await _repositoryWrapper.SubscriberRepository.GetByGuid(subscriberGuid);
+            List<CareerPathJobDto> jobDto = new List<CareerPathJobDto>();
+            if (subscriber.TopicId != null)
+            {
+                var topic = _repositoryWrapper.Topic.GetById(subscriber.TopicId.Value);
+                var jobs = await _repositoryWrapper.StoredProcedureRepository.GetJobsByTopic(topicGuid, limit, offset, subscriberGuid);
+                jobDto = _mapper.Map<List<CareerPathJobDto>>(jobs);
+                await JobUrlHelper.AssignCompanyLogoUrlToJobsList(jobDto, _configuration);
+            }
+            return jobDto;
         }
 
         public async Task<List<RelatedJobDto>> GetJobsBySubscriber(Guid subscriberGuid, int limit, int offset)
@@ -209,10 +222,5 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             return _mapper.Map<List<UpDiddyLib.Dto.JobPostingDto>>(jobPostings);
         }
-
-
-
-
-
     }
 }

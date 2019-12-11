@@ -299,6 +299,10 @@ namespace UpDiddyApi
             services.AddScoped<IButterCMSService, ButterCMSService>();
             services.AddScoped<IPasswordResetRequestService, PasswordResetRequestService>();
             services.AddScoped<ITopicService, TopicService>();
+            services.AddScoped<ISubscriberCourseService, SubscriberCourseService>();
+
+
+
             services.AddScoped<ICourseLevelService, CourseLevelService>();
             services.AddScoped<ICourseEnrollmentService, CourseEnrollmentService>();
             #endregion

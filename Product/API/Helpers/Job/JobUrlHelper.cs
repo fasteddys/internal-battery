@@ -256,7 +256,7 @@ namespace UpDiddyApi.Helpers.Job
             return WebUtility.UrlEncode(facetInfo.Trim().ToLower());
         }
 
-        public static async Task AssignCompanyLogoUrlToJobsList<T>(List<T> jobs, IConfiguration config, ICompanyService companyService) where T : JobBaseDto
+        public static async Task AssignCompanyLogoUrlToJobsList<T>(List<T> jobs, IConfiguration config, ICompanyService companyService = null) where T : JobBaseDto
         {
             foreach (var job in jobs)
             {
@@ -269,10 +269,18 @@ namespace UpDiddyApi.Helpers.Job
             await SetJobCompanyLogoUrl(job, config, companyService);
         }
 
-        public static async Task SetJobCompanyLogoUrl(JobBaseDto job, IConfiguration config, ICompanyService companyService)
+        public static async Task SetJobCompanyLogoUrl(JobBaseDto job, IConfiguration config, ICompanyService companyService = null)
         {
-            var company = await companyService.GetByCompanyName(job.CompanyName);
-            job.CompanyLogoUrl = SetCompanyLogoUrl(company.LogoUrl, config);
+            if (companyService != null)
+            {
+                var company = await companyService.GetByCompanyName(job.CompanyName);
+                job.CompanyLogoUrl = SetCompanyLogoUrl(company.LogoUrl, config);
+            }
+            else
+            {
+                job.CompanyLogoUrl = SetCompanyLogoUrl(job.CompanyName, config);
+
+            }
         }
 
         public static string SetCompanyLogoUrl(string logoUrl, IConfiguration config)

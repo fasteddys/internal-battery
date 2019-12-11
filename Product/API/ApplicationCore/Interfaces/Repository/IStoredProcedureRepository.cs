@@ -14,6 +14,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<RelatedCourseDto>> GetCoursesByJob(Guid jobPostingGuid, int limit, int offset);
         Task<List<RelatedCourseDto>> GetCoursesBySubscriber(Guid subscriberGuid, int limit, int offset);
         Task<List<RelatedJobDto>> GetJobsByCourse(Guid courseGuid, int limit, int offset, Guid? subscriberGuid = null);
+        Task<List<RelatedJobDto>> GetJobsByTopic(Guid topicGuid, int limit, int offset, Guid? subscriberGuid = null);
         Task<List<RelatedJobDto>> GetJobsBySubscriber(Guid subscriberGuid, int limit, int offset);
         Task CacheRelatedJobSkillMatrix();
         Task<List<SearchTermDto>> GetKeywordSearchTermsAsync();
@@ -32,5 +33,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<CourseDetailDto> GetCourse(Guid courseGuid);
         Task<List<CourseDetailDto>> GetFavoriteCourses(Guid subscriberGuid, int limit, int offset, string sort, string order);
         Task<List<SubscriberNotesDto>> GetSubscriberNotes(Guid subscriberGuid, Guid talentGuid, int limit, int offset, string sort, string order);
+
+        Task<List<SubscriberCourseDto>> GetSubscriberCourses(Guid subscriberGuid, int excludeCompleted, int excludeActive);
+
+
     }
 }
