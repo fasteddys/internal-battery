@@ -17,5 +17,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         bool ValidateStartDate(PromoCode promoCode);
         bool ValidateEndDate(PromoCode promoCode);
         bool ValidateRedemptions(PromoCode promoCode);
+        bool Redeem(Guid subscriberGuid, Guid promoCodeRedemptionGuid, Guid courseVariantGuid);
+
+        PromoCodeDto GetPromoCode(Guid subscriberGuid, string code, Guid courseVariantGuid);
     }
 }

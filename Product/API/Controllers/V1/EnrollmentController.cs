@@ -106,6 +106,7 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]")]
         public IActionResult Post([FromBody] EnrollmentFlowDto EnrollmentFlowDto)
         {
+ 
             EnrollmentDto EnrollmentDto = EnrollmentFlowDto.EnrollmentDto;
             BraintreePaymentDto BraintreePaymentDto = EnrollmentFlowDto.BraintreePaymentDto;
 
