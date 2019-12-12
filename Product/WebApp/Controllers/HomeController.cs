@@ -203,6 +203,8 @@ namespace UpDiddy.Controllers
         [Authorize]
         public async Task<IActionResult> Profile()
         {
+            if(this.subscriber.HasOnboarded == 0)
+                return RedirectToAction("Signup", "Home");
             var countries = await _Api.GetCountriesAsync();
             var states = await _Api.GetStatesByCountryAsync(this.subscriber?.State?.Country?.CountryGuid);
             string AssestBaseUrl = _configuration["CareerCircle:AssetBaseUrl"];

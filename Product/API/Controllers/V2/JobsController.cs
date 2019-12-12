@@ -349,18 +349,7 @@ namespace UpDiddyApi.Controllers
                 relatedJobs = await _jobPostingService.GetJobsByCourse(course, limit, offset);
 
             return Ok(relatedJobs);
-        }
-
-
-        [HttpGet]
-        [Route("subscribers/careerpath/")]
-        [Authorize]
-        public async Task<IActionResult> CareCareerPathJobForSubscriber(Guid topic, int limit = 5, int offset = 0)
-        {
-            var careerPathJobs = await _jobPostingService.CareCareerPathJobForSubscriber(topic, limit, offset, GetSubscriberGuid());
-            return Ok(careerPathJobs);
-        }
-
+        }    
 
         [HttpGet]
         [Route("subscribers/related")]
@@ -375,6 +364,19 @@ namespace UpDiddyApi.Controllers
             return Ok(relatedJobs);
         }
 
+        #endregion
+
+        #region CareerPath Recommendations
+        
+        [HttpGet] 
+        [Route("recommendations")]
+        [Authorize]
+        public async Task<IActionResult> GetCareerPathRecommendations(int limit = 5, int offset = 0)
+        {
+            var careerPathJobs = await _jobPostingService.GetCareerPathRecommendations(limit, offset, GetSubscriberGuid());
+            return Ok(careerPathJobs);
+        }
+        
         #endregion
     }
 }
