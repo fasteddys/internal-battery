@@ -19,6 +19,7 @@ using SkillDto = UpDiddyLib.Domain.Models.SkillDto;
 using UpDiddyApi.ApplicationCore.Factory;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.Workflow;
+using EnrollmentStatus = UpDiddyApi.Models.EnrollmentStatus;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -31,11 +32,13 @@ namespace UpDiddyApi.ApplicationCore.Services
         private ILogger _syslog;
         private UpDiddyDbContext _db;
         private readonly IHangfireService _hangfireService;
+        private readonly IPromoCodeService _promoCodeService;
 
 
 
 
-        public CourseEnrollmentService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IConfiguration configuration, ILogger<CourseEnrollmentService> syslog, UpDiddyDbContext db, IHttpClientFactory httpClientFactory, IHangfireService hangFireService )
+
+        public CourseEnrollmentService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IConfiguration configuration, ILogger<CourseEnrollmentService> syslog, UpDiddyDbContext db, IHttpClientFactory httpClientFactory, IHangfireService hangFireService, IPromoCodeService promoCodeService )
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
@@ -44,22 +47,55 @@ namespace UpDiddyApi.ApplicationCore.Services
             _syslog = syslog;
             _db = db;
             _hangfireService = hangFireService;
+            _promoCodeService = promoCodeService;
         }
 
-
-        public async Task<Guid> Enroll(Guid subscriberGuid, EnrollmentFlowDto EnrollmentFlowDto)
+        public async Task<Guid> Enroll(Guid subscriberGuid, CourseEnrollmentDto courseEnrollmentDto, string courseSlug)
         {
-            if (EnrollmentFlowDto.EnrollmentDto == null || EnrollmentFlowDto.SubscriberDto == null || EnrollmentFlowDto.SubscriberDto.SubscriberGuid == null )
-                throw new FailedValidationException("Enrollment information is missing");
 
+   
+            Course course = _repositoryWrapper.Course.GetAll()
+            .Include(c => c.Vendor)
+            .Include(c => c.CourseVariants).ThenInclude(cv => cv.CourseVariantType)
+            .Include(c => c.CourseSkills).ThenInclude(cs => cs.Skill)
+            .Where(t => t.IsDeleted == 0 && t.Slug == courseSlug)
+            .FirstOrDefault();
+
+            if (course == null)
+                throw new NotFoundException($"Course {courseSlug} does not exist");
+
+            CourseVariant courseVariant = _repositoryWrapper.CourseVariant.GetAll()
+            .Include(c => c.CourseVariantType) 
+            .Where(t => t.IsDeleted == 0 && t.CourseVariantGuid == courseEnrollmentDto.CourseVariantGuid)
+            .FirstOrDefault();
+
+
+            if (courseVariant == null)
+                throw new NotFoundException($"Course Variant {courseEnrollmentDto.CourseVariantGuid} does not exist");
+
+
+
+            if (course.CourseGuid != courseEnrollmentDto.CourseGuid)
+                throw new FailedValidationException($"Course enrollment information mis-aligned with course slug");
+
+            if (courseEnrollmentDto == null)
+                throw new FailedValidationException($"Course enrollment information not found");
+
+            if (courseEnrollmentDto.SubscriberGuid == null)
+                throw new FailedValidationException($"Subscriber must be specified for enrollment");
+
+            if (subscriberGuid != courseEnrollmentDto.SubscriberGuid)
+                throw new UnauthorizedAccessException("Logged in subscriber does not match subscriber being enrolled");
+
+
+            // map the CourseEnrollmentDto to an EnrollmentFlowDto 
+            EnrollmentFlowDto EnrollmentFlowDto = await CreateEnrollmentFlowDto(course,courseVariant, subscriberGuid, courseEnrollmentDto, courseSlug);
+            //
             EnrollmentDto EnrollmentDto = EnrollmentFlowDto.EnrollmentDto;
             BraintreePaymentDto BraintreePaymentDto = EnrollmentFlowDto.BraintreePaymentDto;
- 
-            if (!subscriberGuid.Equals(EnrollmentFlowDto.SubscriberDto.SubscriberGuid))
-                throw new UnauthorizedAccessException("Logged in subscriber does not match subscriber being enrolled");
-               
+             
+            
             EnrollmentDto.Subscriber = null;
-            EnrollmentDto.CourseId = _repositoryWrapper.Course.GetAll().Where(c => c.CourseGuid == EnrollmentDto.CourseGuid).Select(c => c.CourseId).FirstOrDefault();
             Enrollment Enrollment = _mapper.Map<Enrollment>(EnrollmentDto);
 
             if (Enrollment.CampaignCourseVariant != null)
@@ -78,8 +114,7 @@ namespace UpDiddyApi.ApplicationCore.Services
              *      currently payment status is fixed because we are processing the BrainTree payment synchronously; this will not be the case in the future
              *      the payment month and year is 30 days after the enrollment date for Woz, will be different for other vendors (forcing us to address that when we onboard the next vendor)
              */
-            DateTime currentDate = DateTime.UtcNow;
-            var course = _repositoryWrapper.Course.GetAll().Where(c => c.CourseId == EnrollmentDto.CourseId).FirstOrDefault();
+            DateTime currentDate = DateTime.UtcNow; 
             var vendor = _repositoryWrapper.Vendor.GetAll().Where(v => v.VendorId == course.VendorId).FirstOrDefault(); // why is vendor id nullable on course?
 
             var originalCoursePrice = _repositoryWrapper.CourseVariant.GetAll()
@@ -108,7 +143,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _db.EnrollmentLog.Add(new EnrollmentLog()
             {
                 CourseCost = originalCoursePrice,
-                CourseGuid = course.CourseGuid.HasValue ? course.CourseGuid.Value : Guid.Empty,
+                CourseGuid = EnrollmentDto.CourseGuid,
                 CourseVariantGuid = EnrollmentDto.CourseVariantGuid,
                 CreateDate = currentDate,
                 CreateGuid = Guid.Empty,
@@ -121,9 +156,13 @@ namespace UpDiddyApi.ApplicationCore.Services
                 SubscriberGuid = subscriberGuid,
                 EnrollmentVendorPaymentStatusId = 2
             });
-
+            
             _db.SaveChanges();
 
+            // Rdeem the promocode if on has been applied
+            _promoCodeService.Redeem(subscriberGuid, courseEnrollmentDto.PromoCodeRedemptionGuid, courseVariant.CourseVariantGuid.Value);
+
+         
             /**
              *  This line used to enqueue the enrollment flow. Now, it's enqueuing the braintree flow,
              *  which will then enqueue the enrollment flow if the payment is successful.
@@ -138,7 +177,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
-        public async Task<CourseCheckoutDto> GetCourseCheckoutInfo(Guid subscriberGuid, string courseSlug)
+        public async Task<CourseCheckoutInfoDto> GetCourseCheckoutInfo(Guid subscriberGuid, string courseSlug)
         {
         
             Course course = _repositoryWrapper.Course.GetAll()
@@ -153,11 +192,8 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             UpDiddyLib.Dto.SubscriberDto subscriberDto = await SubscriberFactory.GetSubscriber(_repositoryWrapper, subscriberGuid, _syslog, _mapper);
            
-            if (subscriberDto == null || subscriberDto.SubscriberGuid == null || subscriberDto.SubscriberGuid != subscriberGuid)
-                throw new NotFoundException($"Subscriber {subscriberGuid} does not exist");
-
             // create course checkout and fill in course info
-            CourseCheckoutDto rVal = new CourseCheckoutDto()
+            CourseCheckoutInfoDto rVal = new CourseCheckoutInfoDto()
             {
                 Name = course.Name,
                 Code = course.Code,
@@ -227,11 +263,66 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // add course variant 
                 rVal.CourseVariants.Add(courseVariant);
             }
-           
+
 
 
             return rVal;
         }
+
+
+        #region Private Helper functions
+
+        private async Task<EnrollmentFlowDto> CreateEnrollmentFlowDto(Course course, CourseVariant courseVariant, Guid subscriberGuid, CourseEnrollmentDto courseEnrollmentDto, string courseSlug)
+        {
+
+            //  Create EnrollmentFlow DTO
+            EnrollmentFlowDto EnrollmentFlowDto = new EnrollmentFlowDto();
+            EnrollmentFlowDto.EnrollmentDto = new EnrollmentDto();
+
+            EnrollmentFlowDto.SubscriberDto = await SubscriberFactory.GetSubscriber(_repositoryWrapper, courseEnrollmentDto.SubscriberGuid, _syslog, _mapper);
+
+            if (EnrollmentFlowDto.SubscriberDto == null)
+                throw new NotFoundException("Unable to locate subscriber");
+
+            DateTime currentDate = DateTime.UtcNow;
+
+            // Assign Enrollment information 
+            EnrollmentFlowDto.EnrollmentDto.PricePaid = courseEnrollmentDto.PricePaid;
+            EnrollmentFlowDto.EnrollmentDto.SubscriberId = EnrollmentFlowDto.SubscriberDto.SubscriberId;
+            EnrollmentFlowDto.EnrollmentDto.EnrollmentGuid = Guid.NewGuid();
+            EnrollmentFlowDto.EnrollmentDto.CourseId = course.CourseId;
+            EnrollmentFlowDto.EnrollmentDto.CourseGuid = course.CourseGuid.Value;
+            EnrollmentFlowDto.EnrollmentDto.SectionStartTimestamp = courseEnrollmentDto.SectionStartTimestamp;
+            EnrollmentFlowDto.EnrollmentDto.CourseVariantGuid = courseVariant.CourseVariantGuid.Value;
+            EnrollmentFlowDto.EnrollmentDto.CreateDate = currentDate;
+            EnrollmentFlowDto.EnrollmentDto.ModifyDate = currentDate;
+            EnrollmentFlowDto.EnrollmentDto.DateEnrolled = currentDate;
+            EnrollmentFlowDto.EnrollmentDto.CreateGuid = Guid.Empty;
+            EnrollmentFlowDto.EnrollmentDto.ModifyGuid = Guid.Empty;
+            EnrollmentFlowDto.EnrollmentDto.PercentComplete = 0;
+            EnrollmentFlowDto.EnrollmentDto.IsRetake = 0;
+            EnrollmentFlowDto.EnrollmentDto.SectionStartTimestamp = courseEnrollmentDto.SectionStartTimestamp;
+            EnrollmentFlowDto.EnrollmentDto.TermsOfServiceFlag = courseEnrollmentDto.TermsOfServiceId;
+            EnrollmentFlowDto.EnrollmentDto.PromoCodeRedemptionGuid = courseEnrollmentDto.PromoCodeRedemptionGuid;
+
+            // Set the enrollment status based on the course type
+            switch (courseVariant.CourseVariantType.Name)
+            {
+                case "Instructor-Led":
+                    EnrollmentFlowDto.EnrollmentDto.EnrollmentStatusId = (int)UpDiddyLib.Dto.EnrollmentStatus.FutureRegisterStudentRequested;
+                    break;
+                default:
+                    EnrollmentFlowDto.EnrollmentDto.EnrollmentStatusId  = (int)UpDiddyLib.Dto.EnrollmentStatus.RegisterStudentRequested;
+                    break;
+            }
+       
+            // map braintree info 
+            EnrollmentFlowDto.BraintreePaymentDto = _mapper.Map<BraintreePaymentDto>(courseEnrollmentDto);
+
+            return EnrollmentFlowDto;
+        }
+
+        #endregion
 
 
 

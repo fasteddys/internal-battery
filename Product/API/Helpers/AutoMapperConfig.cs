@@ -267,8 +267,31 @@ namespace UpDiddyApi.Helpers
                 .ReverseMap();
 
 
-        }
+
+            CreateMap<CourseEnrollmentDto, BraintreePaymentDto>()
+                .ForMember(c => c.PaymentAmount, opt => opt.MapFrom(src => src.PaymentAmount))
+                .ForMember(c => c.Nonce, opt => opt.MapFrom(src => src.Nonce))
+                .ForMember(c => c.FirstName, opt => opt.MapFrom(src => src.FirstName))
+                .ForMember(c => c.LastName, opt => opt.MapFrom(src => src.LastName))
+                .ForMember(c => c.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+                .ForMember(c => c.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(c => c.Address, opt => opt.MapFrom(src => src.Address))
+                .ForMember(c => c.Region, opt => opt.MapFrom(src => src.Region))
+                .ForMember(c => c.Locality, opt => opt.MapFrom(src => src.Locality))
+                .ForMember(c => c.ZipCode, opt => opt.MapFrom(src => src.ZipCode))
+                .ForMember(c => c.CountryCode, opt => opt.MapFrom(src => src.CountryCode))
+                .ForMember(c => c.MerchantAccountId, opt => opt.MapFrom(src => src.MerchantAccountId))
+                .ForMember(c => c.StateGuid, opt => opt.MapFrom(src => src.StateGuid))
+                .ForMember(c => c.CountryGuid, opt => opt.MapFrom(src => src.CountryGuid)) 
+                .ForAllOtherMembers(opts => opts.Ignore());
+
+ 
+
+
 
 
     }
+
+
+}
 }

@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using UpDiddyLib.Domain.Models;
 using UpDiddyApi.ApplicationCore.Exceptions;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.Controllers
 {
@@ -37,6 +38,7 @@ namespace UpDiddyApi.Controllers
         private readonly ICourseService _courseService;
         private readonly ICourseFavoriteService _courseFavoriteService;
         private readonly ICourseEnrollmentService _courseEnrollmentService;
+        private readonly IPromoCodeService _promoCodeService;
 
 
         public CoursesController(UpDiddyDbContext db
@@ -50,7 +52,8 @@ namespace UpDiddyApi.Controllers
         , IRepositoryWrapper repositoryWrapper
         , ICourseService courseService
         , ICourseFavoriteService courseFavoriteService
-        , ICourseEnrollmentService courseEnrollmentService)
+        , ICourseEnrollmentService courseEnrollmentService
+        , IPromoCodeService  promoCodeService)
         {
             _db = db;
             _mapper = mapper;
@@ -65,6 +68,7 @@ namespace UpDiddyApi.Controllers
             _courseService = courseService;
             _courseFavoriteService = courseFavoriteService;
             _courseEnrollmentService = courseEnrollmentService;
+            _promoCodeService = promoCodeService;
         }
 
 
@@ -114,13 +118,34 @@ namespace UpDiddyApi.Controllers
         }
 
         #region Course Enrollments
+        
+
+        [HttpGet]
+        [Authorize]
+        [Route("{courseSlug}/{courseVariant}/promocodes/{promoCode}")]
+        public async Task<IActionResult> GetCoursesEnrollmentInfo(string courseSlug, Guid courseVariant, string promoCode)
+        {
+            PromoCodeDto rVal = _promoCodeService.GetPromoCode(GetSubscriberGuid(), promoCode, courseVariant);
+            return Ok(rVal);
+        }
+        
 
         [HttpGet]
         [Authorize]
         [Route("{courseSlug}/enroll")]
         public async Task<IActionResult> GetCoursesEnrollmentInfo(string courseSlug)
         {
-           CourseCheckoutDto rVal = await _courseEnrollmentService.GetCourseCheckoutInfo(GetSubscriberGuid(), courseSlug);
+           CourseCheckoutInfoDto rVal = await _courseEnrollmentService.GetCourseCheckoutInfo(GetSubscriberGuid(), courseSlug);
+            return Ok(rVal);
+        }
+        
+        [HttpPost]
+        [Authorize]
+        [Route("{courseSlug}/enroll")]
+        public async Task<IActionResult> EnrollSubscriber([FromBody] CourseEnrollmentDto courseEnrollmentDto, string courseSlug)
+        {
+
+            var rVal = await _courseEnrollmentService.Enroll(GetSubscriberGuid(), courseEnrollmentDto, courseSlug);
             return Ok(rVal);
         }
 

@@ -108,6 +108,22 @@ namespace UpDiddyLib.Domain.Models
 
         public Guid? CountryGuid { get; set; }
 
+
+        public Guid CourseVariantGuid { get; set; }
+        public Guid CourseGuid { get; set; }
+
+        public Guid SubscriberGuid { get; set; }
+
+        public Guid PromoCodeRedemptionGuid { get; set; }
+
+        public Decimal PricePaid { get; set; }
+
+        public Int64? SectionStartTimestamp { get; set; }
+
+        public int TermsOfServiceId { get; set; }
+ 
+
+
         #endregion
 
 

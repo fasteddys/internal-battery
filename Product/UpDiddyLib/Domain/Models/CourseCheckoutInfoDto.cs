@@ -4,7 +4,7 @@ using System.Text;
 
 namespace UpDiddyLib.Domain.Models
 {
-    public class CourseCheckoutDto
+    public class CourseCheckoutInfoDto
     {
 
 

@@ -9,8 +9,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface ICourseEnrollmentService
     {
-        Task<CourseCheckoutDto> GetCourseCheckoutInfo(Guid subscriberGuid, string courseSlug);
-        Task<Guid> Enroll(Guid subscriberGuid, EnrollmentFlowDto EnrollmentFlowDto);
+        Task<CourseCheckoutInfoDto> GetCourseCheckoutInfo(Guid subscriberGuid, string courseSlug);
+        Task<Guid> Enroll(Guid subscriberGuid, CourseEnrollmentDto courseEnrollmentDto, string courseSlug);
 
     }
 }
