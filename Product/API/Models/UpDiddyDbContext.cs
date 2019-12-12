@@ -201,21 +201,24 @@ namespace UpDiddyApi.Models
         public DbQuery<CourseDetailDto> CourseDetails { get; set; }
         public DbQuery<RelatedJobDto> RelatedJobs { get; set; }
         public DbQuery<RelatedCourseDto> RelatedCourses { get; set; }
-
-
         public DbQuery<JobDto> SubscriberJobFavorites { get; set; }
         public DbQuery<SubscriberSignUpCourseEnrollmentStatistics> SubscriberSignUpCourseEnrollmentStatistics { get; set; }
         public DbQuery<SearchTermDto> KeywordSearchTerms { get; set; }
         public DbQuery<SearchTermDto> LocationSearchTerms { get; set; }
         public DbQuery<SubscriberNotesDto> SubscriberNoteQuery { get; set; }
-
-
         public DbQuery<SubscriberCourseDto> SubscriberCourses { get; set; }
+        public DbQuery<JobSitemapDto> JobSitemap {get;set;}
 
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Query<JobSitemapDto>()
+                .Property(jsm => jsm.Url)
+                .HasConversion(
+                u => u.ToString(),
+                u => new Uri(u));
+
             modelBuilder.Entity<Postal>()
                 .HasIndex(p => new { p.CityId, p.Code })
                 .HasName("UIX_Postal_City_Code")

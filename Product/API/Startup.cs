@@ -233,6 +233,12 @@ namespace UpDiddyApi
             // update the related job skill matrix table once per day at 5 UTC
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheRelatedJobSkillMatrix(), Cron.Daily(5));
 
+            // generate the sitemap and save it to blob storage
+            // RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.GenerateSiteMapAndSaveToBlobStorage(), Cron.Daily(5));
+
+            // TESTING ONLY!!! TODO: REMOVE THIS
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.GenerateSiteMapAndSaveToBlobStorage(), Cron.MinuteInterval(10));
+
             #endregion
 
             services.AddHttpClient(Constants.HttpGetClientName);
@@ -299,11 +305,10 @@ namespace UpDiddyApi
             services.AddScoped<IButterCMSService, ButterCMSService>();
             services.AddScoped<IPasswordResetRequestService, PasswordResetRequestService>();
             services.AddScoped<ITopicService, TopicService>();
-            services.AddScoped<ISubscriberCourseService, SubscriberCourseService>();
-
-
-
+            services.AddScoped<ISubscriberCourseService, SubscriberCourseService>();            
             services.AddScoped<ICourseLevelService, CourseLevelService>();
+            services.AddScoped<ISitemapService, SitemapService>();
+
             #endregion
 
             // Configure SnapshotCollector from application settings
