@@ -303,6 +303,7 @@ namespace UpDiddyApi
             services.AddScoped<IOfferService, OfferService>();
 
             services.AddScoped<ICourseLevelService, CourseLevelService>();
+            services.AddScoped<ICourseEnrollmentService, CourseEnrollmentService>();
             #endregion
 
             // Configure SnapshotCollector from application settings
