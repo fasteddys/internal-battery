@@ -300,8 +300,7 @@ namespace UpDiddyApi
             services.AddScoped<IPasswordResetRequestService, PasswordResetRequestService>();
             services.AddScoped<ITopicService, TopicService>();
             services.AddScoped<ISubscriberCourseService, SubscriberCourseService>();
-
-
+            services.AddScoped<IOfferService, OfferService>();
 
             services.AddScoped<ICourseLevelService, CourseLevelService>();
             #endregion
