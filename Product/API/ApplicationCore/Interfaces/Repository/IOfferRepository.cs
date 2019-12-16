@@ -10,5 +10,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     {
         Task<Offer> GetOfferByOfferGuid(Guid? offerGuid);
         Task<List<Offer>> GetAllOffers(int limit, int offset);
+        Task<Offer> GetOfferByGuid(Guid offerGuid);
     }
 }
