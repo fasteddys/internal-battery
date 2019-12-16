@@ -278,7 +278,7 @@ namespace UpDiddyApi.Helpers.Job
             }
             else
             {
-                job.CompanyLogoUrl = SetCompanyLogoUrl(job.CompanyName, config);
+                job.CompanyLogoUrl = SetCompanyLogoUrl(job.CompanyLogoUrl, config);
 
             }
         }

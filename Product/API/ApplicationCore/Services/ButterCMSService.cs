@@ -27,7 +27,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 _cache = cache;
                 _configuration = configuration;
                 _sysEmail = sysEmail;
-                _butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
+                _butterClient = new ButterCMSClient(_configuration["ButterCMSApi:ReadApiToken"]);
                 CmsCacheKeyPrefix = Constants.CMS.CACHE_KEY_PREFIX;
             }
 

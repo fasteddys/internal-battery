@@ -45,14 +45,14 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await _repositoryWrapper.StoredProcedureRepository.GetJobsByCourse(courseGuid, limit, offset, subscriberGuid);            
         }
 
-        public async Task<List<CareerPathJobDto>> CareCareerPathJobForSubscriber(Guid topicGuid, int limit, int offset, Guid subscriberGuid)
+        public async Task<List<CareerPathJobDto>> GetCareerPathRecommendations(int limit, int offset, Guid subscriberGuid)
         {
             var subscriber = await _repositoryWrapper.SubscriberRepository.GetByGuid(subscriberGuid);
             List<CareerPathJobDto> jobDto = new List<CareerPathJobDto>();
             if (subscriber.TopicId != null)
             {
-                var topic = _repositoryWrapper.Topic.GetById(subscriber.TopicId.Value);
-                var jobs = await _repositoryWrapper.StoredProcedureRepository.GetJobsByTopic(topicGuid, limit, offset, subscriberGuid);
+                var topic = await _repositoryWrapper.Topic.GetById(subscriber.TopicId.Value);
+                var jobs = await _repositoryWrapper.StoredProcedureRepository.GetJobsByTopic(topic.TopicGuid.Value, limit, offset, subscriberGuid);
                 jobDto = _mapper.Map<List<CareerPathJobDto>>(jobs);
                 await JobUrlHelper.AssignCompanyLogoUrlToJobsList(jobDto, _configuration);
             }

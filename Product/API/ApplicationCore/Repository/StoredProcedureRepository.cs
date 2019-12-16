@@ -406,11 +406,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             rval = await _dbContext.SubscriberNoteQuery.FromSql<SubscriberNotesDto>("System_Get_SubscriberNotes @SubscriberGuid, @TalentGuid, @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
             return rval;
         }
-
-
-        // todo jab talk to jyoti about vendor logo url and course level/num lessons to update sproc
-
-
+ 
         public async Task<List<SubscriberCourseDto>> GetSubscriberCourses(Guid subscriberGuid, int excludeCompleted, int excludeActive)
 
         {
