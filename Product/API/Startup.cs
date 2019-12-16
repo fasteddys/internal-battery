@@ -234,10 +234,7 @@ namespace UpDiddyApi
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheRelatedJobSkillMatrix(), Cron.Daily(5));
 
             // generate the sitemap and save it to blob storage
-            // RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.GenerateSiteMapAndSaveToBlobStorage(), Cron.Daily(5));
-
-            // TESTING ONLY!!! TODO: REMOVE THIS
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.GenerateSiteMapAndSaveToBlobStorage(), Cron.MinuteInterval(10));
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.GenerateSiteMapAndSaveToBlobStorage(), Cron.Daily(5));
 
             #endregion
 

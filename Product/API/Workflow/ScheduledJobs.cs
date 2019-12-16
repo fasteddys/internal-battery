@@ -109,14 +109,10 @@ namespace UpDiddyApi.Workflow
             if (!Uri.TryCreate(rawBaseUrl, UriKind.Absolute, out baseSiteUrl))
                 throw new ApplicationException($"Invalid base site url specified in the API configuration: {rawBaseUrl}");
 
-            var sitemap = await _sitemapService.GenerateSiteMap(baseSiteUrl);
-
-            await _sitemapService.SaveSitemapToBlobStorage(sitemap);
-            // _sitemapService.SaveSitemapToBlobStorage();
-
             try
             {
-                
+                var sitemap = await _sitemapService.GenerateSiteMap(baseSiteUrl);
+                await _sitemapService.SaveSitemapToBlobStorage(sitemap);
             }
             catch (Exception e)
             {
@@ -1144,7 +1140,7 @@ namespace UpDiddyApi.Workflow
         #endregion
 
         #region CareerCircle Jobs 
-        
+
         [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public async Task CacheRelatedJobSkillMatrix()
         {
