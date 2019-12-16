@@ -233,8 +233,11 @@ namespace UpDiddyApi
             // update the related job skill matrix table once per day at 5 UTC
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheRelatedJobSkillMatrix(), Cron.Daily(5));
 
-            // generate the sitemap and save it to blob storage
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.GenerateSiteMapAndSaveToBlobStorage(), Cron.Daily(5));
+            // generate the sitemap and save it to blob storage (do this only in staging and prod since we currently do not have a "development" instance for blob storage)
+            if (_currentEnvironment.IsStaging())
+                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.GenerateSiteMapAndSaveToBlobStorage(), Cron.Weekly(DayOfWeek.Sunday, 5));
+            if (_currentEnvironment.IsProduction())
+                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.GenerateSiteMapAndSaveToBlobStorage(), Cron.Daily(5));
 
             #endregion
 
