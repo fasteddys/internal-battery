@@ -51,7 +51,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (courses == null)
                 throw new NotFoundException("Courses does not exist");
             var coursesDto = _mapper.Map<List<CourseDetailDto>>(courses);
-            CourseUrlHelper.SetVendorAndThumbnailUrl(coursesDto,_configuration);
             return coursesDto;
         }
 

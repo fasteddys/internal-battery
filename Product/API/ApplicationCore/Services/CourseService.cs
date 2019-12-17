@@ -52,7 +52,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (limit != null)
                 int.TryParse(limit, out MaxResults);
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesRandom(MaxResults);
-            CourseUrlHelper.SetVendorAndThumbnailUrl(courses,_config);
             return courses;
         }
 
@@ -66,7 +65,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (limit != null)
                 int.TryParse(limit, out MaxResults);
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesForJob(jobGuid, MaxResults);
-            CourseUrlHelper.SetVendorAndThumbnailUrl(courses,_config);
             return courses;
         }
 
@@ -76,7 +74,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCourses(limit, offset, sort, order);
             if (courses == null)
                 throw new NotFoundException("Courses not found");
-            CourseUrlHelper.SetVendorAndThumbnailUrl(courses,_config);
             return (courses);
         }
 
@@ -87,7 +84,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             var course = await _repositoryWrapper.StoredProcedureRepository.GetCourse(courseGuid);
             if (course == null)
                 throw new NotFoundException("Courses not found");
-            CourseUrlHelper.SetVendorAndThumbnailUrl(course,_config);
             return (course);
         }
 
@@ -105,7 +101,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (limit != null)
                 int.TryParse(limit, out MaxResults);
             var courses = await  _repositoryWrapper.StoredProcedureRepository.GetCoursesBySkillHistogram(SkillHistogram, MaxResults);
-            CourseUrlHelper.SetVendorAndThumbnailUrl(courses,_config);
             return courses;
         }
 

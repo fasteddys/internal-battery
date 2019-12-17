@@ -89,7 +89,7 @@ namespace UpDiddyApi.ApplicationCore.Exceptions
             : base(message, innerException) { }
     }
 
-     public class TraitifyException : Exception
+    public class TraitifyException : Exception
     {
         public TraitifyException() : base() { }
         public TraitifyException(string message) : base(message)
@@ -97,6 +97,17 @@ namespace UpDiddyApi.ApplicationCore.Exceptions
 
         }
         public TraitifyException(string message, TraitifyException innerException)
+            : base(message, innerException) { }
+    }
+
+    public class OfferException : Exception
+    {
+        public OfferException() : base() { }
+        public OfferException(string message) : base(message)
+        {
+
+        }
+        public OfferException(string message, OfferException innerException)
             : base(message, innerException) { }
     }
 

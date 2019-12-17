@@ -69,6 +69,10 @@ public class ExceptionMiddleware
         {
             await CreateResponse(403, ex, context);
         }
+        catch (OfferException ex)
+        {
+            await CreateResponse(400, ex, context);
+        }
         catch (Exception ex)
         {
             await CreateResponse(500, ex, context);
