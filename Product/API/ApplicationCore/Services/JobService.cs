@@ -284,6 +284,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             JobQueryDto jobQuery = JobQueryHelper.CreateJobQuery(Country, Province, City, Industry, JobCategory, Skill, PageNum, PageSize, query);
             JobSearchResultDto jobSearchResult = _cloudTalentService.JobSearch(jobQuery);
 
+            //assign company logo urls
+            await AssignCompanyLogoUrlToJobs(jobSearchResult.Jobs);
+
             // set common properties for an alert jobQuery and include this in the response
             jobQuery.DatePublished = null;
             jobQuery.ExcludeCustomProperties = 1;
@@ -302,6 +305,19 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             return jobSearchResult;
         }
+
+        private async Task AssignCompanyLogoUrlToJobs(List<JobViewDto> jobs)
+        {
+            var companies = await _companyService.GetCompaniesAsync();
+            foreach (var job in jobs)
+            {
+                var company = companies.Where(x => x.CompanyName == job.CompanyName).FirstOrDefault();
+
+                if (!string.IsNullOrWhiteSpace(company?.LogoUrl))
+                    job.CompanyLogoUrl = company.LogoUrl;
+            }
+        }
+
 
         public async Task ShareJob(Guid job, Guid subscriber, ShareJobDto shareJobDto)
         {
