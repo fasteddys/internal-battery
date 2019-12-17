@@ -70,7 +70,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesForJob(jobGuid, MaxResults);            
             return courses;
         }
-
+        
 
         public async Task<List<CourseDetailDto>> GetCourses(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {

@@ -158,14 +158,8 @@ namespace UpDiddyApi.Controllers
         [Route("query")]
         public async Task<IActionResult> SearchCourses(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*")
         {
-
-
-            //todo jab move to service 
-
            var rVal = await _courseService.SearchCoursesAsync(limit, offset, sort, order, keyword);
-
-
-            return Ok(rVal);
+           return Ok(rVal);
         }
 
         #endregion 
