@@ -927,10 +927,10 @@ namespace UpDiddyApi.Workflow
                         }
                         else
                         {
-                            // we have to add/update the recruiter and the associated company - should the job posting factory encapsulate that logic?
-                            Recruiter recruiter = await RecruiterFactory.GetAddOrUpdate(_repositoryWrapper, jobPostingDto.Recruiter.Email, jobPostingDto.Recruiter.FirstName, jobPostingDto.Recruiter.LastName, null, null);
-                            Company company = await CompanyFactory.GetCompanyByGuid(_repositoryWrapper, jobPostingDto.Company.CompanyGuid);
-                            await RecruiterCompanyFactory.GetOrAdd(_repositoryWrapper, recruiter.RecruiterId, company.CompanyId, true);
+                            // we have to add/update the recruiter and the associated company - should the job posting factory encapsulate that logic?                            
+                            Recruiter recruiter = RecruiterFactorySync.GetAddOrUpdate(_db, jobPostingDto.Recruiter.Email, jobPostingDto.Recruiter.FirstName, jobPostingDto.Recruiter.LastName, null, null);
+                            Company company = CompanyFactorySync.GetCompanyByGuid(_db, jobPostingDto.Company.CompanyGuid);
+                            RecruiterCompanyFactorySync.GetOrAdd(_db, recruiter.RecruiterId, company.CompanyId, true);
 
                             // attempt to create job posting
                             isJobPostingOperationSuccessful = JobPostingFactory.PostJob(_repositoryWrapper, recruiter.RecruiterId, jobPostingDto, ref jobPostingGuid, ref errorMessage, _syslog, _mapper, _configuration, true, _hangfireService);
@@ -949,7 +949,7 @@ namespace UpDiddyApi.Workflow
                         if (!jobPage.JobPostingId.HasValue)
                         {
                             // we have the job posting guid but not the job posting id. retrieve that so we can associate the job posting with the job page
-                            var result = await JobPostingFactory.GetJobPostingByGuid(_repositoryWrapper, jobPostingGuid);
+                            var result = JobPostingFactorySync.GetJobPostingByGuid(_db, jobPostingGuid);
                             jobPage.JobPostingId = result?.JobPostingId;
                         }
 
@@ -1010,7 +1010,7 @@ namespace UpDiddyApi.Workflow
                     if (jobPage.JobPostingId.HasValue)
                     {
                         // get the job posting guid
-                        var jobPosting = await JobPostingFactory.GetJobPostingById(_repositoryWrapper, jobPage.JobPostingId.Value);
+                        var jobPosting = JobPostingFactorySync.GetJobPostingById(_db, jobPage.JobPostingId.Value);
                         jobPostingGuid = jobPosting.JobPostingGuid;
                         // attempt to delete job posting
                         isJobDeleteOperationSuccessful = JobPostingFactory.DeleteJob(_repositoryWrapper, jobPostingGuid, ref errorMessage, _syslog, _mapper, _configuration, _hangfireService);

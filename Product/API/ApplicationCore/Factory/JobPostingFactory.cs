@@ -214,7 +214,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             // save the job to sql server 
             // todo make saving the job posting and skills more efficient with a stored procedure 
             repositoryWrapper.JobPosting.Create(jobPosting);
-            repositoryWrapper.JobPosting.SaveAsync();
+            repositoryWrapper.JobPosting.SaveAsync().Wait();
             // update associated job posting skills
             JobPostingFactory.UpdateJobPostingSkills(repositoryWrapper, jobPosting.JobPostingId, jobPostingDto?.JobPostingSkills);
             //index active jobs into google 
@@ -325,7 +325,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// <returns></returns>        
         public static async Task<JobPosting> GetJobPostingByGuid(IRepositoryWrapper repositoryWrapper, Guid guid)
         {
-            return await repositoryWrapper.JobPosting.GetAllWithTracking()
+            
+return await repositoryWrapper.JobPosting.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.JobPostingGuid == guid)
                 .Include(s => s.Recruiter).ThenInclude(r => r.Subscriber)
                 .Include(s => s.Company)
@@ -812,6 +813,24 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 return false;
 
             }
+        }
+    }
+
+    [Obsolete("Resurrecting synchronous code prior to commit 95267554 to address compatibility issues with the JobDataMining process.", false)]
+    public class JobPostingFactorySync
+    {
+        public static JobPosting GetJobPostingById(UpDiddyDbContext db, int jobPostingId)
+        {
+            return db.JobPosting
+                .Where(s => s.IsDeleted == 0 && s.JobPostingId == jobPostingId)
+                .FirstOrDefault();
+        }
+
+        public static JobPosting GetJobPostingByGuid(UpDiddyDbContext db, Guid guid)
+        {
+            return db.JobPosting
+                .Where(s => s.IsDeleted == 0 && s.JobPostingGuid == guid)
+                .FirstOrDefault();
         }
     }
 }
