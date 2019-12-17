@@ -17,7 +17,6 @@ using UpDiddyLib.Dto.User;
 using UpDiddyLib.Domain.Models;
 using Microsoft.Extensions.Configuration;
 using UpDiddyLib.Domain;
-
 namespace UpDiddyApi.Helpers
 {
     public class AutoMapperConfiguration
@@ -91,6 +90,9 @@ namespace UpDiddyApi.Helpers
             CreateMap<ServiceOfferingOrder, ServiceOfferingOrderDto>().ReverseMap();
             CreateMap<ServiceOfferingPromoCodeRedemption, ServiceOfferingPromoCodeRedemptionDto>().ReverseMap();
             CreateMap<FileDownloadTracker, FileDownloadTrackerDto>().ReverseMap();
+            CreateMap<Offer, UpDiddyLib.Domain.Models.OfferDto>()
+            .ForMember(c => c.PartnerName, opt => opt.MapFrom(src => src.Partner.Name))
+             .ForMember(dest => dest.PartnerLogoUrl, opt => opt.ResolveUsing<PartnerUrlResolver, string>(src => src.Partner.LogoUrl));
             CreateMap<RelatedJobDto, CareerPathJobDto>()
             .ForMember(c => c.CompanyLogoUrl, opt => opt.MapFrom(src => src.LogoUrl)).ReverseMap();
             CreateMap<Traitify, TraitifyDto>().ReverseMap();
@@ -153,7 +155,7 @@ namespace UpDiddyApi.Helpers
               .ReverseMap();
 
             CreateMap<JobViewDto, UpDiddyLib.Domain.Models.JobPostingDto>().ReverseMap();
-            CreateMap<Skill,UpDiddyLib.Domain.Models.SkillDto>()
+            CreateMap<Skill, UpDiddyLib.Domain.Models.SkillDto>()
             .ForMember(c => c.Name, opt => opt.MapFrom(src => src.SkillName)).ReverseMap();
 
 
@@ -267,8 +269,6 @@ namespace UpDiddyApi.Helpers
                 .ForMember(x => x.JoinDate, opt => opt.MapFrom(src => src.Talent.CreateDate))
                 .ReverseMap();
 
-
-
             CreateMap<CourseEnrollmentDto, BraintreePaymentDto>()
                 .ForMember(c => c.PaymentAmount, opt => opt.MapFrom(src => src.PaymentAmount))
                 .ForMember(c => c.Nonce, opt => opt.MapFrom(src => src.Nonce))
@@ -285,14 +285,23 @@ namespace UpDiddyApi.Helpers
                 .ForMember(c => c.StateGuid, opt => opt.MapFrom(src => src.StateGuid))
                 .ForMember(c => c.CountryGuid, opt => opt.MapFrom(src => src.CountryGuid)) 
                 .ForAllOtherMembers(opts => opts.Ignore());
-
- 
-
-
-
-
+        }
     }
 
+    public class PartnerUrlResolver : IMemberValueResolver<object, object, string, string>
+    {
+        private readonly IConfiguration _configuration;
+
+        public PartnerUrlResolver(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+        public string Resolve(object source, object destination, string sourceMember, string destinationMember, ResolutionContext context)
+        {
+            return _configuration["StorageAccount:AssetBaseUrl"] + "Partner/" + sourceMember;
+        }
+    }
 
 }
-}
+
+

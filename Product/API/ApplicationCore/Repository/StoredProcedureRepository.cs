@@ -21,11 +21,21 @@ namespace UpDiddyApi.ApplicationCore.Repository
             _dbContext = dbContext;
         }
 
+        public async Task<List<JobSitemapDto>> GetJobSitemapUrls(Uri basesiteUrl)
+        {
+            List<JobSitemapDto> rval = null;
+            var baseSiteUrlParam = new SqlParameter("@BaseSiteUrl", SqlDbType.VarChar, 500);
+            baseSiteUrlParam.Value = basesiteUrl.ToString();
+            var spParams = new object[] { baseSiteUrlParam };
+            rval = await _dbContext.JobSitemap.FromSql<JobSitemapDto>("System_Get_JobSitemapUrls @BaseSiteUrl", spParams).ToListAsync();
+            return rval;
+        }
+
         public async Task<List<RelatedCourseDto>> GetCoursesByCourse(Guid courseGuid, int limit, int offset)
         {
             var courseParam = new SqlParameter("@CourseGuid", SqlDbType.UniqueIdentifier);
             courseParam.Value = courseGuid;
-            
+
             var limitParam = new SqlParameter("@Limit", SqlDbType.Int);
             limitParam.Value = limit;
 
@@ -410,7 +420,5 @@ namespace UpDiddyApi.ApplicationCore.Repository
             rval = await _dbContext.SubscriberCourses.FromSql<SubscriberCourseDto>("System_Get_SubscriberCourses @SubscriberGuid, @ExcludeCompleted, @ExcludeActive", spParams).ToListAsync();
             return rval;
         }
-
-
     }
 }
