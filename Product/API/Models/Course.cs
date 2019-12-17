@@ -35,6 +35,7 @@ namespace UpDiddyApi.Models
         public bool IsExternal { get; set; }
         public CourseLevel CourseLevel { get; set; }
         public int? CourseLevelId { get; set; }
+        public string ThumbnailImage { get; set; }
     }
 
     [NotMapped]

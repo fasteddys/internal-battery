@@ -13,6 +13,9 @@ using UpDiddyLib.Dto;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.Helpers;
 using UpDiddyLib.Domain.Models;
+using Microsoft.Azure.Search;
+using Microsoft.Azure.Search.Models;
+using Skill = UpDiddyApi.Models.Skill;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -51,8 +54,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             string limit = query["limit"];
             if (limit != null)
                 int.TryParse(limit, out MaxResults);
-            var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesRandom(MaxResults);
-            CourseUrlHelper.SetVendorAndThumbnailUrl(courses,_config);
+            var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesRandom(MaxResults);            
             return courses;
         }
 
@@ -65,8 +67,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             string limit = query["limit"];
             if (limit != null)
                 int.TryParse(limit, out MaxResults);
-            var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesForJob(jobGuid, MaxResults);
-            CourseUrlHelper.SetVendorAndThumbnailUrl(courses,_config);
+            var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesForJob(jobGuid, MaxResults);            
             return courses;
         }
 
@@ -75,8 +76,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCourses(limit, offset, sort, order);
             if (courses == null)
-                throw new NotFoundException("Courses not found");
-            CourseUrlHelper.SetVendorAndThumbnailUrl(courses,_config);
+                throw new NotFoundException("Courses not found");            
             return (courses);
         }
 
@@ -86,8 +86,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new NullReferenceException("CourseGuid cannot be null");
             var course = await _repositoryWrapper.StoredProcedureRepository.GetCourse(courseGuid);
             if (course == null)
-                throw new NotFoundException("Courses not found");
-            CourseUrlHelper.SetVendorAndThumbnailUrl(course,_config);
+                throw new NotFoundException("Courses not found");            
             return (course);
         }
 
@@ -104,8 +103,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             string limit = query["limit"];
             if (limit != null)
                 int.TryParse(limit, out MaxResults);
-            var courses = await  _repositoryWrapper.StoredProcedureRepository.GetCoursesBySkillHistogram(SkillHistogram, MaxResults);
-            CourseUrlHelper.SetVendorAndThumbnailUrl(courses,_config);
+            var courses = await  _repositoryWrapper.StoredProcedureRepository.GetCoursesBySkillHistogram(SkillHistogram, MaxResults);            
             return courses;
         }
 
@@ -199,18 +197,67 @@ namespace UpDiddyApi.ApplicationCore.Services
             });
         }
 
-       
+
+
+        #region Course Search 
+        // todo jab add migration for view
+ 
+        public async Task<List<CourseDetailDto>> SearchCoursesAsync(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*")
+        {
+
+            List<CourseDetailDto> rVal = null;
+
+            string searchServiceName =  _config["AzureSearch:SearchServiceName"];
+            string adminApiKey = _config["AzureSearch:SearchServiceAdminApiKey"];
+            string courseIndexName = _config["AzureSearch:CourseIndexName"];
+
+            // map descending to azure search sort syntax of "asc" or "desc"  default is ascending so only map descending 
+            string orderBy = sort;
+            if (order == "descending")
+                orderBy =  orderBy + " desc";
+            List<String> orderByList = new List<string>();
+            orderByList.Add(orderBy);
+
+            SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(adminApiKey));
+
+            // Create an index named hotels
+            ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(courseIndexName);
+
+            SearchParameters parameters;
+            DocumentSearchResult<CourseDetailDto> results;
+ 
+            parameters =
+                new SearchParameters()
+                {
+                   Top = limit,
+                   Skip = offset,
+                   OrderBy = orderByList
+                };
+            
+            results = indexClient.Documents.Search<CourseDetailDto>(keyword, parameters);
+
+            rVal = results?.Results?
+                .Select(s => (CourseDetailDto) s.Document)
+                .ToList();
+
+            return rVal;
+        }
 
 
 
-        #region Private Members
+            #endregion
 
-        /// <summary>
-        /// Handles the lookup and creation of the course variant type to be associated with the course being created/updated.
-        /// </summary>
-        /// <param name="vendorDto"></param>
-        /// <returns>An identifier for the course variant type to be associated with the course being created/updated.</returns>
-        private async Task<Guid> GetCourseVariantTypeGuidAsync(CourseVariantTypeDto courseVariantTypeDto)
+
+
+
+            #region Private Members
+
+            /// <summary>
+            /// Handles the lookup and creation of the course variant type to be associated with the course being created/updated.
+            /// </summary>
+            /// <param name="vendorDto"></param>
+            /// <returns>An identifier for the course variant type to be associated with the course being created/updated.</returns>
+            private async Task<Guid> GetCourseVariantTypeGuidAsync(CourseVariantTypeDto courseVariantTypeDto)
         {
             Guid courseVariantTypeGuid = Guid.Empty;
             var courseVariantTypeLookup = await _repositoryWrapper.CourseVariantType.GetByConditionAsync(cvt => cvt.Name == courseVariantTypeDto.Name);

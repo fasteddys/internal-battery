@@ -66,8 +66,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (jobPosting.IsDeleted == 1)
                 throw new ExpiredJobException();
 
-            JobDetailDto rVal = _mapper.Map<JobDetailDto>(jobPosting);
-            rVal.CompanyLogoUrl = JobUrlHelper.SetCompanyLogoUrl(rVal.CompanyLogoUrl,_configuration);
+            JobDetailDto rVal = _mapper.Map<JobDetailDto>(jobPosting);            
             return rVal;
         }
 
@@ -165,8 +164,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
                 JobQueryDto jobQuery = JobQueryHelper.CreateSummaryJobQuery(PageSize, query);
-                rVal = _cloudTalentService.JobSummarySearch(jobQuery);
-                await JobUrlHelper.AssignCompanyLogoUrlToJobsList(rVal.Jobs, _configuration, _companyService);
+                rVal = _cloudTalentService.JobSummarySearch(jobQuery);             
                 _cache.SetCacheValue<JobSearchSummaryResultDto>(cacheKey, rVal);
 
             }
@@ -287,7 +285,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             JobSearchResultDto jobSearchResult = _cloudTalentService.JobSearch(jobQuery);
 
             //assign company logo urls
-            await JobUrlHelper.AssignCompanyLogoUrlToJobsList(jobSearchResult.Jobs, _configuration, _companyService);
+         
 
             // set common properties for an alert jobQuery and include this in the response
             jobQuery.DatePublished = null;

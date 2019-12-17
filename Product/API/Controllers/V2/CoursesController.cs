@@ -19,6 +19,7 @@ using UpDiddyLib.Domain.Models;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyLib.Dto;
 
+
 namespace UpDiddyApi.Controllers
 {
     [Route("/V2/[controller]/")]
@@ -152,7 +153,22 @@ namespace UpDiddyApi.Controllers
 
         #endregion
 
+        #region Course Query
+        [HttpGet]
+        [Route("query")]
+        public async Task<IActionResult> SearchCourses(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*")
+        {
 
+
+            //todo jab move to service 
+
+           var rVal = await _courseService.SearchCoursesAsync(limit, offset, sort, order, keyword);
+
+
+            return Ok(rVal);
+        }
+
+        #endregion 
 
 
         #region Course Favorites 

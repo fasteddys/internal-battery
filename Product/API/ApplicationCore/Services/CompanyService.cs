@@ -82,10 +82,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var companies = await _repositoryWrapper.Company.GetByConditionWithSorting(x => x.IsDeleted == 0, limit, offset, sort, order);
             if (companies == null)
                 throw new NotFoundException("Companies not found");
-            foreach (var c in companies)
-            {
-                c.LogoUrl = JobUrlHelper.SetCompanyLogoUrl(c.LogoUrl, _config);
-            }
+    
             return _mapper.Map<List<CompanyDto>>(companies);
         }
 
@@ -107,8 +104,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new NullReferenceException("companyGuid cannot be null");
             var company = await _repositoryWrapper.Company.GetByGuid(companyGuid);
             if (company == null)
-                throw new NotFoundException("company cannot be found");
-            company.LogoUrl = JobUrlHelper.SetCompanyLogoUrl(company.LogoUrl, _config);
+                throw new NotFoundException("company cannot be found");            
             return _mapper.Map<CompanyDto>(company);
         }
     }

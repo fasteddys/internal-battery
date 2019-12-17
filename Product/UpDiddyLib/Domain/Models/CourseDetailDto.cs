@@ -15,6 +15,30 @@ namespace UpDiddyLib.Domain.Models
         public int NumEnrollments { get; set; }
         public Guid VendorGuid { get; set; }
 
+        // new properties 
+        public string Code { get; set; }
+
+        public string Level { get; set; }
+
+        public string Topic { get; set; }
+
+
+        public DateTime CreateDate { get; set; }
+
+        public DateTime ModifyDate { get; set; }
+
+        public int IsDeleted { get; set; }
+
+        public string CourseSkills { get; set; }
+
+
+        public string TabletImage { get; set; }
+
+        public string DesktopImage { get; set; }
+
+        public string MobileImage { get; set; }
+    
+
     }
     
 }
