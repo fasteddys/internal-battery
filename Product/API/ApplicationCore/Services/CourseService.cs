@@ -46,6 +46,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await _repositoryWrapper.StoredProcedureRepository.GetCoursesByJob(jobPostingGuid, limit, offset);
         }
 
+ 
         public async Task<List<CourseDetailDto>> GetCoursesRandom(IQueryCollection query)
         {
 
@@ -89,6 +90,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new NotFoundException("Courses not found");            
             return (course);
         }
+
+
+
 
         public async Task<int> GetCoursesCount()
         {
@@ -198,9 +202,23 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
+        #region Course Variants 
+
+        public async Task<List<CourseVariantDetailDto>> GetCourseVariants(Guid courseGuid)
+        {
+            if (courseGuid == null || courseGuid == Guid.Empty)
+                throw new NullReferenceException("CourseGuid cannot be null");
+            var variants = await _repositoryWrapper.StoredProcedureRepository.GetCourseVariants(courseGuid);
+            if (variants == null)
+                throw new NotFoundException("Courses not found");
+            return (variants);
+        }
+
+
+
+        #endregion
 
         #region Course Search 
-        // todo jab add migration for view
  
         public async Task<List<CourseDetailDto>> SearchCoursesAsync(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*")
         {

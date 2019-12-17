@@ -5,13 +5,16 @@ using System.Text;
 
 namespace UpDiddyLib.Domain.Models
 {
-    public class CourseDetailDto  
-    {
 
+    //todo figure out why CourseVariantDetailDto can not inherit from CourseDetailDto.  If it it does the sproc
+    // used to hydrate CourseVariantDetailDto's throw a "Cannot find column Discriminator" error.  Weird
+    public class CourseVariantDetailDto
+    {
+        
         public string VendorLogoUrl { get; set; }
         public string ThumbnailUrl { get; set; }
 
-        public Guid CourseGuid {get;set;}
+        public Guid CourseGuid { get; set; }
         public string Title { get; set; }
         public string Duration { get; set; }
         public string Description { get; set; }
@@ -42,8 +45,12 @@ namespace UpDiddyLib.Domain.Models
         public string DesktopImage { get; set; }
 
         public string MobileImage { get; set; }
-    
+       
+
+        public Guid CourseVariantGuid { get; set; }
+        public Decimal Price { get; set; }
+
+        public string CourseVariantType { get; set; }
 
     }
-    
 }

@@ -7,6 +7,8 @@ using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Domain.Models;
+using System.Collections.Generic;
+
 namespace UpDiddyApi.Models
 {
     public class UpDiddyDbContextFactory : IDesignTimeDbContextFactory<UpDiddyDbContext>
@@ -199,6 +201,9 @@ namespace UpDiddyApi.Models
         public DbQuery<SubscriberSourceDto> SubscriberSourcesDetails { get; set; }
         public DbQuery<SubscriberInitialSourceDto> SubscriberInitialSource { get; set; }
         public DbQuery<CourseDetailDto> CourseDetails { get; set; }
+
+        public DbQuery<CourseVariantDetailDto> CourseVariants { get; set; }
+
         public DbQuery<RelatedJobDto> RelatedJobs { get; set; }
         public DbQuery<RelatedCourseDto> RelatedCourses { get; set; }
         public DbQuery<JobDto> SubscriberJobFavorites { get; set; }
