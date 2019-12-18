@@ -31,5 +31,15 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             return subscriberActionsList.ToList();
         }
+
+        public async Task<List<SubscriberAction>> GetSubscriberActionByEntityAndEntityTypeAndAction(int entityTypeId, int? entityId, int actionId)
+        {
+            IEnumerable<SubscriberAction> subscriberActionsList;
+             if (entityId != null)
+                subscriberActionsList = await GetByConditionAsync(sa => sa.EntityId == entityId && sa.EntityTypeId == entityTypeId && sa.IsDeleted == 0 && sa.ActionId == actionId);
+            else
+                subscriberActionsList = await GetByConditionAsync(sa => sa.EntityTypeId == entityTypeId && sa.IsDeleted == 0 && sa.ActionId == actionId);
+            return subscriberActionsList.ToList();
+        }
     }
 }
