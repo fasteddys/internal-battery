@@ -92,7 +92,8 @@ namespace UpDiddyApi.Helpers
             CreateMap<FileDownloadTracker, FileDownloadTrackerDto>().ReverseMap();
             CreateMap<Offer, UpDiddyLib.Domain.Models.OfferDto>()
             .ForMember(c => c.PartnerName, opt => opt.MapFrom(src => src.Partner.Name))
-             .ForMember(dest => dest.PartnerLogoUrl, opt => opt.ResolveUsing<PartnerUrlResolver, string>(src => src.Partner.LogoUrl));
+            .ForMember(dest => dest.PartnerLogoUrl, opt => opt.MapFrom(src => src.Partner.LogoUrl))
+            .ForMember(dest => dest.PartnerGuid, opt => opt.MapFrom(src => src.Partner.PartnerGuid)).ReverseMap();
             CreateMap<RelatedJobDto, CareerPathJobDto>()
             .ForMember(c => c.CompanyLogoUrl, opt => opt.MapFrom(src => src.LogoUrl)).ReverseMap();
             CreateMap<Traitify, TraitifyDto>().ReverseMap();
@@ -288,19 +289,7 @@ namespace UpDiddyApi.Helpers
         }
     }
 
-    public class PartnerUrlResolver : IMemberValueResolver<object, object, string, string>
-    {
-        private readonly IConfiguration _configuration;
 
-        public PartnerUrlResolver(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
-        public string Resolve(object source, object destination, string sourceMember, string destinationMember, ResolutionContext context)
-        {
-            return _configuration["StorageAccount:AssetBaseUrl"] + "Partner/" + sourceMember;
-        }
-    }
 
 }
 

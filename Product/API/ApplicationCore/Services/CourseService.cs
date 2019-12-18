@@ -55,7 +55,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             string limit = query["limit"];
             if (limit != null)
                 int.TryParse(limit, out MaxResults);
-            var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesRandom(MaxResults);            
+            var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesRandom(MaxResults);
             return courses;
         }
 
