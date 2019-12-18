@@ -65,6 +65,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
             var jobPostingDto = _mapper.Map<List<JobViewDto>, List<UpDiddyLib.Domain.Models.JobPostingDto>>(jobSearchForSingleJob.Jobs);
+           
             return jobPostingDto;
         }
 

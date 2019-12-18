@@ -50,7 +50,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var courses = await _repositoryWrapper.Course.GetCoursesByTopicGuid(topicGuid);
             if (courses == null)
                 throw new NotFoundException("Courses does not exist");
-            var coursesDto = _mapper.Map<List<CourseDetailDto>>(courses);
+            var coursesDto = _mapper.Map<List<CourseDetailDto>>(courses);           
             return coursesDto;
         }
 

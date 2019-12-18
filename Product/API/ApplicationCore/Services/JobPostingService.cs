@@ -53,7 +53,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 var topic = await _repositoryWrapper.Topic.GetById(subscriber.TopicId.Value);
                 var jobs = await _repositoryWrapper.StoredProcedureRepository.GetJobsByTopic(topic.TopicGuid.Value, limit, offset, subscriberGuid);
-                jobDto = _mapper.Map<List<CareerPathJobDto>>(jobs);
+                jobDto = _mapper.Map<List<CareerPathJobDto>>(jobs);                
             }
             return jobDto;
         }

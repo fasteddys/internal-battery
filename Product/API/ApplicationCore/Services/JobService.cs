@@ -66,7 +66,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (jobPosting.IsDeleted == 1)
                 throw new ExpiredJobException();
 
-            JobDetailDto rVal = _mapper.Map<JobDetailDto>(jobPosting);
+            JobDetailDto rVal = _mapper.Map<JobDetailDto>(jobPosting);            
             return rVal;
         }
 
@@ -164,7 +164,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
                 JobQueryDto jobQuery = JobQueryHelper.CreateSummaryJobQuery(PageSize, query);
-                rVal = _cloudTalentService.JobSummarySearch(jobQuery);
+                rVal = _cloudTalentService.JobSummarySearch(jobQuery);             
                 _cache.SetCacheValue<JobSearchSummaryResultDto>(cacheKey, rVal);
 
             }
