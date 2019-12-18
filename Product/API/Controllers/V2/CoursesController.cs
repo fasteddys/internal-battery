@@ -71,14 +71,7 @@ namespace UpDiddyApi.Controllers
             _courseEnrollmentService = courseEnrollmentService;
             _promoCodeService = promoCodeService;
         }
-
-
-
-
-
-        // todo jab implemnt course skills
-
-
+ 
 
         #region course metrics 
 
