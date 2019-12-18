@@ -71,36 +71,35 @@ namespace UpDiddyApi.Controllers
             _courseEnrollmentService = courseEnrollmentService;
             _promoCodeService = promoCodeService;
         }
+ 
 
-
-
-        [HttpGet]
-        [Route("random")]
-        public async Task<IActionResult> Random(Guid JobGuid)
-        {
-            return Ok(await _courseService.GetCoursesRandom(Request.Query));
-        }
+        #region course metrics 
 
         [HttpGet]
-        [Route("job/{JobGuid:guid}/related")]
-        public async Task<IActionResult> Search(Guid JobGuid)
+        [Route("count")]
+        public async Task<IActionResult> GetCoursesCount()
         {
-            return Ok(await _courseService.GetCoursesForJob(JobGuid, Request.Query));
+            var count = await _courseService.GetCoursesCount();
+            return Ok(count);
         }
 
-        [HttpPost]
-        [Route("skill/related")]
-        public async Task<IActionResult> SearchBySkills([FromBody] Dictionary<string, int> SkillHistogram)
-        {
-            return Ok(await _courseService.GetCoursesBySkillHistogram(SkillHistogram, Request.Query));
-        }
+        #endregion
+
+        #region Course Variants 
 
         [HttpGet]
-        public async Task<IActionResult> GetCourses(int limit, int offset, string sort, string order)
+        [Route("{course:guid}/variant")]
+        public async Task<IActionResult> GetCoursVariants(Guid course)
         {
-            var courses = await _courseService.GetCourses(limit, offset, sort, order);
-            return Ok(courses);
+            var variants = await _courseService.GetCourseVariants(course);
+            return Ok(variants);
         }
+
+        #endregion
+
+        #region CourseDetails
+
+
 
         [HttpGet]
         [Route("{course:guid}")]
@@ -111,15 +110,41 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("count")]
-        public async Task<IActionResult> GetCoursesCount()
+        public async Task<IActionResult> GetCourses(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var count = await _courseService.GetCoursesCount();
-            return Ok(count);
+            var courses = await _courseService.GetCourses(limit, offset, sort, order);
+            return Ok(courses);
         }
 
+
+        [HttpPost]
+        [Route("skill/related")]
+        public async Task<IActionResult> SearchBySkills([FromBody] Dictionary<string, int> SkillHistogram)
+        {
+            return Ok(await _courseService.GetCoursesBySkillHistogram(SkillHistogram, Request.Query));
+        }
+
+
+        [HttpGet]
+        [Route("job/{JobGuid:guid}/related")]
+        public async Task<IActionResult> Search(Guid JobGuid)
+        {
+            return Ok(await _courseService.GetCoursesForJob(JobGuid, Request.Query));
+        }
+
+
+        [HttpGet]
+        [Route("random")]
+        public async Task<IActionResult> Random(Guid JobGuid)
+        {
+            return Ok(await _courseService.GetCoursesRandom(Request.Query));
+        }
+
+
+        #endregion
+
         #region Course Enrollments
-        
+
 
         [HttpGet]
         [Authorize]
@@ -163,7 +188,6 @@ namespace UpDiddyApi.Controllers
         }
 
         #endregion 
-
 
         #region Course Favorites 
 

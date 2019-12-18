@@ -374,6 +374,20 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return rval;
         }
 
+
+
+        public async Task<List<CourseVariantDetailDto>> GetCourseVariants(Guid courseGuid)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@CourseGuid", courseGuid)
+                };
+
+            List<CourseVariantDetailDto> rval = null;
+            rval = await _dbContext.CourseVariants.FromSql<CourseVariantDetailDto>("System_Get_CourseVariants @CourseGuid", spParams).ToListAsync();
+            return rval;
+        }
+
+
         public async Task<List<CourseDetailDto>> GetFavoriteCourses(Guid subscriberGuid, int limit, int offset, string sort, string order)
         {
             var spParams = new object[] {

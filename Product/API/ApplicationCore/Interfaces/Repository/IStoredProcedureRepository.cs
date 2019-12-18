@@ -35,5 +35,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<SubscriberNotesDto>> GetSubscriberNotes(Guid subscriberGuid, Guid talentGuid, int limit, int offset, string sort, string order);
         Task<List<SubscriberCourseDto>> GetSubscriberCourses(Guid subscriberGuid, int excludeCompleted, int excludeActive);
         Task<List<JobSitemapDto>> GetJobSitemapUrls(Uri baseSiteUri);
+        Task<List<CourseVariantDetailDto>> GetCourseVariants(Guid courseGuid);
     }
 }
