@@ -44,6 +44,15 @@ namespace UpDiddyApi.Controllers.V2
             return StatusCode(201);
         }
 
+        [HttpGet]
+        [Route("{offer:guid}/subscriber")]
+        [Authorize]
+        public async Task<IActionResult> HasSubscriberClaimedOffer(Guid offer)
+        {
+            var hasClaimedOffer = await _offerService.HasSubscriberClaimedOffer(GetSubscriberGuid(), offer);
+            return Ok(hasClaimedOffer);
+        }
+
         [HttpPost]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateOffer([FromBody] OfferDto offerDto)

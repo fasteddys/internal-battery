@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
@@ -11,7 +10,6 @@ using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.Models;
 using UpDiddyLib.Helpers;
 using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Mvc;
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class OfferService : IOfferService
@@ -64,13 +62,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (offer == null)
                 throw new NotFoundException("Offer not found.");
 
-            var action = _repositoryWrapper.ActionRepository.GetAllWithTracking().Where(a => a.Name == "Partner offer" && a.IsDeleted == 0).FirstOrDefault();
-            if (action == null)
-                throw new InvalidOperationException("Action not found");
+            var action = await GetAction();
 
-            var entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync("Offer");
-            if (action == null)
-                throw new InvalidOperationException("EntityType not found");
+            var entityType = await GetEntityType();
 
             await _repositoryWrapper.SubscriberActionRepository.Create(
                  new SubscriberAction()
@@ -91,6 +85,24 @@ namespace UpDiddyApi.ApplicationCore.Services
                 _sysEmail.SendTemplatedEmailAsync(subscriber.Email, _configuration["SysEmail:Transactional:TemplateIds:SubscriberOffer-Redemption"], offer, Constants.SendGridAccount.Transactional, null, null, null, null));
         }
 
+        public async Task<bool> HasSubscriberClaimedOffer(Guid subscriberGuid, Guid offerGuid)
+        {
+            var offer = await _repositoryWrapper.Offer.GetByGuid(offerGuid);
+            if (offer == null)
+                throw new NotFoundException("Offer not found.");
+            var action = await GetAction();
+            var entityType = await GetEntityType();
+            var ClaimedOffers = await _repositoryWrapper.SubscriberActionRepository.GetSubscriberActionByEntityAndEntityTypeAndAction(entityType.EntityTypeId, offer.OfferId, action.ActionId);
+            if (ClaimedOffers.Count > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public async Task CreateOffer(OfferDto offerDto)
         {
             if(offerDto == null)
@@ -106,6 +118,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _repositoryWrapper.Offer.Create(offer);
             await _repositoryWrapper.SaveAsync();
         }
+        
 
         public async Task UpdateOffer(Guid offerGuid, OfferDto offerDto)
         {
@@ -128,6 +141,22 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new NotFoundException("Offer not found.");
             offer.IsDeleted = 1;
             await _repositoryWrapper.SaveAsync();
+        }
+
+        private async Task<UpDiddyApi.Models.Action> GetAction()
+        {
+            var action = await _repositoryWrapper.ActionRepository.GetByNameAsync("Partner offer");
+            if (action == null)
+                throw new InvalidOperationException("Action not found");
+            return action;
+        }
+
+        private async Task<UpDiddyApi.Models.EntityType> GetEntityType()
+        {
+            var entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync("Offer");
+            if (entityType == null)
+                throw new InvalidOperationException("EntityType not found");
+            return entityType;
         }
     }
 }

@@ -164,7 +164,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
                 JobQueryDto jobQuery = JobQueryHelper.CreateSummaryJobQuery(PageSize, query);
-                rVal = _cloudTalentService.JobSummarySearch(jobQuery);             
+                rVal = _cloudTalentService.JobSummarySearch(jobQuery);
+                if(rVal.JobCount > 0)
+                {
+                    await AssignCompanyLogoUrlToJobs(rVal.Jobs);
+                }
                 _cache.SetCacheValue<JobSearchSummaryResultDto>(cacheKey, rVal);
 
             }
@@ -306,7 +310,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return jobSearchResult;
         }
 
-        private async Task AssignCompanyLogoUrlToJobs(List<JobViewDto> jobs)
+        private async Task AssignCompanyLogoUrlToJobs<T> (List<T> jobs) where T : JobBaseDto
         {
             var companies = await _companyService.GetCompaniesAsync();
             foreach (var job in jobs)
