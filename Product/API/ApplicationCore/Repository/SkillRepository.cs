@@ -58,5 +58,20 @@ namespace UpDiddyApi.ApplicationCore.Repository
                           where t.TopicGuid == topicGuid && t.IsDeleted == 0 && c.IsDeleted == 0 && cs.IsDeleted == 0
                           select s).Distinct().ToListAsync();
         }
+
+
+        public async Task<List<Skill>> GetByCourseGuid(Guid courseGuid)
+        {
+            var skills = await (from ss in _dbContext.CourseSkill
+                                join s in _dbContext.Skill on ss.SkillId equals s.SkillId
+                                join c in _dbContext.Course on ss.CourseId equals c.CourseId
+                                where c.CourseGuid == courseGuid && ss.IsDeleted == 0
+                                select s).ToListAsync();
+
+            return skills;
+        }
+
+
+
     }
 }

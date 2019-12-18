@@ -71,5 +71,17 @@ namespace UpDiddyApi.Controllers
             await _skillservice.CreateSkill(skillDto);
             return StatusCode(201);
         }
+
+
+
+        [HttpGet]
+        [Route("courses/{course:guid}")]
+        public async Task<IActionResult> GetSkillForCourse(Guid course)
+        {
+            var result = await _skillservice.GetSkillsByCourseGuid(course);
+            return Ok(result);            
+        }
+
+
     }
 }

@@ -13,5 +13,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task DeleteSkill(Guid skillGuid);
         Task<List<SkillDto>> GetSkillsBySubscriberGuid(Guid subscriberGuid);
         Task UpdateSubscriberSkills(Guid subscriber, List<string> skills);
+
+        Task<List<SkillDto>> GetSkillsByCourseGuid(Guid courseGuid);
     }
 }

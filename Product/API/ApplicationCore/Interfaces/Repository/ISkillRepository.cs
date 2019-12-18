@@ -13,5 +13,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<Skill>> GetBySubscriberGuid(Guid subscriberGuid);
         Task<Skill> GetByName(string name);
         Task<List<Skill>> GetByTopicGuid(Guid topicGuid);
+
+        Task<List<Skill>> GetByCourseGuid(Guid courseGuid);
     }
 }

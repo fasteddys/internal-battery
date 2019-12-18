@@ -75,10 +75,12 @@ namespace UpDiddyApi.Controllers
 
 
 
- 
 
- 
+        // todo jab implemnt course skills
 
+
+
+        #region course metrics 
 
         [HttpGet]
         [Route("count")]
@@ -88,7 +90,7 @@ namespace UpDiddyApi.Controllers
             return Ok(count);
         }
 
-
+        #endregion
 
         #region Course Variants 
 
@@ -101,7 +103,6 @@ namespace UpDiddyApi.Controllers
         }
 
         #endregion
-
 
         #region CourseDetails
 
@@ -148,7 +149,6 @@ namespace UpDiddyApi.Controllers
 
 
         #endregion
-
 
         #region Course Enrollments
 
