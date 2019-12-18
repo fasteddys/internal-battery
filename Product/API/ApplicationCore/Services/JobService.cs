@@ -285,7 +285,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             JobSearchResultDto jobSearchResult = _cloudTalentService.JobSearch(jobQuery);
 
             //assign company logo urls
-         
+            await AssignCompanyLogoUrlToJobs(jobSearchResult.Jobs);
 
             // set common properties for an alert jobQuery and include this in the response
             jobQuery.DatePublished = null;
