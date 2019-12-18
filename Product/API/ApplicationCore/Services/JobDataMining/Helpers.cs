@@ -21,6 +21,17 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             return null;
         }
 
+        public static string[] ConvertJArrayToStringArray(object obj)
+        {
+            if (obj != null && obj is JArray casted)
+            {
+                JArray jArray = (JArray)obj;
+                if (jArray != null && jArray.HasValues != null)
+                    return jArray.ToObject<string[]>();
+            }
+            return null;
+        }
+
         public static async Task ForEachWithDelay<T>(this ICollection<T> items, Func<T, Task> action, double interval)
         {
             using (var timer = new System.Timers.Timer(interval))
