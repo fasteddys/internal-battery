@@ -31,5 +31,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
                                 select o).Skip(offset).Take(limit).ToListAsync();
             return offers;
         }
+
+        public async Task<Offer> GetOfferByGuid(Guid offerGuid)
+        {
+            return await (from o in _dbContext.Offer.Include(x => x.Partner)
+                          join p in _dbContext.Partner on o.PartnerId equals p.PartnerId
+                          where o.IsDeleted == 0
+                          select o).FirstOrDefaultAsync();
+        }
     }
 }

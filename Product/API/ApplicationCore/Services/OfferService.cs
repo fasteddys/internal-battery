@@ -7,6 +7,11 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyLib.Domain.Models;
+using UpDiddyApi.ApplicationCore.Exceptions;
+using UpDiddyApi.Models;
+using UpDiddyLib.Helpers;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Mvc;
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class OfferService : IOfferService
@@ -14,11 +19,20 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IHangfireService _hangfireService;
         private readonly IMapper _mapper;
+        private ISysEmail _sysEmail;
+        private readonly IConfiguration _configuration;
 
-        public OfferService(IHangfireService hangfireService, IMapper mapper, IRepositoryWrapper repositoryWrapper)
+        public OfferService(IHangfireService hangfireService
+        , IMapper mapper
+        , IRepositoryWrapper repositoryWrapper
+        , IConfiguration configuration
+        , ISysEmail sysEmail)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
+            _configuration = configuration;
+            _sysEmail = sysEmail;
+            _hangfireService = hangfireService;
         }
 
         public async Task<List<OfferDto>> GetAllOffers(int limit = 5, int offset = 0)
@@ -28,5 +42,92 @@ namespace UpDiddyApi.ApplicationCore.Services
             return offerDto;
         }
 
+        public async Task<OfferDto> GetOffer(Guid offerGuid)
+        {
+            var offer = await _repositoryWrapper.Offer.GetOfferByGuid(offerGuid);
+            if (offer == null)
+                throw new NotFoundException("Offer not found.");
+            return _mapper.Map<OfferDto>(offer);
+        }
+
+        public async Task ClaimOffer(Guid subscriberGuid, Guid offerGuid)
+        {
+            var subscriber = await _repositoryWrapper.SubscriberRepository.GetByGuid(subscriberGuid);
+            if (subscriber == null)
+                throw new NotFoundException("Subscriber not found.");
+
+            var subscriberFile = await _repositoryWrapper.SubscriberFileRepository.GetAllSubscriberFilesBySubscriberGuid(subscriberGuid);
+            if (subscriberFile.Count == 0)
+                throw new OfferException("Subscriber is not eligible for claiming offer due to missing resume");
+
+            var offer = await _repositoryWrapper.Offer.GetByGuid(offerGuid);
+            if (offer == null)
+                throw new NotFoundException("Offer not found.");
+
+            var action = _repositoryWrapper.ActionRepository.GetAllWithTracking().Where(a => a.Name == "Partner offer" && a.IsDeleted == 0).FirstOrDefault();
+            if (action == null)
+                throw new InvalidOperationException("Action not found");
+
+            var entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync("Offer");
+            if (action == null)
+                throw new InvalidOperationException("EntityType not found");
+
+            await _repositoryWrapper.SubscriberActionRepository.Create(
+                 new SubscriberAction()
+                 {
+                     SubscriberActionGuid = Guid.NewGuid(),
+                     CreateDate = DateTime.UtcNow,
+                     CreateGuid = Guid.Empty,
+                     ActionId = action.ActionId,
+                     EntityId = offer.OfferId,
+                     EntityTypeId = entityType == null ? null : (int?)entityType.EntityTypeId,
+                     IsDeleted = 0,
+                     OccurredDate = DateTime.UtcNow,
+                     SubscriberId = subscriber.SubscriberId
+                 });
+            await _repositoryWrapper.SaveAsync();
+
+            _hangfireService.Enqueue(() =>
+                _sysEmail.SendTemplatedEmailAsync(subscriber.Email, _configuration["SysEmail:Transactional:TemplateIds:SubscriberOffer-Redemption"], offer, Constants.SendGridAccount.Transactional, null, null, null, null));
+        }
+
+        public async Task CreateOffer(OfferDto offerDto)
+        {
+            if(offerDto == null)
+                throw new NullReferenceException("OfferDto cannot be null.");
+            if(offerDto.PartnerGuid == null)
+                throw new NullReferenceException("PartnerGuid cannot be null.");
+            var partner = await _repositoryWrapper.PartnerRepository.GetByGuid(offerDto.PartnerGuid.Value);
+            if (partner == null)
+                throw new NotFoundException("Partner not found");
+            var offer = _mapper.Map<Offer>(offerDto);
+            offer.PartnerId = partner.PartnerId;
+            offer.OfferGuid = Guid.NewGuid();            
+            await _repositoryWrapper.Offer.Create(offer);
+            await _repositoryWrapper.SaveAsync();
+        }
+
+        public async Task UpdateOffer(Guid offerGuid, OfferDto offerDto)
+        {
+            var offer = await _repositoryWrapper.Offer.GetByGuid(offerGuid);
+            if (offer == null)
+                throw new NotFoundException("Offer not found.");
+            offer.Description = offerDto.Description;
+            offer.Disclaimer = offerDto.Disclaimer;
+            offer.Name = offerDto.Name;
+            offer.StartDate = offerDto.startDate;
+            offer.EndDate = offerDto.endDate;
+            offer.Url = offerDto.Url;
+            await _repositoryWrapper.SaveAsync();
+        }
+
+        public async Task DeleteOffer(Guid offerGuid)
+        {
+            var offer = await _repositoryWrapper.Offer.GetByGuid(offerGuid);
+            if (offer == null)
+                throw new NotFoundException("Offer not found.");
+            offer.IsDeleted = 1;
+            await _repositoryWrapper.SaveAsync();
+        }
     }
 }
