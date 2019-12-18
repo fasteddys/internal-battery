@@ -226,7 +226,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             List<CourseDetailDto> rVal = null;
 
             string searchServiceName =  _config["AzureSearch:SearchServiceName"];
-            string adminApiKey = _config["AzureSearch:SearchServiceAdminApiKey"];
+            string adminApiKey = _config["AzureSearch:SearchServiceQueryApiKey"];
             string courseIndexName = _config["AzureSearch:CourseIndexName"];
 
             // map descending to azure search sort syntax of "asc" or "desc"  default is ascending so only map descending 
