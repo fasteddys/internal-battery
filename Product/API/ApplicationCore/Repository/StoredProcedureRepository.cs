@@ -31,6 +31,58 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return rval;
         }
 
+        public async Task<List<RelatedCourseDto>> GetCoursesByCourses(List<Guid> courseGuids, int limit, int offset)
+        {
+            DataTable coursesTable = new DataTable();
+            coursesTable.Columns.Add("Guid", typeof(Guid));
+            if (courseGuids != null && courseGuids.Count > 0)
+            {
+                foreach (var courseGuid in courseGuids)
+                {
+                    coursesTable.Rows.Add(courseGuid);
+                }
+            }
+            var coursesParam = new SqlParameter("@CourseGuids", coursesTable);
+            coursesParam.SqlDbType = SqlDbType.Structured;
+            coursesParam.TypeName = "dbo.GuidList";
+
+            var limitParam = new SqlParameter("@Limit", SqlDbType.Int);
+            limitParam.Value = limit;
+
+            var offsetParam = new SqlParameter("@Offset", SqlDbType.Int);
+            offsetParam.Value = offset;
+
+            var spParams = new object[] { coursesParam, limitParam, offsetParam };
+
+            return await _dbContext.RelatedCourses.FromSql<RelatedCourseDto>("System_Get_CoursesByCourses @CourseGuids, @Limit, @Offset", spParams).ToListAsync();
+        }
+
+        public async Task<List<RelatedCourseDto>> GetCoursesByJobs(List<Guid> jobPostingGuids, int limit, int offset)
+        {
+            DataTable jobPostingsTable = new DataTable();
+            jobPostingsTable.Columns.Add("Guid", typeof(Guid));
+            if (jobPostingGuids != null && jobPostingGuids.Count > 0)
+            {
+                foreach (var jobPostingGuid in jobPostingGuids)
+                {
+                    jobPostingsTable.Rows.Add(jobPostingGuid);
+                }
+            }
+            var jobPostingsParam = new SqlParameter("@JobPostingGuids", jobPostingsTable);
+            jobPostingsParam.SqlDbType = SqlDbType.Structured;
+            jobPostingsParam.TypeName = "dbo.GuidList";
+
+            var limitParam = new SqlParameter("@Limit", SqlDbType.Int);
+            limitParam.Value = limit;
+
+            var offsetParam = new SqlParameter("@Offset", SqlDbType.Int);
+            offsetParam.Value = offset;
+
+            var spParams = new object[] { jobPostingsParam, limitParam, offsetParam };
+
+            return await _dbContext.RelatedCourses.FromSql<RelatedCourseDto>("System_Get_CoursesByJobs @JobPostingGuids, @Limit, @Offset", spParams).ToListAsync();
+        }
+
         public async Task<List<RelatedCourseDto>> GetCoursesByCourse(Guid courseGuid, int limit, int offset)
         {
             var courseParam = new SqlParameter("@CourseGuid", SqlDbType.UniqueIdentifier);
@@ -78,6 +130,35 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             return await _dbContext.RelatedCourses.FromSql<RelatedCourseDto>("System_Get_CoursesBySubscriber @SubscriberGuid, @Limit, @Offset", spParams).ToListAsync();
 
+        }
+
+        public async Task<List<RelatedJobDto>> GetJobsByCourses(List<Guid> courseGuids, int limit, int offset, Guid? subscriberGuid = null)
+        {
+            DataTable coursesTable = new DataTable();
+            coursesTable.Columns.Add("Guid", typeof(Guid));
+            if (courseGuids != null && courseGuids.Count > 0)
+            {
+                foreach (var courseGuid in courseGuids)
+                {
+                    coursesTable.Rows.Add(courseGuid);
+                }
+            }
+            var coursesParam = new SqlParameter("@CourseGuids", coursesTable);
+            coursesParam.SqlDbType = SqlDbType.Structured;
+            coursesParam.TypeName = "dbo.GuidList";
+
+            var subscriberParam = new SqlParameter("@SubscriberGuid", SqlDbType.UniqueIdentifier);
+            subscriberParam.Value = subscriberGuid.HasValue ? (object)subscriberGuid.Value : DBNull.Value;
+
+            var limitParam = new SqlParameter("@Limit", SqlDbType.Int);
+            limitParam.Value = limit;
+
+            var offsetParam = new SqlParameter("@Offset", SqlDbType.Int);
+            offsetParam.Value = offset;
+
+            var spParams = new object[] { coursesParam, subscriberParam, limitParam, offsetParam };
+
+            return await _dbContext.RelatedJobs.FromSql<RelatedJobDto>("System_Get_JobsByCourses @CourseGuids, @SubscriberGuid, @Limit, @Offset", spParams).ToListAsync();
         }
 
         public async Task<List<RelatedJobDto>> GetJobsByCourse(Guid courseGuid, int limit, int offset, Guid? subscriberGuid = null)
