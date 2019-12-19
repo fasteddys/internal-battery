@@ -182,6 +182,7 @@ namespace UpDiddyApi.Models
         public DbSet<PasswordResetRequest> PasswordResetRequest { get; set; }
         public DbSet<TalentFavorite> TalentFavorite { get; set; }
         public DbSet<CourseLevel> CourseLevel { get; set; }
+        public DbSet<CourseReferral> CourseReferral { get; set; }
 
 
         #region DBQueries

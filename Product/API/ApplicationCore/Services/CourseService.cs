@@ -1,21 +1,31 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
-using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-using UpDiddyApi.ApplicationCore.Exceptions;
-using UpDiddyApi.Helpers;
+using Microsoft.Extensions.DependencyInjection;
+using UpDiddyApi.Models;
+using UpDiddyLib.Helpers;
+using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyApi.Helpers.Job;
+using Microsoft.Extensions.Logging;
+using System.Net.Http;
+using Google.Apis.CloudTalentSolution.v3.Data;
+using UpDiddyLib.Shared.GoogleJobs;
+using Microsoft.AspNetCore.Http;
 using UpDiddyLib.Domain.Models;
+using Hangfire;
+using Newtonsoft.Json.Linq;
+using UpDiddyApi.Workflow;
+using UpDiddyApi.ApplicationCore.Exceptions;
+using UpDiddyApi.ApplicationCore.Factory;
+using Skill = UpDiddyApi.Models.Skill;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
-using Skill = UpDiddyApi.Models.Skill;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -24,12 +34,20 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IMapper _mapper;
         private readonly IConfiguration _config;
-        public CourseService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IConfiguration configuration)
+        private IHangfireService _hangfireService;
+        private ISysEmail _sysEmail;
+        private readonly IServiceProvider _services;
+        public CourseService(IServiceProvider services, IRepositoryWrapper repositoryWrapper, IMapper mapper, IHangfireService hangfireService, IConfiguration configuration)
         {
+            _services = services;
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
             _config = configuration;
+            _hangfireService = hangfireService;
+            _sysEmail = _services.GetService<ISysEmail>();
         }
+
+        #region Course Crud
 
         public async Task<List<RelatedCourseDto>> GetCoursesByCourse(Guid courseGuid, int limit, int offset)
         {
@@ -46,7 +64,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await _repositoryWrapper.StoredProcedureRepository.GetCoursesByJob(jobPostingGuid, limit, offset);
         }
 
- 
+
         public async Task<List<CourseDetailDto>> GetCoursesRandom(IQueryCollection query)
         {
 
@@ -68,16 +86,16 @@ namespace UpDiddyApi.ApplicationCore.Services
             string limit = query["limit"];
             if (limit != null)
                 int.TryParse(limit, out MaxResults);
-            var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesForJob(jobGuid, MaxResults);            
+            var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesForJob(jobGuid, MaxResults);
             return courses;
         }
-        
+
 
         public async Task<List<CourseDetailDto>> GetCourses(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCourses(limit, offset, sort, order);
             if (courses == null)
-                throw new NotFoundException("Courses not found");            
+                throw new NotFoundException("Courses not found");
             return (courses);
         }
 
@@ -87,11 +105,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new NullReferenceException("CourseGuid cannot be null");
             var course = await _repositoryWrapper.StoredProcedureRepository.GetCourse(courseGuid);
             if (course == null)
-                throw new NotFoundException("Courses not found");            
+                throw new NotFoundException("Courses not found");
             return (course);
         }
-
-
 
 
         public async Task<int> GetCoursesCount()
@@ -202,6 +218,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
+        #endregion
+
         #region Course Variants 
 
         public async Task<List<CourseVariantDetailDto>> GetCourseVariants(Guid courseGuid)
@@ -265,10 +283,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             #endregion
 
-
-
-
-            #region Private Members
+        #region Private Members
 
             /// <summary>
             /// Handles the lookup and creation of the course variant type to be associated with the course being created/updated.
@@ -441,6 +456,87 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             return tagGuids;
         }
+
+
+
+        private async Task<Guid> SaveCourseReferral(CourseReferralDto courseReferralDto)
+        {
+            Guid courseReferralGuid = Guid.Empty;
+      
+            //get JobPostingId from JobPositngGuid
+            var course = await _repositoryWrapper.Course.GetByGuid(courseReferralDto.CourseGuid);
+           
+            if (course == null)
+                throw new NotFoundException("Course not found");
+           
+            //get ReferrerId from ReferrerGuid
+            var referrer = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(courseReferralDto.ReferrerGuid);
+           
+           
+            if (referrer == null)
+                throw new NotFoundException("Referrer not found");
+           
+            //get ReferrerId from ReferrerGuid
+            var referee = await _repositoryWrapper.SubscriberRepository.GetSubscriberByEmailAsync(courseReferralDto.ReferralEmail);
+           
+            //create JobReferral
+            CourseReferral courseReferral = new CourseReferral()
+            {
+                CourseReferralGuid = Guid.NewGuid(),
+                CourseId = course.CourseId,
+                ReferrerId = referrer.SubscriberId,
+                RefereeId = referee?.SubscriberId,
+                RefereeEmail = courseReferralDto.ReferralEmail,
+                IsCourseViewed = false
+            };
+           
+            //set defaults
+            BaseModelFactory.SetDefaultsForAddNew(courseReferral);
+                  
+            courseReferralGuid = await _repositoryWrapper.CourseReferralRepository.AddCourseReferralAsync(courseReferral);
+        
+            return courseReferralGuid;
+        }
+
+        private void SendReferralEmail(CourseReferralDto courseReferralDto, Guid courseReferralGuid)
+        {
+
+            var referralUrl = $"{_config["Environment:BaseUrl"].TrimEnd('/')}/course/{courseReferralDto.CourseGuid}";
+            _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(
+                courseReferralDto.ReferralName,
+                _config["SysEmail:Transactional:TemplateIds:CourseReferral-ReferAFriend"],
+                new
+                {
+                    firstName = courseReferralDto.ReferralName,
+                    description = courseReferralDto.ReferralDescription,
+                    courseUrl = referralUrl
+                },
+               Constants.SendGridAccount.Transactional,
+               null,
+               null,
+               null,
+               null
+                ));
+             
+        }
+
+
+        #endregion
+
+        #region Refer A Friend 
+
+
+
+        public async Task<Guid> ReferCourseToFriend(Guid subscriberGuid, CourseReferralDto courseReferralDto)
+        {
+            courseReferralDto.ReferrerGuid = subscriberGuid;
+
+            var courseReferralGuid = await SaveCourseReferral(courseReferralDto);
+            SendReferralEmail(courseReferralDto, courseReferralGuid);
+
+            return courseReferralGuid;
+        }
+
 
         #endregion
     }

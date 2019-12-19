@@ -269,5 +269,21 @@ namespace UpDiddyApi.Controllers
         }
 
         #endregion
+
+        #region Refer A Friend
+
+        [HttpPost]
+        [Authorize]
+        [Route("refer")]
+        public async Task<IActionResult> ReferAFriend([FromBody] CourseReferralDto courseReferral)
+        {
+
+            var rVal = await _courseService.ReferCourseToFriend(GetSubscriberGuid(), courseReferral);
+            return Ok(rVal);
+        }
+        #endregion
+
+
+
     }
 }

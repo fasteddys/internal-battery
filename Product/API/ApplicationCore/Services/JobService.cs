@@ -182,10 +182,25 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await _repositoryWrapper.StoredProcedureRepository.GetLocationSearchTermsAsync();
         }
 
+
         public async Task ReferJobToFriend(JobReferralDto jobReferralDto)
         {
             var jobReferralGuid = await SaveJobReferral(jobReferralDto);
             SendReferralEmail(jobReferralDto, jobReferralGuid);
+        }
+
+
+        public async Task<Guid> ReferJobToFriend(JobReferralDto jobReferralDto, Guid subscriberGuid)
+        {
+            jobReferralDto.ReferrerGuid = subscriberGuid.ToString(); 
+            jobReferralDto.ReferUrl =  $"{_configuration["Environment:BaseUrl"].TrimEnd('/')}/job/{Guid.Parse(jobReferralDto.JobPostingGuidStr)}";
+
+          
+
+            var jobReferralGuid = await SaveJobReferral(jobReferralDto);
+            SendReferralEmail(jobReferralDto, jobReferralGuid);
+
+            return jobReferralGuid;
         }
 
         public async Task UpdateJobReferral(string referrerCode, string subscriberGuid)
@@ -207,38 +222,39 @@ namespace UpDiddyApi.ApplicationCore.Services
         private async Task<Guid> SaveJobReferral(JobReferralDto jobReferralDto)
         {
             Guid jobReferralGuid = Guid.Empty;
-            try
-            {
-                //get JobPostingId from JobPositngGuid
-                var jobPosting = await _repositoryWrapper.JobPosting.GetJobPostingByGuid(Guid.Parse(jobReferralDto.JobPostingId));
+    
+             //get JobPostingId from JobPositngGuid
+             var jobPosting = await _repositoryWrapper.JobPosting.GetJobPostingByGuid(Guid.Parse(jobReferralDto.JobPostingGuidStr));
 
-                //get ReferrerId from ReferrerGuid
-                var referrer = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(Guid.Parse(jobReferralDto.ReferrerGuid));
+            if (jobPosting == null)
+                throw new NotFoundException("Jobposting not found");
 
-                //get ReferrerId from ReferrerGuid
-                var referee = await _repositoryWrapper.SubscriberRepository.GetSubscriberByEmailAsync(jobReferralDto.RefereeEmailId);
+             //get ReferrerId from ReferrerGuid
+             var referrer = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(Guid.Parse(jobReferralDto.ReferrerGuid));
 
-                //create JobReferral
-                JobReferral jobReferral = new JobReferral()
-                {
-                    JobReferralGuid = Guid.NewGuid(),
-                    JobPostingId = jobPosting.JobPostingId,
-                    ReferralId = referrer.SubscriberId,
-                    RefereeId = referee?.SubscriberId,
-                    RefereeEmailId = jobReferralDto.RefereeEmailId,
-                    IsJobViewed = false
-                };
+            if (referrer == null)
+                throw new NotFoundException("Cannot locate referring subscriber");
 
-                //set defaults
-                BaseModelFactory.SetDefaultsForAddNew(jobReferral);
+             //get ReferrerId from ReferrerGuid
+             var referee = await _repositoryWrapper.SubscriberRepository.GetSubscriberByEmailAsync(jobReferralDto.RefereeEmailId);
 
-                //update jobReferralGuid only if Referee is new subscriber, for old subscriber we do not jobReferralCode
-                jobReferralGuid = await _repositoryWrapper.JobReferralRepository.AddJobReferralAsync(jobReferral);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
+             //create JobReferral
+             JobReferral jobReferral = new JobReferral()
+             {
+                 JobReferralGuid = Guid.NewGuid(),
+                 JobPostingId = jobPosting.JobPostingId,
+                 ReferralId = referrer.SubscriberId,
+                 RefereeId = referee?.SubscriberId,
+                 RefereeEmailId = jobReferralDto.RefereeEmailId,
+                 IsJobViewed = false
+             };
+
+             //set defaults
+             BaseModelFactory.SetDefaultsForAddNew(jobReferral);
+
+             //update jobReferralGuid only if Referee is new subscriber, for old subscriber we do not jobReferralCode
+             jobReferralGuid = await _repositoryWrapper.JobReferralRepository.AddJobReferralAsync(jobReferral);
+       
 
             return jobReferralGuid;
         }

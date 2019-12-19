@@ -272,7 +272,6 @@ namespace UpDiddyApi.Controllers
 
         #endregion
 
-
         #region Job crud
 
 
@@ -376,7 +375,24 @@ namespace UpDiddyApi.Controllers
             var careerPathJobs = await _jobPostingService.GetCareerPathRecommendations(limit, offset, GetSubscriberGuid());
             return Ok(careerPathJobs);
         }
-        
+
         #endregion
+
+        #region Refer A Friend
+
+        [HttpPost]
+        [Authorize]
+        [Route("refer")]
+        public async Task<IActionResult> ReferAFriend([FromBody] JobReferralDto jobReferral)
+        {
+
+            var rVal = await _jobService.ReferJobToFriend(jobReferral, GetSubscriberGuid());
+            return Ok(rVal);
+        }
+
+        #endregion
+
+
+
     }
 }
