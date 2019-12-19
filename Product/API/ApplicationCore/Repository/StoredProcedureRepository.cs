@@ -388,7 +388,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
 
-        public async Task<List<CourseDetailDto>> GetFavoriteCourses(Guid subscriberGuid, int limit, int offset, string sort, string order)
+        public async Task<List<CourseFavoriteDto>> GetFavoriteCourses(Guid subscriberGuid, int limit, int offset, string sort, string order)
         {
             var spParams = new object[] {
                 new SqlParameter("@SubscriberGuid", subscriberGuid),
@@ -398,8 +398,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 new SqlParameter("@Order", order),
                 };
 
-            List<CourseDetailDto> rval = null;
-            rval = await _dbContext.CourseDetails.FromSql<CourseDetailDto>("System_Get_Favorite_Courses @SubscriberGuid, @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            List<CourseFavoriteDto> rval = null;
+            rval = await _dbContext.CourseFavorites.FromSql<CourseFavoriteDto>("System_Get_Favorite_Courses @SubscriberGuid, @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
             return rval;
         }
 

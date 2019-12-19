@@ -31,7 +31,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<CourseDetailDto>> GetCoursesRandom(int NumCourses);
         Task<List<CourseDetailDto>> GetCourses(int limit, int offset, string sort, string order);
         Task<CourseDetailDto> GetCourse(Guid courseGuid);
-        Task<List<CourseDetailDto>> GetFavoriteCourses(Guid subscriberGuid, int limit, int offset, string sort, string order);
+        Task<List<CourseFavoriteDto>> GetFavoriteCourses(Guid subscriberGuid, int limit, int offset, string sort, string order);
         Task<List<SubscriberNotesDto>> GetSubscriberNotes(Guid subscriberGuid, Guid talentGuid, int limit, int offset, string sort, string order);
         Task<List<SubscriberCourseDto>> GetSubscriberCourses(Guid subscriberGuid, int excludeCompleted, int excludeActive);
         Task<List<JobSitemapDto>> GetJobSitemapUrls(Uri baseSiteUri);
