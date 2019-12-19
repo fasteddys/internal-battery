@@ -99,7 +99,6 @@ namespace UpDiddyApi.Helpers
             CreateMap<Traitify, TraitifyDto>().ReverseMap();
             CreateMap<Course, CourseDetailDto>()
                 .ForMember(c => c.VendorLogoUrl, opt => opt.MapFrom(src => src.Vendor.LogoUrl))
-                .ForMember(c => c.ThumbnailUrl, opt => opt.MapFrom(src => src.TabletImage))
                 .ForMember(c => c.Title, opt => opt.MapFrom(src => src.Name))
                 .ReverseMap();
             CreateMap<JobPostingSkill, UpDiddyLib.Dto.SkillDto>()

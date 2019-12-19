@@ -9,8 +9,6 @@ namespace UpDiddyLib.Domain.Models
     {
 
         public string VendorLogoUrl { get; set; }
-        public string ThumbnailUrl { get; set; }
-
         public Guid CourseGuid {get;set;}
         public string Title { get; set; }
         public string Duration { get; set; }
@@ -20,13 +18,11 @@ namespace UpDiddyLib.Domain.Models
         public int NumEnrollments { get; set; }
         public Guid VendorGuid { get; set; }
 
-  
         public string Code { get; set; }
 
         public string Level { get; set; }
 
         public string Topic { get; set; }
-
 
         public DateTime CreateDate { get; set; }
 
@@ -35,7 +31,6 @@ namespace UpDiddyLib.Domain.Models
         public int IsDeleted { get; set; }
 
         public string CourseSkills { get; set; }
-
 
         public string TabletImage { get; set; }
 
