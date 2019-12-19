@@ -47,7 +47,15 @@ namespace UpDiddyApi.ApplicationCore.Services
             _sysEmail = _services.GetService<ISysEmail>();
         }
 
+
+
         #region Course Crud
+
+        public async Task<List<RelatedCourseDto>> GetCoursesByCourses(List<Guid> courseGuids, int limit, int offset)
+        {
+            return await _repositoryWrapper.StoredProcedureRepository.GetCoursesByCourses(courseGuids, limit, offset);
+        }
+
 
         public async Task<List<RelatedCourseDto>> GetCoursesByCourse(Guid courseGuid, int limit, int offset)
         {
@@ -57,6 +65,11 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<List<RelatedCourseDto>> GetCoursesBySubscriber(Guid subscriberGuid, int limit, int offset)
         {
             return await _repositoryWrapper.StoredProcedureRepository.GetCoursesBySubscriber(subscriberGuid, limit, offset);
+        }
+        
+        public async Task<List<RelatedCourseDto>> GetCoursesByJobs(List<Guid> jobPostingGuids, int limit, int offset)
+        {
+            return await _repositoryWrapper.StoredProcedureRepository.GetCoursesByJobs(jobPostingGuids, limit, offset);
         }
 
         public async Task<List<RelatedCourseDto>> GetCoursesByJob(Guid jobPostingGuid, int limit, int offset)

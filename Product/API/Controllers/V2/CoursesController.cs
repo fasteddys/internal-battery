@@ -233,6 +233,17 @@ namespace UpDiddyApi.Controllers
 
         #region Related Entities
 
+        [HttpPost]
+        [Route("courses/related")]
+        public async Task<IActionResult> GetRelatedCoursesByCourse([FromBody] List<Guid> courses, int limit = 100, int offset = 0)
+        {
+            List<RelatedCourseDto> relatedCourses = null;
+
+            relatedCourses = await _courseService.GetCoursesByCourses(courses, limit, offset);
+
+            return Ok(relatedCourses);
+        }
+
         [HttpGet]
         [Route("courses/{course:guid}/related")]
         public async Task<IActionResult> GetRelatedCoursesByCourse(Guid course, int limit = 100, int offset = 0)
@@ -240,6 +251,17 @@ namespace UpDiddyApi.Controllers
             List<RelatedCourseDto> relatedCourses = null;
 
             relatedCourses = await _courseService.GetCoursesByCourse(course, limit, offset);
+
+            return Ok(relatedCourses);
+        }
+
+        [HttpPost]
+        [Route("jobs/related")]
+        public async Task<IActionResult> GetRelatedCoursesByJob([FromBody] List<Guid> jobs, int limit = 100, int offset = 0)
+        {
+            List<RelatedCourseDto> relatedCourses = null;
+
+            relatedCourses = await _courseService.GetCoursesByJobs(jobs, limit, offset);
 
             return Ok(relatedCourses);
         }

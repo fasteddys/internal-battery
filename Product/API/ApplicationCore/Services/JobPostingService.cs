@@ -40,6 +40,11 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         }
 
+        public async Task<List<RelatedJobDto>> GetJobsByCourses(List<Guid> courseGuids, int limit, int offset, Guid? subscriberGuid = null)
+        {
+            return await _repositoryWrapper.StoredProcedureRepository.GetJobsByCourses(courseGuids, limit, offset, subscriberGuid);
+        }
+
         public async Task<List<RelatedJobDto>> GetJobsByCourse(Guid courseGuid, int limit, int offset, Guid? subscriberGuid = null)
         {
             return await _repositoryWrapper.StoredProcedureRepository.GetJobsByCourse(courseGuid, limit, offset, subscriberGuid);            

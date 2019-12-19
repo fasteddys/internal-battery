@@ -8,5 +8,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     {
         Task CreateSubscriberAction(SubscriberAction subscriberAction);
         Task<List<SubscriberAction>> GetSubscriberActionByEntityAndEntityType(int entityTypeId, int? entityId);
+        Task<List<SubscriberAction>> GetSubscriberActionByEntityAndEntityTypeAndAction(int entityTypeId, int? entityId, int actionId);
     }
 }

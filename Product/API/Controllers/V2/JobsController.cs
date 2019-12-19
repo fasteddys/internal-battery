@@ -330,10 +330,25 @@ namespace UpDiddyApi.Controllers
             List<UpDiddyLib.Dto.JobPostingDto> postings = await _jobPostingService.GetJobPostingForSubscriber(GetSubscriberGuid());
             return Ok(postings);
         }
-        
+
         #endregion
 
         #region Related Entities
+
+        [HttpPost]
+        [Route("courses/related")]
+        public async Task<IActionResult> GetRelatedJobsByCourses([FromBody] List<Guid> courses, int limit = 100, int offset = 0)
+        {
+            List<RelatedJobDto> relatedJobs = null;
+            var subscriber = GetSubscriberGuid();
+
+            if (subscriber != Guid.Empty)
+                relatedJobs = await _jobPostingService.GetJobsByCourses(courses, limit, offset, subscriber);
+            else
+                relatedJobs = await _jobPostingService.GetJobsByCourses(courses, limit, offset);
+
+            return Ok(relatedJobs);
+        }
 
         [HttpGet]
         [Route("courses/{course:guid}/related")]

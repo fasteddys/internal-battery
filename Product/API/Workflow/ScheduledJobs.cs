@@ -50,6 +50,7 @@ namespace UpDiddyApi.Workflow
         private readonly IMemoryCache _memoryCache;
         private readonly ICourseService _courseService;
         private readonly ISitemapService _sitemapService;
+        private readonly IEmploymentTypeService _employmentTypeService;
 
         public ScheduledJobs(
             UpDiddyDbContext context,
@@ -71,7 +72,8 @@ namespace UpDiddyApi.Workflow
             ICourseService courseService,
             IMemoryCache memoryCache,
             ICloudTalentService cloudTalentService,
-            ISitemapService sitemapService
+            ISitemapService sitemapService,
+            IEmploymentTypeService employmentTypeService
            )
         {
             _db = context;
@@ -96,6 +98,7 @@ namespace UpDiddyApi.Workflow
             _memoryCache = memoryCache;
             _courseService = courseService;
             _sitemapService = sitemapService;
+            _employmentTypeService = employmentTypeService;
         }
 
 
@@ -816,7 +819,7 @@ namespace UpDiddyApi.Workflow
                     JobSiteScrapeStatistic jobDataMiningStats =
                         new JobSiteScrapeStatistic()
                         {
-                            CreateDate = DateTime.UtcNow,
+                            ScrapeDate = DateTime.UtcNow,
                             CreateGuid = Guid.Empty,
                             IsDeleted = 0,
                             JobSiteId = jobSite.JobSiteId,
@@ -829,7 +832,7 @@ namespace UpDiddyApi.Workflow
                         };
 
                     // load the job data mining process for the job site
-                    IJobDataMining jobDataMining = JobDataMiningFactory.GetJobDataMiningProcess(jobSite, _configuration, _syslog);
+                    IJobDataMining jobDataMining = JobDataMiningFactory.GetJobDataMiningProcess(jobSite, _configuration, _syslog, _employmentTypeService);
 
                     // load all existing job pages - it is important to retrieve all of them regardless of their JobPageStatus to avoid FK conflicts on insert and update operations
                     IEnumerable<JobPage> existingJobPages = await _repositoryWrapper.JobPage.GetAllJobPagesForJobSiteAsync(jobSite.JobSiteGuid);
@@ -870,7 +873,6 @@ namespace UpDiddyApi.Workflow
                     }
 
                     // store aggregate data about operations performed by job site; set scrape date at the very end of the process
-                    jobDataMiningStats.ScrapeDate = DateTime.UtcNow;
                     await _repositoryWrapper.JobSiteScrapeStatistic.Create(jobDataMiningStats);
                     await _repositoryWrapper.JobSiteScrapeStatistic.SaveAsync();
                 }

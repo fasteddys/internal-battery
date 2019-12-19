@@ -80,7 +80,7 @@ END
 Retrieves courses with filter options
 </description>
 */
-ALTER PROCEDURE [dbo].[System_Get_Courses] (
+ALTER PROCEDUREALTER PROCEDURE [dbo].[System_Get_Course] ((
     @Limit int,
     @Offset int,
     @Sort varchar(max),
