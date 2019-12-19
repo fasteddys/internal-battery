@@ -11,9 +11,11 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface ICourseService
     {
+        Task<List<RelatedCourseDto>> GetCoursesByCourses(List<Guid> courseGuids, int limit, int offset);
         Task<List<RelatedCourseDto>> GetCoursesByCourse(Guid courseGuid, int limit, int offset);
         Task<List<RelatedCourseDto>> GetCoursesBySubscriber(Guid subscriberGuid, int limit, int offset);
-        Task<List<RelatedCourseDto>> GetCoursesByJob(Guid subscriberGuid, int limit, int offset);
+        Task<List<RelatedCourseDto>> GetCoursesByJobs(List<Guid> jobPostingGuids, int limit, int offset);
+        Task<List<RelatedCourseDto>> GetCoursesByJob(Guid jobPostingGuid, int limit, int offset);
         Task<int> AddCourseAsync(CourseDto courseDto);
         Task<int> EditCourseAsync(CourseDto courseDto);
         Task DeleteCourseAsync(Guid courseGuid);

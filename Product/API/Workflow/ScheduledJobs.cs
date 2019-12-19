@@ -819,7 +819,7 @@ namespace UpDiddyApi.Workflow
                     JobSiteScrapeStatistic jobDataMiningStats =
                         new JobSiteScrapeStatistic()
                         {
-                            CreateDate = DateTime.UtcNow,
+                            ScrapeDate = DateTime.UtcNow,
                             CreateGuid = Guid.Empty,
                             IsDeleted = 0,
                             JobSiteId = jobSite.JobSiteId,
@@ -873,7 +873,6 @@ namespace UpDiddyApi.Workflow
                     }
 
                     // store aggregate data about operations performed by job site; set scrape date at the very end of the process
-                    jobDataMiningStats.ScrapeDate = DateTime.UtcNow;
                     await _repositoryWrapper.JobSiteScrapeStatistic.Create(jobDataMiningStats);
                     await _repositoryWrapper.JobSiteScrapeStatistic.SaveAsync();
                 }
