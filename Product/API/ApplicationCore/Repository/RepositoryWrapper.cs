@@ -90,7 +90,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ITalentFavoriteRepository _talentFavoriteRepository;
         private IPasswordResetRequestRepository _passwordResetRequestRepository;
         private ICourseLevelRepository _courseLevelRepository;
+        private ICourseReferralRepository _courseReferralRepository;
         private readonly IConfiguration _configuration;
+
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
@@ -1054,6 +1056,20 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 return _courseLevelRepository;
             }
         }
+
+
+        public ICourseReferralRepository CourseReferralRepository
+        {
+            get
+            {
+                if (_courseReferralRepository == null)
+                {
+                    _courseReferralRepository = new CourseReferralRepository(_dbContext);
+                }
+                return _courseReferralRepository;
+            }
+        }
+
 
         public async Task SaveAsync()
         {

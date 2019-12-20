@@ -1799,7 +1799,7 @@ namespace UpDiddy.Api
 
             JobReferralDto jobReferralDto = new JobReferralDto()
             {
-                JobPostingId = jobPostingId,
+                JobPostingGuidStr = jobPostingId,
                 ReferrerGuid = referrerGuid,
                 RefereeName = refereeName,
                 RefereeEmailId = refereeEmailId,
