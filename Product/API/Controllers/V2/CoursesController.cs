@@ -173,7 +173,7 @@ namespace UpDiddyApi.Controllers
         [HttpGet]
         [Route("favorites")]
         [Authorize]
-        public async Task<IActionResult> GetFavoriteCourses(int limit, int offset, string sort, string order)
+        public async Task<IActionResult> GetFavoriteCourses(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var isFavorite = await _courseFavoriteService.GetFavoriteCourses(GetSubscriberGuid(), limit, offset, sort, order);
             return Ok(isFavorite);
