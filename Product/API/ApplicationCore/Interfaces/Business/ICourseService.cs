@@ -29,5 +29,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         Task<List<CourseDetailDto>> SearchCoursesAsync(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending", string keyword = "*");
         Task<List<CourseVariantDetailDto>> GetCourseVariants(Guid courseGuid);
+
+        Task<Guid> ReferCourseToFriend(Guid subscriberGuid, CourseReferralDto courseReferralDto);
     }
 }
