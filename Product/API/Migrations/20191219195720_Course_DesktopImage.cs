@@ -639,6 +639,7 @@ BEGIN
         ,v.VendorGuid
         ,cl.CourseLevelGuid as CourseLevelGuid		
 		,cl.Name as Level
+		,c.Code 
     FROM Course c
     JOIN CourseFavorite cf ON c.CourseId = cf.CourseId
     JOIN Subscriber s on cf.SubscriberId = s.SubscriberId
