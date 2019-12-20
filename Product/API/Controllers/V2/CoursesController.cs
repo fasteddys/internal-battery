@@ -71,7 +71,6 @@ namespace UpDiddyApi.Controllers
             _courseEnrollmentService = courseEnrollmentService;
             _promoCodeService = promoCodeService;
         }
- 
 
         #region course metrics 
 
@@ -99,8 +98,6 @@ namespace UpDiddyApi.Controllers
 
         #region CourseDetails
 
-
-
         [HttpGet]
         [Route("{course:guid}")]
         public async Task<IActionResult> GetCourse(Guid course)
@@ -115,32 +112,14 @@ namespace UpDiddyApi.Controllers
             var courses = await _courseService.GetCourses(limit, offset, sort, order);
             return Ok(courses);
         }
-
-
-        [HttpPost]
-        [Route("skill/related")]
-        public async Task<IActionResult> SearchBySkills([FromBody] Dictionary<string, int> SkillHistogram)
-        {
-            return Ok(await _courseService.GetCoursesBySkillHistogram(SkillHistogram, Request.Query));
-        }
-
-
-        [HttpGet]
-        [Route("job/{JobGuid:guid}/related")]
-        public async Task<IActionResult> Search(Guid JobGuid)
-        {
-            return Ok(await _courseService.GetCoursesForJob(JobGuid, Request.Query));
-        }
-
-
+        
         [HttpGet]
         [Route("random")]
-        public async Task<IActionResult> Random(Guid JobGuid)
+        public async Task<IActionResult> Random()
         {
             return Ok(await _courseService.GetCoursesRandom(Request.Query));
         }
-
-
+        
         #endregion
 
         #region Course Enrollments
@@ -194,7 +173,7 @@ namespace UpDiddyApi.Controllers
         [HttpGet]
         [Route("favorites")]
         [Authorize]
-        public async Task<IActionResult> GetFavoriteCourses(int limit, int offset, string sort, string order)
+        public async Task<IActionResult> GetFavoriteCourses(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var isFavorite = await _courseFavoriteService.GetFavoriteCourses(GetSubscriberGuid(), limit, offset, sort, order);
             return Ok(isFavorite);
@@ -235,7 +214,7 @@ namespace UpDiddyApi.Controllers
 
         [HttpPost]
         [Route("courses/related")]
-        public async Task<IActionResult> GetRelatedCoursesByCourse([FromBody] List<Guid> courses, int limit = 100, int offset = 0)
+        public async Task<IActionResult> GetRelatedCoursesByCourses([FromBody] List<Guid> courses, int limit = 100, int offset = 0)
         {
             List<RelatedCourseDto> relatedCourses = null;
 
@@ -257,7 +236,7 @@ namespace UpDiddyApi.Controllers
 
         [HttpPost]
         [Route("jobs/related")]
-        public async Task<IActionResult> GetRelatedCoursesByJob([FromBody] List<Guid> jobs, int limit = 100, int offset = 0)
+        public async Task<IActionResult> GetRelatedCoursesByJobs([FromBody] List<Guid> jobs, int limit = 100, int offset = 0)
         {
             List<RelatedCourseDto> relatedCourses = null;
 

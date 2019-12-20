@@ -8,7 +8,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface ICourseFavoriteService
     {
-        Task<List<CourseDetailDto>> GetFavoriteCourses(Guid subscriberGuid,int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending");
+        Task<List<CourseFavoriteDto>> GetFavoriteCourses(Guid subscriberGuid,int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending");
         Task AddToFavorite(Guid subscriberGuid, Guid courseGuid);
         Task RemoveFromFavorite(Guid subscriberGuid, Guid courseGuid);
         Task<bool> IsCourseAddedToFavorite(Guid subscriberGuid, Guid courseGuid);

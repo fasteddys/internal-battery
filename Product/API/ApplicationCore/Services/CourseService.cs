@@ -10,18 +10,9 @@ using Microsoft.Extensions.DependencyInjection;
 using UpDiddyApi.Models;
 using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Interfaces;
-using UpDiddyApi.Helpers.Job;
-using Microsoft.Extensions.Logging;
-using System.Net.Http;
-using Google.Apis.CloudTalentSolution.v3.Data;
-using UpDiddyLib.Shared.GoogleJobs;
 using Microsoft.AspNetCore.Http;
 using UpDiddyLib.Domain.Models;
-using Hangfire;
-using Newtonsoft.Json.Linq;
-using UpDiddyApi.Workflow;
 using UpDiddyApi.ApplicationCore.Exceptions;
-using UpDiddyApi.ApplicationCore.Factory;
 using Skill = UpDiddyApi.Models.Skill;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Azure.Search;
@@ -91,19 +82,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
-        public async Task<List<CourseDetailDto>> GetCoursesForJob(Guid jobGuid, IQueryCollection query)
-        {
-
-            int MaxResults = 3;
-            int.TryParse(_config["APIGateway:DefaultMaxLimit"], out MaxResults);
-            string limit = query["limit"];
-            if (limit != null)
-                int.TryParse(limit, out MaxResults);
-            var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesForJob(jobGuid, MaxResults);
-            return courses;
-        }
-
-
         public async Task<List<CourseDetailDto>> GetCourses(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCourses(limit, offset, sort, order);
@@ -122,24 +100,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             return (course);
         }
 
-
         public async Task<int> GetCoursesCount()
         {
             return await _repositoryWrapper.Course.GetCoursesCount();
         }
-
-        public async Task<List<CourseDetailDto>> GetCoursesBySkillHistogram(Dictionary<string, int> SkillHistogram, IQueryCollection query)
-        {
-
-            int MaxResults = 3;
-            int.TryParse(_config["APIGateway:DefaultMaxLimit"], out MaxResults);
-            string limit = query["limit"];
-            if (limit != null)
-                int.TryParse(limit, out MaxResults);
-            var courses = await  _repositoryWrapper.StoredProcedureRepository.GetCoursesBySkillHistogram(SkillHistogram, MaxResults);            
-            return courses;
-        }
-
+        
         /// <summary>
         /// Handles the creation of a course. 
         /// Note that this only supports a single course variant at this time and that several properties are unsupported because they are not being used.

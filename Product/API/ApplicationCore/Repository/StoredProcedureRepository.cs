@@ -235,36 +235,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             if (errorLine.Value != DBNull.Value && errorMessage.Value != DBNull.Value && errorProcedure.Value != DBNull.Value)
                 throw new ApplicationException($"An error occurred in {errorProcedure.Value.ToString()} at line {errorLine.Value.ToString()}: {errorMessage.Value.ToString()}");
         }
-
-        public async Task<List<CourseDetailDto>> GetCoursesBySkillHistogram(Dictionary<string, int> SkillHistogram, int NumCourses)
-        {
-            List<CourseDetailDto> rval = null;
-
-            DataTable table = new DataTable();
-            table.Columns.Add("Skill", typeof(string));
-            table.Columns.Add("Occurences", typeof(int));
-
-            foreach (KeyValuePair<string, int> SkillInfo in SkillHistogram)
-            {
-                DataRow row = table.NewRow();
-                row["Skill"] = SkillInfo.Key;
-                row["Occurences"] = SkillInfo.Value;
-                table.Rows.Add(row);
-            }
-
-
-            var Skills = new SqlParameter("@SkillHistogram", table);
-            Skills.SqlDbType = SqlDbType.Structured;
-            Skills.TypeName = "dbo.SkillHistogram";
-
-            var spParams = new object[] { Skills, new SqlParameter("@MaxResults", NumCourses) };
-            rval = await _dbContext.CourseDetails.FromSql<CourseDetailDto>("System_Get_RelatedCoursesBySkills @SkillHistogram,@MaxResults", spParams).ToListAsync();
-
-            return rval;
-        }
-
-
-
+        
         public async Task<List<CourseDetailDto>> GetCoursesRandom(int NumCourses)
         {
             var spParams = new object[] {
@@ -275,23 +246,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
             rval = await _dbContext.CourseDetails.FromSql<CourseDetailDto>("System_Get_CoursesRandom @MaxResults", spParams).ToListAsync();
             return rval;
         }
-
-
-
-        public async Task<List<CourseDetailDto>> GetCoursesForJob(Guid JobGuid, int NumCourses)
-        {
-            var spParams = new object[] {
-                new SqlParameter("@JobGuid", JobGuid),
-                new SqlParameter("@MaxResults", NumCourses)
-                };
-
-            List<CourseDetailDto> rval = null;
-            rval = await _dbContext.CourseDetails.FromSql<CourseDetailDto>("System_Get_CoursesForJob @JobGuid,@MaxResults", spParams).ToListAsync();
-            return rval;
-        }
-
-
-
 
         public async Task<List<SearchTermDto>> GetKeywordSearchTermsAsync()
         {
@@ -469,7 +423,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
 
-        public async Task<List<CourseDetailDto>> GetFavoriteCourses(Guid subscriberGuid, int limit, int offset, string sort, string order)
+        public async Task<List<CourseFavoriteDto>> GetFavoriteCourses(Guid subscriberGuid, int limit, int offset, string sort, string order)
         {
             var spParams = new object[] {
                 new SqlParameter("@SubscriberGuid", subscriberGuid),
@@ -479,8 +433,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 new SqlParameter("@Order", order),
                 };
 
-            List<CourseDetailDto> rval = null;
-            rval = await _dbContext.CourseDetails.FromSql<CourseDetailDto>("System_Get_Favorite_Courses @SubscriberGuid, @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            List<CourseFavoriteDto> rval = null;
+            rval = await _dbContext.CourseFavorites.FromSql<CourseFavoriteDto>("System_Get_Favorite_Courses @SubscriberGuid, @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
             return rval;
         }
 
