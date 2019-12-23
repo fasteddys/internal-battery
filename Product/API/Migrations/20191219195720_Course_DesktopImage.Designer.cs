@@ -3,19 +3,21 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191219195720_Course_DesktopImage")]
+    partial class Course_DesktopImage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.3-servicing-35854")
+                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -866,45 +868,6 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("CoursePageStatusId");
 
                     b.ToTable("CoursePageStatus");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.CourseReferral", b =>
-                {
-                    b.Property<int>("CourseReferralId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("CourseId");
-
-                    b.Property<Guid>("CourseReferralGuid");
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<bool>("IsCourseViewed");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<string>("RefereeEmail");
-
-                    b.Property<int?>("RefereeId");
-
-                    b.Property<int>("ReferrerId");
-
-                    b.HasKey("CourseReferralId");
-
-                    b.HasIndex("CourseId");
-
-                    b.HasIndex("RefereeId");
-
-                    b.HasIndex("ReferrerId");
-
-                    b.ToTable("CourseReferral");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.CourseReview", b =>
@@ -4532,23 +4495,6 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.CourseSite", "CourseSite")
                         .WithMany("CoursePages")
                         .HasForeignKey("CourseSiteId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.CourseReferral", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.Course", "Course")
-                        .WithMany()
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UpDiddyApi.Models.Subscriber", "Referee")
-                        .WithMany()
-                        .HasForeignKey("RefereeId");
-
-                    b.HasOne("UpDiddyApi.Models.Subscriber", "Referrer")
-                        .WithMany()
-                        .HasForeignKey("ReferrerId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

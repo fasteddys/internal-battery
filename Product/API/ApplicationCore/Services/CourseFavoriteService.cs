@@ -109,7 +109,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return false;
         }
 
-        public async Task<List<CourseDetailDto>> GetFavoriteCourses(Guid subscriberGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<List<CourseFavoriteDto>> GetFavoriteCourses(Guid subscriberGuid, int limit, int offset, string sort, string order)
         {
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetFavoriteCourses(subscriberGuid, limit, offset, sort, order);
             if (courses == null)
