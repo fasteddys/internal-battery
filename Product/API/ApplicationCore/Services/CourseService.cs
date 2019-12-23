@@ -259,7 +259,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                    Top = limit,
                    Skip = offset,
-                   OrderBy = orderByList
+                   OrderBy = orderByList,
+                   IncludeTotalResultCount = true
                 };
             
             results = indexClient.Documents.Search<CourseDetailDto>(keyword, parameters);

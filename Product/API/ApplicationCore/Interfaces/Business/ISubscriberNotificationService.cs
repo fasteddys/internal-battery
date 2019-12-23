@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
@@ -17,5 +18,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// <param name="notificationGuid"></param>
         /// <returns></returns>
         Task<bool> DeleteSubscriberNotification(Guid subscriberGuid, Guid notificationGuid);
+        Task<NotificationDto> GetNotification(Guid subscriberGuid, Guid notificationGuid);
+
+
     }
 }

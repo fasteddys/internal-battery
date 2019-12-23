@@ -286,6 +286,21 @@ namespace UpDiddyApi.Helpers
                 .ForMember(c => c.StateGuid, opt => opt.MapFrom(src => src.StateGuid))
                 .ForMember(c => c.CountryGuid, opt => opt.MapFrom(src => src.CountryGuid)) 
                 .ForAllOtherMembers(opts => opts.Ignore());
+
+
+            CreateMap<SubscriberNotification, NotificationDto>()
+            .ForMember(c => c.CreateDate, opt => opt.MapFrom(src => src.CreateDate))
+            .ForMember(c => c.CreateGuid, opt => opt.MapFrom(src => src.CreateGuid))
+            .ForMember(c => c.Description, opt => opt.MapFrom(src => src.Notification.Description))
+            .ForMember(c => c.ExpirationDate, opt => opt.MapFrom(src => src.Notification.ExpirationDate))
+            .ForMember(c => c.HasRead, opt => opt.MapFrom(src => src.HasRead))
+            .ForMember(c => c.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted))
+            .ForMember(c => c.ModifyDate, opt => opt.MapFrom(src => src.ModifyDate))
+            .ForMember(c => c.ModifyGuid, opt => opt.MapFrom(src => src.ModifyGuid))
+            .ForMember(c => c.NotificationGuid, opt => opt.MapFrom(src => src.Notification.NotificationGuid))
+            .ForMember(c => c.Title, opt => opt.MapFrom(src => src.Notification.Title)) 
+            .ForAllOtherMembers(opts => opts.Ignore());
+
         }
     }
 

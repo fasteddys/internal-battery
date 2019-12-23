@@ -1,10 +1,14 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -12,11 +16,13 @@ namespace UpDiddyApi.ApplicationCore.Services
     {
         private ILogger<SubscriberNotificationService> _logger { get; set; }
         private IRepositoryWrapper _repository { get; set; }
+        private IMapper _mapper { get; set; }
 
-        public SubscriberNotificationService(ILogger<SubscriberNotificationService> logger, IRepositoryWrapper repository)
+        public SubscriberNotificationService(ILogger<SubscriberNotificationService> logger, IRepositoryWrapper repository, IMapper mapper)
         {
             _logger = logger;
             _repository = repository;
+            _mapper = mapper;
         }
 
         public async Task<bool> DeleteSubscriberNotification(Guid subscriberGuid, Guid notificationGuid)
@@ -39,5 +45,36 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             return isOperationSuccessful;
         }
+
+
+
+        public async Task<NotificationDto> GetNotification(Guid subscriberGuid, Guid notificationGuid)
+        {
+            // Locate the subscribers notification 
+            var notification =  _repository.SubscriberNotificationRepository.GetAll()            
+              .Include(n => n.Notification)
+              .Where(sn => sn.IsDeleted == 0 && sn.SubscriberNotificationGuid == notificationGuid)
+              .FirstOrDefault();
+
+
+            if (notification == null)
+                throw new NotFoundException("Cannot find notification");
+
+            var subscriber = await _repository.SubscriberRepository.GetByGuid(subscriberGuid);
+            if (subscriber == null)
+                throw new NotFoundException("Cannot find subscriber");
+            // check to see if owner is correct 
+            if (notification.SubscriberId != subscriber.SubscriberId)
+                throw new AccessViolationException("Notification is not for specified subscriber");
+            
+            NotificationDto rval =  _mapper.Map<NotificationDto>(notification);
+            return (rval);
+
+        }
+
     }
+
+
+
 }
+
