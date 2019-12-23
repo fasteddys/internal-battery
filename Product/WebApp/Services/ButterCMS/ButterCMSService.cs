@@ -53,8 +53,8 @@ namespace UpDiddy.Services.ButterCMS
                 if (CachedButterResponse == null)
                 {
                     CachedButterResponse = await _butterClient.RetrieveContentFieldsAsync<T>(Keys, QueryParameters);
-                    
-                    if(CachedButterResponse == null)
+
+                    if (CachedButterResponse == null)
                     {
                         await SendEmailNotificationAsync(CacheKey);
                         return null;
@@ -62,7 +62,7 @@ namespace UpDiddy.Services.ButterCMS
                     await _cacheService.SetCachedValueAsync(CmsCacheKeyPrefix + CacheKey, CachedButterResponse);
                 }
             }
-            catch(ContentFieldObjectMismatchException)
+            catch (ContentFieldObjectMismatchException)
             {
                 await SendEmailNotificationAsync(CacheKey);
                 return null;
@@ -98,7 +98,7 @@ namespace UpDiddy.Services.ButterCMS
             }
 
             return ResponseHelper.Data;
-            
+
         }
 
         public async Task<bool> ClearCachedPageAsync(string Slug)
@@ -112,20 +112,24 @@ namespace UpDiddy.Services.ButterCMS
             return await _cacheService.RemoveCachedValueAsync(Key);
         }
 
-        private string AssemblePageCacheKey(string PageSlug, Dictionary<string, string> QueryParameters = null){
+        private string AssemblePageCacheKey(string PageSlug, Dictionary<string, string> QueryParameters = null)
+        {
             Dictionary<string, string> QueryParamsFromUrl = ExtractQueryParamsFromUrlString(PageSlug);
 
             //Urls may come in the query params attached
-            if(QueryParamsFromUrl != null){
-                if(QueryParameters == null){
+            if (QueryParamsFromUrl != null)
+            {
+                if (QueryParameters == null)
+                {
                     QueryParameters = new Dictionary<string, string>();
                 }
-                foreach(string key in QueryParamsFromUrl.Keys){
-                    if(!QueryParameters.Keys.Contains(key))
+                foreach (string key in QueryParamsFromUrl.Keys)
+                {
+                    if (!QueryParameters.Keys.Contains(key))
                         QueryParameters.Add(key, QueryParamsFromUrl[key]);
                 }
             }
-            
+
 
             PageSlug = DecipherKeyRouteFromUrl(PageSlug);
             StringBuilder stringBuilder = new StringBuilder();
@@ -133,9 +137,11 @@ namespace UpDiddy.Services.ButterCMS
                 .Append(PageSlug);
 
             // Check to see if this is a preview request.
-            if(QueryParameters != null){
-                foreach(string Key in QueryParameters.Keys){
-                    if(Key.Equals("preview") && QueryParameters[Key].Equals("1"))
+            if (QueryParameters != null)
+            {
+                foreach (string Key in QueryParameters.Keys)
+                {
+                    if (Key.Equals("preview") && QueryParameters[Key].Equals("1"))
                         stringBuilder.Append("_preview");
                 }
             }
@@ -143,41 +149,48 @@ namespace UpDiddy.Services.ButterCMS
             return stringBuilder.ToString();
         }
 
-        private Dictionary<string, string> ExtractQueryParamsFromUrlString(string Url){
+        private Dictionary<string, string> ExtractQueryParamsFromUrlString(string Url)
+        {
             int index = Url.IndexOf("?");
             string QueryParamString = string.Empty;
             if (index <= 0)
                 return null;
 
-            if(index + 1 >= Url.Length)
+            if (index + 1 >= Url.Length)
                 return null;
-            
+
             QueryParamString = Url.Substring(index + 1, Url.Length - index - 1);
             Dictionary<string, string> QueryParams = new Dictionary<string, string>();
-            if(QueryParamString.Equals(string.Empty))
+            if (QueryParamString.Equals(string.Empty))
                 return QueryParams;
 
             string[] split = QueryParamString.Split("&");
-            
-            foreach(string s in split){
+
+            foreach (string s in split)
+            {
                 string[] param = s.Split("=");
-                QueryParams.Add(param[0], param[1]);
+                if (param.Length == 2)
+                {
+                    QueryParams.Add(param[0], param[1]);
+                }
             }
             return QueryParams;
         }
 
-        private string DecipherCmsPageFromUrl(string Url){
+        private string DecipherCmsPageFromUrl(string Url)
+        {
             Url = DecipherKeyRouteFromUrl(Url);
             Url = Url.Split("_").Last().ToLower();
             return Url;
         }
 
-        private string DecipherKeyRouteFromUrl(string Url){
+        private string DecipherKeyRouteFromUrl(string Url)
+        {
             //Take out protocol annd domain from url
-            Url =  Url.Replace(_configuration["Environment:BaseUrl"], "/").ToLower();
+            Url = Url.Replace(_configuration["Environment:BaseUrl"], "/").ToLower();
 
             //Edge case if home page is supplied without closing slash
-            Url =  Url.Replace(_configuration["Environment:BaseUrl"].Substring(0, _configuration["Environment:BaseUrl"].Length - 1), "/").ToLower();
+            Url = Url.Replace(_configuration["Environment:BaseUrl"].Substring(0, _configuration["Environment:BaseUrl"].Length - 1), "/").ToLower();
 
             //Strip any query params
             int index = Url.IndexOf("?");
@@ -207,39 +220,46 @@ namespace UpDiddy.Services.ButterCMS
                     HtmlMessage.ToString(),
                     Constants.SendGridAccount.Transactional);
                 await _cacheService.SetCachedValueAsync<string>(CmsCacheKeyPrefix + CacheKeyForNavigationLoadFailure, "true");
-            }            
+            }
         }
 
-        public async Task<XmlDocument> GetButterSitemapAsync(){
+        public async Task<XmlDocument> GetButterSitemapAsync()
+        {
             XmlDocument xmlDocument = await _butterClient.GetSitemapAsync();
             return xmlDocument;
         }
 
-        public async Task<IList<string>> GetBlogAuthorSlugsAsync(){
-            IEnumerable<Author> Authors =  await _butterClient.ListAuthorsAsync(includeRecentPosts: true);
+        public async Task<IList<string>> GetBlogAuthorSlugsAsync()
+        {
+            IEnumerable<Author> Authors = await _butterClient.ListAuthorsAsync(includeRecentPosts: true);
             IList<string> AuthorSlugs = new List<string>();
-            foreach(Author author in Authors){
-                if(author.RecentPosts.Count() > 0)
+            foreach (Author author in Authors)
+            {
+                if (author.RecentPosts.Count() > 0)
                     AuthorSlugs.Add(author.Slug);
             }
             return AuthorSlugs;
         }
 
-        public async Task<IList<string>> GetBlogCategorySlugsAsync(){
-            IEnumerable<Category> Categories =  await _butterClient.ListCategoriesAsync(includeRecentPosts: true);
+        public async Task<IList<string>> GetBlogCategorySlugsAsync()
+        {
+            IEnumerable<Category> Categories = await _butterClient.ListCategoriesAsync(includeRecentPosts: true);
             IList<string> CategoriesList = new List<string>();
-            foreach(Category category in Categories){
-                if(category.RecentPosts.Count() > 0)
+            foreach (Category category in Categories)
+            {
+                if (category.RecentPosts.Count() > 0)
                     CategoriesList.Add(category.Slug);
             }
             return CategoriesList;
         }
 
-        public async Task<IList<string>> GetBlogTagSlugsAsync(){
-            IEnumerable<Tag> Tags =  await _butterClient.ListTagsAsync(includeRecentPosts: true);
+        public async Task<IList<string>> GetBlogTagSlugsAsync()
+        {
+            IEnumerable<Tag> Tags = await _butterClient.ListTagsAsync(includeRecentPosts: true);
             IList<string> TagsList = new List<string>();
-            foreach(Tag tag in Tags){
-                if(tag.RecentPosts.Count() > 0)
+            foreach (Tag tag in Tags)
+            {
+                if (tag.RecentPosts.Count() > 0)
                     TagsList.Add(tag.Slug);
             }
             return TagsList;
@@ -251,23 +271,25 @@ namespace UpDiddy.Services.ButterCMS
             number of Blog posts in Butter, so this was the only approach. We are leveraging the
             'excludeBody' parameter of the call to reduce payload size.
          */
-        public async Task<int> GetNumberOfBlogPostPagesAsync(){
+        public async Task<int> GetNumberOfBlogPostPagesAsync()
+        {
             PostsResponse posts = await _butterClient.ListPostsAsync(pageSize: Constants.CMS.BLOG_PAGINATION_PAGE_COUNT,
-                excludeBody: true);  
+                excludeBody: true);
             int NumberOfPages = 0;
-            if(posts == null)
+            if (posts == null)
                 return NumberOfPages;
-            
+
             NumberOfPages++;
             int? NextPageExists = posts.Meta.NextPage;
 
-            if(NextPageExists == null)
+            if (NextPageExists == null)
                 return NumberOfPages;
-            
-            while(NextPageExists != null){
+
+            while (NextPageExists != null)
+            {
                 NumberOfPages++;
                 posts = await _butterClient.ListPostsAsync(page: NumberOfPages, pageSize: Constants.CMS.BLOG_PAGINATION_PAGE_COUNT,
-                    excludeBody: true); 
+                    excludeBody: true);
                 NextPageExists = posts.Meta.NextPage;
             }
 
