@@ -50,7 +50,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _promoCodeService = promoCodeService;
         }
 
-        public async Task<Guid> Enroll(Guid subscriberGuid, CourseEnrollmentDto courseEnrollmentDto, string courseSlug)
+        public async Task<Guid> Enroll(Guid subscriberGuid, CourseEnrollmentDto courseEnrollmentDto, Guid courseGuid)
         {
 
    
@@ -58,11 +58,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             .Include(c => c.Vendor)
             .Include(c => c.CourseVariants).ThenInclude(cv => cv.CourseVariantType)
             .Include(c => c.CourseSkills).ThenInclude(cs => cs.Skill)
-            .Where(t => t.IsDeleted == 0 && t.Slug == courseSlug)
+            .Where(t => t.IsDeleted == 0 && t.CourseGuid == courseGuid)
             .FirstOrDefault();
 
             if (course == null)
-                throw new NotFoundException($"Course {courseSlug} does not exist");
+                throw new NotFoundException($"Course {courseGuid} does not exist");
 
             CourseVariant courseVariant = _repositoryWrapper.CourseVariant.GetAll()
             .Include(c => c.CourseVariantType) 
@@ -89,7 +89,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
             // map the CourseEnrollmentDto to an EnrollmentFlowDto 
-            EnrollmentFlowDto EnrollmentFlowDto = await CreateEnrollmentFlowDto(course,courseVariant, subscriberGuid, courseEnrollmentDto, courseSlug);
+            EnrollmentFlowDto EnrollmentFlowDto = await CreateEnrollmentFlowDto(course,courseVariant, subscriberGuid, courseEnrollmentDto, course.Slug);
             //
             EnrollmentDto EnrollmentDto = EnrollmentFlowDto.EnrollmentDto;
             BraintreePaymentDto BraintreePaymentDto = EnrollmentFlowDto.BraintreePaymentDto;
@@ -177,18 +177,18 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
-        public async Task<CourseCheckoutInfoDto> GetCourseCheckoutInfo(Guid subscriberGuid, string courseSlug)
+        public async Task<CourseCheckoutInfoDto> GetCourseCheckoutInfo(Guid subscriberGuid, Guid courseGuid)
         {
         
             Course course = _repositoryWrapper.Course.GetAll()
                 .Include(c => c.Vendor)
                 .Include(c => c.CourseVariants).ThenInclude(cv => cv.CourseVariantType)
                 .Include(c => c.CourseSkills).ThenInclude(cs => cs.Skill)
-                .Where(t => t.IsDeleted == 0 && t.Slug == courseSlug)
+                .Where(t => t.IsDeleted == 0 && t.CourseGuid == courseGuid)
                 .FirstOrDefault();
 
             if (course == null)
-                throw new NotFoundException($"Course {courseSlug} does not exist" );
+                throw new NotFoundException($"Course {courseGuid} does not exist" );
 
             UpDiddyLib.Dto.SubscriberDto subscriberDto = await SubscriberFactory.GetSubscriber(_repositoryWrapper, subscriberGuid, _syslog, _mapper);
            
