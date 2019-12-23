@@ -137,20 +137,20 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet]
         [Authorize]
-        [Route("{courseSlug}/enroll")]
-        public async Task<IActionResult> GetCoursesEnrollmentInfo(string courseSlug)
+        [Route("{courseGuid}/enroll")]
+        public async Task<IActionResult> GetCoursesEnrollmentInfo(Guid courseGuid)
         {
-           CourseCheckoutInfoDto rVal = await _courseEnrollmentService.GetCourseCheckoutInfo(GetSubscriberGuid(), courseSlug);
+           CourseCheckoutInfoDto rVal = await _courseEnrollmentService.GetCourseCheckoutInfo(GetSubscriberGuid(), courseGuid);
             return Ok(rVal);
         }
         
         [HttpPost]
         [Authorize]
-        [Route("{courseSlug}/enroll")]
-        public async Task<IActionResult> EnrollSubscriber([FromBody] CourseEnrollmentDto courseEnrollmentDto, string courseSlug)
+        [Route("{courseGuid}/enroll")]
+        public async Task<IActionResult> EnrollSubscriber([FromBody] CourseEnrollmentDto courseEnrollmentDto, Guid courseGuid)
         {
 
-            var rVal = await _courseEnrollmentService.Enroll(GetSubscriberGuid(), courseEnrollmentDto, courseSlug);
+            var rVal = await _courseEnrollmentService.Enroll(GetSubscriberGuid(), courseEnrollmentDto, courseGuid);
             return Ok(rVal);
         }
 
