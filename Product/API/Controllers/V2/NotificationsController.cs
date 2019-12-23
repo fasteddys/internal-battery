@@ -101,10 +101,17 @@ namespace UpDiddyApi.Controllers.V2
         }
 
 
+        // todo jab add migration for System_Get_Notifications
+
         [HttpGet]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> GetNotifications(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
+
+
+            // todo jab call stored procedure repository to get notifications 
+
+
             //  await _notificationService.UpdateNotification(GetSubscriberGuid(), notificationDto, notificationGuid);
             // return StatusCode(204);
 
