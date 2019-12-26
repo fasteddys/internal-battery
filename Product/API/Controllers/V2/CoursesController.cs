@@ -127,8 +127,8 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet]
         [Authorize]
-        [Route("{courseSlug}/{courseVariant}/promocodes/{promoCode}")]
-        public async Task<IActionResult> GetCoursesEnrollmentInfo(string courseSlug, Guid courseVariant, string promoCode)
+        [Route("{courseGuid}/variant/{courseVariant}/promocodes/{promoCode}")]
+        public async Task<IActionResult> GetCoursesEnrollmentInfo(Guid courseGuid, Guid courseVariant, string promoCode)
         {
             PromoCodeDto rVal = _promoCodeService.GetPromoCode(GetSubscriberGuid(), promoCode, courseVariant);
             return Ok(rVal);
