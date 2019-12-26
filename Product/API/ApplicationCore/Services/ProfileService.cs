@@ -103,6 +103,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 Subscriber.PostalCode = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.PostalCode) ? subscribeProfileBasicDto.PostalCode : null;
                 Subscriber.Biography = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.Biography) ? subscribeProfileBasicDto.Biography : null;
                 Subscriber.Title = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.Title) ? subscribeProfileBasicDto.Title : null;
+                Subscriber.HasOnboarded = subscribeProfileBasicDto.HasOnboarded.HasValue ?  subscribeProfileBasicDto.HasOnboarded.Value : Subscriber.HasOnboarded;
+
                 Subscriber.ModifyDate = DateTime.UtcNow;
                 Subscriber.StateId = StateId;
 
