@@ -32,6 +32,7 @@ namespace UpDiddyApi.Controllers.V2
         private readonly IServiceProvider _services;
         private readonly ISubscriberNotificationService _subscriberNotificationService;
         private readonly INotificationService _notificationService;
+        private readonly IAuthorizationService _authorizationService;
 
 
         #region constructor 
@@ -43,7 +44,8 @@ namespace UpDiddyApi.Controllers.V2
         , ITrackingService trackingService
         , IKeywordService keywordService
         , ISubscriberNotificationService subscriberNotificationService
-        ,INotificationService notificationService)
+        ,INotificationService notificationService
+        , IAuthorizationService authorizationService    )
 
 
         {
@@ -53,21 +55,66 @@ namespace UpDiddyApi.Controllers.V2
             _syslog = _services.GetService<ILogger<JobController>>();
             _subscriberNotificationService = subscriberNotificationService;
             _notificationService = notificationService;
+            _authorizationService = authorizationService;
         }
 
         #endregion
 
 
+  
 
-        [HttpGet("{NotificationGuid}")]
-        [Authorize]
-        public async Task<IActionResult> GetNotification(Guid NotificationGuid)    
+        #region subscriber notifications
+
+
+        [HttpPost]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("{notificationGuid}/subscribers/{subscriberGuid}") ]
+        public async Task<IActionResult> CreateSubscriberNotification( Guid NotificationGuid, Guid subscriberGuid)
         {
-            NotificationDto rVal = null;
-            rVal =  await _subscriberNotificationService.GetNotification(GetSubscriberGuid(), NotificationGuid);     
-            return Ok(rVal);
+            Guid rval = await _subscriberNotificationService.CreateSubscriberNotification(GetSubscriberGuid(), NotificationGuid, subscriberGuid);
+            return StatusCode(201);
         }
 
+        
+        [HttpDelete]
+        [Authorize]
+        [Route("{notificationGuid}/subscribers/{subscriberGuid}")]
+        public async Task<IActionResult> DeleteSubscriberNotification(Guid NotificationGuid, Guid subscriberGuid)
+        {
+            var isAuth = await _authorizationService.AuthorizeAsync(User, "IsCareerCircleAdmin");
+
+            bool rval = await _subscriberNotificationService.DeleteSubscriberNotification(isAuth.Succeeded, GetSubscriberGuid(), NotificationGuid, subscriberGuid);
+            return StatusCode(201);
+        }
+
+
+
+        // TODO jab add method for deleting subscriber notifications
+        // todo jab change to Edit here and on gateway definition 
+
+
+        [HttpPut]
+        [Authorize]
+        [Route("{notificationGuid}/subscribers/{subscriberGuid}")]
+        public async Task<IActionResult> UpdateSubscriberNotification([FromBody] NotificationDto notification, Guid NotificationGuid, Guid subscriberGuid)
+        {
+            bool rval = await _subscriberNotificationService.UpdateSubscriberNotification(GetSubscriberGuid(), NotificationGuid, subscriberGuid, notification);
+            return StatusCode(201);
+        }
+ 
+        [HttpGet]
+        [Authorize]
+        [Route("subscribers")]
+        public async Task<IActionResult> GetSubscriberNotifications(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        {
+            var  rval = await _subscriberNotificationService.GetNotifications(GetSubscriberGuid(),limit,offset,sort,order);
+            return Ok(rval);
+        }
+
+
+
+
+        #endregion
 
 
 
@@ -105,16 +152,19 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> GetNotifications(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            //  await _notificationService.UpdateNotification(GetSubscriberGuid(), notificationDto, notificationGuid);
-            // return StatusCode(204);
-
-
-            return Ok();
+            List<NotificationDto> rVal = await _notificationService.GetNotifications(limit, offset, sort, order);            
+            return Ok(rVal);
         }
 
 
-
-
+        [HttpGet("{NotificationGuid}")]
+        [Authorize]
+        public async Task<IActionResult> GetSubscriberNotification(Guid NotificationGuid)
+        {
+            NotificationDto rVal = null;
+            rVal = await _notificationService.GetNotification(NotificationGuid);
+            return Ok(rVal);
+        }
         #endregion
 
 

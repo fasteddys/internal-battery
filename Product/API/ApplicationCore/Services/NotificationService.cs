@@ -111,8 +111,31 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             return;
         
+        }
+
+
+
+        public async Task<List<NotificationDto>> GetNotifications(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        {    
+            List<NotificationDto> rVal = await _repositoryWrapper.StoredProcedureRepository.GetNotifications(limit, offset, sort, order); 
+            return rVal;
+        }
+
+
+        public async Task<NotificationDto> GetNotification(Guid notificationGuid)
+        {
+            if (notificationGuid == null)
+                throw new FailedValidationException("Notification guid is required");
+
+            Notification ExistingNotification = await _repositoryWrapper.NotificationRepository.GetByGuid(notificationGuid);
+
+            if (ExistingNotification == null)
+                throw new NotFoundException($"Cannot find notification {notificationGuid}");
+ 
+            return _mapper.Map<NotificationDto>(ExistingNotification);
 
         }
+
 
 
 

@@ -12,8 +12,11 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         Task DeleteNotification(Guid subscriberGuid, Guid notificationGuid);
 
-
-
         Task UpdateNotification(Guid subscriberGuid, NotificationDto notification, Guid notificationGuid);
-    }
+
+        Task<List<NotificationDto>> GetNotifications(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending");
+
+        Task<NotificationDto> GetNotification(Guid notificationGuid);
+
+    }        
 }
