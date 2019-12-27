@@ -95,15 +95,15 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 // update the user in the CareerCircle database
                 // Note: Do Not allow updates to auth0UserId
-                Subscriber.FirstName = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.FirstName) ? subscribeProfileBasicDto.FirstName : Subscriber.FirstName;
-                Subscriber.LastName = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.LastName) ? subscribeProfileBasicDto.LastName : Subscriber.LastName;
-                Subscriber.PhoneNumber = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.PhoneNumber) ? subscribeProfileBasicDto.PhoneNumber : Subscriber.PhoneNumber;
-                Subscriber.Address = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.Address) ? subscribeProfileBasicDto.Address : Subscriber.Address;
-                Subscriber.City = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.City) ? subscribeProfileBasicDto.City : Subscriber.City;
-                Subscriber.PostalCode = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.PostalCode) ? subscribeProfileBasicDto.PostalCode : Subscriber.PostalCode;
-                Subscriber.Biography = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.Biography) ? subscribeProfileBasicDto.Biography : Subscriber.Biography;
-                Subscriber.Title = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.Title) ? subscribeProfileBasicDto.Title : Subscriber.Title;
-                Subscriber.HasOnboarded = subscribeProfileBasicDto.HasOnboarded.HasValue ?  subscribeProfileBasicDto.HasOnboarded.Value : Subscriber.HasOnboarded;
+                Subscriber.FirstName = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.FirstName) ? subscribeProfileBasicDto.FirstName : null;
+                Subscriber.LastName = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.LastName) ? subscribeProfileBasicDto.LastName : null;
+                Subscriber.PhoneNumber = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.PhoneNumber) ? subscribeProfileBasicDto.PhoneNumber : null;
+                Subscriber.Address = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.Address) ? subscribeProfileBasicDto.Address : null;
+                Subscriber.City = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.City) ? subscribeProfileBasicDto.City : null;
+                Subscriber.PostalCode = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.PostalCode) ? subscribeProfileBasicDto.PostalCode : null;
+                Subscriber.Biography = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.Biography) ? subscribeProfileBasicDto.Biography : null;
+                Subscriber.Title = !string.IsNullOrWhiteSpace(subscribeProfileBasicDto.Title) ? subscribeProfileBasicDto.Title : null;
+                Subscriber.HasOnboarded = subscribeProfileBasicDto.HasOnboarded.HasValue ?  subscribeProfileBasicDto.HasOnboarded.Value : 0;
 
                 Subscriber.ModifyDate = DateTime.UtcNow;
                 Subscriber.StateId = StateId;
