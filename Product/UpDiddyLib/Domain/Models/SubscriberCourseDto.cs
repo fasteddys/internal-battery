@@ -21,5 +21,8 @@ namespace UpDiddyLib.Domain.Models
         public string VendorLogoUrl { get; set; }
 
         public int EnrollmentStatusId { get; set; }
+
+        public string VendorCourseUrl { get; set; }
+
     }
 }
