@@ -89,9 +89,6 @@ namespace UpDiddyApi.Controllers.V2
 
 
 
-        // TODO jab add method for deleting subscriber notifications
-        // todo jab change to Edit here and on gateway definition 
-
 
         [HttpPut]
         [Authorize]
