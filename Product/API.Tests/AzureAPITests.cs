@@ -1,21 +1,15 @@
 ﻿using Auth0.AuthenticationApi;
 using Auth0.AuthenticationApi.Models;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
-using System.Collections;
-using Xunit.Abstractions;
 using Newtonsoft.Json;
 using API.Tests.Helpers;
-using Microsoft.Extensions.Configuration;
 using System.Text;
 using System.Net.Http;
 using System.Security.Authentication;
@@ -23,13 +17,19 @@ using Newtonsoft.Json.Schema;
 
 namespace API.Tests.AzureApi
 {
-
     public class DataDrivenApiEndpointTests
     {
         [Theory]
         [MemberData(nameof(AzureApiDataProvider.ParseOpenApiSpecificationForApiEndpoints), MemberType = typeof(AzureApiDataProvider))]
         public void Validate_All_Api_Endpoints_Conform_To_Specifications(string apiEndpointTestName, MemberDataSerializer<ApiEndpointTest> apiEndpointTest)
         {
+            /* todo: 
+             * call each endpoint 
+             * assert actual response schema (not the data) against the intended response schema
+             * assert intended response status code to the actual response status code
+             * ensure that unit test responses contain the necessary information to take action if necessary
+             */
+
             Assert.True(true);
         }
     }
@@ -38,11 +38,13 @@ namespace API.Tests.AzureApi
     {
         public Uri Uri { get; set; }
         public string HttpMethod { get; set; }
-        public Dictionary<string, string> Headers { get; set; }
+        public Dictionary<string, string> Headers { get; set; } = new Dictionary<string, string>();
         public string RequestBody { get; set; }
+        public string RequestSchema { get; set; }
         public string ResponseBody { get; set; }
+        public string ResponseSchema { get; set; }
         public int StatusCode { get; set; }
-        public List<string> DefinitionErrors { get; set; }
+        public List<string> DefinitionErrors { get; set; } = new List<string>();
     }
 
     /// <summary>
@@ -54,7 +56,7 @@ namespace API.Tests.AzureApi
         {
             var urlParameterReplacementValues = new Dictionary<string, string>();
             var configuration = ConfigurationHelper.GetConfiguration(Directory.GetCurrentDirectory());
-            
+
             var configurationSectionWithReplacementValues = configuration.GetSection("UrlParameterReplacementValues").GetChildren();
             foreach (var urlParameterReplacementValue in configurationSectionWithReplacementValues)
             {
@@ -87,6 +89,28 @@ namespace API.Tests.AzureApi
         }
 
         /// <summary>
+        /// Using a test subscriber for the current environment, authenticates with Auth0 and retrieves a valid JWT
+        /// </summary>
+        /// <returns></returns>
+        public static async Task<string> GetValidJwtFromTestSubscriber()
+        {
+            var configuration = ConfigurationHelper.GetConfiguration(Directory.GetCurrentDirectory());
+
+            AuthenticationApiClient _auth0Client = new AuthenticationApiClient(new Uri(configuration["Auth0:Url"].ToString()));
+            var result = await _auth0Client.GetTokenAsync(new ResourceOwnerTokenRequest
+            {
+                ClientId = configuration["Auth0:ClientId"],
+                ClientSecret = configuration["Auth0:ClientSecret"],
+                Scope = "openid profile email",
+                Realm = "Username-Password-Authentication",
+                Username = configuration["TestSubscriber:Username"],
+                Password = configuration["TestSubscriber:Password"],
+                Audience = configuration["Auth0:Audience"]
+            });
+
+            return result.AccessToken;
+        }
+        /// <summary>
         /// Submits a web request for an Azure Api using Azure Resource Management and returns the response as JSON
         /// </summary>
         /// <param name="openApiRequestUri"></param>
@@ -116,7 +140,10 @@ namespace API.Tests.AzureApi
         /// </summary>
         /// <returns></returns>
         public static IEnumerable<object[]> ParseOpenApiSpecificationForApiEndpoints()
-        {            
+        {
+            // retrieve a valid Jwt for the test subscriber
+            var subscriberJwt = GetValidJwtFromTestSubscriber().Result;
+
             // load the OpenApi specification from Azure Resource Management
             JObject openApiSpecification = LoadOpenApiSpecification(GetOpenApiRequestUri());
 
@@ -137,37 +164,44 @@ namespace API.Tests.AzureApi
             var operations = openApiSpecification.Root.SelectTokens("$.operations.value");
 
             // schemas contain definitions for all operations (use these to compare responses from service requests)
-            var schemas = openApiSpecification.Root.SelectTokens("$.schemas.value");
+            var schemas = openApiSpecification.Root.SelectToken("$.schemas.value[0].document.definitions");
 
             // call each endpoint   
             foreach (var operation in operations.Children<JToken>())
             {
                 var httpMethod = operation.SelectToken("$.method").Value<string>();
                 var urlTemplate = operation.SelectToken("$.urlTemplate").Value<string>();
+                var operationName = operation.SelectToken("$.name").Value<string>();
 
+                // if the url contains parameters, set it using a test value from the config file
+                var replacement = urlParameterReplacementValues
+                    .Where(rv => urlTemplate.Contains(rv.Key))
+                    .Select(rv => new { Key = rv.Key, Value = rv.Value })
+                    .FirstOrDefault();
 
+                if (replacement != null)
+                    urlTemplate = urlTemplate.Replace(replacement.Key, replacement.Value);
 
-                // does the url template contain a replacement value? if so, how do we come up with the replacement value?
-                // TODO: map all of the tokens to values from the target environment... e.g., retrieve a valid job guid and replace it whenever we see a {job} url parameter
-
-
-
-                //WebRequest request = WebRequest.Create(UrlCombine(baseUrl, urlTemplate));
-                //request.Method = method;
-
-
+                
+                
 
                 // check to see if a 401 response is possible. if it is, we need to add a valid subscriber JWT to the request when testing successful responses
-                // one without a valid jwt (to ensure that the endpoint is secured)
-                // one with a valid jwt (to ensure that the endpoint works)
+                // todo: one without a valid jwt (to ensure that the endpoint is secured)
+                // todo: one with a valid jwt (to ensure that the endpoint works)
                 bool isRequiresSubscriberJwtForSuccessfulResponse = (operation.SelectToken("$.responses[?(@.statusCode == 401)]") != null);
 
-                foreach (var response in operation.SelectTokens("$.responses"))
+                foreach (var response in operation.SelectTokens("$.responses[0]"))
                 {
                     ApiEndpointTest apiEndpointTest = new ApiEndpointTest();
-                    
+                    apiEndpointTest.HttpMethod = httpMethod;
+                    apiEndpointTest.Uri = new Uri(Utilities.UrlCombine(baseUrl, urlTemplate));
+
+                    // todo: apiEndpointTest.RequestBody - how will we determine what values to put here - use definition/schema?
+
                     // assume that every request is protected with a subscription
                     apiEndpointTest.Headers.Add(subscriptionKeyParameterKey, subscriptionKeyParameterValue);
+                    if (isRequiresSubscriberJwtForSuccessfulResponse)
+                        apiEndpointTest.Headers.Add("Authorization", $"Bearer {subscriberJwt}");
 
                     // use the status code from the response definition as the expected status code for the api endpoint test
                     var statusCode = response.SelectToken("$.statusCode").Value<int>();
@@ -177,8 +211,12 @@ namespace API.Tests.AzureApi
                         case 201:
                         case 202:
                         case 204:
-                        case 401:
                             apiEndpointTest.StatusCode = statusCode;
+                            break;
+                        case 401:
+                            // remove JWT if it exists. this should cause a 401 response.
+                            apiEndpointTest.StatusCode = statusCode;
+                            apiEndpointTest.Headers.Remove("Authorization");
                             break;
                         case 400:
                             // TODO: need to think about how to implement tests to specifically test how endpoints handle malformed requests
@@ -188,150 +226,29 @@ namespace API.Tests.AzureApi
                             break;
                     }
 
-                    // JsonSchema.Parse() -- todo: how should we store this?
-                    yield return new object[] { "replace this with the name of the operation", new MemberDataSerializer<ApiEndpointTest>(apiEndpointTest) };
+                    // use the type name from the representation to retrieve the schema, load the example, ensure that the example is valid, then save the schema with the test
+                    try
+                    {
+                        var representation = response.SelectToken("$.representations[0]");
+                        string typeName = representation.SelectToken("$.typeName").Value<string>();
+                        string escapedTypeName = $"['{typeName}']";
+                        var responseSchema = schemas.SelectToken($"$.{escapedTypeName}");
+                        JSchema jschema = JSchema.Parse(responseSchema.ToString(Formatting.None));
+                        JObject example = responseSchema["example"].Value<JObject>();
+                        if (!example.IsValid(jschema))
+                            throw new ApplicationException("Response example is not valid according to the schema definition.");
+                        apiEndpointTest.ResponseSchema = jschema.ToString(SchemaVersion.Unset);
+                    }
+                    catch (Exception e)
+                    {
+                        apiEndpointTest.DefinitionErrors.Add($"Schema not found in response representation; error message: {e.Message}");
+                    }
+
+                    // add the api operation to the set of data-driven tests
+                    yield return new object[] { $"{operationName} ({statusCode})", new MemberDataSerializer<ApiEndpointTest>(apiEndpointTest) };
                 }
 
-                
             }
-
-            // todo: remove these
-            yield return new object[] { "apiEndpoint1", new MemberDataSerializer<ApiEndpointTest>(new ApiEndpointTest { HttpMethod = "GET", StatusCode = 200 }) };
-            yield return new object[] { "apiEndpoint2", new MemberDataSerializer<ApiEndpointTest>(new ApiEndpointTest { HttpMethod = "POST", StatusCode = 201 }) };
         }
     }
-
-
-    /*
-    public class AzureAPITests
-    {
-        private static async Task DoLogin()
-        {
-            var username = "delorean6976+staging10@gmail.com";
-            var password = "Temporary1";
-
-            AuthenticationApiClient _auth0Client = new AuthenticationApiClient(new Uri($"https://stagingcareercircle.auth0.com/"));
-            var result = await _auth0Client.GetTokenAsync(new ResourceOwnerTokenRequest
-            {
-                ClientId = "QVR6E72QfZz9gCHkc3Ig4bDy4n3ufind",
-                ClientSecret = "NhSdZanEfJxiYiYmfBFK15BGfZreF0Kk8uXEg7bPUVzWpIREZJbYaymRRKhDRFJU",
-                Scope = "openid profile email",
-                Realm = "Username-Password-Authentication",
-                Username = username,
-                Password = password,
-                Audience = "https://staging-careercircle.azure-api.net"
-            });
-
-            var user = await _auth0Client.GetUserInfoAsync(result.AccessToken);
-            var firstClaimValue = user.AdditionalClaims.Where(x => x.Key == ClaimTypes.NameIdentifier).FirstOrDefault();
-            Guid subscriberGuid;
-            if (firstClaimValue.Value != null && Guid.TryParse(firstClaimValue.Value.ToString(), out subscriberGuid))
-            {
-                var expiresOn = DateTime.UtcNow.AddSeconds(result.ExpiresIn);
-
-                List<Claim> claims = new List<Claim>();
-                claims.Add(new Claim(ClaimTypes.NameIdentifier, subscriberGuid.ToString()));
-                claims.Add(new Claim(ClaimTypes.Name, user.FullName));
-                claims.Add(new Claim("access_token", result.AccessToken));
-                claims.Add(new Claim(ClaimTypes.Expiration, expiresOn.ToString()));
-
-                var permissionClaim = user.AdditionalClaims.Where(x => x.Key == ClaimTypes.Role).FirstOrDefault().Value.ToList();
-                string permissions = string.Empty;
-
-                foreach (var permission in permissionClaim)
-                {
-                    claims.Add(new Claim(ClaimTypes.Role, permission.ToString(), ClaimValueTypes.String, "stagingcareercircle.auth0.com"));
-                }
-
-                var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
-
-                //await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
-                //await _api.UpdateLastSignIn(subscriberGuid);
-            }
-            else
-            {
-                throw new ApplicationException("Unable to identify the subscriber.");
-            }
-        }
-
-
-        private static string UrlCombine(string url1, string url2)
-        {
-            if (url1.Length == 0)
-                return url2;
-
-            if (url2.Length == 0)
-                return url1;
-
-            url1 = url1.TrimEnd('/');
-            url2 = url2.TrimStart('/');
-            return $"{url1}/{url2}";
-        }
-
-        [Fact]
-        public void ValidateAzureAPIEndpoints()
-        {
-            // todo: make tests data-driven: https://ikeptwalking.com/writing-data-driven-tests-using-xunit/
-
-            // todo: configure test user for the target environment and retrieve a valid JWT
-            DoLogin().Wait();
-
-            // todo: load the Azure Api subscription key
-
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "API.Tests.TestFiles.AzureApi-OpenApi.json";
-            JObject openApiContent;
-            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-            {
-                using (StreamReader reader = new StreamReader(stream))
-                {
-                    string content = reader.ReadToEnd();
-                    openApiContent = JObject.Parse(content);
-                }
-            }
-
-            var serviceUrl = openApiContent.Root.SelectToken("$.serviceUrl");
-            var apiVersion = openApiContent.Root.SelectToken("$.apiVersion");
-            var path = openApiContent.Root.SelectToken("$.path");
-            var subscriptionKeyParameterNames = openApiContent.Root.SelectToken("$.path"); // don't think we need this
-
-            // get list of api endpoints
-            var operations = openApiContent.Root.SelectTokens("$.operations.value");
-
-            // schemas contain definitions for all operations (use these to compare responses from service requests)
-            var schemas = openApiContent.Root.SelectTokens("$.schemas.value");
-
-            // assume versioning scheme will be segment (do not need to support header or query string right now)
-            var baseUrl = UrlCombine(serviceUrl.Value<string>(), apiVersion.Value<string>());
-
-            // call each endpoint
-            // todo: make these async?       
-            foreach (var operation in operations.Children<JToken>())
-            {
-                // check to see if a 401 response is possible. if it is, we need to make two calls to this endpoint:
-                // one without a valid jwt (to ensure that the endpoint is secured)
-                // one with a valid jwt (to ensure that the endpoint works)
-                bool isRequiresSubscriberJwt = false;
-
-                if (operation.SelectToken("$.responses[?(@.statusCode == 404)]") != null)
-                    isRequiresSubscriberJwt = true;
-
-                var method = operation.SelectToken("$.method").Value<string>();
-                var urlTemplate = operation.SelectToken("$.urlTemplate").Value<string>();
-
-                // does the url template contain a replacement value? if so, how do we come up with the replacement value?
-                // TODO: map all of the tokens to values from the target environment... e.g., retrieve a valid job guid and replace it whenever we see a {job} url parameter
-
-
-
-                WebRequest request = WebRequest.Create(UrlCombine(baseUrl, urlTemplate));
-                request.Method = method;
-
-            }
-
-            // todo: test stuff
-            Assert.True(true);
-        }
-    }
-    */
 }
