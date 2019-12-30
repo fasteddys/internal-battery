@@ -253,7 +253,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if ( level != "" )
                 parameters.Filter = $"Level eq '{level}'";
 
-            if (parameters.Filter != string.Empty && topic != "")
+            if (string.IsNullOrEmpty(parameters.Filter) == false && topic != "")
                 parameters.Filter += " and  ";
 
             if ( topic != "")
