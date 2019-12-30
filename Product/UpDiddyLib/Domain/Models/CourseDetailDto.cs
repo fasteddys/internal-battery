@@ -24,5 +24,6 @@ namespace UpDiddyLib.Domain.Models
         public string ThumbnailImage { get; set; }        
         public string Topic { get; set; }
         public string CourseSkills { get; set; }
+        public string ExternalUrl { get; set; }
     }
 }
