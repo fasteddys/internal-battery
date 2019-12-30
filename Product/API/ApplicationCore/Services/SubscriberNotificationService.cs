@@ -153,18 +153,13 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new UnauthorizedAccessException("Not owner of notifcation");
 
 
-            // Locate the notification 
-            Notification notification = await _repository.NotificationRepository.GetByGuid(notificationGuid);
-            if (notification == null)
-                throw new NotFoundException("Cannot find notification");
-
             // Locate the subscriber 
             Subscriber subscriber = await _repository.SubscriberRepository.GetByGuid(recipientGuid);
             if (subscriber == null)
                 throw new NotFoundException("Cannot find subscriber");
 
             SubscriberNotification subscriberNotification = _repository.SubscriberNotificationRepository.GetAllWithTracking()
-                .Where(sn => sn.IsDeleted == 0 && sn.NotificationId == notification.NotificationId && sn.SubscriberId == subscriber.SubscriberId)
+                .Where(sn => sn.IsDeleted == 0 && sn.SubscriberNotificationGuid == notificationGuid)
                 .FirstOrDefault();
 
             if (subscriberNotification == null)
