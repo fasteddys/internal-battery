@@ -14,7 +14,6 @@ using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
 using UpDiddyLib.Domain.Models;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyLib.Dto;
