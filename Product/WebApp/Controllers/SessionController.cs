@@ -78,6 +78,8 @@ namespace UpDiddy.Controllers
 
             if (!modelHasAllFields)
             {
+
+                _syslog.LogError($"SessionController:SignUp  Please enter all sign-up fields and try again.");
                 return BadRequest(new BasicResponseDto
                 {
                     StatusCode = 400,
@@ -87,6 +89,8 @@ namespace UpDiddy.Controllers
 
             if (!ModelState.IsValid)
             {
+
+                _syslog.LogError("SessionController:SignUp Unfortunately, an error has occured with your submission.Please try again.");
                 return BadRequest(new BasicResponseDto
                 {
                     StatusCode = 400,
@@ -96,6 +100,7 @@ namespace UpDiddy.Controllers
 
             if (!vm.Password.Equals(vm.ReenterPassword))
             {
+                _syslog.LogError("User's passwords do not match.");
                 return BadRequest(new BasicResponseDto
                 {
                     StatusCode = 403,
@@ -129,6 +134,7 @@ namespace UpDiddy.Controllers
                 }
                 else
                 {
+                    _syslog.LogError($"SessionController:SignUp CreateUser returned statusCode = {basicResponseDto.StatusCode} Description = { basicResponseDto.Description}");
                     return StatusCode(500, new BasicResponseDto()
                     {
                         StatusCode = 500,
@@ -138,6 +144,7 @@ namespace UpDiddy.Controllers
             }
             catch (ApiException e)
             {
+                _syslog.LogError($"SessionController:SignUp CreateUser returned Error = {e.ResponseDto.StatusCode} Description = { e.ResponseDto.Description} EMail = {createUserDto.Email}");
                 return StatusCode(500, new BasicResponseDto
                 {
                     StatusCode = 500,
@@ -157,6 +164,7 @@ namespace UpDiddy.Controllers
 
             if (!modelHasAllFields)
             {
+                _syslog.LogError($"SessionController:ExistingUserSignUp Please enter all sign-up fields and try again.");
                 return BadRequest(new BasicResponseDto
                 {
                     StatusCode = 400,
@@ -249,18 +257,21 @@ namespace UpDiddy.Controllers
                                 }
                                 else
                                 {
+                                    _syslog.LogError($"SessionController:SignIn An internal error occurred.");
                                     // intentionally being vague about the error
                                     ModelState.AddModelError("", "An internal error occurred.");
                                 }
                             }
                             else
                             {
+                                _syslog.LogError($"SessionController:SignIn Invalid username or password.");
                                 ModelState.AddModelError("", "Invalid username or password.");
                             }
                         }
                         else
                         {
                             // no account found
+                            _syslog.LogError($"SessionController:SignIn No account found with that email address.");
                             ModelState.AddModelError("", "No account found with that email address.");
                         }
                     }
@@ -271,7 +282,7 @@ namespace UpDiddy.Controllers
                 }
                 catch (Exception e)
                 {
-                    _syslog.LogError($"An unexpected error occurred in SessionController.SignIn: {e.Message}", e);
+                    _syslog.LogError($"SessionController:SignIn  An unexpected error occurred in SessionController.SignIn: {e.Message}", e);
                     ModelState.AddModelError("", "An unexpected error occurred.");
                 }
             }
@@ -310,6 +321,7 @@ namespace UpDiddy.Controllers
                     return RedirectToAction(nameof(SessionController.SignIn), new { success = "true", message = "Your password has been changed." });
                 else
                 {
+                    _syslog.LogError($"SessionController:SubmitPassword There was a problem resetting the password.");
                     ModelState.AddModelError("CustomPasswordResetError", "There was a problem resetting the password.");
                     return View(nameof(SessionController.ChangePassword), vm);
                 }
@@ -337,7 +349,7 @@ namespace UpDiddy.Controllers
                             var isMigrationSuccessful = await _api.MigrateUserAsync(new CreateUserDto() { Email = vm.EmailAddress, Password = randomPassword });
                             if (!isMigrationSuccessful)
                             {
-                                _syslog.LogError($"There was a problem migrating a user prior to changing their password.", null);
+                                _syslog.LogError($"SessionController:ResetPassword There was a problem reseting your password.");
                                 return BadRequest(new BasicResponseDto
                                 {
                                     StatusCode = 400,
@@ -347,6 +359,7 @@ namespace UpDiddy.Controllers
                         }
                         else
                         {
+                            _syslog.LogError($"SessionController:ResetPassword Email address is not recognized.");
                             // user doesn't exist in either environment
                             return BadRequest(new BasicResponseDto
                             {
@@ -364,15 +377,18 @@ namespace UpDiddy.Controllers
                             Description = "Password reset has been initiated."
                         });
                     else
+                    {
+                        _syslog.LogError($"SessionController:ResetPassword There was a problem initating the password reset.");
                         return BadRequest(new BasicResponseDto
                         {
                             StatusCode = 400,
                             Description = "There was a problem initating the password reset."
                         });
+                    }
                 }
                 catch (Auth0.Core.Exceptions.ApiException ae)
                 {
-                    _syslog.LogError($"There was a problem resetting a user's password: {ae.Message}", ae);
+                    _syslog.LogError($"SessionController:ResetPassword There was a problem resetting a user's password: {ae.Message}", ae);
                     return BadRequest(new BasicResponseDto
                     {
                         StatusCode = 400,
@@ -381,7 +397,7 @@ namespace UpDiddy.Controllers
                 }
                 catch (Exception e)
                 {
-                    _syslog.LogError($"An unexpected error occurred in SessionController.ResetPassword: {e.Message}", e);
+                    _syslog.LogError($"SessionController:ResetPassword An unexpected error occurred in SessionController.ResetPassword: {e.Message}", e);
                     return BadRequest(new BasicResponseDto
                     {
                         StatusCode = 400,
@@ -463,6 +479,7 @@ namespace UpDiddy.Controllers
             }
             else
             {
+                _syslog.LogError($"SessionController:ExecuteAuth0SignInAsync Unable to identify the subscriber.");
                 throw new ApplicationException("Unable to identify the subscriber.");
             }
         }
