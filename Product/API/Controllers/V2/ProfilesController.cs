@@ -292,7 +292,7 @@ namespace UpDiddyApi.Controllers.V2
 
         //todo 
         [HttpGet]
-        [Route("course/{subscriberGuid}")]
+        [Route("{subscriberGuid}/course")]
         [Authorize]
         public async Task<IActionResult> GetSubscriberCourses(Guid SubscriberGuid, int excludeCompleted, int excludeActive)
         {
