@@ -19,8 +19,16 @@ namespace UpDiddyApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetCompanies(int limit, int offset, string sort, string order)
         {
-            var companys = await _companyService.GetCompanies(limit, offset, sort, order);
-            return Ok(companys);
+            var companies = await _companyService.GetCompanies(limit, offset, sort, order);
+            return Ok(companies);
+        }
+
+        [HttpGet]
+        [Route("all")]
+        public async Task<IActionResult> GetAllCompanies()
+        {
+            var companies = await _companyService.GetCompaniesAsync();
+            return Ok(companies);
         }
 
         [HttpGet]

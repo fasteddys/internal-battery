@@ -105,6 +105,15 @@ namespace UpDiddyApi.Controllers
             return StatusCode(201);
         }
 
+        [HttpGet]
+        [Route("{JobGuid:guid}/applications")]
+        [Authorize]
+        public async Task<IActionResult> HasJobApplication(Guid JobGuid)
+        {
+            var HasApplied = await _jobApplicationService.HasJobApplication(GetSubscriberGuid(), JobGuid);
+            return Ok(HasApplied);
+        }
+
 
         #endregion
 
