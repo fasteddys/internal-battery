@@ -26,6 +26,7 @@ using UpDiddyLib.Dto.User;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 
+ 
 namespace UpDiddy.Controllers
 {
     public class SessionController : Controller
@@ -100,7 +101,7 @@ namespace UpDiddy.Controllers
 
             if (!vm.Password.Equals(vm.ReenterPassword))
             {
-                _syslog.LogError("User's passwords do not match.");
+                _syslog.LogError("SessionController:SignUp User's passwords do not match.");
                 return BadRequest(new BasicResponseDto
                 {
                     StatusCode = 403,
@@ -226,6 +227,7 @@ namespace UpDiddy.Controllers
         [Route("/session/signin")]
         public async Task<IActionResult> SignIn(SignInViewModel vm, [FromQuery] string returnUrl = "/Home/Profile")
         {
+            int step = 0;
             if (ModelState.IsValid)
             {
                 try
@@ -233,30 +235,40 @@ namespace UpDiddy.Controllers
                     var isUserExistsInAuth0 = await _api.IsUserExistsInAuth0Async(vm.EmailAddress);
                     if (isUserExistsInAuth0)
                     {
+                        step = 1;
+                        _syslog.LogInformation($"SessionController:SignIn Is existing user in Auth0");
                         await ExecuteAuth0SignInAsync(vm.EmailAddress, vm.Password);
+                        step = 2;
                         return RedirectToLocal(returnUrl);
                     }
                     else
                     {
+                        step = 3;
                         var isUserExistsInADB2C = await _api.IsUserExistsInADB2CAsync(vm.EmailAddress);
+                        step = 4;
                         if (isUserExistsInADB2C)
                         {
+                            step = 5;
                             // attempt login to adb2c with user's credentials.
                             bool isADB2CLoginValid = await _api.CheckADB2CLoginAsync(vm.EmailAddress, vm.Password);
 
                             if (isADB2CLoginValid)
                             {
+                                step = 6;
                                 // perform the user migration
                                 var isMigrationSuccessful = await _api.MigrateUserAsync(new CreateUserDto() { Email = vm.EmailAddress, Password = vm.Password });
-
+                                step = 7;
                                 if (isMigrationSuccessful)
                                 {
+                                    step = 8;
                                     // log the user in using their newly created auth0 account
                                     await ExecuteAuth0SignInAsync(vm.EmailAddress, vm.Password);
+                                    step = 9;
                                     return RedirectToLocal(returnUrl);
                                 }
                                 else
                                 {
+                                    step = 10;
                                     _syslog.LogError($"SessionController:SignIn An internal error occurred.");
                                     // intentionally being vague about the error
                                     ModelState.AddModelError("", "An internal error occurred.");
@@ -264,12 +276,14 @@ namespace UpDiddy.Controllers
                             }
                             else
                             {
+                                step = 11;
                                 _syslog.LogError($"SessionController:SignIn Invalid username or password.");
                                 ModelState.AddModelError("", "Invalid username or password.");
                             }
                         }
                         else
                         {
+                            step = 12;
                             // no account found
                             _syslog.LogError($"SessionController:SignIn No account found with that email address.");
                             ModelState.AddModelError("", "No account found with that email address.");
@@ -278,14 +292,17 @@ namespace UpDiddy.Controllers
                 }
                 catch (Auth0.Core.Exceptions.ApiException ae)
                 {
+                    _syslog.LogError($"SessionController:SignIn Auth0 core exception Message = {ae.Message} step = {step}");
                     ModelState.AddModelError("", ae.Message);
                 }
                 catch (Exception e)
                 {
-                    _syslog.LogError($"SessionController:SignIn  An unexpected error occurred in SessionController.SignIn: {e.Message}", e);
+                    _syslog.LogError($"SessionController:SignIn  An unexpected error occurred in SessionController.SignIn.  Message =  {e.Message} step = {step}", e);
                     ModelState.AddModelError("", "An unexpected error occurred.");
                 }
             }
+            else
+                _syslog.LogError($"SessionController:SignIn  Model state is not valid");
 
             return View(vm);
         }
