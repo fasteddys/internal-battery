@@ -296,7 +296,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     string PartnerGuidStr = pageInfo["partner"]["guid"].ToString();
                     _logger.LogInformation($"SubscriberService:CreateSubscriberAsync PartnerGuidStr = {PartnerGuidStr}");
                     step = 5;
-                    if (string.IsNullOrEmpty(PartnerGuidStr))
+                    if (string.IsNullOrEmpty(PartnerGuidStr) == false)
                     {
                         step = 6;
                         _logger.LogInformation($"SubscriberService:CreateSubscriberAsync creating group from with partner parsed from butter page");
@@ -304,6 +304,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                         group = await _taggingService.CreateGroup(subscriberDto.ReferrerUrl, Guid.Parse(PartnerGuidStr), subscriber.SubscriberId);
                         step = 8;
                     }
+                    else
+                        _logger.LogInformation($"SubscriberService:CreateSubscriberAsync unable to locate partner");
+
                 }
                 catch ( Exception ex )
                 {
