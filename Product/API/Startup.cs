@@ -311,6 +311,7 @@ namespace UpDiddyApi
             services.AddScoped<ICourseEnrollmentService, CourseEnrollmentService>();
             services.AddScoped<ISitemapService, SitemapService>();
             services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<IEducationalDegreeTypeService, EducationalDegreeTypeService>();
 
             
             #endregion
