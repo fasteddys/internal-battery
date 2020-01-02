@@ -18,6 +18,8 @@ using UpDiddyLib.Domain.Models;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyLib.Shared.GoogleJobs;
 using System.Collections.Generic;
+using System.IO;
+using Newtonsoft.Json.Linq;
 
 namespace UpDiddyApi.Controllers.V2
 {
@@ -64,6 +66,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("page")]
         public async Task<IActionResult> GetPage([FromBody] ButterCMSRequestDto request)
         {
+
             var rVal = await _butterCMSService.RetrievePageAsync<dynamic>(request.Url, request.QueryParameters);
             return Ok(rVal);
         }

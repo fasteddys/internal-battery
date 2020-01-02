@@ -29,6 +29,8 @@ using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyLib.Domain;
 using UpDiddyLib.Domain.Models;
 using UpDiddyApi.Helpers;
+using Newtonsoft.Json.Linq;
+
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class SubscriberService : ISubscriberService
@@ -43,6 +45,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private IHangfireService _hangfireService { get; set; }
         private IFileDownloadTrackerService _fileDownloadTrackerService { get; set; }
         private ISysEmail _sysEmail;
+        private readonly IButterCMSService _butterCMSService;
         private readonly ZeroBounceApi _zeroBounceApi;
 
 
@@ -55,7 +58,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             ITaggingService taggingService,
             IHangfireService hangfireService,
             IFileDownloadTrackerService fileDownloadTrackerService,
-            ISysEmail sysEmail)
+            ISysEmail sysEmail,
+            IButterCMSService butterCMSService)
         {
             _db = context;
             _configuration = configuration;
@@ -68,6 +72,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _fileDownloadTrackerService = fileDownloadTrackerService;
             _sysEmail = sysEmail;
             _zeroBounceApi = new ZeroBounceApi(_configuration, _repository, _logger);
+            _butterCMSService = butterCMSService;
             
         }
 
@@ -236,6 +241,10 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <returns></returns>
         public async Task<Guid> CreateSubscriberAsync(UpDiddyLib.Domain.Models.SubscriberDto subscriberDto)
         {
+
+
+            _logger.LogInformation($"SubscriberService:CreateSubscriberAsync  Creating account for {subscriberDto?.Email}");
+
             Models.Group group = null;
             var subscriberGuid = Guid.NewGuid();
 
@@ -261,8 +270,38 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             if (!string.IsNullOrWhiteSpace(subscriberDto.ReferrerUrl) && subscriberDto.PartnerGuid != null && subscriberDto.PartnerGuid != Guid.Empty)
             {
+                _logger.LogInformation($"SubscriberService:CreateSubscriberAsync  Creating Group for URL {subscriberDto?.ReferrerUrl} and partner {subscriberDto.PartnerGuid}");
                 // use the new tagging service for attribution
                 group = await _taggingService.CreateGroup(subscriberDto.ReferrerUrl, subscriberDto.PartnerGuid, subscriber.SubscriberId);
+            }
+            else if ( !string.IsNullOrWhiteSpace(subscriberDto.ReferrerUrl) )
+            {
+
+                _logger.LogInformation($"SubscriberService:CreateSubscriberAsync looking up partnerguid from ReferrerUrl");
+
+                try
+                {
+                    var url = subscriberDto.ReferrerUrl;
+                    var pageName = Path.GetFileName(url);
+                    var test = await _butterCMSService.RetrievePageAsync<dynamic>(pageName);
+
+                    JObject pageInfo = test.Data.Fields;
+                    string PartnerGuidStr = pageInfo["partner"]["guid"].ToString();
+                    if (string.IsNullOrEmpty(PartnerGuidStr))
+                    {
+
+                        group = await _taggingService.CreateGroup(subscriberDto.ReferrerUrl, Guid.Parse(PartnerGuidStr), subscriber.SubscriberId);
+
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    _logger.LogError($"SubscriberService:CreateSubscriberAsync Error getting partner guid from url");
+                }
+
+
+ 
+
             }
 
             if (subscriberDto.IsGatedDownload)
