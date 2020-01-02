@@ -279,24 +279,35 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 _logger.LogInformation($"SubscriberService:CreateSubscriberAsync looking up partnerguid from ReferrerUrl");
 
+                int step = 0;
+                // try catch the attempt to get the partner from butter 
                 try
                 {
                     var url = subscriberDto.ReferrerUrl;
+                    step = 1;
                     var pageName = Path.GetFileName(url);
-                    var test = await _butterCMSService.RetrievePageAsync<dynamic>(pageName);
 
-                    JObject pageInfo = test.Data.Fields;
+                    _logger.LogInformation($"SubscriberService:CreateSubscriberAsync RefererUrl = {subscriberDto.ReferrerUrl} PageName = {pageName}");
+                    step = 2;
+                    var butterPage = await _butterCMSService.RetrievePageAsync<dynamic>(pageName);
+                    step = 3;
+                    JObject pageInfo = butterPage.Data.Fields;
+                    step = 4;
                     string PartnerGuidStr = pageInfo["partner"]["guid"].ToString();
+                    _logger.LogInformation($"SubscriberService:CreateSubscriberAsync PartnerGuidStr = {PartnerGuidStr}");
+                    step = 5;
                     if (string.IsNullOrEmpty(PartnerGuidStr))
                     {
-
+                        step = 6;
+                        _logger.LogInformation($"SubscriberService:CreateSubscriberAsync creating group from with partner parsed from butter page");
+                        step = 7;
                         group = await _taggingService.CreateGroup(subscriberDto.ReferrerUrl, Guid.Parse(PartnerGuidStr), subscriber.SubscriberId);
-
+                        step = 8;
                     }
                 }
                 catch ( Exception ex )
                 {
-                    _logger.LogError($"SubscriberService:CreateSubscriberAsync Error getting partner guid from url");
+                    _logger.LogError($"SubscriberService:CreateSubscriberAsync Error at step {step} getting partner guid from url.  Msg = {ex.Message}");
                 }
 
 
