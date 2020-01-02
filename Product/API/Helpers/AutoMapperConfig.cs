@@ -56,7 +56,8 @@ namespace UpDiddyApi.Helpers
             CreateMap<Company, CompanyDto>().ReverseMap();
             CreateMap<EducationalInstitution, EducationalInstitutionDto>().ReverseMap();
             CreateMap<EducationalDegree, EducationalDegreeDto>().ReverseMap();
-            CreateMap<EducationalDegreeType, EducationalDegreeTypeDto>().ReverseMap();
+            CreateMap<EducationalDegreeType, UpDiddyLib.Dto.EducationalDegreeTypeDto>().ReverseMap();
+            CreateMap<EducationalDegreeType, UpDiddyLib.Domain.Models.EducationalDegreeTypeDto>().ReverseMap();
             CreateMap<CompensationType, UpDiddyLib.Dto.CompensationTypeDto>().ReverseMap();
             CreateMap<Campaign, CampaignDto>().ReverseMap();
             CreateMap<CampaignCourseVariant, CampaignCourseVariantDto>().ReverseMap();
