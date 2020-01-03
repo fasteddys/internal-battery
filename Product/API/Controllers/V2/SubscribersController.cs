@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace UpDiddyApi.Controllers.V2
 {
     [Route("/V2/[controller]/")]
-    public class SubscribersController : ControllerBase
+    public class SubscribersController : BaseApiController
     {
         private readonly IConfiguration _configuration;
         private readonly ISubscriberService _subscriberService;
@@ -45,9 +45,9 @@ namespace UpDiddyApi.Controllers.V2
         [Route("existing-subscriber-campaign-signup")]
         public async Task<IActionResult> ExistingUserCampaignSignup([FromBody] CreateUserDto createUserDto)
         {
+            createUserDto.SubscriberGuid = GetSubscriberGuid();
             await _subscriberService.ExistingSubscriberSignUp(createUserDto);
             return StatusCode(201);
         }
-
     }
 }
