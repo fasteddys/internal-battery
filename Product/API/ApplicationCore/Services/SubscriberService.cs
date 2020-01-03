@@ -328,7 +328,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 }
             }
 
-            if (subscriberDto.IsGatedDownload)
+            if (subscriberDto.IsGatedDownload && !string.IsNullOrEmpty(subscriberDto.GatedDownloadFileUrl))
             {
                 int? groupId = null;
                 if (group == null)
