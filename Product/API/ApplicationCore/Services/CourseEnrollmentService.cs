@@ -54,7 +54,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             _syslog.LogInformation("CourseEnrollmentService:Enroll starting.");
             string CourseEnrollmentJson = Newtonsoft.Json.JsonConvert.SerializeObject(courseEnrollmentDto);
-            _syslog.LogInformation("CourseEnrollmentService:Enroll CourseEnrollmentDto = {CourseEnrollmentJson}");
+            _syslog.LogInformation($"CourseEnrollmentService:Enroll CourseEnrollmentDto = {CourseEnrollmentJson}");
 
             Course course = _repositoryWrapper.Course.GetAll()
             .Include(c => c.Vendor)
@@ -129,9 +129,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                 .Where(pcr => pcr.PromoCodeRedemptionGuid == EnrollmentDto.PromoCodeRedemptionGuid && pcr.RedemptionStatus.Name == "Completed").FirstOrDefault();
 
             if (promoCodeRedemption == null)
-                _syslog.LogInformation("CourseEnrollmentService:Enroll Promo redemtion {EnrollmentDto.PromoCodeRedemptionGuid} was NOT found!");
+                _syslog.LogInformation($"CourseEnrollmentService:Enroll Promo redemtion {EnrollmentDto.PromoCodeRedemptionGuid} was NOT found!");
             else
-                _syslog.LogInformation("CourseEnrollmentService:Enroll Promo redemtion {EnrollmentDto.PromoCodeRedemptionGuid} was found!");
+                _syslog.LogInformation($"CourseEnrollmentService:Enroll Promo redemtion {EnrollmentDto.PromoCodeRedemptionGuid} was found!");
 
             int paymentMonth = 0;
             int paymentYear = 0;
