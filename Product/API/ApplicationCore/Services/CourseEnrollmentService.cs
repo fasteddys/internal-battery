@@ -52,8 +52,10 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<Guid> Enroll(Guid subscriberGuid, CourseEnrollmentDto courseEnrollmentDto, Guid courseGuid)
         {
+            _syslog.LogInformation("CourseEnrollmentService:Enroll starting.");
+            string CourseEnrollmentJson = Newtonsoft.Json.JsonConvert.SerializeObject(courseEnrollmentDto);
+            _syslog.LogInformation("CourseEnrollmentService:Enroll CourseEnrollmentDto = {CourseEnrollmentJson}");
 
-   
             Course course = _repositoryWrapper.Course.GetAll()
             .Include(c => c.Vendor)
             .Include(c => c.CourseVariants).ThenInclude(cv => cv.CourseVariantType)
@@ -65,7 +67,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new NotFoundException($"Course {courseGuid} does not exist");
 
             CourseVariant courseVariant = _repositoryWrapper.CourseVariant.GetAll()
-            .Include(c => c.CourseVariantType) 
+            .Include(c => c.CourseVariantType)
             .Where(t => t.IsDeleted == 0 && t.CourseVariantGuid == courseEnrollmentDto.CourseVariantGuid)
             .FirstOrDefault();
 
@@ -89,12 +91,12 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
             // map the CourseEnrollmentDto to an EnrollmentFlowDto 
-            EnrollmentFlowDto EnrollmentFlowDto = await CreateEnrollmentFlowDto(course,courseVariant, subscriberGuid, courseEnrollmentDto, course.Slug);
+            EnrollmentFlowDto EnrollmentFlowDto = await CreateEnrollmentFlowDto(course, courseVariant, subscriberGuid, courseEnrollmentDto, course.Slug);
             //
             EnrollmentDto EnrollmentDto = EnrollmentFlowDto.EnrollmentDto;
             BraintreePaymentDto BraintreePaymentDto = EnrollmentFlowDto.BraintreePaymentDto;
-             
-            
+
+
             EnrollmentDto.Subscriber = null;
             Enrollment Enrollment = _mapper.Map<Enrollment>(EnrollmentDto);
 
@@ -114,7 +116,7 @@ namespace UpDiddyApi.ApplicationCore.Services
              *      currently payment status is fixed because we are processing the BrainTree payment synchronously; this will not be the case in the future
              *      the payment month and year is 30 days after the enrollment date for Woz, will be different for other vendors (forcing us to address that when we onboard the next vendor)
              */
-            DateTime currentDate = DateTime.UtcNow; 
+            DateTime currentDate = DateTime.UtcNow;
             var vendor = _repositoryWrapper.Vendor.GetAll().Where(v => v.VendorId == course.VendorId).FirstOrDefault(); // why is vendor id nullable on course?
 
             var originalCoursePrice = _repositoryWrapper.CourseVariant.GetAll()
@@ -125,6 +127,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             var promoCodeRedemption = _db.PromoCodeRedemption
                 .Include(pcr => pcr.RedemptionStatus)
                 .Where(pcr => pcr.PromoCodeRedemptionGuid == EnrollmentDto.PromoCodeRedemptionGuid && pcr.RedemptionStatus.Name == "Completed").FirstOrDefault();
+
+            if (promoCodeRedemption == null)
+                _syslog.LogInformation("CourseEnrollmentService:Enroll Promo redemtion {EnrollmentDto.PromoCodeRedemptionGuid} was NOT found!");
+            else
+                _syslog.LogInformation("CourseEnrollmentService:Enroll Promo redemtion {EnrollmentDto.PromoCodeRedemptionGuid} was found!");
+
             int paymentMonth = 0;
             int paymentYear = 0;
 
@@ -156,13 +164,14 @@ namespace UpDiddyApi.ApplicationCore.Services
                 SubscriberGuid = subscriberGuid,
                 EnrollmentVendorPaymentStatusId = 2
             });
-            
+
             _db.SaveChanges();
 
             // Rdeem the promocode if on has been applied
-            _promoCodeService.Redeem(subscriberGuid, courseEnrollmentDto.PromoCodeRedemptionGuid, courseVariant.CourseVariantGuid.Value);
+            bool isRedeemed = _promoCodeService.Redeem(subscriberGuid, courseEnrollmentDto.PromoCodeRedemptionGuid, courseVariant.CourseVariantGuid.Value);
+            _syslog.LogInformation($"CourseEnrollmentService:Enroll isRedeemed = {isRedeemed}");
 
-         
+
             /**
              *  This line used to enqueue the enrollment flow. Now, it's enqueuing the braintree flow,
              *  which will then enqueue the enrollment flow if the payment is successful.
