@@ -75,8 +75,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (courseVariant == null)
                 throw new NotFoundException($"Course Variant {courseEnrollmentDto.CourseVariantGuid} does not exist");
 
-
-
             if (course.CourseGuid != courseEnrollmentDto.CourseGuid)
                 throw new FailedValidationException($"Course enrollment information mis-aligned with course slug");
 
@@ -89,6 +87,29 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (subscriberGuid != courseEnrollmentDto.SubscriberGuid)
                 throw new UnauthorizedAccessException("Logged in subscriber does not match subscriber being enrolled");
 
+
+            Subscriber subscriber = _repositoryWrapper.SubscriberRepository.GetSubscriberByGuid(courseEnrollmentDto.SubscriberGuid);
+            if ( subscriber == null )
+                throw new NotFoundException($"Subscriber {courseEnrollmentDto.SubscriberGuid} does not exist");
+
+            bool updateNeeded = false;
+            // Make sure that the subscriber has a first and last name since it's required for woz registration.  
+            if ( string.IsNullOrEmpty(subscriber.FirstName))
+            {
+                _syslog.LogInformation($"CourseEnrollmentService:Enroll setting user's first name since it's null");
+                updateNeeded = true;
+                subscriber.FirstName = courseEnrollmentDto.FirstName;
+            }
+
+            if (string.IsNullOrEmpty(subscriber.LastName))
+            {
+                _syslog.LogInformation($"CourseEnrollmentService:Enroll setting user's last name since it's null");
+                updateNeeded = true;
+                subscriber.LastName = courseEnrollmentDto.LastName;
+            }
+
+            if (updateNeeded)
+                await _repositoryWrapper.SubscriberRepository.SaveAsync();
 
             // map the CourseEnrollmentDto to an EnrollmentFlowDto 
             EnrollmentFlowDto EnrollmentFlowDto = await CreateEnrollmentFlowDto(course, courseVariant, subscriberGuid, courseEnrollmentDto, course.Slug);
