@@ -125,8 +125,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 .FirstOrDefault();
 
             var promoCodeRedemption = _db.PromoCodeRedemption
-                .Include(pcr => pcr.RedemptionStatus)
-                .Where(pcr => pcr.PromoCodeRedemptionGuid == EnrollmentDto.PromoCodeRedemptionGuid && pcr.RedemptionStatus.Name == "Completed").FirstOrDefault();
+                .Where(pcr => pcr.PromoCodeRedemptionGuid == EnrollmentDto.PromoCodeRedemptionGuid).FirstOrDefault();
 
             if (promoCodeRedemption == null)
                 _syslog.LogInformation($"CourseEnrollmentService:Enroll Promo redemtion {EnrollmentDto.PromoCodeRedemptionGuid} was NOT found!");
