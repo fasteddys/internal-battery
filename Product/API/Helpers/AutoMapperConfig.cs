@@ -242,7 +242,8 @@ namespace UpDiddyApi.Helpers
             CreateMap<SubscriberEducationHistory, SubscriberEducationHistoryDto>()
                 .ForMember(x => x.EducationalInstitution, opt => opt.MapFrom(src => src.EducationalInstitution.Name))
                 .ForMember(x => x.EducationalDegree, opt => opt.MapFrom(src => src.EducationalDegree.Degree))
-                .ForMember(x => x.EducationalDegreeType, opt => opt.MapFrom(src => src.EducationalDegreeType.DegreeType));
+                .ForMember(x => x.EducationalDegreeType, opt => opt.MapFrom(src => src.EducationalDegreeType.DegreeType))
+                 .ForMember(x => x.EducationalDegreeTypeGuid, opt => opt.MapFrom(src => src.EducationalDegreeType.EducationalDegreeTypeGuid));
 
             CreateMap<SubscriberNotes, SubscriberNotesDto>()
                 .ForMember(s => s.ModifiedDate, opt => opt.MapFrom(src => src.ModifyDate))
