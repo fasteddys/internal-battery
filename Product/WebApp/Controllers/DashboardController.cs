@@ -32,6 +32,7 @@ namespace UpDiddy.Controllers
             _deviceResolver = deviceResolver;
         }
 
+        /*
         [LoadSubscriber(isHardRefresh: true, isSubscriberRequired: true)]
         [HttpGet]
         public IActionResult Index()
@@ -96,7 +97,7 @@ namespace UpDiddy.Controllers
             }
             return newNotificationCount;
         }
-
+        */
 
     }
 }

@@ -340,7 +340,7 @@ namespace UpDiddy
                     new { controller = "Sitemap", action = "SiteMap" });
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    template: "{controller=Talent}/{action=Subscribers}/{id?}");
                 routes.MapRoute(
                     "NotFound",
                     "{*url}",

@@ -1,4 +1,4 @@
-@using System.Globalization
+﻿@using System.Globalization
 @using Microsoft.AspNetCore.Http.Features
 @using Microsoft.AspNetCore.Localization
 @using Microsoft.AspNetCore.Mvc.Localization
@@ -30,7 +30,7 @@
     </script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    @await Component.InvokeAsync("MetaTags", new { PagePath = Context.Request.Path.ToString() })
+    <!-- @await Component.InvokeAsync("MetaTags", new { PagePath = Context.Request.Path.ToString() }) -->
     <link rel="shortcut icon" href="~/images/Icon-20.png" />
     <environment names="Development">
         <link rel="stylesheet" type="text/css" href="~/css/site.dev.css" asp-append-version="true" />
@@ -58,6 +58,11 @@
                 height="0" width="0" style="display:none;visibility:hidden"></iframe>
     </noscript>
 
+    @Html.ActionLink("log in", "signin", "session", new { returnUrl = "/talent/subscribers", rel = "nofollow" })
+    @Html.ActionLink("logout", "signout", "session", new { returnUrl = "/talent/subscribers", rel = "nofollow" })
+
+
+    ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd ALERTS
     @await Component.InvokeAsync("PublicSiteNavigation")
 
     @{
@@ -99,9 +104,9 @@
             if ($.cookie('.AspNet.Consent') == undefined) {
                 $('#cookiePolicyModal').modal('show');
             }
-            else{
+            else {
                 $('#cookiePolicyModal').modal('hide');
-            }          
+            }
         });
     </script>
 </body>

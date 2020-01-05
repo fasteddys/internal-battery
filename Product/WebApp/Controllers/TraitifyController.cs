@@ -26,6 +26,8 @@ namespace UpDiddy.Controllers
             _butterService = butterService;
         }
 
+
+        /*
         [HttpGet]
         [Route("[controller]")]
         public async Task<IActionResult> Index()
@@ -228,5 +230,6 @@ namespace UpDiddy.Controllers
             ViewData[Constants.Seo.OG_DESCRIPTION] = landingPage.Data.Fields.OpenGraphDescription;
             ViewData[Constants.Seo.OG_IMAGE] = landingPage.Data.Fields.OpenGraphImage;
         }
+        */
     }
 }
