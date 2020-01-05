@@ -27,5 +27,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task ExecuteSQL(string sql, object[] parameter);
         EntityEntry GetEntry(TEntity entity);
         bool HasUnsavedChanges();
+        void LogicalDelete(TEntity entity);
     }
 }

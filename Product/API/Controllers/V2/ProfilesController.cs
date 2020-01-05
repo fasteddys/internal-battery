@@ -41,10 +41,12 @@ namespace UpDiddyApi.Controllers.V2
         private readonly IResumeService _resumeService;
         private readonly ISkillService _skillservice;
         private readonly IAvatarService _avatarService;
+        private readonly ISubscriberCourseService _subscriberCourseService;
+        private IAuthorizationService _authorizationService;
 
 
         #region constructor 
-        public ProfilesController(IServiceProvider services, IHangfireService hangfireService, ICloudTalentService cloudTalentService, IResumeService resumeService, ISkillService skillservice, IAvatarService avatarService)
+        public ProfilesController(IServiceProvider services, IHangfireService hangfireService, ICloudTalentService cloudTalentService, IResumeService resumeService, ISkillService skillservice, IAvatarService avatarService, IAuthorizationService authorizationService)
         {
             _services = services;
             _db = _services.GetService<UpDiddyDbContext>();
@@ -66,6 +68,8 @@ namespace UpDiddyApi.Controllers.V2
             _resumeService = resumeService;
             _skillservice = skillservice;
             _avatarService = avatarService;
+            _subscriberCourseService = _services.GetService<ISubscriberCourseService>();
+            _authorizationService = authorizationService;
         }
 
         #endregion
@@ -282,6 +286,25 @@ namespace UpDiddyApi.Controllers.V2
 
         #endregion
 
+        #region courses 
+
+
+
+        //todo 
+        [HttpGet]
+        [Route("{subscriberGuid}/course")]
+        [Authorize]
+        public async Task<IActionResult> GetSubscriberCourses(Guid SubscriberGuid, int excludeCompleted, int excludeActive)
+        {
+            var isAuth = await _authorizationService.AuthorizeAsync(User, "IsRecruiterPolicy");
+
+            var rVal = await _subscriberCourseService.GetSubscriberCourses(GetSubscriberGuid(), SubscriberGuid, excludeActive, excludeCompleted, isAuth.Succeeded);            
+            return Ok(rVal);
+        }
+
+
+        #endregion
+
         #region Avatar
 
         [HttpPut]
@@ -312,5 +335,30 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         #endregion
+
+        #region CareerPath
+        
+        [HttpGet]
+        [Route("careerpath/")]
+        [Authorize]
+        public async Task<IActionResult> GetCareerPath()
+        {
+
+            var careerPath = await _profileService.GetSubscriberCareerPath(GetSubscriberGuid());
+            return Ok(careerPath);
+        }
+
+        [HttpPut]
+        [Route("careerpath/{careerPath:guid}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateCareerPath(Guid careerPath)
+        {
+
+            await _profileService.UpdateSubscriberCareerPath(careerPath, GetSubscriberGuid());
+            return StatusCode(204);
+        }
+
+        #endregion
+
     }
 }

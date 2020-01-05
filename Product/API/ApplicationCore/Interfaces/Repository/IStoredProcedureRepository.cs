@@ -4,11 +4,22 @@ using System.Threading.Tasks;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Dto;
+using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface IStoredProcedureRepository
     {
+        Task<List<RelatedCourseDto>> GetCoursesByCourse(Guid courseGuid, int limit, int offset);
+        Task<List<RelatedCourseDto>> GetCoursesByCourses(List<Guid> courseGuids, int limit, int offset);
+        Task<List<RelatedCourseDto>> GetCoursesByJob(Guid jobPostingGuid, int limit, int offset);
+        Task<List<RelatedCourseDto>> GetCoursesByJobs(List<Guid> jobPostingGuids, int limit, int offset);
+        Task<List<RelatedCourseDto>> GetCoursesBySubscriber(Guid subscriberGuid, int limit, int offset);
+        Task<List<RelatedJobDto>> GetJobsByCourse(Guid courseGuid, int limit, int offset, Guid? subscriberGuid = null);
+        Task<List<RelatedJobDto>> GetJobsByCourses(List<Guid> courseGuids, int limit, int offset, Guid? subscriberGuid = null);
+        Task<List<RelatedJobDto>> GetJobsByTopic(Guid topicGuid, int limit, int offset, Guid? subscriberGuid = null);
+        Task<List<RelatedJobDto>> GetJobsBySubscriber(Guid subscriberGuid, int limit, int offset);
+        Task CacheRelatedJobSkillMatrix();
         Task<List<SearchTermDto>> GetKeywordSearchTermsAsync();
         Task<List<SearchTermDto>> GetLocationSearchTermsAsync();
         Task<List<JobAbandonmentStatistics>> GetJobAbandonmentStatisticsAsync(DateTime startDate, DateTime endDate);
@@ -18,15 +29,16 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<SubscriberSignUpCourseEnrollmentStatistics>> GetSubscriberSignUpCourseEnrollmentStatisticsAsync(DateTime? startDate, DateTime? endDate);
         Task<int> AddOrUpdateCourseAsync(CourseParams courseParams);
         Task<List<SubscriberInitialSourceDto>> GetNewSubscribers();
-        Task<List<CourseDetailDto>> GetCoursesForJob(Guid JobGuid, int NumCourses);
-        Task<List<CourseDetailDto>> GetCoursesBySkillHistogram(Dictionary<string, int> SkillHistogram, int NumCourses);
         Task<List<CourseDetailDto>> GetCoursesRandom(int NumCourses);
         Task<List<CourseDetailDto>> GetCourses(int limit, int offset, string sort, string order);
         Task<CourseDetailDto> GetCourse(Guid courseGuid);
-        Task<List<CourseDetailDto>> GetFavoriteCourses(Guid subscriberGuid, int limit, int offset, string sort, string order);
-
+        Task<List<CourseFavoriteDto>> GetFavoriteCourses(Guid subscriberGuid, int limit, int offset, string sort, string order);
         Task<List<SubscriberNotesDto>> GetSubscriberNotes(Guid subscriberGuid, Guid talentGuid, int limit, int offset, string sort, string order);
+        Task<List<SubscriberCourseDto>> GetSubscriberCourses(Guid subscriberGuid, int excludeCompleted, int excludeActive);
+        Task<List<JobSitemapDto>> GetJobSitemapUrls(Uri baseSiteUri);
+        Task<List<CourseVariantDetailDto>> GetCourseVariants(Guid courseGuid);
 
-
+        Task<List<NotificationDto>> GetNotifications(int limit, int offset, string sort, string order);
+        Task<List<NotificationDto>> GetSubscriberNotifications(Guid subscriberGuid, int limit, int offset, string sort, string order);
     }
 }

@@ -49,6 +49,8 @@ namespace UpDiddyApi.Workflow
         private readonly IHangfireService _hangfireService;
         private readonly IMemoryCache _memoryCache;
         private readonly ICourseService _courseService;
+        private readonly ISitemapService _sitemapService;
+        private readonly IEmploymentTypeService _employmentTypeService;
 
         public ScheduledJobs(
             UpDiddyDbContext context,
@@ -69,7 +71,9 @@ namespace UpDiddyApi.Workflow
             IHangfireService hangfireService,
             ICourseService courseService,
             IMemoryCache memoryCache,
-            ICloudTalentService cloudTalentService
+            ICloudTalentService cloudTalentService,
+            ISitemapService sitemapService,
+            IEmploymentTypeService employmentTypeService
            )
         {
             _db = context;
@@ -93,6 +97,32 @@ namespace UpDiddyApi.Workflow
             _hangfireService = hangfireService;
             _memoryCache = memoryCache;
             _courseService = courseService;
+            _sitemapService = sitemapService;
+            _employmentTypeService = employmentTypeService;
+        }
+
+
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
+        public async Task GenerateSiteMapAndSaveToBlobStorage()
+        {
+            _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.GenerateSiteMapAndSaveToBlobStorage started at: {DateTime.UtcNow.ToLongDateString()}");
+
+            string rawBaseUrl = _configuration["Environment:BaseUrl"];
+            Uri baseSiteUrl = null;
+            if (!Uri.TryCreate(rawBaseUrl, UriKind.Absolute, out baseSiteUrl))
+                throw new ApplicationException($"Invalid base site url specified in the API configuration: {rawBaseUrl}");
+
+            try
+            {
+                var sitemap = await _sitemapService.GenerateSiteMap(baseSiteUrl);
+                await _sitemapService.SaveSitemapToBlobStorage(sitemap);
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.GenerateSiteMapAndSaveToBlobStorage encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+            }
+
+            _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.GenerateSiteMapAndSaveToBlobStorage completed at: {DateTime.UtcNow.ToLongDateString()}");
         }
 
         #region Marketing
@@ -789,7 +819,7 @@ namespace UpDiddyApi.Workflow
                     JobSiteScrapeStatistic jobDataMiningStats =
                         new JobSiteScrapeStatistic()
                         {
-                            CreateDate = DateTime.UtcNow,
+                            ScrapeDate = DateTime.UtcNow,
                             CreateGuid = Guid.Empty,
                             IsDeleted = 0,
                             JobSiteId = jobSite.JobSiteId,
@@ -802,7 +832,7 @@ namespace UpDiddyApi.Workflow
                         };
 
                     // load the job data mining process for the job site
-                    IJobDataMining jobDataMining = JobDataMiningFactory.GetJobDataMiningProcess(jobSite, _configuration, _syslog);
+                    IJobDataMining jobDataMining = JobDataMiningFactory.GetJobDataMiningProcess(jobSite, _configuration, _syslog, _employmentTypeService);
 
                     // load all existing job pages - it is important to retrieve all of them regardless of their JobPageStatus to avoid FK conflicts on insert and update operations
                     IEnumerable<JobPage> existingJobPages = await _repositoryWrapper.JobPage.GetAllJobPagesForJobSiteAsync(jobSite.JobSiteGuid);
@@ -843,7 +873,6 @@ namespace UpDiddyApi.Workflow
                     }
 
                     // store aggregate data about operations performed by job site; set scrape date at the very end of the process
-                    jobDataMiningStats.ScrapeDate = DateTime.UtcNow;
                     await _repositoryWrapper.JobSiteScrapeStatistic.Create(jobDataMiningStats);
                     await _repositoryWrapper.JobSiteScrapeStatistic.SaveAsync();
                 }
@@ -1113,6 +1142,19 @@ namespace UpDiddyApi.Workflow
         #endregion
 
         #region CareerCircle Jobs 
+
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        public async Task CacheRelatedJobSkillMatrix()
+        {
+            try
+            {
+                await _repositoryWrapper.StoredProcedureRepository.CacheRelatedJobSkillMatrix();
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.CacheRelatedJobSkillMatrix encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+            }
+        }
 
         [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public void ExecuteJobPostingAlert(Guid jobPostingAlertGuid)

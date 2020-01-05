@@ -32,6 +32,7 @@ namespace UpDiddy.Controllers
             int.TryParse(api.GetActiveJobCountAsync().Result.Description, out _activeJobCount);
         }
 
+        /*
         [HttpGet("[controller]")]
         public async Task<IActionResult> Index()
         {
@@ -1061,10 +1062,7 @@ namespace UpDiddy.Controllers
                 {
                     try
                     {
-                        /**
-                         * It's possible for a user to enter either "MD" or "Maryland", so we need to check either input
-                         * against the returned facet, which will be the two-character state code (e.g. "md").
-                         */
+                         
                         if (!FacetLabelExists(StateFacet.Facets, UpDiddyLib.Helpers.Utils.GetStateByName(state.Replace("-", " ")).ToString()))
                             return false;
                     }
@@ -1656,5 +1654,7 @@ namespace UpDiddy.Controllers
             return Ok(valuesOnly);
         }
         #endregion
+
+    */
     }
 }

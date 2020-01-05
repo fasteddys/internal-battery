@@ -28,6 +28,7 @@ namespace WebApp.Controllers
             _sysEmail = sysEmail;
         }
 
+        /*
         [HttpGet("hire-talent")]
         public async Task<IActionResult> Index()
         {
@@ -107,5 +108,7 @@ namespace WebApp.Controllers
             ViewData[Constants.Seo.OG_DESCRIPTION] = landingPage.Data.Fields.OpenGraphDescription;
             ViewData[Constants.Seo.OG_IMAGE] = landingPage.Data.Fields.OpenGraphImage;
         }
+
+    */
     }
 }

@@ -11,13 +11,21 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
 
 namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
 {
     public class AllegisGroupProcess : BaseProcess, IJobDataMining
     {
-        public AllegisGroupProcess(JobSite jobSite, ILogger logger, Guid companyGuid, IConfiguration config) : base(jobSite, logger, companyGuid, config ) { }
-        
+        private readonly List<EmploymentTypeDto> _employmentTypes;
+
+        public AllegisGroupProcess(JobSite jobSite, ILogger logger, Guid companyGuid, IConfiguration config, IEmploymentTypeService employmentTypeService)
+            : base(jobSite, logger, companyGuid, config, employmentTypeService)
+        {
+            var newEmploymentTypes = employmentTypeService.GetEmploymentTypes().Result;
+            _employmentTypes = newEmploymentTypes.Select(et => new EmploymentTypeDto() { EmploymentTypeGuid = et.EmploymentTypeGuid, Name = et.Name }).ToList();
+        }
+
         public async Task<List<JobPage>> DiscoverJobPages(List<JobPage> existingJobPages)
         {
             // init code for http client and allegis group icims parser/client
@@ -54,7 +62,8 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
                         if (existingJob == null && jobPage != null)
                             updatedJobPages.Add(jobPage);
 
-                    } catch(Exception e)
+                    }
+                    catch (Exception e)
                     {
                         _syslog.Log(LogLevel.Information, $"***** AllegisGroupProcess.DiscoverJobPages encountered an exception while attempting to scrape new job; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}, uri: {url}");
                     }
@@ -116,6 +125,28 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
             jobPostingDto.Company = new CompanyDto() { CompanyGuid = _companyGuid };
             jobPostingDto.ThirdPartyIdentifier = jobPage.UniqueIdentifier;
             jobPostingDto.PostingExpirationDateUTC = DateTime.UtcNow.AddYears(1);
+
+            if (_employmentTypes != null)
+            {
+                var jobData = JsonConvert.DeserializeObject<dynamic>(jobPage.RawData);
+                string rawEmploymentType = Helpers.ConvertJValueToString(jobData.employmentType);
+
+                switch (rawEmploymentType)
+                {
+                    case "CONTRACTOR":
+                        jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Contractor").FirstOrDefault();
+                        break;
+                    case "FULL_TIME":
+                        jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Full-Time").FirstOrDefault();
+                        break;
+                    case "PART_TIME":
+                        jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Part-Time").FirstOrDefault();
+                        break;
+                    default:
+                        jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Other").FirstOrDefault();
+                        break;
+                }
+            }
 
             // For Allegis Group Corporate Jobs statically set recruiter for now
             jobPostingDto.Recruiter = new RecruiterDto()

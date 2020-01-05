@@ -229,6 +229,16 @@ namespace UpDiddyApi
 
             // sync job posting alerts between Hangfire and our database
             BackgroundJob.Enqueue<ScheduledJobs>(x => x.SyncJobPostingAlertsBetweenDbAndHangfire());
+
+            // update the related job skill matrix table once per day at 5 UTC
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheRelatedJobSkillMatrix(), Cron.Daily(5));
+
+            // generate the sitemap and save it to blob storage (do this only in staging and prod since we currently do not have a "development" instance for blob storage)
+            if (_currentEnvironment.IsStaging())
+                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.GenerateSiteMapAndSaveToBlobStorage(), Cron.Weekly(DayOfWeek.Sunday, 5));
+            if (_currentEnvironment.IsProduction())
+                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.GenerateSiteMapAndSaveToBlobStorage(), Cron.Daily(5));
+
             #endregion
 
             services.AddHttpClient(Constants.HttpGetClientName);
@@ -295,9 +305,15 @@ namespace UpDiddyApi
             services.AddScoped<IButterCMSService, ButterCMSService>();
             services.AddScoped<IPasswordResetRequestService, PasswordResetRequestService>();
             services.AddScoped<ITopicService, TopicService>();
+            services.AddScoped<ISubscriberCourseService, SubscriberCourseService>();
+            services.AddScoped<IOfferService, OfferService>();
+            services.AddScoped<ICourseLevelService, CourseLevelService>();
+            services.AddScoped<ICourseEnrollmentService, CourseEnrollmentService>();
+            services.AddScoped<ISitemapService, SitemapService>();
+            services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<IEducationalDegreeTypeService, EducationalDegreeTypeService>();
 
-
-
+            
             #endregion
 
             // Configure SnapshotCollector from application settings

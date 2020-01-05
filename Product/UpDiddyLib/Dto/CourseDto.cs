@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace UpDiddyLib.Dto
 {
@@ -30,5 +29,6 @@ namespace UpDiddyLib.Dto
         public List<TagTopicDto> TagTopics { get; set; }
         public bool IsExternal { get; set; }
         public int? TopicSecondaryId { get; set; }
+        public string ExternalUrl { get; set; }
     }
 }
