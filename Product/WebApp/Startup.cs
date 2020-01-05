@@ -264,7 +264,8 @@ namespace UpDiddy
             else if (!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
             {
                 app.UseExceptionHandler("/Home/Error");
-                app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
+                // remove www redirect rule for talent.careercircle.com admin portal
+                //app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
             }
 
             // Initialise ReactJS.NET. Must be before static files.
