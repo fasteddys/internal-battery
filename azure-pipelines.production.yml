@@ -12,7 +12,7 @@ variables:
 trigger:
   branches:
     include:
-      - release/*
+      - master2020release/*
   paths:
     include:
       - Product/UpDiddyLib/*
@@ -78,4 +78,4 @@ steps:
 - task: PublishBuildArtifacts@1
   displayName: Publish Artifacts
   inputs:
-    artifactName: 'webapp'
+    artifactName: 'tawebapp2020'
