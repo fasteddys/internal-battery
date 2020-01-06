@@ -190,7 +190,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 // track the subscriber action if performed by someone other than the user who owns the file
                 if (subscriberGuid != talentGuid)
-                    new SubscriberActionFactory(_repositoryWrapper, _db, _configuration, _syslog, _redisCache).TrackSubscriberAction(subscriberGuid, "TalentDetails", "Subscriber", subscriberDto.SubscriberGuid);
+                    new SubscriberActionFactory(_repositoryWrapper, _db, _configuration, _syslog, _redisCache).TrackSubscriberAction(subscriberGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);
 
                 return subscriberDto;
             }

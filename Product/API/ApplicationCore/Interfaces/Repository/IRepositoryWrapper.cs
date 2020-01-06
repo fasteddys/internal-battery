@@ -73,14 +73,17 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IEducationalDegreeTypeRepository EducationalDegreeTypeRepository { get; }
         IEducationalInstitutionRepository EducationalInstitutionRepository { get; }
         IEducationLevelRepository EducationLevelRepository { get; }
-        IExperienceLevelRepository ExperienceLevelRepository {get;}
-        ICompensationTypeRepository CompensationTypeRepository {get;}
-        IRecruiterCompanyRepository RecruiterCompanyRepository {get;}
+        IExperienceLevelRepository ExperienceLevelRepository { get; }
+        ICompensationTypeRepository CompensationTypeRepository { get; }
+        IRecruiterCompanyRepository RecruiterCompanyRepository { get; }
         Task SaveAsync();
         ITraitifyCourseTopicBlendMappingRepository TraitifyCourseTopicBlendMappingRepository { get; }
         ICourseFavoriteRepository CourseFavoriteRepository { get; }
-        ISubscriberProfileStagingStoreRepository SubscriberProfileStagingStoreRepository {get;}
+        ISubscriberProfileStagingStoreRepository SubscriberProfileStagingStoreRepository { get; }
         IPasswordResetRequestRepository PasswordResetRequestRepository { get; }
         ITalentFavoriteRepository TalentFavoriteRepository { get; }
+        ICourseLevelRepository CourseLevelRepository { get; }
+
+        ICourseReferralRepository CourseReferralRepository { get; }
     }
 }

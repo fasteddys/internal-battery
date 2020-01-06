@@ -99,8 +99,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
                         IsDeleted = 0,
                         OccurredDate = DateTime.UtcNow,
                         SubscriberId = subscriber.SubscriberId
-                    });
-                _repositoryWrapper.SaveAsync();
+                    }).Wait();
+                _repositoryWrapper.SaveAsync().Wait();
 
                 // mark as successful if we got to this point
                 isSuccess = true;

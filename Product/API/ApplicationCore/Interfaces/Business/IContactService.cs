@@ -9,5 +9,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     public interface IContactService
     {
        Task CreateNewMessage(ContactUsDto contactDto);
+       Task CreateHireTalentMessage(HireTalentDto hireTalentDto);
     }
 }

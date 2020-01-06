@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Net;
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -6,11 +7,12 @@ using Microsoft.Extensions.DependencyInjection;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.Authorization;
 using UpDiddyLib.Domain.Models;
-
+using UpDiddyLib.Dto.User;
+using Microsoft.AspNetCore.Authorization;
 namespace UpDiddyApi.Controllers.V2
 {
     [Route("/V2/[controller]/")]
-    public class SubscribersController : ControllerBase
+    public class SubscribersController : BaseApiController
     {
         private readonly IConfiguration _configuration;
         private readonly ISubscriberService _subscriberService;
@@ -37,5 +39,15 @@ namespace UpDiddyApi.Controllers.V2
             return Ok(new { subscriberGuid = newSubscriberGuid });
         }
 
+
+        [HttpPost]
+        [Authorize]
+        [Route("existing-subscriber-campaign-signup")]
+        public async Task<IActionResult> ExistingUserCampaignSignup([FromBody] CreateUserDto createUserDto)
+        {
+            createUserDto.SubscriberGuid = GetSubscriberGuid();
+            await _subscriberService.ExistingSubscriberSignUp(createUserDto);
+            return StatusCode(201);
+        }
     }
 }

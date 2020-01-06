@@ -3,8 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Models.Views;
+using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.User;
+using UpDiddyLib.Domain.Models;
+using System.Collections.Generic;
 
 namespace UpDiddyApi.Models
 {
@@ -174,8 +177,13 @@ namespace UpDiddyApi.Models
         public DbSet<CoursePage> CoursePage { get; set; }
         public DbSet<CourseFavorite> CourseFavorite { get; set; }
         public DbSet<CoursePageStatus> CoursePageStatus { get; set; }
+        public DbSet<City> City { get; set; }
+        public DbSet<Postal> Postal { get; set; }
         public DbSet<PasswordResetRequest> PasswordResetRequest { get; set; }
         public DbSet<TalentFavorite> TalentFavorite { get; set; }
+        public DbSet<CourseLevel> CourseLevel { get; set; }
+        public DbSet<CourseReferral> CourseReferral { get; set; }
+
 
         #region DBQueries
 
@@ -192,23 +200,41 @@ namespace UpDiddyApi.Models
         public DbQuery<JobAbandonmentStatistics> JobAbandonmentStatistics { get; set; }
         public DbQuery<JobCountPerProvince> JobCountPerProvince { get; set; }
         public DbQuery<SubscriberSourceDto> SubscriberSourcesDetails { get; set; }
-
         public DbQuery<SubscriberInitialSourceDto> SubscriberInitialSource { get; set; }
         public DbQuery<CourseDetailDto> CourseDetails { get; set; }
-
-
-
+        public DbQuery<CourseFavoriteDto> CourseFavorites { get; set; }
+        public DbQuery<CourseVariantDetailDto> CourseVariants { get; set; }
+        public DbQuery<RelatedJobDto> RelatedJobs { get; set; }
+        public DbQuery<RelatedCourseDto> RelatedCourses { get; set; }
         public DbQuery<JobDto> SubscriberJobFavorites { get; set; }
         public DbQuery<SubscriberSignUpCourseEnrollmentStatistics> SubscriberSignUpCourseEnrollmentStatistics { get; set; }
         public DbQuery<SearchTermDto> KeywordSearchTerms { get; set; }
         public DbQuery<SearchTermDto> LocationSearchTerms { get; set; }
-
         public DbQuery<SubscriberNotesDto> SubscriberNoteQuery { get; set; }
+        public DbQuery<SubscriberCourseDto> SubscriberCourses { get; set; }
+        public DbQuery<JobSitemapDto> JobSitemap {get;set;}
+        public DbQuery<NotificationDto> Notifications { get; set; }
 
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Query<JobSitemapDto>()
+                .Property(jsm => jsm.Url)
+                .HasConversion(
+                u => u.ToString(),
+                u => new Uri(u));
+
+            modelBuilder.Entity<Postal>()
+                .HasIndex(p => new { p.CityId, p.Code })
+                .HasName("UIX_Postal_City_Code")
+                .IsUnique(true);
+
+            modelBuilder.Entity<City>()
+                .HasIndex(c => new { c.StateId, c.Name })
+                .HasName("UIX_City_State_Name")
+                .IsUnique(true);
+
             modelBuilder.Entity<CourseSite>()
                 .HasIndex(c => c.Name)
                 .HasName("UIX_CourseSite_Name")

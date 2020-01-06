@@ -14,10 +14,18 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCareerPaths()
+        public async Task<IActionResult> GetCareerPaths(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {            
-            var topics = await _topicService.GetTopics();
+            var topics = await _topicService.GetTopics(limit, offset, sort, order);
             return Ok(topics);
+        }
+
+        [HttpGet]
+        [Route("{topicGuid:guid}")]
+        public async Task<IActionResult> GetCareerPath(Guid topicGuid)
+        {
+            var courses = await _topicService.GetTopic(topicGuid);
+            return Ok(courses);
         }
 
         [HttpGet]

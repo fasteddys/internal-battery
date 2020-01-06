@@ -227,6 +227,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                 .FirstOrDefault();
         }
 
+        public async  Task<bool> HasJobApplication(Guid subscriberGuid, Guid jobPostingGuid)
+        {
+            return await _repositoryWrapper.JobApplication.HasSubscriberAppliedToJobPosting(subscriberGuid, jobPostingGuid);
+        }
+
 
 
 

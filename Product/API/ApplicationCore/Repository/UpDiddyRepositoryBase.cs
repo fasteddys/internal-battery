@@ -121,6 +121,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task Create(TEntity entity)
         {
+            entity.GetType().GetProperty("CreateDate").SetValue(entity, DateTime.UtcNow);
             await this._dbContext.Set<TEntity>().AddAsync(entity);
         }
 
@@ -147,6 +148,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
         public async Task SaveAsync()
         {
             await this._dbContext.SaveChangesAsync();
+        }
+
+        public void LogicalDelete(TEntity entity)
+        {
+            entity.GetType().GetProperty("ModifyDate").SetValue(entity, DateTime.UtcNow);
+            entity.GetType().GetProperty("IsDeleted").SetValue(entity, 1);
         }
 
         public EntityEntry GetEntry(TEntity entity)

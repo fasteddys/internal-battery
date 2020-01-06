@@ -2,6 +2,9 @@
 using UpDiddyApi.Models;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using System.Linq;
+using System;
+using Microsoft.EntityFrameworkCore;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -72,7 +75,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ISubscriberSkillRepository _subscriberSkillRepository;
         private ISubscriberEducationHistoryRepository _subscriberEducationHistoryRepository;
         private IIndustryRepository _industryRepository;
-
         private ISecurityClearanceRepository _securityClearanceRepository;
         private IEmploymentTypeRepository _employmentTypeRepository;
         private IEducationalDegreeRepository _educationalDegreeRepository;
@@ -87,8 +89,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ISubscriberProfileStagingStoreRepository _subscriberProfileStagingRepository;
         private ITalentFavoriteRepository _talentFavoriteRepository;
         private IPasswordResetRequestRepository _passwordResetRequestRepository;
-
+        private ICourseLevelRepository _courseLevelRepository;
+        private ICourseReferralRepository _courseReferralRepository;
         private readonly IConfiguration _configuration;
+
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
@@ -99,7 +103,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             get
             {
-                if(_passwordResetRequestRepository == null)
+                if (_passwordResetRequestRepository == null)
                 {
                     _passwordResetRequestRepository = new PasswordResetRequestRepository(_dbContext);
                 }
@@ -991,12 +995,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
-        public async Task SaveAsync()
-        {
-            await _dbContext.SaveChangesAsync();
-
-        }
-
         public ITraitifyCourseTopicBlendMappingRepository TraitifyCourseTopicBlendMappingRepository
         {
             get
@@ -1021,16 +1019,17 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
-        public ISubscriberProfileStagingStoreRepository SubscriberProfileStagingStoreRepository 
+        public ISubscriberProfileStagingStoreRepository SubscriberProfileStagingStoreRepository
         {
-            get{
-                  if (_subscriberProfileStagingRepository == null)
+            get
+            {
+                if (_subscriberProfileStagingRepository == null)
                 {
                     _subscriberProfileStagingRepository = new SubscriberProfileStagingStoreRepository(_dbContext);
                 }
                 return _subscriberProfileStagingRepository;
             }
-            
+
         }
 
 
@@ -1046,6 +1045,44 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
+        public ICourseLevelRepository CourseLevelRepository
+        {
+            get
+            {
+                if (_courseLevelRepository == null)
+                {
+                    _courseLevelRepository = new CourseLevelRepository(_dbContext);
+                }
+                return _courseLevelRepository;
+            }
+        }
+
+
+        public ICourseReferralRepository CourseReferralRepository
+        {
+            get
+            {
+                if (_courseReferralRepository == null)
+                {
+                    _courseReferralRepository = new CourseReferralRepository(_dbContext);
+                }
+                return _courseReferralRepository;
+            }
+        }
+
+
+        public async Task SaveAsync()
+        {
+            var modifiedEntities = _dbContext.ChangeTracker.Entries()
+           .Where(p => p.State == EntityState.Modified).ToList();
+            var now = DateTime.UtcNow;
+            foreach (var change in modifiedEntities)
+            {
+                var modifyDateProp = change.Entity.GetType().GetProperty("ModifyDate");
+                modifyDateProp.SetValue(change.Entity, now);
+            }
+            await this._dbContext.SaveChangesAsync();
+        }
 
     }
 }

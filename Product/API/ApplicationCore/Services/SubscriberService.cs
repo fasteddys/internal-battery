@@ -29,6 +29,8 @@ using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyLib.Domain;
 using UpDiddyLib.Domain.Models;
 using UpDiddyApi.Helpers;
+using Newtonsoft.Json.Linq;
+
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class SubscriberService : ISubscriberService
@@ -43,6 +45,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private IHangfireService _hangfireService { get; set; }
         private IFileDownloadTrackerService _fileDownloadTrackerService { get; set; }
         private ISysEmail _sysEmail;
+        private readonly IButterCMSService _butterCMSService;
         private readonly ZeroBounceApi _zeroBounceApi;
 
 
@@ -55,7 +58,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             ITaggingService taggingService,
             IHangfireService hangfireService,
             IFileDownloadTrackerService fileDownloadTrackerService,
-            ISysEmail sysEmail)
+            ISysEmail sysEmail,
+            IButterCMSService butterCMSService)
         {
             _db = context;
             _configuration = configuration;
@@ -68,6 +72,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _fileDownloadTrackerService = fileDownloadTrackerService;
             _sysEmail = sysEmail;
             _zeroBounceApi = new ZeroBounceApi(_configuration, _repository, _logger);
+            _butterCMSService = butterCMSService;
             
         }
 
@@ -236,6 +241,10 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <returns></returns>
         public async Task<Guid> CreateSubscriberAsync(UpDiddyLib.Domain.Models.SubscriberDto subscriberDto)
         {
+
+
+            _logger.LogInformation($"SubscriberService:CreateSubscriberAsync  Creating account for {subscriberDto?.Email}");
+
             Models.Group group = null;
             var subscriberGuid = Guid.NewGuid();
 
@@ -261,23 +270,89 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             if (!string.IsNullOrWhiteSpace(subscriberDto.ReferrerUrl) && subscriberDto.PartnerGuid != null && subscriberDto.PartnerGuid != Guid.Empty)
             {
+                _logger.LogInformation($"SubscriberService:CreateSubscriberAsync  Creating Group for URL {subscriberDto?.ReferrerUrl} and partner {subscriberDto.PartnerGuid}");
                 // use the new tagging service for attribution
                 group = await _taggingService.CreateGroup(subscriberDto.ReferrerUrl, subscriberDto.PartnerGuid, subscriber.SubscriberId);
             }
-
-            if (subscriberDto.IsGatedDownload)
+            else if (!string.IsNullOrWhiteSpace(subscriberDto.ReferrerUrl))
             {
-                int? groupId = null;
-                if (group == null)
-                    groupId = group.GroupId;
-                // set up the gated file download and send the email
-                await HandleGatedFileDownload(subscriberDto.GatedDownloadMaxAttemptsAllowed, subscriberDto.GatedDownloadFileUrl, groupId, subscriber.SubscriberId, subscriber.Email);
+
+                _logger.LogInformation($"SubscriberService:CreateSubscriberAsync looking up partnerguid from ReferrerUrl");
+                string PartnerGuidStr = null;
+                Guid PartnerGuid = Guid.Empty;
+                string isGatedDownload = string.Empty;
+                string gatedDownloadFileDownloadUrl = string.Empty;
+                decimal? maxDownloadAllowed = 0.0m;
+                int step = 0;
+                // try catch the attempt to get the partner from butter 
+                try
+                {
+                    var url = subscriberDto.ReferrerUrl;
+                    step = 1;
+                    var pageName = Path.GetFileName(url);
+                    if (!string.IsNullOrEmpty(pageName))
+                    {
+                        if (pageName.Contains("?"))
+                        {
+                            pageName = pageName.Split("?")[0];
+                        }
+                    }
+                    _logger.LogInformation($"SubscriberService:CreateSubscriberAsync RefererUrl = {subscriberDto.ReferrerUrl} PageName = {pageName}");
+                    step = 2;
+                    var butterPage = await _butterCMSService.RetrievePageAsync<dynamic>(pageName);
+                    if (butterPage != null)
+                    {
+                        
+                        step = 3;
+                        JObject pageInfo = butterPage.Data.Fields;
+                        PartnerGuidStr = pageInfo["partner"]["guid"].ToString();
+                        isGatedDownload = pageInfo["isgateddownload"].ToString();
+                        gatedDownloadFileDownloadUrl = pageInfo["gatedfiledownloadfile"].ToString();
+                        maxDownloadAllowed = pageInfo["gatedfiledownloadmaxattemptsallowed"].ToString() != "" ? (decimal?) pageInfo["gatedfiledownloadmaxattemptsallowed"] : null;
+                        if (!string.IsNullOrEmpty(PartnerGuidStr))
+                        {
+                            step = 4;
+                            PartnerGuid = Guid.Parse(PartnerGuidStr);
+                             _logger.LogInformation($"SubscriberService:CreateSubscriberAsync This campaign slug '{pageName}' does contain Partner with Guid {PartnerGuidStr}");
+                        }
+                        else
+                        {
+                            _logger.LogInformation($"SubscriberService:CreateSubscriberAsync This campaign slug '{pageName}' does not have a partner associated with it");
+
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogInformation($"SubscriberService:CreateSubscriberAsync No campaign associated with slug '{pageName}'");
+
+                    }
+                    step = 5;
+                    group = await _taggingService.CreateGroup(subscriberDto.ReferrerUrl, PartnerGuid, subscriber.SubscriberId);
+
+                    if (isGatedDownload == "True" && !string.IsNullOrEmpty(gatedDownloadFileDownloadUrl))
+                    {
+                        int? groupId = null;
+                        if (group == null)
+                            groupId = group.GroupId;
+                        int? maxAllowedInt = null;
+                        if (maxDownloadAllowed != null)
+                            maxAllowedInt = Decimal.ToInt16(maxDownloadAllowed.Value);
+                        await HandleGatedFileDownload(maxAllowedInt, gatedDownloadFileDownloadUrl, groupId, subscriber.SubscriberId, subscriber.Email);
+                    }
+
+                    if (!string.IsNullOrEmpty(subscriberDto.AssessmentId))
+                    {
+                        await TraitifyHelper.CompleteSignup(subscriberDto.AssessmentId, subscriber, _logger, _repository, _sysEmail, _configuration, _zeroBounceApi);
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"SubscriberService:CreateSubscriberAsync Error at step {step} getting partner guid from url.  Msg = {ex.Message}");
+                }
             }
 
-            if (!string.IsNullOrEmpty(subscriberDto.AssessmentId))
-            {
-                await TraitifyHelper.CompleteSignup(subscriberDto.AssessmentId, subscriber, _logger, _repository, _sysEmail, _configuration, _zeroBounceApi);
-            }
+
 
             return subscriberGuid;
         }
@@ -290,7 +365,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             try
             {
                 Models.Group group = null;
-
+            
                 // create the user in the CareerCircle database
                 await _repository.SubscriberRepository.Create(new Subscriber()
                 {
@@ -316,10 +391,10 @@ namespace UpDiddyApi.ApplicationCore.Services
                     group = await _taggingService.CreateGroup(createUserDto.ReferrerUrl, createUserDto.PartnerGuid, subscriber.SubscriberId);
                 }
 
-                if (createUserDto.IsGatedDownload)
+                if (createUserDto.IsGatedDownload && !string.IsNullOrEmpty(createUserDto.GatedDownloadFileUrl))
                 {
                     int? groupId = null;
-                    if (group == null)
+                    if (group != null)
                         groupId = group.GroupId;
                     // set up the gated file download and send the email
                     await HandleGatedFileDownload(createUserDto.GatedDownloadMaxAttemptsAllowed, createUserDto.GatedDownloadFileUrl, groupId, subscriber.SubscriberId, subscriber.Email);
@@ -335,11 +410,15 @@ namespace UpDiddyApi.ApplicationCore.Services
             return isSubscriberCreatedSuccessfully;
         }
 
+
+
         public async Task<bool> ExistingSubscriberSignUp(CreateUserDto createUserDto)
         {
+            string isGatedDownload = string.Empty;
+            string gatedDownloadFileDownloadUrl = string.Empty;
+            decimal? maxDownloadAllowed = 0.0m;
             bool isSubscriberUpdatedSuccessfully = false;
             Models.Group group = null;
-
             try
             {
                 Subscriber subscriber = await this.GetSubscriberByGuid(createUserDto.SubscriberGuid);
@@ -354,22 +433,59 @@ namespace UpDiddyApi.ApplicationCore.Services
                     subscriber.PhoneNumber = createUserDto.PhoneNumber;
                 await this.UpdateSubscriber(subscriber);
 
-                // update the user in the Google Talent Cloud
                 _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
-
-                if (!string.IsNullOrWhiteSpace(createUserDto.ReferrerUrl) && createUserDto.PartnerGuid != null && createUserDto.PartnerGuid != Guid.Empty)
+                if (!string.IsNullOrWhiteSpace(createUserDto.ReferrerUrl))
                 {
-                    // use the new tagging service for attribution
-                    group = await _taggingService.CreateGroup(createUserDto.ReferrerUrl, createUserDto.PartnerGuid, subscriber.SubscriberId);
-                }
+                    _logger.LogInformation($"SubscriberService:ExistingSubscriberSignUp looking up partnerguid from ReferrerUrl");
+                    string PartnerGuidStr = null;
+                    Guid PartnerGuid = Guid.Empty;
+                    var url = createUserDto.ReferrerUrl;
+                    var pageName = Path.GetFileName(url);
+                    if (!string.IsNullOrEmpty(pageName))
+                    {
+                        if (pageName.Contains("?"))
+                        {
+                            pageName = pageName.Split("?")[0];
+                        }
+                    }
+                    _logger.LogInformation($"SubscriberService:ExistingSubscriberSignUp RefererUrl = {createUserDto.ReferrerUrl} PageName = {pageName}");
+                    var butterPage = await _butterCMSService.RetrievePageAsync<dynamic>(pageName);
+                    if (butterPage != null)
+                    {
+                        JObject pageInfo = butterPage.Data.Fields;
+                        PartnerGuidStr = pageInfo["partner"]["guid"].ToString();
+                        isGatedDownload = pageInfo["isgateddownload"].ToString();
+                        gatedDownloadFileDownloadUrl = pageInfo["gatedfiledownloadfile"].ToString();
+                        maxDownloadAllowed = pageInfo["gatedfiledownloadmaxattemptsallowed"].ToString() != "" ? (decimal?) pageInfo["gatedfiledownloadmaxattemptsallowed"] : null;
+                        if (!string.IsNullOrEmpty(PartnerGuidStr))
+                        {
+                            PartnerGuid = Guid.Parse(PartnerGuidStr);
+                        }
+                        else
+                        {
+                            _logger.LogInformation($"SubscriberService:ExistingSubscriberSignUp This campaign slug '{pageName}' does not have a partner associated with it");
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogInformation($"SubscriberService:ExistingSubscriberSignUp No campaign associated with slug '{pageName}'");
+                    }
 
-                if (createUserDto.IsGatedDownload)
-                {
-                    // set up the gated file download and send the email
-                    await HandleGatedFileDownload(createUserDto.GatedDownloadMaxAttemptsAllowed, createUserDto.GatedDownloadFileUrl, group?.GroupId, subscriber.SubscriberId, subscriber.Email);
-                }
+                    group = await _taggingService.CreateGroup(createUserDto.ReferrerUrl, PartnerGuid, subscriber.SubscriberId);
+                    if (isGatedDownload == "True" && !string.IsNullOrEmpty(gatedDownloadFileDownloadUrl))
+                    {
+                        int? groupId = null;
+                        if (group != null)
+                            groupId = group.GroupId;
+                        int? maxAllowedInt = null;
+                        if (maxDownloadAllowed != null)
+                            maxAllowedInt = Decimal.ToInt16(maxDownloadAllowed.Value);
+                        await HandleGatedFileDownload(maxAllowedInt, gatedDownloadFileDownloadUrl, groupId, subscriber.SubscriberId, subscriber.Email);
+                    }
 
-                isSubscriberUpdatedSuccessfully = true;
+
+                    isSubscriberUpdatedSuccessfully = true;
+                }
             }
             catch (Exception e)
             {

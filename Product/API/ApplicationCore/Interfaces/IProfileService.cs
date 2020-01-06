@@ -55,5 +55,24 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
 
         #endregion
 
+        #region CareerPat
+
+        /// <summary>
+        /// Get a subscriber's careerpath (topic)
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        Task<TopicDto> GetSubscriberCareerPath(Guid subscriberGuid);
+
+        /// <summary>
+        /// Updates the subscriber's selected career path (topic)
+        /// </summary>
+        /// <param name="careerPathGuid"></param>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        Task UpdateSubscriberCareerPath(Guid careerPathGuid, Guid subscriberGuid);
+        
+        #endregion
+
     }
 }

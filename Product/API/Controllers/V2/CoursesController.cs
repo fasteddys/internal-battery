@@ -14,7 +14,11 @@ using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
+using UpDiddyLib.Domain.Models;
+using UpDiddyApi.ApplicationCore.Exceptions;
+using UpDiddyLib.Dto;
+
+
 namespace UpDiddyApi.Controllers
 {
     [Route("/V2/[controller]/")]
@@ -33,6 +37,8 @@ namespace UpDiddyApi.Controllers
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly ICourseService _courseService;
         private readonly ICourseFavoriteService _courseFavoriteService;
+        private readonly ICourseEnrollmentService _courseEnrollmentService;
+        private readonly IPromoCodeService _promoCodeService;
 
 
         public CoursesController(UpDiddyDbContext db
@@ -45,7 +51,9 @@ namespace UpDiddyApi.Controllers
         , IHangfireService hangfireService
         , IRepositoryWrapper repositoryWrapper
         , ICourseService courseService
-        , ICourseFavoriteService courseFavoriteService)
+        , ICourseFavoriteService courseFavoriteService
+        , ICourseEnrollmentService courseEnrollmentService
+        , IPromoCodeService  promoCodeService)
         {
             _db = db;
             _mapper = mapper;
@@ -59,35 +67,35 @@ namespace UpDiddyApi.Controllers
             _repositoryWrapper = repositoryWrapper;
             _courseService = courseService;
             _courseFavoriteService = courseFavoriteService;
+            _courseEnrollmentService = courseEnrollmentService;
+            _promoCodeService = promoCodeService;
         }
+
+        #region course metrics 
 
         [HttpGet]
-        [Route("random")]
-        public async Task<IActionResult> Random(Guid JobGuid)
+        [Route("count")]
+        public async Task<IActionResult> GetCoursesCount()
         {
-            return Ok(await _courseService.GetCoursesRandom(Request.Query));
+            var count = await _courseService.GetCoursesCount();
+            return Ok(count);
         }
+
+        #endregion
+
+        #region Course Variants 
 
         [HttpGet]
-        [Route("job/{JobGuid:guid}/related")]
-        public async Task<IActionResult> Search(Guid JobGuid)
+        [Route("{course:guid}/variant")]
+        public async Task<IActionResult> GetCoursVariants(Guid course)
         {
-            return Ok(await _courseService.GetCoursesForJob(JobGuid, Request.Query));
+            var variants = await _courseService.GetCourseVariants(course);
+            return Ok(variants);
         }
 
-        [HttpPost]
-        [Route("skill/related")]
-        public async Task<IActionResult> SearchBySkills([FromBody] Dictionary<string, int> SkillHistogram)
-        {
-            return Ok(await _courseService.GetCoursesBySkillHistogram(SkillHistogram, Request.Query));
-        }
+        #endregion
 
-        [HttpGet]
-        public async Task<IActionResult> GetCourses(int limit, int offset, string sort, string order)
-        {
-            var courses = await _courseService.GetCourses(limit, offset, sort, order);
-            return Ok(courses);
-        }
+        #region CourseDetails
 
         [HttpGet]
         [Route("{course:guid}")]
@@ -98,9 +106,73 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> GetCourses(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        {
+            var courses = await _courseService.GetCourses(limit, offset, sort, order);
+            return Ok(courses);
+        }
+        
+        [HttpGet]
+        [Route("random")]
+        public async Task<IActionResult> Random()
+        {
+            return Ok(await _courseService.GetCoursesRandom(Request.Query));
+        }
+        
+        #endregion
+
+        #region Course Enrollments
+
+
+        [HttpGet]
+        [Authorize]
+        [Route("{courseGuid}/variant/{courseVariant}/promocodes/{promoCode}")]
+        public async Task<IActionResult> GetCoursesEnrollmentInfo(Guid courseGuid, Guid courseVariant, string promoCode)
+        {
+            PromoCodeDto rVal = _promoCodeService.GetPromoCode(GetSubscriberGuid(), promoCode, courseVariant);
+            return Ok(rVal);
+        }
+        
+
+        [HttpGet]
+        [Authorize]
+        [Route("{courseGuid}/enroll")]
+        public async Task<IActionResult> GetCoursesEnrollmentInfo(Guid courseGuid)
+        {
+           CourseCheckoutInfoDto rVal = await _courseEnrollmentService.GetCourseCheckoutInfo(GetSubscriberGuid(), courseGuid);
+            return Ok(rVal);
+        }
+        
+        [HttpPost]
+        [Authorize]
+        [Route("{courseGuid}/enroll")]
+        public async Task<IActionResult> EnrollSubscriber([FromBody] CourseEnrollmentDto courseEnrollmentDto, Guid courseGuid)
+        {
+
+            var rVal = await _courseEnrollmentService.Enroll(GetSubscriberGuid(), courseEnrollmentDto, courseGuid);
+            return Ok(rVal);
+        }
+
+
+        #endregion
+
+        #region Course Query
+        [HttpGet]
+        [Route("query")]
+        public async Task<IActionResult> SearchCourses(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", string level = "", string topic = "")
+        {
+           var rVal = await _courseService.SearchCoursesAsync(limit, offset, sort, order, keyword,level,topic);
+           return Ok(rVal);
+        }
+
+        #endregion 
+
+        #region Course Favorites 
+
+        [HttpGet]
         [Route("favorites")]
         [Authorize]
-        public async Task<IActionResult> GetFavoriteCourses(int limit, int offset, string sort, string order)
+        public async Task<IActionResult> GetFavoriteCourses(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var isFavorite = await _courseFavoriteService.GetFavoriteCourses(GetSubscriberGuid(), limit, offset, sort, order);
             return Ok(isFavorite);
@@ -134,5 +206,84 @@ namespace UpDiddyApi.Controllers
             await _courseFavoriteService.RemoveFromFavorite(GetSubscriberGuid(), course);
             return StatusCode(204);
         }
+
+        #endregion
+
+        #region Related Entities
+
+        [HttpPost]
+        [Route("courses/related")]
+        public async Task<IActionResult> GetRelatedCoursesByCourses([FromBody] List<Guid> courses, int limit = 100, int offset = 0)
+        {
+            List<RelatedCourseDto> relatedCourses = null;
+
+            relatedCourses = await _courseService.GetCoursesByCourses(courses, limit, offset);
+
+            return Ok(relatedCourses);
+        }
+
+        [HttpGet]
+        [Route("courses/{course:guid}/related")]
+        public async Task<IActionResult> GetRelatedCoursesByCourse(Guid course, int limit = 100, int offset = 0)
+        {
+            List<RelatedCourseDto> relatedCourses = null;
+
+            relatedCourses = await _courseService.GetCoursesByCourse(course, limit, offset);
+
+            return Ok(relatedCourses);
+        }
+
+        [HttpPost]
+        [Route("jobs/related")]
+        public async Task<IActionResult> GetRelatedCoursesByJobs([FromBody] List<Guid> jobs, int limit = 100, int offset = 0)
+        {
+            List<RelatedCourseDto> relatedCourses = null;
+
+            relatedCourses = await _courseService.GetCoursesByJobs(jobs, limit, offset);
+
+            return Ok(relatedCourses);
+        }
+
+        [HttpGet]
+        [Route("jobs/{job:guid}/related")]
+        public async Task<IActionResult> GetRelatedCoursesByJob(Guid job, int limit = 100, int offset = 0)
+        {
+            List<RelatedCourseDto> relatedCourses = null;
+
+            relatedCourses = await _courseService.GetCoursesByJob(job, limit, offset);
+
+            return Ok(relatedCourses);
+        }
+
+        [HttpGet]
+        [Route("subscribers/related")]
+        public async Task<IActionResult> GetRelatedCoursesForSubscriber(int limit = 100, int offset = 0)
+        {
+            var subscriber = GetSubscriberGuid();
+            if (subscriber == Guid.Empty)
+                throw new NotFoundException("Subscriber not found");
+
+            var relatedCourses = await _courseService.GetCoursesBySubscriber(subscriber, limit, offset);
+
+            return Ok(relatedCourses);
+        }
+
+        #endregion
+
+        #region Refer A Friend
+
+        [HttpPost]
+        [Authorize]
+        [Route("refer")]
+        public async Task<IActionResult> ReferAFriend([FromBody] CourseReferralDto courseReferral)
+        {
+
+            var rVal = await _courseService.ReferCourseToFriend(GetSubscriberGuid(), courseReferral);
+            return Ok(rVal);
+        }
+        #endregion
+
+
+
     }
 }

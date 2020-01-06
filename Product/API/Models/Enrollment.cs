@@ -28,5 +28,6 @@ namespace UpDiddyApi.Models
         public int? CampaignId { get; set; }
         public int? CourseVariantId { get; set; }
         public virtual CampaignCourseVariant CampaignCourseVariant { get; set; }
+        public int? Grade { get; set; }
     }
 }

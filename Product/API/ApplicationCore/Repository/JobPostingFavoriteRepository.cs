@@ -66,7 +66,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                               Title = jp.Title,
                               City = jp.City,
                               Province = jp.Province,
-                              CompanyLogoUrl = _configuration["StorageAccount:AssetBaseUrl"] + "Company/" + c.LogoUrl,
+                              CompanyLogoUrl = c.LogoUrl,
                               SemanticJobPath = Utils.CreateSemanticJobPath(
                                                 jp.Industry == null ? null : jp.Industry.Name,
                                                 jp.JobCategory == null ? null : jp.JobCategory.Name,

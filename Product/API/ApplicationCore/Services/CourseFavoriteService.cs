@@ -10,7 +10,8 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
-using UpDiddyLib.Dto;
+using UpDiddyLib.Domain.Models;
+
 using UpDiddyApi.ApplicationCore.Exceptions;
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -108,7 +109,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return false;
         }
 
-        public async Task<List<CourseDetailDto>> GetFavoriteCourses(Guid subscriberGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<List<CourseFavoriteDto>> GetFavoriteCourses(Guid subscriberGuid, int limit, int offset, string sort, string order)
         {
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetFavoriteCourses(subscriberGuid, limit, offset, sort, order);
             if (courses == null)

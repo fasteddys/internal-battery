@@ -14,6 +14,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using static UpDiddyApi.ApplicationCore.Services.JobDataMining.Helpers;
@@ -22,7 +23,14 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 {
     public class EASiProcess : BaseProcess, IJobDataMining
     {
-        public EASiProcess(JobSite jobSite, ILogger logger, Guid companyGuid, IConfiguration config) : base(jobSite, logger, companyGuid, config) { }
+        private readonly List<EmploymentTypeDto> _employmentTypes;
+
+        public EASiProcess(JobSite jobSite, ILogger logger, Guid companyGuid, IConfiguration config, IEmploymentTypeService employmentTypeService)
+            : base(jobSite, logger, companyGuid, config, employmentTypeService)
+        {
+            var newEmploymentTypes = employmentTypeService.GetEmploymentTypes().Result;
+            _employmentTypes = newEmploymentTypes.Select(et => new EmploymentTypeDto() { EmploymentTypeGuid = et.EmploymentTypeGuid, Name = et.Name }).ToList();
+        }
 
         #region Private Members
 
@@ -298,6 +306,29 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     List<SkillDto> distinctSkillsDto = skillsDto.Distinct().ToList();
                     if (distinctSkillsDto.Count() > 0)
                         jobPostingDto.JobPostingSkills = distinctSkillsDto;
+                }
+                if (_employmentTypes != null)
+                {
+                    string rawEmploymentType = null;
+                    string[] rawEmploymentTypeArray = Helpers.ConvertJArrayToStringArray(jobData.employmentType);                    
+                    if (rawEmploymentTypeArray != null && rawEmploymentTypeArray.Length > 0)
+                        rawEmploymentType = rawEmploymentTypeArray.First();
+
+                    switch (rawEmploymentType)
+                    {
+                        case "CONTRACTOR":
+                            jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Contractor").FirstOrDefault();
+                            break;
+                        case "FULL_TIME":
+                            jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Full-Time").FirstOrDefault();
+                            break;
+                        case "PART_TIME":
+                            jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Part-Time").FirstOrDefault();
+                            break;
+                        default:
+                            jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Other").FirstOrDefault();
+                            break;
+                    }
                 }
 
                 return jobPostingDto;
