@@ -328,23 +328,23 @@ namespace UpDiddy
             });
 
             app.UseStaticFiles();
-            app.UseCookiePolicy();
+            //app.UseCookiePolicy();
             app.UseAuthentication();
 
             // TODO - Change template action below to index upon site launch.
             app.UseMvc(routes =>
             {
-                routes.MapRoute(
-                    "sitemap",
-                    "sitemap.xml",
-                    new { controller = "Sitemap", action = "SiteMap" });
+                //routes.MapRoute(
+                //    "sitemap",
+                //    "sitemap.xml",
+                //    new { controller = "Sitemap", action = "SiteMap" });
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
                 routes.MapRoute(
                     "NotFound",
                     "{*url}",
-                    new { controller = "Home", action = "PageNotFound" });
+                    new { controller = "Talent", action = "Subscribers" });
             });
         }
     }
