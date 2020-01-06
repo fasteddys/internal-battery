@@ -280,7 +280,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
         public async Task<List<SubscriberInitialSourceDto>> GetNewSubscribers()
         {
             List<SubscriberInitialSourceDto> rval = null;
+      
             rval = await _dbContext.SubscriberInitialSource.FromSql<SubscriberInitialSourceDto>("System_Get_New_Subscribers").ToListAsync();
+                    
             return rval;
         }
 
