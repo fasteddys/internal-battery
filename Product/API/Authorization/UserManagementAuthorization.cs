@@ -23,20 +23,20 @@ namespace UpDiddyApi.Authorization
         public async Task Invoke(HttpContext context)
         {
             string userManagementAuthorizationHeader = context.Request.Headers["UserManagement"];
-            // if (!string.IsNullOrEmpty(userManagementAuthorizationHeader))
-            // {
-                // string decryptedUserManagementAuthorization = Crypto.Decrypt(_configuration["Crypto:Key"], userManagementAuthorizationHeader);
-                // string userManagementAuthorization = _configuration["Auth0:ManagementApi:ClientSecret"];
-                // if (decryptedUserManagementAuthorization == userManagementAuthorization)
-                // {
+            if (!string.IsNullOrEmpty(userManagementAuthorizationHeader))
+            {
+                string decryptedUserManagementAuthorization = Crypto.Decrypt(_configuration["Crypto:Key"], userManagementAuthorizationHeader);
+                string userManagementAuthorization = _configuration["Auth0:ManagementApi:ClientSecret"];
+                if (decryptedUserManagementAuthorization == userManagementAuthorization)
+                {
                     await _next.Invoke(context);
                     return;
-                // }
-            // }
+                }
+            }
 
             //Reject request if there is no user authorization header or if it is not valid
-            // context.Response.StatusCode = 401;
-            // await context.Response.WriteAsync("Unauthorized");
+            context.Response.StatusCode = 401;
+            await context.Response.WriteAsync("Unauthorized");
 
         }
     }
