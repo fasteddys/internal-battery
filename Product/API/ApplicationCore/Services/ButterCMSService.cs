@@ -74,38 +74,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             return CachedButterResponse;
         }
- 
 
-        public async Task<PageResponse<T>> RetrievePageAsync<T>(string Url, Dictionary<string, string> QueryParameters = null) where T : class
+
+            public async Task<PageResponse<T>> RetrievePageAsync<T>(string Url, Dictionary<string, string> QueryParameters = null) where T : class
             {
-                string CacheKey = AssemblePageCacheKey(Constants.CMS.PAGE_CACHE_KEY_PREFIX + Url, QueryParameters);
-                CMSResponseHelper<PageResponse<T>> ResponseHelper =   _cache.Get<CMSResponseHelper<PageResponse<T>>>(CacheKey);
-
-                try
-                {
-                    if (ResponseHelper == null)
-                    {
-                        ResponseHelper = new CMSResponseHelper<PageResponse<T>>();
-                        PageResponse<T> CachedButterResponse = await _butterClient.RetrievePageAsync<T>("*", DecipherCmsPageFromUrl(Url), QueryParameters);
-                 
-                        ResponseHelper.Data = CachedButterResponse;
-
-                        if (CachedButterResponse == null)
-                            ResponseHelper.ResponseCode = Constants.CMS.NULL_RESPONSE;
-                        else
-                            ResponseHelper.ResponseCode = Constants.CMS.RESPONSE_RECEIVED;
-
-                          _cache.Set<CMSResponseHelper<PageResponse<T>>>(CacheKey, ResponseHelper);
-                    }
-
-                }
-                catch (ContentFieldObjectMismatchException)
-                {
-                    return null;
-                }
-
-                return ResponseHelper.Data;
-
+                PageResponse<T> CachedButterResponse = await _butterClient.RetrievePageAsync<T>("*", DecipherCmsPageFromUrl(Url), QueryParameters);
+                return CachedButterResponse;
             }
 
             public async Task<bool> ClearCachedPageAsync(string Slug)
