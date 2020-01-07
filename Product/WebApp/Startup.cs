@@ -329,7 +329,7 @@ namespace UpDiddy
             });
 
             app.UseStaticFiles();
-            app.UseCookiePolicy();
+            //app.UseCookiePolicy();
             app.UseAuthentication();
 
             // TODO - Change template action below to index upon site launch.
