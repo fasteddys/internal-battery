@@ -16,7 +16,7 @@ namespace UpDiddyLib.Dto
         public string City { get; set; }
         public string State { get; set; }
         public string PostalCode { get; set; }
-        public bool IsVerified { get; set; }
+        public int IsVerified { get; set; }
         public string PartnerName { get; set; }
         public string GroupName { get; set; }
         public string LegacySource { get; set; }
