@@ -267,10 +267,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                     throw new NotFoundException($"Topic does not exist");
                 }
             }
-            else
-            {
-                throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not have a selected career path");
-            }
             return dto;
         }
 
