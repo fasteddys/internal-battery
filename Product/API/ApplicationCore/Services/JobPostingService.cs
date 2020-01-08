@@ -127,48 +127,79 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
-
-        public async Task<bool> CreateJobPosting(Guid subscriberGuid, UpDiddyLib.Dto.JobPostingDto jobPostingDto)
+        
+        public async Task<bool> CreateJobPosting(Guid subscriberGuid,JobCrudDto jobCrudDto)
         {
 
-            if (jobPostingDto == null)
-                throw new NotFoundException("JobPostingService.CreateJobPosting: No JobPostingDto was passed");
 
-            if (jobPostingDto.Recruiter == null || jobPostingDto.Recruiter.RecruiterGuid == null)
-                throw new NotFoundException("JobPostingService.CreateJobPosting: Recruiter not specified for job posting");
+            if (jobCrudDto == null)
+                throw new NotFoundException("JobPostingService.CreateJobPosting: No jobCrudDto was passed");
 
-            Recruiter recruiter = await RecruiterFactory.GetRecruiterBySubscriberGuid(_repositoryWrapper, jobPostingDto.Recruiter.SubscriberGuid);
+            if (jobCrudDto.RecruiterGuid == null)
+                throw new NotFoundException("JobPostingService.CreateJobPosting: Recruiter Guid not specified for job posting");
+
+            Recruiter recruiter = await _repositoryWrapper.RecruiterRepository.GetByGuid(jobCrudDto.RecruiterGuid);
 
             if (recruiter == null)
-                throw new NotFoundException($"Recruiter {jobPostingDto.Recruiter.Subscriber.SubscriberGuid.Value} was not found");
+                throw new NotFoundException("JobPostingService.CreateJobPosting: Recruiter not specified for job posting");
 
+
+            if (jobCrudDto.CompanyGuid == null)
+                throw new FailedValidationException("Company must be specified");
+
+
+            UpDiddyLib.Dto.JobPostingDto jobPostingDto = await MapPostingCrudToJobPosting(subscriberGuid, jobCrudDto);
+      
             string errorMsg = string.Empty;
             Guid newPostingGuid = Guid.Empty;
             // associate the create guid to the subscriber 
             jobPostingDto.CreateGuid = subscriberGuid;
             // mark the jobposting modify guid to empty to signify un-modified 
             jobPostingDto.ModifyGuid = Guid.Empty;
+            
             if (JobPostingFactory.PostJob(_repositoryWrapper, recruiter.RecruiterId, jobPostingDto, ref newPostingGuid, ref errorMsg, _syslog, _mapper, _configuration, _hangfireService) == true)
                 return true;
             else
+            {
+                _syslog.Log(LogLevel.Error, $"JobPostingService:UpdateJobPosting error updating job posting {jobCrudDto.JobPostingGuid} error = {errorMsg}");
                 throw new JobPostingCreation(errorMsg);
-
+            }
+                
+          
         }
 
 
-
-
-        public async Task<bool> UpdateJobPosting(Guid subscriberGuid, Guid jobPostingGuid, UpDiddyLib.Dto.JobPostingDto jobPostingDto)
+        public async Task<bool> UpdateJobPosting(Guid subscriberGuid, Guid jobPostingGuid, JobCrudDto jobCrudDto)
         {
-            // validate request      
-            if (jobPostingDto.Recruiter.Subscriber == null || jobPostingDto.Recruiter.Subscriber.SubscriberGuid == null || jobPostingDto.Recruiter.Subscriber.SubscriberGuid != subscriberGuid)
+            if (jobCrudDto.RecruiterGuid == null)
+                throw new NotFoundException("JobPostingService.CreateJobPosting: Recruiter Guid not specified for job posting");
+
+            Recruiter recruiter = _repositoryWrapper.RecruiterRepository.GetAll()
+                .Include(s => s.Subscriber)
+                .Where(r => r.IsDeleted == 0 && r.RecruiterGuid == jobCrudDto.RecruiterGuid)
+                .FirstOrDefault();
+
+            if (recruiter == null)
+                throw new NotFoundException("JobPostingService.CreateJobPosting: Recruiter not specified for job posting");
+
+
+            // For now only allow posting to be updatded by their creator
+            if ( recruiter.Subscriber.SubscriberGuid != subscriberGuid)
                 throw new UnauthorizedAccessException();
 
-            _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
+
+            if (jobCrudDto.JobPostingGuid != null && jobCrudDto.JobPostingGuid != jobPostingGuid)
+                throw new FailedValidationException("Jobposting guid from url does not match job posting guid specified in request body");
+
+
+            UpDiddyLib.Dto.JobPostingDto jobPostingDto = await MapPostingCrudToJobPosting(subscriberGuid, jobCrudDto);
+              
+
+            _syslog.Log(LogLevel.Information, $"***** JobPostingService:UpdateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
             // update the job posting 
             string ErrorMsg = string.Empty;
             bool UpdateOk = JobPostingFactory.UpdateJobPosting(_repositoryWrapper, jobPostingGuid, jobPostingDto, ref ErrorMsg, _hangfireService);
-            _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** JobPostingService:UpdateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
             if (UpdateOk)
                 return true;
             else
@@ -226,5 +257,83 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             return _mapper.Map<List<UpDiddyLib.Dto.JobPostingDto>>(jobPostings);
         }
+
+        #region Helper functions 
+
+        private async Task<UpDiddyLib.Dto.JobPostingDto> MapPostingCrudToJobPosting(Guid subscriberGuid, JobCrudDto jobCrudDto)
+        {
+            // map base properties
+            UpDiddyLib.Dto.JobPostingDto jobPostingDto = _mapper.Map<UpDiddyLib.Dto.JobPostingDto>(jobCrudDto);
+            // map related entities 
+            jobPostingDto.Recruiter = new RecruiterDto()
+            {
+                RecruiterGuid = jobCrudDto.RecruiterGuid,
+                Subscriber = new UpDiddyLib.Dto.SubscriberDto()
+                {
+                    SubscriberGuid = subscriberGuid
+                }
+            };
+
+            // map company no need to check if guid exists since that been validated above
+            jobPostingDto.Company = new CompanyDto()
+            {
+                CompanyGuid = jobCrudDto.CompanyGuid
+            };
+
+            if (jobCrudDto.IndustryGuid != null)
+                jobPostingDto.Industry = new IndustryDto()
+                {
+                    IndustryGuid = jobCrudDto.IndustryGuid
+                };
+
+
+            if (jobCrudDto.JobCategoryGuid != null)
+                jobPostingDto.JobCategory = new JobCategoryDto()
+                {
+                    JobCategoryGuid = jobCrudDto.JobCategoryGuid
+                };
+
+            if (jobCrudDto.ExperienceLevelGuid != null)
+                jobPostingDto.ExperienceLevel = new UpDiddyLib.Dto.ExperienceLevelDto()
+                {
+                    ExperienceLevelGuid = jobCrudDto.ExperienceLevelGuid
+                };
+
+
+            if (jobCrudDto.EducationLevelGuid != null)
+                jobPostingDto.EducationLevel = new UpDiddyLib.Dto.EducationLevelDto()
+                {
+                    EducationLevelGuid = jobCrudDto.EducationLevelGuid
+                };
+
+
+            if (jobCrudDto.CompensationTypeGuid != null)
+                jobPostingDto.CompensationType = new UpDiddyLib.Dto.CompensationTypeDto()
+                {
+                    CompensationTypeGuid = jobCrudDto.CompensationTypeGuid
+                };
+
+
+            if (jobCrudDto.SecurityClearanceGuid != null)
+                jobPostingDto.SecurityClearance = new UpDiddyLib.Dto.SecurityClearanceDto()
+                {
+                    SecurityClearanceGuid = jobCrudDto.SecurityClearanceGuid
+                };
+
+
+            if (jobCrudDto.EmploymentTypeGuid != null)
+                jobPostingDto.EmploymentType = new UpDiddyLib.Dto.EmploymentTypeDto()
+                {
+                    EmploymentTypeGuid = jobCrudDto.EmploymentTypeGuid
+                };
+
+
+            return jobPostingDto;
+
+
+        }
+
+
+        #endregion
     }
 }
