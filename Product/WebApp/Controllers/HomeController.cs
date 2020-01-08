@@ -23,6 +23,7 @@ using UpDiddy.Authentication;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Logging;
 
 namespace UpDiddy.Controllers
 {
@@ -31,6 +32,7 @@ namespace UpDiddy.Controllers
         private readonly IHostingEnvironment _env;
         private readonly ISysEmail _sysEmail;
         private readonly IMemoryCache _memoryCache;
+        private ILogger _syslog = null;
 
         [HttpGet]
         public async Task<IActionResult> GetCountries()
@@ -42,13 +44,15 @@ namespace UpDiddy.Controllers
             IConfiguration configuration,
             IHostingEnvironment env,
             ISysEmail sysEmail,
-            IMemoryCache memoryCache)
+            IMemoryCache memoryCache,
+            ILogger<HomeController> sysLog)
 
             : base(api, configuration)
         {
             _env = env;
             _sysEmail = sysEmail;
             _memoryCache = memoryCache;
+            _syslog = sysLog;
         }
         [HttpGet]
         public async Task<IActionResult> GetStatesByCountry(Guid countryGuid)
@@ -80,31 +84,49 @@ namespace UpDiddy.Controllers
         [Authorize]
         public async Task<IActionResult> SignUp()
         {
-            // This will check to see if the subscriber has onboarded. If not, it flips the flag.
-            // This means the onboarding flow should only ever work the first time a user logs into their account.
-            if (subscriber.HasOnboarded != 1)
-                await _Api.UpdateOnboardingStatusAsync();
-
-            var countries = await _Api.GetCountriesAsync();
-            var states = await _Api.GetStatesByCountryAsync(this.subscriber?.State?.Country?.CountryGuid);
-            SignupFlowViewModel signupFlowViewModel = new SignupFlowViewModel()
+            int step = 0;
+            try
             {
-                SubscriberGuid = (Guid)subscriber.SubscriberGuid,
-                Countries = countries.Select(c => new SelectListItem()
+                _syslog.LogInformation($"HomeController:SignUp  starting for {this.subscriber?.Email}");
+                // This will check to see if the subscriber has onboarded. If not, it flips the flag.
+                // This means the onboarding flow should only ever work the first time a user logs into their account.
+                if (subscriber.HasOnboarded != 1)
+                    await _Api.UpdateOnboardingStatusAsync();
+                step = 1;
+
+                var countries = await _Api.GetCountriesAsync();
+                step = 2;
+                var states = await _Api.GetStatesByCountryAsync(this.subscriber?.State?.Country?.CountryGuid);
+                step = 3;
+                SignupFlowViewModel signupFlowViewModel = new SignupFlowViewModel()
                 {
-                    Text = c.DisplayName,
-                    Value = c.CountryGuid.ToString(),
-                }),
-                States = states.Select(s => new SelectListItem()
-                {
-                    Text = s.Name,
-                    Value = s.StateGuid.ToString(),
-                    Selected = s.StateGuid == this.subscriber?.State?.StateGuid
-                }),
-                Skills = new List<SkillDto>(),
-                SubscriberResume = subscriber.Files.FirstOrDefault()
-            };
-            return View(signupFlowViewModel);
+                    SubscriberGuid = (Guid)subscriber.SubscriberGuid,
+                    Countries = countries.Select(c => new SelectListItem()
+                    {
+                        Text = c.DisplayName,
+                        Value = c.CountryGuid.ToString(),
+                    }),
+                    States = states.Select(s => new SelectListItem()
+                    {
+                        Text = s.Name,
+                        Value = s.StateGuid.ToString(),
+                        Selected = s.StateGuid == this.subscriber?.State?.StateGuid
+                    }),
+                    Skills = new List<SkillDto>(),
+                    SubscriberResume = subscriber.Files.FirstOrDefault()
+                };
+                step = 4;
+                _syslog.LogInformation($"HomeController:Signup  returning view model");
+                return View(signupFlowViewModel);
+            }
+            catch (Exception ex )
+            {
+
+                _syslog.LogError($"HomeController:Signup  Error {ex.Message} at step {step}");
+                throw ex;
+
+            }
+            
         }
 
         public IActionResult News()
@@ -175,97 +197,149 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+ 
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
         public async Task<IActionResult> ProfileLogin()
         {
-            // todo: consider updating the course status on the API side when a request is made to retrieve the courses or something instead of
-            // logic being determined in web app for managing API data
-
-            await _Api.UpdateStudentCourseProgressAsync(true);
-
-            // Handle the case of MsalUiRequireRedirect 
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            string CacheKey = $"{userId}MsalUiRequiredRedirect";
-            string MsalUiRequiredRedirect = _memoryCache.Get<String>(CacheKey);
-            if (string.IsNullOrEmpty(MsalUiRequiredRedirect) == false)
+            int step = 0;
+            try
             {
-                _memoryCache.Remove(CacheKey);
-                return Redirect(MsalUiRequiredRedirect);
+                
+                 _syslog.LogInformation($"HomeController:ProfileLogin starting for {this.subscriber?.Email}");
+                 // todo: consider updating the course status on the API side when a request is made to retrieve the courses or something instead of
+                 // logic being determined in web app for managing API data
+
+                await _Api.UpdateStudentCourseProgressAsync(true);
+                step = 1;
+
+                // Handle the case of MsalUiRequireRedirect 
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+                step = 2;
+                string CacheKey = $"{userId}MsalUiRequiredRedirect";
+                string MsalUiRequiredRedirect = _memoryCache.Get<String>(CacheKey);
+                step = 3;
+                if (string.IsNullOrEmpty(MsalUiRequiredRedirect) == false)
+                {
+                    _syslog.LogInformation($"HomeController:ProfileLogin msal redirect is required ");
+                    step = 4;
+                    _memoryCache.Remove(CacheKey);
+                    return Redirect(MsalUiRequiredRedirect);
+                }
+                else if (this.subscriber.HasOnboarded > 0)
+                {
+                    step = 5;
+                    return RedirectToAction("Profile", "Home");
+                }                    
+                else
+                {
+                    step = 6;
+                    return RedirectToAction("Signup", "Home");
+                }
+                    
             }
-            else if (this.subscriber.HasOnboarded > 0)
-                return RedirectToAction("Profile", "Home");
-            else
-                return RedirectToAction("Signup", "Home");
+            catch ( Exception ex)
+            {
+                _syslog.LogError($"HomeController:ProfileLogin  Error {ex.Message} at step {step}");
+                throw ex;
+            }
+            
         }
 
         [LoadSubscriber(isHardRefresh: true, isSubscriberRequired: true)]
         [Authorize]
         public async Task<IActionResult> Profile()
         {
-            var countries = await _Api.GetCountriesAsync();
-            var states = await _Api.GetStatesByCountryAsync(this.subscriber?.State?.Country?.CountryGuid);
-            string AssestBaseUrl = _configuration["CareerCircle:AssetBaseUrl"];
-            ResumeParseDto resumeParse = await _Api.GetResumeParseForSubscriber(subscriber.SubscriberGuid.Value);
-            Guid resumeParseGuid = resumeParse == null ? Guid.Empty : resumeParse.ResumeParseGuid;
-            string CacheBuster = "?" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
-
-            ProfileViewModel profileViewModel = new ProfileViewModel()
+            int step = 0;
+            try
             {
-                SubscriberGuid = this.subscriber?.SubscriberGuid,
-                FirstName = this.subscriber?.FirstName,
-                LastName = this.subscriber?.LastName,
-                FormattedPhone = this.subscriber?.PhoneNumber,
-                Email = this.subscriber?.Email,
-                Address = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.Address),
-                City = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.City),
-                PostalCode = this.subscriber?.PostalCode,
-                SelectedState = this.subscriber?.State?.StateGuid,
-                SelectedCountry = this.subscriber?.State?.Country?.CountryGuid,
-                FacebookUrl = this.subscriber?.FacebookUrl,
-                GithubUrl = this.subscriber?.GithubUrl,
-                ImageUrl = null,
-                LinkedInUrl = this.subscriber?.LinkedInUrl,
-                StackOverflowUrl = this.subscriber?.StackOverflowUrl,
-                TwitterUrl = this.subscriber?.TwitterUrl,
-                Enrollments = this.subscriber?.Enrollments,
-                WorkCompensationTypes = await _Api.GetCompensationTypesAsync(),
-                EducationDegreeTypes = await _Api.GetEducationalDegreeTypesAsync(),
-                Countries = countries.Select(c => new SelectListItem()
+                _syslog.LogInformation($"HomeController:Profile  starting for {this.subscriber?.Email}");
+                if (this.subscriber.HasOnboarded == 0)
                 {
-                    Text = c.DisplayName,
-                    Value = c.CountryGuid.ToString(),
-                }),
-                States = states.Select(s => new SelectListItem()
+                    _syslog.LogInformation($"HomeController:Profile  redirecting to signup");
+                    return RedirectToAction("Signup", "Home");
+                }
+                    
+                step = 1;
+                var countries = await _Api.GetCountriesAsync();
+                step = 2;
+                var states = await _Api.GetStatesByCountryAsync(this.subscriber?.State?.Country?.CountryGuid);
+                step = 3;
+                string AssestBaseUrl = _configuration["CareerCircle:AssetBaseUrl"];
+                step = 4;
+                ResumeParseDto resumeParse = await _Api.GetResumeParseForSubscriber(subscriber.SubscriberGuid.Value);
+                step = 5;
+                Guid resumeParseGuid = resumeParse == null ? Guid.Empty : resumeParse.ResumeParseGuid;
+                step = 6;
+                string CacheBuster = "?" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+                step = 7;
+
+                ProfileViewModel profileViewModel = new ProfileViewModel()
                 {
-                    Text = s.Name,
-                    Value = s.StateGuid.ToString(),
-                    Selected = s.StateGuid.Equals(this.subscriber?.State?.StateGuid)
-                }),
-                // todo: consider refactoring this... include in GetSubscriber (add navigation property)
-                Skills = await _Api.GetSkillsBySubscriberAsync(this.subscriber.SubscriberGuid.Value),
-                Files = this.subscriber?.Files,
-                WorkHistory = await _Api.GetWorkHistoryAsync(this.subscriber.SubscriberGuid.Value),
-                EducationHistory = await _Api.GetEducationHistoryAsync(this.subscriber.SubscriberGuid.Value),
-                LinkedInSyncDate = this.subscriber.LinkedInSyncDate,
-                LinkedInAvatarUrl = string.IsNullOrEmpty(this.subscriber.LinkedInAvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + this.subscriber.LinkedInAvatarUrl + CacheBuster,
-                AvatarUrl = string.IsNullOrEmpty(this.subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + this.subscriber.AvatarUrl + CacheBuster,
-                MaxAvatarFileSize = int.Parse(_configuration["CareerCircle:MaxAvatarFileSize"]),
-                DefaultAvatar = _configuration["CareerCircle:DefaultAvatar"],
-                ResumeParseGuid = resumeParseGuid
+                    SubscriberGuid = this.subscriber?.SubscriberGuid,
+                    FirstName = this.subscriber?.FirstName,
+                    LastName = this.subscriber?.LastName,
+                    FormattedPhone = this.subscriber?.PhoneNumber,
+                    Email = this.subscriber?.Email,
+                    Address = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.Address),
+                    City = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.City),
+                    PostalCode = this.subscriber?.PostalCode,
+                    SelectedState = this.subscriber?.State?.StateGuid,
+                    SelectedCountry = this.subscriber?.State?.Country?.CountryGuid,
+                    FacebookUrl = this.subscriber?.FacebookUrl,
+                    GithubUrl = this.subscriber?.GithubUrl,
+                    ImageUrl = null,
+                    LinkedInUrl = this.subscriber?.LinkedInUrl,
+                    StackOverflowUrl = this.subscriber?.StackOverflowUrl,
+                    TwitterUrl = this.subscriber?.TwitterUrl,
+                    Enrollments = this.subscriber?.Enrollments,
+                    WorkCompensationTypes = await _Api.GetCompensationTypesAsync(),
+                    EducationDegreeTypes = await _Api.GetEducationalDegreeTypesAsync(),
+                    Countries = countries.Select(c => new SelectListItem()
+                    {
+                        Text = c.DisplayName,
+                        Value = c.CountryGuid.ToString(),
+                    }),
+                    States = states.Select(s => new SelectListItem()
+                    {
+                        Text = s.Name,
+                        Value = s.StateGuid.ToString(),
+                        Selected = s.StateGuid.Equals(this.subscriber?.State?.StateGuid)
+                    }),
+                    // todo: consider refactoring this... include in GetSubscriber (add navigation property)
+                    Skills = await _Api.GetSkillsBySubscriberAsync(this.subscriber.SubscriberGuid.Value),
+                    Files = this.subscriber?.Files,
+                    WorkHistory = await _Api.GetWorkHistoryAsync(this.subscriber.SubscriberGuid.Value),
+                    EducationHistory = await _Api.GetEducationHistoryAsync(this.subscriber.SubscriberGuid.Value),
+                    LinkedInSyncDate = this.subscriber.LinkedInSyncDate,
+                    LinkedInAvatarUrl = string.IsNullOrEmpty(this.subscriber.LinkedInAvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + this.subscriber.LinkedInAvatarUrl + CacheBuster,
+                    AvatarUrl = string.IsNullOrEmpty(this.subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + this.subscriber.AvatarUrl + CacheBuster,
+                    MaxAvatarFileSize = int.Parse(_configuration["CareerCircle:MaxAvatarFileSize"]),
+                    DefaultAvatar = _configuration["CareerCircle:DefaultAvatar"],
+                    ResumeParseGuid = resumeParseGuid
 
-            };
+                };
+                step = 8;
 
-            // we have to call this other api method directly because it can trigger a refresh of course progress from Woz.
-            // i considered overloading the existing GetSubscriber method to do this, but then that makes CourseController 
-            // a dependency of BaseController. that's more refactoring than i think we want to concern ourselves with now.
-            foreach (var enrollment in profileViewModel.Enrollments)
-            {
-                var courseLogin = await _Api.CourseLoginAsync(enrollment.EnrollmentGuid.Value);
-                enrollment.CourseUrl = courseLogin.LoginUrl;
+                // we have to call this other api method directly because it can trigger a refresh of course progress from Woz.
+                // i considered overloading the existing GetSubscriber method to do this, but then that makes CourseController 
+                // a dependency of BaseController. that's more refactoring than i think we want to concern ourselves with now.
+                foreach (var enrollment in profileViewModel.Enrollments)
+                {
+                    var courseLogin = await _Api.CourseLoginAsync(enrollment.EnrollmentGuid.Value);
+                    enrollment.CourseUrl = courseLogin.LoginUrl;
+                }
+                step = 9;
+                _syslog.LogInformation($"HomeController:Profile  returning view model");
+
+                return View(profileViewModel);
             }
-
-            return View(profileViewModel);
+            catch ( Exception ex )
+            {
+                _syslog.LogError($"HomeController:Profile  Error {ex.Message} at step {step}");
+                throw ex;
+            }
+            
         }
 
         [Authorize]

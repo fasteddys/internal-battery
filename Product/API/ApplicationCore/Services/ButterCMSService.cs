@@ -27,10 +27,14 @@ namespace UpDiddyApi.ApplicationCore.Services
                 _cache = cache;
                 _configuration = configuration;
                 _sysEmail = sysEmail;
-                _butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
+                _butterClient = new ButterCMSClient(_configuration["ButterCMSApi:ReadApiToken"]);
                 CmsCacheKeyPrefix = Constants.CMS.CACHE_KEY_PREFIX;
             }
 
+
+
+
+        #region Generic Butter Endpoints 
         /// <summary>
         /// 
         /// Generic method to leverage the RetrieveContentFields method from ButterCMS
@@ -70,38 +74,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             return CachedButterResponse;
         }
- 
 
-        public async Task<PageResponse<T>> RetrievePageAsync<T>(string Url, Dictionary<string, string> QueryParameters = null) where T : class
+
+            public async Task<PageResponse<T>> RetrievePageAsync<T>(string Url, Dictionary<string, string> QueryParameters = null) where T : class
             {
-                string CacheKey = AssemblePageCacheKey(Constants.CMS.PAGE_CACHE_KEY_PREFIX + Url, QueryParameters);
-                CMSResponseHelper<PageResponse<T>> ResponseHelper =   _cache.Get<CMSResponseHelper<PageResponse<T>>>(CacheKey);
-
-                try
-                {
-                    if (ResponseHelper == null)
-                    {
-                        ResponseHelper = new CMSResponseHelper<PageResponse<T>>();
-                        PageResponse<T> CachedButterResponse = await _butterClient.RetrievePageAsync<T>("*", DecipherCmsPageFromUrl(Url), QueryParameters);
-                 
-                        ResponseHelper.Data = CachedButterResponse;
-
-                        if (CachedButterResponse == null)
-                            ResponseHelper.ResponseCode = Constants.CMS.NULL_RESPONSE;
-                        else
-                            ResponseHelper.ResponseCode = Constants.CMS.RESPONSE_RECEIVED;
-
-                          _cache.Set<CMSResponseHelper<PageResponse<T>>>(CacheKey, ResponseHelper);
-                    }
-
-                }
-                catch (ContentFieldObjectMismatchException)
-                {
-                    return null;
-                }
-
-                return ResponseHelper.Data;
-
+                PageResponse<T> CachedButterResponse = await _butterClient.RetrievePageAsync<T>("*", DecipherCmsPageFromUrl(Url), QueryParameters);
+                return CachedButterResponse;
             }
 
             public async Task<bool> ClearCachedPageAsync(string Slug)
@@ -303,5 +281,66 @@ namespace UpDiddyApi.ApplicationCore.Services
                 public string ResponseCode { get; set; }
                 public T Data { get; set; }
             }
-        }    
+        #endregion
+
+
+        #region Butter Blog Endpoints 
+
+        public async Task<PostResponse> GetBlogBySlugAsync(string slug)
+        {
+            var response = await _butterClient.RetrievePostAsync(slug);
+            return response;
+        }
+        
+        public async Task<PostsResponse> GetBlogsAsync(int pageNum, int pageSize)
+        {
+      
+            var response = await _butterClient.ListPostsAsync(pageNum, pageSize);
+            return response;
+        }
+
+
+        public async Task<PostsResponse> SearchBlogsAsync(string query)
+        {
+            PostsResponse response;
+            if (!string.IsNullOrEmpty(query))
+            {
+                response = await _butterClient.SearchPostsAsync(query: query);
+            }
+            else
+            {
+                response = await _butterClient.ListPostsAsync(1, 10);
+            }
+            return response;
+        }
+
+
+        public async Task<PostsResponse> GetBlogsByTagAsync(string tag)
+        {
+            PostsResponse response = await _butterClient.ListPostsAsync(tagSlug: tag);
+            return response;
+
+        }
+
+
+        public async Task<PostsResponse> GetBlogsByCategoryAsync(string category)
+        {
+            PostsResponse response = await _butterClient.ListPostsAsync(categorySlug: category);
+            return response;
+        }
+
+
+
+        public async Task<PostsResponse> GetBlogsByAuthorAsync(string author)
+        {
+            PostsResponse response = await _butterClient.ListPostsAsync(authorSlug: author);
+            return response;
+        }
+
+
+        #endregion
+
+
+
+    }
 }

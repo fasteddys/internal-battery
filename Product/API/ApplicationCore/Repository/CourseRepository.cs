@@ -22,5 +22,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
                           where c.IsDeleted == 0 && t.IsDeleted == 0
                           select c).Include(x => x.Vendor).OrderBy(x =>x.SortOrder).ToListAsync();
         }
+
+        public async Task<int> GetCoursesCount()
+        {
+            return await _dbContext.Course.Where(x => x.IsDeleted == 0).CountAsync();
+        }
     }
 }

@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
+using UpDiddyLib.Domain.Models;
 namespace UpDiddyApi.Helpers.Job
 {
     public class JobUrlHelper
@@ -253,38 +254,6 @@ namespace UpDiddyApi.Helpers.Job
         static private string FacetQueryParam(string facetInfo)
         {
             return WebUtility.UrlEncode(facetInfo.Trim().ToLower());
-        }
-
-        public static async Task AssignCompanyLogoUrlToJobsList<T>(List<T> jobs, IConfiguration config, ICompanyService companyService) where T : class
-        {
-            foreach (var job in jobs)
-            {
-                await AssignCompanyLogoUrlToJob(job, config, companyService);
-            }
-        }
-
-        public static async Task AssignCompanyLogoUrlToJob<T>(T job, IConfiguration config, ICompanyService companyService) where T : class
-        {
-            Type t = job.GetType();
-            PropertyInfo companyNameProp = t.GetProperty("CompanyName");
-            if (companyNameProp != null)
-            {
-                string companyName = (string)companyNameProp.GetValue(job);
-                var company = await companyService.GetByCompanyName(companyName);
-                if (!string.IsNullOrWhiteSpace(company?.LogoUrl))
-                {
-                    PropertyInfo logoUrlProperty = t.GetProperty("CompanyLogoUrl");
-                    if (logoUrlProperty != null)
-                    {
-                        logoUrlProperty.SetValue(job, SetCompanyLogoUrl(company.LogoUrl, config));
-                    }
-                }
-            }
-        }
-
-        public static string SetCompanyLogoUrl(string logoUrl, IConfiguration config)
-        {
-            return config["StorageAccount:AssetBaseUrl"] + "Company/" + logoUrl;
         }
 
         #endregion

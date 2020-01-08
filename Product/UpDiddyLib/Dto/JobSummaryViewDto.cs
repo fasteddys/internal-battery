@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-
+using UpDiddyLib.Domain.Models;
 namespace UpDiddyLib.Dto
 {
-    public class JobSummaryViewDto
+    public class JobSummaryViewDto : JobBaseDto
  
     {
 
@@ -16,9 +16,6 @@ namespace UpDiddyLib.Dto
         public DateTime PostingDateUTC { get; set; }
 
         public DateTime ExpirationDateUTC { get; set; }
-
-        public string CompanyLogoUrl { get; set; }
-        public string CompanyName { get; set; }
   
         public string Title { get; set; }
  

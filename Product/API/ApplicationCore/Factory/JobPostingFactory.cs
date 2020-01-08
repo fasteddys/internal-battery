@@ -214,7 +214,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             // save the job to sql server 
             // todo make saving the job posting and skills more efficient with a stored procedure 
             repositoryWrapper.JobPosting.Create(jobPosting);
-            repositoryWrapper.JobPosting.SaveAsync();
+            repositoryWrapper.JobPosting.SaveAsync().Wait();
             // update associated job posting skills
             JobPostingFactory.UpdateJobPostingSkills(repositoryWrapper, jobPosting.JobPostingId, jobPostingDto?.JobPostingSkills);
             //index active jobs into google 

@@ -66,8 +66,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (jobPosting.IsDeleted == 1)
                 throw new ExpiredJobException();
 
-            JobDetailDto rVal = _mapper.Map<JobDetailDto>(jobPosting);
-            rVal.CompanyLogoUrl = JobUrlHelper.SetCompanyLogoUrl(rVal.CompanyLogoUrl,_configuration);
+            JobDetailDto rVal = _mapper.Map<JobDetailDto>(jobPosting);            
             return rVal;
         }
 
@@ -166,7 +165,10 @@ namespace UpDiddyApi.ApplicationCore.Services
                 int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
                 JobQueryDto jobQuery = JobQueryHelper.CreateSummaryJobQuery(PageSize, query);
                 rVal = _cloudTalentService.JobSummarySearch(jobQuery);
-                await JobUrlHelper.AssignCompanyLogoUrlToJobsList(rVal.Jobs, _configuration, _companyService);
+                if(rVal.JobCount > 0)
+                {
+                    await AssignCompanyLogoUrlToJobs(rVal.Jobs);
+                }
                 _cache.SetCacheValue<JobSearchSummaryResultDto>(cacheKey, rVal);
 
             }
@@ -184,10 +186,25 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await _repositoryWrapper.StoredProcedureRepository.GetLocationSearchTermsAsync();
         }
 
+
         public async Task ReferJobToFriend(JobReferralDto jobReferralDto)
         {
             var jobReferralGuid = await SaveJobReferral(jobReferralDto);
             SendReferralEmail(jobReferralDto, jobReferralGuid);
+        }
+
+
+        public async Task<Guid> ReferJobToFriend(JobReferralDto jobReferralDto, Guid subscriberGuid)
+        {
+            jobReferralDto.ReferrerGuid = subscriberGuid.ToString(); 
+            jobReferralDto.ReferUrl =  $"{_configuration["Environment:BaseUrl"].TrimEnd('/')}/job/{Guid.Parse(jobReferralDto.JobPostingGuidStr)}";
+
+          
+
+            var jobReferralGuid = await SaveJobReferral(jobReferralDto);
+            SendReferralEmail(jobReferralDto, jobReferralGuid);
+
+            return jobReferralGuid;
         }
 
         public async Task UpdateJobReferral(string referrerCode, string subscriberGuid)
@@ -209,38 +226,39 @@ namespace UpDiddyApi.ApplicationCore.Services
         private async Task<Guid> SaveJobReferral(JobReferralDto jobReferralDto)
         {
             Guid jobReferralGuid = Guid.Empty;
-            try
-            {
-                //get JobPostingId from JobPositngGuid
-                var jobPosting = await _repositoryWrapper.JobPosting.GetJobPostingByGuid(Guid.Parse(jobReferralDto.JobPostingId));
+    
+             //get JobPostingId from JobPositngGuid
+             var jobPosting = await _repositoryWrapper.JobPosting.GetJobPostingByGuid(Guid.Parse(jobReferralDto.JobPostingGuidStr));
 
-                //get ReferrerId from ReferrerGuid
-                var referrer = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(Guid.Parse(jobReferralDto.ReferrerGuid));
+            if (jobPosting == null)
+                throw new NotFoundException("Jobposting not found");
 
-                //get ReferrerId from ReferrerGuid
-                var referee = await _repositoryWrapper.SubscriberRepository.GetSubscriberByEmailAsync(jobReferralDto.RefereeEmailId);
+             //get ReferrerId from ReferrerGuid
+             var referrer = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(Guid.Parse(jobReferralDto.ReferrerGuid));
 
-                //create JobReferral
-                JobReferral jobReferral = new JobReferral()
-                {
-                    JobReferralGuid = Guid.NewGuid(),
-                    JobPostingId = jobPosting.JobPostingId,
-                    ReferralId = referrer.SubscriberId,
-                    RefereeId = referee?.SubscriberId,
-                    RefereeEmailId = jobReferralDto.RefereeEmailId,
-                    IsJobViewed = false
-                };
+            if (referrer == null)
+                throw new NotFoundException("Cannot locate referring subscriber");
 
-                //set defaults
-                BaseModelFactory.SetDefaultsForAddNew(jobReferral);
+             //get ReferrerId from ReferrerGuid
+             var referee = await _repositoryWrapper.SubscriberRepository.GetSubscriberByEmailAsync(jobReferralDto.RefereeEmailId);
 
-                //update jobReferralGuid only if Referee is new subscriber, for old subscriber we do not jobReferralCode
-                jobReferralGuid = await _repositoryWrapper.JobReferralRepository.AddJobReferralAsync(jobReferral);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
+             //create JobReferral
+             JobReferral jobReferral = new JobReferral()
+             {
+                 JobReferralGuid = Guid.NewGuid(),
+                 JobPostingId = jobPosting.JobPostingId,
+                 ReferralId = referrer.SubscriberId,
+                 RefereeId = referee?.SubscriberId,
+                 RefereeEmailId = jobReferralDto.RefereeEmailId,
+                 IsJobViewed = false
+             };
+
+             //set defaults
+             BaseModelFactory.SetDefaultsForAddNew(jobReferral);
+
+             //update jobReferralGuid only if Referee is new subscriber, for old subscriber we do not jobReferralCode
+             jobReferralGuid = await _repositoryWrapper.JobReferralRepository.AddJobReferralAsync(jobReferral);
+       
 
             return jobReferralGuid;
         }
@@ -287,7 +305,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             JobSearchResultDto jobSearchResult = _cloudTalentService.JobSearch(jobQuery);
 
             //assign company logo urls
-            await JobUrlHelper.AssignCompanyLogoUrlToJobsList(jobSearchResult.Jobs, _configuration, _companyService);
+            await AssignCompanyLogoUrlToJobs(jobSearchResult.Jobs);
 
             // set common properties for an alert jobQuery and include this in the response
             jobQuery.DatePublished = null;
@@ -308,7 +326,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return jobSearchResult;
         }
 
-        private async Task AssignCompanyLogoUrlToJobs(List<JobSummaryViewDto> jobs)
+        private async Task AssignCompanyLogoUrlToJobs<T> (List<T> jobs) where T : JobBaseDto
         {
             var companies = await _companyService.GetCompaniesAsync();
             foreach (var job in jobs)
@@ -316,21 +334,10 @@ namespace UpDiddyApi.ApplicationCore.Services
                 var company = companies.Where(x => x.CompanyName == job.CompanyName).FirstOrDefault();
 
                 if (!string.IsNullOrWhiteSpace(company?.LogoUrl))
-                    job.CompanyLogoUrl = _configuration["StorageAccount:AssetBaseUrl"] + "Company/" + company.LogoUrl;
+                    job.CompanyLogoUrl = company.LogoUrl;
             }
         }
 
-        private async Task AssignCompanyLogoUrlToJobs(List<JobViewDto> jobs)
-        {
-            var companies = await _companyService.GetCompaniesAsync();
-            foreach (var job in jobs)
-            {
-                var company = companies.Where(x => x.CompanyName == job.CompanyName).FirstOrDefault();
-
-                if (!string.IsNullOrWhiteSpace(company?.LogoUrl))
-                    job.CompanyLogoUrl = _configuration["StorageAccount:AssetBaseUrl"] + "Company/" + company.LogoUrl;
-            }
-        }
 
         public async Task ShareJob(Guid job, Guid subscriber, ShareJobDto shareJobDto)
         {

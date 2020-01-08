@@ -24,7 +24,6 @@ namespace UpDiddyApi.Controllers
     [Route("/V2/[controller]/")]
     public class JobsController : BaseApiController
     {
-
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
@@ -81,7 +80,6 @@ namespace UpDiddyApi.Controllers
 
         #endregion
 
-
         #region CloudTalentTracking
 
         [HttpPost]
@@ -107,11 +105,19 @@ namespace UpDiddyApi.Controllers
             return StatusCode(201);
         }
 
+        [HttpGet]
+        [Route("{JobGuid:guid}/applications")]
+        [Authorize]
+        public async Task<IActionResult> HasJobApplication(Guid JobGuid)
+        {
+            var HasApplied = await _jobApplicationService.HasJobApplication(GetSubscriberGuid(), JobGuid);
+            return Ok(HasApplied);
+        }
+
 
         #endregion
 
         #region Job Browse 
-
 
         [HttpGet]
         [Route("browse-location")]
@@ -275,7 +281,6 @@ namespace UpDiddyApi.Controllers
 
         #endregion
 
-
         #region Job crud
 
 
@@ -283,7 +288,7 @@ namespace UpDiddyApi.Controllers
         [HttpPost]
         [Route("admin")]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        public async Task<IActionResult> CreateJob([FromBody] UpDiddyLib.Dto.JobPostingDto jobPostingDto)
+        public async Task<IActionResult> CreateJob([FromBody] JobCrudDto jobPostingDto)
         {
 
             await _jobPostingService.CreateJobPosting(GetSubscriberGuid(), jobPostingDto);
@@ -296,7 +301,7 @@ namespace UpDiddyApi.Controllers
         [HttpPut]
         [Route("admin/{jobGuid:guid}")]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        public async Task<IActionResult> UpdateJob([FromBody] UpDiddyLib.Dto.JobPostingDto jobPostingDto, Guid jobGuid)
+        public async Task<IActionResult> UpdateJob([FromBody] JobCrudDto jobPostingDto, Guid jobGuid)
         {
 
             await _jobPostingService.UpdateJobPosting(GetSubscriberGuid(), jobGuid,jobPostingDto);
@@ -335,12 +340,83 @@ namespace UpDiddyApi.Controllers
             return Ok(postings);
         }
 
+        #endregion
 
+        #region Related Entities
 
+        [HttpPost]
+        [Route("courses/related")]
+        public async Task<IActionResult> GetRelatedJobsByCourses([FromBody] List<Guid> courses, int limit = 100, int offset = 0)
+        {
+            List<RelatedJobDto> relatedJobs = null;
+            var subscriber = GetSubscriberGuid();
 
+            if (subscriber != Guid.Empty)
+                relatedJobs = await _jobPostingService.GetJobsByCourses(courses, limit, offset, subscriber);
+            else
+                relatedJobs = await _jobPostingService.GetJobsByCourses(courses, limit, offset);
 
+            return Ok(relatedJobs);
+        }
+
+        [HttpGet]
+        [Route("courses/{course:guid}/related")]
+        public async Task<IActionResult> GetRelatedJobsByCourse(Guid course, int limit = 100, int offset = 0)
+        {
+            List<RelatedJobDto> relatedJobs = null;
+            var subscriber = GetSubscriberGuid();
+
+            if (subscriber != Guid.Empty)
+                relatedJobs = await _jobPostingService.GetJobsByCourse(course, limit, offset, subscriber);
+            else
+                relatedJobs = await _jobPostingService.GetJobsByCourse(course, limit, offset);
+
+            return Ok(relatedJobs);
+        }    
+
+        [HttpGet]
+        [Route("subscribers/related")]
+        public async Task<IActionResult> GetRelatedJobsForSubscriber(int limit = 100, int offset = 0)
+        {
+            var subscriber = GetSubscriberGuid();
+            if (subscriber == Guid.Empty)
+                throw new NotFoundException("Subscriber not found");
+
+            var relatedJobs = await _jobPostingService.GetJobsBySubscriber(subscriber, limit, offset);
+
+            return Ok(relatedJobs);
+        }
 
         #endregion
+
+        #region CareerPath Recommendations
+        
+        [HttpGet] 
+        [Route("recommendations")]
+        [Authorize]
+        public async Task<IActionResult> GetCareerPathRecommendations(int limit = 5, int offset = 0)
+        {
+            var careerPathJobs = await _jobPostingService.GetCareerPathRecommendations(limit, offset, GetSubscriberGuid());
+            return Ok(careerPathJobs);
+        }
+
+        #endregion
+
+        #region Refer A Friend
+
+        [HttpPost]
+        [Authorize]
+        [Route("refer")]
+        public async Task<IActionResult> ReferAFriend([FromBody] JobReferralDto jobReferral)
+        {
+
+            var rVal = await _jobService.ReferJobToFriend(jobReferral, GetSubscriberGuid());
+            return Ok(rVal);
+        }
+
+        #endregion
+
+
 
     }
 }

@@ -147,5 +147,18 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
         }
+
+
+        public async Task<List<SkillDto>> GetSkillsByCourseGuid(Guid courseGuid)
+        {
+            if (courseGuid == null || courseGuid == Guid.Empty)
+                throw new NullReferenceException("Course cannot be null");
+            var skills = await _repositoryWrapper.SkillRepository.GetByCourseGuid(courseGuid);
+            if (skills == null)
+                throw new NotFoundException("Skill not found");
+            return _mapper.Map<List<Skill>, List<SkillDto>>(skills);
+        }
+
+
     }
 }

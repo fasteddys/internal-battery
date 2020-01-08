@@ -44,6 +44,7 @@ namespace UpDiddyApi.Workflow
         public MessageTransactionResponse PaymentWorkItem(EnrollmentFlowDto EnrollmentFlowDto)
         {
 
+            _sysLog.LogInformation("BraintreePaymentFlow:PaymentWorkItem Starting");
             // Extract the two DTOs from the DTO that's passed in.
             BraintreePaymentDto BraintreePaymentDto = null;
             EnrollmentDto EnrollmentDto = null;
@@ -67,6 +68,7 @@ namespace UpDiddyApi.Workflow
                 return CreateResponse(CreateResponseJson(ErrorMessage), ErrorMessage, string.Empty, TransactionState.FatalError);
             }
 
+            _sysLog.LogInformation("BraintreePaymentFlow:PaymentWorkItem Getting Payment Gateway");
 
             IBraintreeGateway gateway = _braintreeConfiguration.GetGateway();
             string nonce = BraintreePaymentDto.Nonce;
@@ -87,6 +89,7 @@ namespace UpDiddyApi.Workflow
             // Create the transaction request object
             try
             {
+                _sysLog.LogInformation("BraintreePaymentFlow:PaymentWorkItem Assembling transaction ");
                 TransactionRequest = AssembleTransactionRequest(BraintreePaymentDto);
             }
             catch (Exception e)
@@ -125,17 +128,37 @@ namespace UpDiddyApi.Workflow
                     isTransactionSuccessful = true;
                 }
 
-                if(isTransactionSuccessful)
+                _sysLog.LogInformation($"BraintreePaymentFlow:PaymentWorkItem isTransactionSuccessful = {isTransactionSuccessful}");
+
+                if (isTransactionSuccessful)
                 {
                     string SuccessfulMessage = "BraintreePaymentFlow:PaymentWorkItem->Braintree payment was successful.";
                     _sysLog.Log(LogLevel.Information, SuccessfulMessage);
                     Course course = _db.Course.Where(t => t.IsDeleted == 0 && t.CourseId == EnrollmentDto.CourseId).FirstOrDefault();
                     EnrollmentLog enrollmentLog = _db.EnrollmentLog.Where(t => t.IsDeleted == 0 && t.EnrollmentGuid == EnrollmentDto.EnrollmentGuid).FirstOrDefault();
+                    if ( enrollmentLog != null )
+                        _sysLog.LogInformation($"BraintreePaymentFlow:PaymentWorkItem Enrollment Log for enrollment {EnrollmentDto.EnrollmentGuid} found!");
+                    else
+                        _sysLog.LogInformation($"BraintreePaymentFlow:PaymentWorkItem Enrollment Log for enrollment {EnrollmentDto.EnrollmentGuid} NOT found!");
+
                     CourseVariant courseVariant = _db.CourseVariant.Include(cv => cv.CourseVariantType).Where(cv => cv.IsDeleted == 0 && cv.CourseVariantGuid.Value == enrollmentLog.CourseVariantGuid.Value).FirstOrDefault();
+                    if (courseVariant != null)
+                        _sysLog.LogInformation($"BraintreePaymentFlow:PaymentWorkItem Course Variant for enrollment log  {enrollmentLog.CourseVariantGuid.Value} found!");
+                    else
+                        _sysLog.LogInformation($"BraintreePaymentFlow:PaymentWorkItem Course Variant for enrollment log  {enrollmentLog.CourseVariantGuid.Value} NOT found!");
+
                     Enrollment enrollment = _db.Enrollment.Where(e => e.IsDeleted == 0 && e.EnrollmentGuid.Value == enrollmentLog.EnrollmentGuid)
                         .Include(e => e.CampaignCourseVariant)
                         .ThenInclude(ccv => ccv.RebateType)
                         .FirstOrDefault();
+
+                    if (enrollment != null)
+                        _sysLog.LogInformation($"BraintreePaymentFlow:PaymentWorkItem Enrollment  {enrollmentLog.EnrollmentGuid } found!");
+                    else
+                        _sysLog.LogInformation($"BraintreePaymentFlow:PaymentWorkItem Enrollment  {enrollmentLog.EnrollmentGuid } Not found!");
+
+
+
                     string formattedStartDate = enrollment.SectionStartTimestamp.HasValue ? Utils.FromUnixTimeInMilliseconds(enrollment.SectionStartTimestamp.Value).ToShortDateString() : string.Empty;
                     string templateId = null;
                     switch (courseVariant.CourseVariantType.Name)
@@ -149,6 +172,9 @@ namespace UpDiddyApi.Workflow
                         default:
                             throw new ApplicationException("Unrecognized course variant type.");
                     }
+
+                    _sysLog.LogInformation($"BraintreePaymentFlow:PaymentWorkItem Email template for variant type {courseVariant.CourseVariantType.Name} has Id =   {templateId}");
+
                     string profileUrl = _configuration["Environment:BaseUrl"] + "Home/Profile"; // todo: once we aren't using register links from profile page, generate link to Woz course
                     string courseType = courseVariant.CourseVariantType.Name;
 
@@ -156,6 +182,8 @@ namespace UpDiddyApi.Workflow
                     string rebateToc = string.Empty;
                     if(enrollment.CampaignCourseVariant != null)
                         rebateToc = enrollment.CampaignCourseVariant.RebateType.Terms;
+
+                    _sysLog.LogInformation($"BraintreePaymentFlow:PaymentWorkItem Sending receipt email for course {course.Name}  CourseCost = {enrollmentLog.CourseCost} PromoApplied = {enrollmentLog.PromoApplied}");
 
                     _sysEmail.SendPurchaseReceiptEmail(
                         templateId, 

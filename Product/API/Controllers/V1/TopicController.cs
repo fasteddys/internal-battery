@@ -72,6 +72,7 @@ namespace UpDiddyApi.Controllers
             if (topic == null)
                 return NotFound();
 
+
             return Ok(_mapper.Map<TopicDto>(topic));
         }
 

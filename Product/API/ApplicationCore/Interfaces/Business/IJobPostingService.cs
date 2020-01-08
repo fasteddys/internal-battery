@@ -9,14 +9,16 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface IJobPostingService
     {
+        Task<List<RelatedJobDto>> GetJobsByCourse(Guid courseGuid, int limit, int offset, Guid? subscriberGuid = null);
+        Task<List<RelatedJobDto>> GetJobsByCourses(List<Guid> courseGuids, int limit, int offset, Guid? subscriberGuid = null);
+        Task<List<CareerPathJobDto>> GetCareerPathRecommendations(int limit, int offset, Guid subscriberGuid);
+        Task<List<RelatedJobDto>> GetJobsBySubscriber(Guid subscriberGuid, int limit, int offset);
         Task<List<JobPostingCountDto>> GetJobCountPerProvinceAsync();
         Task<List<JobDto>> GetSubscriberJobFavorites(int SubscriberId);
-
-        Task<bool> CreateJobPosting(Guid subscriberGuid, UpDiddyLib.Dto.JobPostingDto jobPostingDto);
-        Task<bool> UpdateJobPosting(Guid subscriberGuid, Guid jobPostingGuid, UpDiddyLib.Dto.JobPostingDto jobPostingDto);
+        Task<bool> CreateJobPosting(Guid subscriberGuid, JobCrudDto jobPostingDto);
+        Task<bool> UpdateJobPosting(Guid subscriberGuid, Guid jobPostingGuid, JobCrudDto jobPostingDto);
         Task<bool> DeleteJobPosting(Guid subscriberGuid, Guid jobPostingGuid);
         Task<UpDiddyLib.Dto.JobPostingDto> GetJobPosting(Guid subscriberGuid, Guid jobPostingGuid);
-
         Task<List<UpDiddyLib.Dto.JobPostingDto>> GetJobPostingForSubscriber(Guid subscriberGuid);
     }
 }

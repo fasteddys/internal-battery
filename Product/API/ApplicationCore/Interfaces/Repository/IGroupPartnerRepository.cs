@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
-    public interface IGroupPartnerRepository : IUpDiddyRepositoryBase<GroupPartner> 
+    public interface IGroupPartnerRepository : IUpDiddyRepositoryBase<GroupPartner>
     {
-        Task<GroupPartner> GetGroupPartnerByGroupIdPartnerIdAsync(int Groupid, int PartnerId);
+        Task<GroupPartner> GetGroupPartnerByGroupIdPartnerIdAsync(int groupId, int partnerId);
     }
 }

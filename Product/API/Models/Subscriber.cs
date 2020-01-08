@@ -49,6 +49,8 @@ namespace UpDiddyApi.Models
         public DateTime? LastSignIn { get; set; }
         public string Title { get; set; }
         public string Biography { get; set; }
+        public Topic Topic { get; set; }
+        public int? TopicId { get; set; }
 
         #region Avatar Urls
         public string LinkedInAvatarUrl { get; set; }
