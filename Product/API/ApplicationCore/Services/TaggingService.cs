@@ -111,28 +111,29 @@ namespace UpDiddyApi.ApplicationCore.Services
                 await AddSubscriberToGroupAsync(Group.GroupId, SubscriberId);
                 if (PartnerGuid != null && PartnerGuid != Guid.Empty)
                 {
-                    IEnumerable<Partner> iePartner = await _repositoryWrapper.PartnerRepository.GetByConditionAsync(p => p.PartnerGuid == PartnerGuid);
-                    Partner Partner = iePartner.FirstOrDefault();
-
-                    GroupPartner existingGroupPartner=await _repositoryWrapper.GroupPartnerRepository.GetGroupPartnerByGroupIdPartnerIdAsync(Group.GroupId, Partner.PartnerId);
-
-                    if(existingGroupPartner==null)
+                    Partner partner = await _repositoryWrapper.PartnerRepository.GetByGuid(PartnerGuid);
+                    if (partner != null)
                     {
-                        DateTime CurrentDateTime = DateTime.UtcNow;
-
-                        GroupPartner GroupPartner = new GroupPartner
+                        GroupPartner existingGroupPartner = await _repositoryWrapper.GroupPartnerRepository.GetGroupPartnerByGroupIdPartnerIdAsync(Group.GroupId, partner.PartnerId);
+                        if (existingGroupPartner == null)
                         {
-                            CreateDate = CurrentDateTime,
-                            CreateGuid = Guid.Empty,
-                            GroupId = Group.GroupId,
-                            GroupPartnerGuid = Guid.NewGuid(),
-                            ModifyDate = CurrentDateTime,
-                            PartnerId = Partner.PartnerId
-                        };
+                            GroupPartner GroupPartner = new GroupPartner
+                            {
+                                CreateGuid = Guid.Empty,
+                                GroupId = Group.GroupId,
+                                GroupPartnerGuid = Guid.NewGuid(),
+                                PartnerId = partner.PartnerId
+                            };
 
-                        await _repositoryWrapper.GroupPartnerRepository.Create(GroupPartner);
-                        await _repositoryWrapper.GroupPartnerRepository.SaveAsync();
+                            await _repositoryWrapper.GroupPartnerRepository.Create(GroupPartner);
+                            await _repositoryWrapper.SaveAsync();
+                        }
+                        else
+                        {
+                            _logger.Log(LogLevel.Error, $"TaggingService:_CreateGroup Partner does not exist for PartnerGuid : {PartnerGuid}");
+                        }
                     }
+
                 }
                 return Group;
             }

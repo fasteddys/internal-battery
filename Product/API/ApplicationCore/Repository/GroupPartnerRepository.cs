@@ -1,28 +1,25 @@
-﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
-using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
 
     public class GroupPartnerRepository : UpDiddyRepositoryBase<GroupPartner>, IGroupPartnerRepository
     {
-        public GroupPartnerRepository(UpDiddyDbContext dbContext) : base(dbContext) 
+        private readonly UpDiddyDbContext _dbContext;
+        public GroupPartnerRepository(UpDiddyDbContext dbContext) : base(dbContext)
         {
-
+            _dbContext = dbContext;
         }
 
-        public async Task<GroupPartner> GetGroupPartnerByGroupIdPartnerIdAsync(int Groupid, int PartnerId)
+        public async Task<GroupPartner> GetGroupPartnerByGroupIdPartnerIdAsync(int groupId, int partnerId)
         {
-            var queryableGroupPartner=GetAll();
-            return await queryableGroupPartner.Where(gp=>gp.GroupId==Groupid && gp.PartnerId==PartnerId && gp.IsDeleted==0).FirstOrDefaultAsync();;
+            return await (from gp in _dbContext.GroupPartner
+                          where gp.GroupId == groupId && gp.PartnerId == partnerId
+                          select gp).FirstOrDefaultAsync();
         }
     }
 }

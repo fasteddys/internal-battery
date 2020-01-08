@@ -278,11 +278,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
 
                 _logger.LogInformation($"SubscriberService:CreateSubscriberAsync looking up partnerguid from ReferrerUrl");
-                string PartnerGuidStr = null;
-                Guid PartnerGuid = Guid.Empty;
-                string isGatedDownload = string.Empty;
-                string gatedDownloadFileDownloadUrl = string.Empty;
-                decimal? maxDownloadAllowed = 0.0m;
+                Guid partnerGuid = Guid.Empty;
+                bool isGatedDownload = false;
+                string gatedDownloadFileUrl = string.Empty;
+                decimal? maxFileDownloadAttemptsPermitted = null;
                 int step = 0;
                 // try catch the attempt to get the partner from butter 
                 try
@@ -299,21 +298,20 @@ namespace UpDiddyApi.ApplicationCore.Services
                     }
                     _logger.LogInformation($"SubscriberService:CreateSubscriberAsync RefererUrl = {subscriberDto.ReferrerUrl} PageName = {pageName}");
                     step = 2;
-                    var butterPage = await _butterCMSService.RetrievePageAsync<dynamic>(pageName);
+                    var butterPage = await _butterCMSService.RetrievePageAsync<CampaignLandingPage>(pageName);
                     if (butterPage != null)
                     {
-                        
+                        isGatedDownload = butterPage.Data.Fields.isgateddownload;
+                        gatedDownloadFileUrl = butterPage.Data.Fields.gatedfiledownloadfile;
+                        maxFileDownloadAttemptsPermitted = butterPage.Data.Fields.gatedfiledownloadmaxattemptsallowed;
                         step = 3;
-                        JObject pageInfo = butterPage.Data.Fields;
-                        PartnerGuidStr = pageInfo["partner"]["guid"].ToString();
-                        isGatedDownload = pageInfo["isgateddownload"].ToString();
-                        gatedDownloadFileDownloadUrl = pageInfo["gatedfiledownloadfile"].ToString();
-                        maxDownloadAllowed = pageInfo["gatedfiledownloadmaxattemptsallowed"].ToString() != "" ? (decimal?) pageInfo["gatedfiledownloadmaxattemptsallowed"] : null;
-                        if (!string.IsNullOrEmpty(PartnerGuidStr))
+                        if(butterPage.Data.Fields.partner != null)
                         {
-                            step = 4;
-                            PartnerGuid = Guid.Parse(PartnerGuidStr);
-                             _logger.LogInformation($"SubscriberService:CreateSubscriberAsync This campaign slug '{pageName}' does contain Partner with Guid {PartnerGuidStr}");
+                            if(butterPage.Data.Fields.partner.PartnerGuid != Guid.Empty)
+                            {
+                                partnerGuid = butterPage.Data.Fields.partner.PartnerGuid;
+                               _logger.LogInformation($"SubscriberService:CreateSubscriberAsync This campaign slug '{pageName}' does contain Partner with Guid {partnerGuid.ToString()}");
+                            }
                         }
                         else
                         {
@@ -327,17 +325,17 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                     }
                     step = 5;
-                    group = await _taggingService.CreateGroup(subscriberDto.ReferrerUrl, PartnerGuid, subscriber.SubscriberId);
+                    group = await _taggingService.CreateGroup(subscriberDto.ReferrerUrl, partnerGuid, subscriber.SubscriberId);
 
-                    if (isGatedDownload == "True" && !string.IsNullOrEmpty(gatedDownloadFileDownloadUrl))
+                    if (butterPage.Data.Fields.isgateddownload && !string.IsNullOrEmpty(gatedDownloadFileUrl))
                     {
                         int? groupId = null;
-                        if (group == null)
+                        if (group != null)
                             groupId = group.GroupId;
                         int? maxAllowedInt = null;
-                        if (maxDownloadAllowed != null)
-                            maxAllowedInt = Decimal.ToInt16(maxDownloadAllowed.Value);
-                        await HandleGatedFileDownload(maxAllowedInt, gatedDownloadFileDownloadUrl, groupId, subscriber.SubscriberId, subscriber.Email);
+                        if (maxFileDownloadAttemptsPermitted.HasValue)
+                            maxAllowedInt = Decimal.ToInt16(maxFileDownloadAttemptsPermitted.Value);
+                        await HandleGatedFileDownload(maxAllowedInt, gatedDownloadFileUrl, groupId, subscriber.SubscriberId, subscriber.Email);
                     }
 
                     if (!string.IsNullOrEmpty(subscriberDto.AssessmentId))
@@ -414,10 +412,11 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<bool> ExistingSubscriberSignUp(CreateUserDto createUserDto)
         {
-            string isGatedDownload = string.Empty;
-            string gatedDownloadFileDownloadUrl = string.Empty;
-            decimal? maxDownloadAllowed = 0.0m;
+            bool isGatedDownload = false;
+            string gatedDownloadFileUrl = string.Empty;
+            decimal? maxFileDownloadAttemptsPermitted = null;
             bool isSubscriberUpdatedSuccessfully = false;
+            Guid partnerGuid = Guid.Empty;
             Models.Group group = null;
             try
             {
@@ -437,8 +436,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (!string.IsNullOrWhiteSpace(createUserDto.ReferrerUrl))
                 {
                     _logger.LogInformation($"SubscriberService:ExistingSubscriberSignUp looking up partnerguid from ReferrerUrl");
-                    string PartnerGuidStr = null;
-                    Guid PartnerGuid = Guid.Empty;
+                    
                     var url = createUserDto.ReferrerUrl;
                     var pageName = Path.GetFileName(url);
                     if (!string.IsNullOrEmpty(pageName))
@@ -449,21 +447,24 @@ namespace UpDiddyApi.ApplicationCore.Services
                         }
                     }
                     _logger.LogInformation($"SubscriberService:ExistingSubscriberSignUp RefererUrl = {createUserDto.ReferrerUrl} PageName = {pageName}");
-                    var butterPage = await _butterCMSService.RetrievePageAsync<dynamic>(pageName);
+                    var butterPage = await _butterCMSService.RetrievePageAsync<CampaignLandingPage>(pageName);
                     if (butterPage != null)
                     {
-                        JObject pageInfo = butterPage.Data.Fields;
-                        PartnerGuidStr = pageInfo["partner"]["guid"].ToString();
-                        isGatedDownload = pageInfo["isgateddownload"].ToString();
-                        gatedDownloadFileDownloadUrl = pageInfo["gatedfiledownloadfile"].ToString();
-                        maxDownloadAllowed = pageInfo["gatedfiledownloadmaxattemptsallowed"].ToString() != "" ? (decimal?) pageInfo["gatedfiledownloadmaxattemptsallowed"] : null;
-                        if (!string.IsNullOrEmpty(PartnerGuidStr))
+                        isGatedDownload = butterPage.Data.Fields.isgateddownload;
+                        gatedDownloadFileUrl = butterPage.Data.Fields.gatedfiledownloadfile;
+                        maxFileDownloadAttemptsPermitted = butterPage.Data.Fields.gatedfiledownloadmaxattemptsallowed;
+                       if(butterPage.Data.Fields.partner != null)
                         {
-                            PartnerGuid = Guid.Parse(PartnerGuidStr);
+                            if(butterPage.Data.Fields.partner.PartnerGuid != Guid.Empty)
+                            {
+                                partnerGuid = butterPage.Data.Fields.partner.PartnerGuid;
+                               _logger.LogInformation($"SubscriberService:CreateSubscriberAsync This campaign slug '{pageName}' does contain Partner with Guid {partnerGuid.ToString()}");
+                            }
                         }
                         else
                         {
-                            _logger.LogInformation($"SubscriberService:ExistingSubscriberSignUp This campaign slug '{pageName}' does not have a partner associated with it");
+                            _logger.LogInformation($"SubscriberService:CreateSubscriberAsync This campaign slug '{pageName}' does not have a partner associated with it");
+
                         }
                     }
                     else
@@ -471,16 +472,16 @@ namespace UpDiddyApi.ApplicationCore.Services
                         _logger.LogInformation($"SubscriberService:ExistingSubscriberSignUp No campaign associated with slug '{pageName}'");
                     }
 
-                    group = await _taggingService.CreateGroup(createUserDto.ReferrerUrl, PartnerGuid, subscriber.SubscriberId);
-                    if (isGatedDownload == "True" && !string.IsNullOrEmpty(gatedDownloadFileDownloadUrl))
+                    group = await _taggingService.CreateGroup(createUserDto.ReferrerUrl, partnerGuid, subscriber.SubscriberId);
+                    if (isGatedDownload && !string.IsNullOrEmpty(gatedDownloadFileUrl))
                     {
                         int? groupId = null;
                         if (group != null)
                             groupId = group.GroupId;
                         int? maxAllowedInt = null;
-                        if (maxDownloadAllowed != null)
-                            maxAllowedInt = Decimal.ToInt16(maxDownloadAllowed.Value);
-                        await HandleGatedFileDownload(maxAllowedInt, gatedDownloadFileDownloadUrl, groupId, subscriber.SubscriberId, subscriber.Email);
+                        if (maxFileDownloadAttemptsPermitted != null)
+                            maxAllowedInt = Decimal.ToInt16(maxFileDownloadAttemptsPermitted.Value);
+                        await HandleGatedFileDownload(maxAllowedInt, gatedDownloadFileUrl, groupId, subscriber.SubscriberId, subscriber.Email);
                     }
 
 
@@ -1430,8 +1431,6 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             return subscriberList.Count > 0 ? subscriberList[0] : null;
         }
-
-
 
     }
 

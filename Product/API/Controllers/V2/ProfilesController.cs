@@ -337,7 +337,7 @@ namespace UpDiddyApi.Controllers.V2
         #endregion
 
         #region CareerPath
-        
+
         [HttpGet]
         [Route("careerpath/")]
         [Authorize]
@@ -345,7 +345,14 @@ namespace UpDiddyApi.Controllers.V2
         {
 
             var careerPath = await _profileService.GetSubscriberCareerPath(GetSubscriberGuid());
-            return Ok(careerPath);
+            if (careerPath != null)
+            {
+                return Ok(careerPath);
+            }
+            else
+            {
+                return StatusCode(204);
+            }
         }
 
         [HttpPut]
