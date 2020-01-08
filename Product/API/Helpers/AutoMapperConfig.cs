@@ -303,7 +303,31 @@ namespace UpDiddyApi.Helpers
             .ForMember(c => c.Title, opt => opt.MapFrom(src => src.Notification.Title)) 
             .ForAllOtherMembers(opts => opts.Ignore());
 
-        }
+
+
+            CreateMap<JobCrudDto, UpDiddyLib.Dto.JobPostingDto>()
+               .ForMember(x => x.Recruiter, opt => opt.Ignore())
+               .ForMember(x => x.Company, opt => opt.Ignore())
+               .ForMember(x => x.Industry, opt => opt.Ignore())
+               .ForMember(x => x.JobCategory, opt => opt.Ignore())
+               .ForMember(x => x.ExperienceLevel, opt => opt.Ignore())
+               .ForMember(x => x.EducationLevel, opt => opt.Ignore())
+               .ForMember(x => x.CompensationType, opt => opt.Ignore())
+               .ForMember(x => x.SecurityClearance, opt => opt.Ignore())
+               .ForMember(x => x.EmploymentType, opt => opt.Ignore())
+               .ForMember(x => x.EmploymentType, opt => opt.Ignore())
+               .ForMember(x => x.CityProvince, opt => opt.Ignore())
+               .ForMember(x => x.SimilarJobs, opt => opt.Ignore()) 
+               .ForMember(x => x.EmploymentType, opt => opt.Ignore())
+               .ForMember(x => x.RequestId, opt => opt.Ignore())
+               .ForMember(x => x.ClientEventId, opt => opt.Ignore())
+               .ForMember(x => x.CloudTalentUri, opt => opt.Ignore())
+               .ForMember(x => x.CloudTalentIndexStatus, opt => opt.Ignore())
+               .ReverseMap();
+
+ 
+
+    }
     }
 
 

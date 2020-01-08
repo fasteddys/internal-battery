@@ -288,7 +288,7 @@ namespace UpDiddyApi.Controllers
         [HttpPost]
         [Route("admin")]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        public async Task<IActionResult> CreateJob([FromBody] UpDiddyLib.Dto.JobPostingDto jobPostingDto)
+        public async Task<IActionResult> CreateJob([FromBody] JobCrudDto jobPostingDto)
         {
 
             await _jobPostingService.CreateJobPosting(GetSubscriberGuid(), jobPostingDto);
@@ -301,7 +301,7 @@ namespace UpDiddyApi.Controllers
         [HttpPut]
         [Route("admin/{jobGuid:guid}")]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        public async Task<IActionResult> UpdateJob([FromBody] UpDiddyLib.Dto.JobPostingDto jobPostingDto, Guid jobGuid)
+        public async Task<IActionResult> UpdateJob([FromBody] JobCrudDto jobPostingDto, Guid jobGuid)
         {
 
             await _jobPostingService.UpdateJobPosting(GetSubscriberGuid(), jobGuid,jobPostingDto);
