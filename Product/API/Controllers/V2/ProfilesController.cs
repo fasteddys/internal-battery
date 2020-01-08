@@ -349,7 +349,7 @@ namespace UpDiddyApi.Controllers.V2
             {
                 return Ok(careerPath);
             }
-            else
+            else 
             {
                 return StatusCode(204);
             }
