@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 namespace UpDiddyApi.Controllers
 {
-    [Route("/V2/[controller]")]
+    [Route("/V2/[controller]/")]
     public class FileController : ControllerBase
     {
         private readonly IFileDownloadTrackerService _fileDownloadTrackerService;
