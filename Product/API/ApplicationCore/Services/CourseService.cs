@@ -90,6 +90,16 @@ namespace UpDiddyApi.ApplicationCore.Services
             return (courses);
         }
 
+
+        public async Task<List<CourseDetailDto>> GetCoursesByTopic(string topic, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        {
+            var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesByTopic(topic, limit, offset, sort, order);
+            if (courses == null)
+                throw new NotFoundException("Courses not found");
+            return (courses);
+        }
+
+
         public async Task<CourseDetailDto> GetCourse(Guid courseGuid)
         {
             if (courseGuid == null || courseGuid == Guid.Empty)
@@ -99,6 +109,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new NotFoundException("Courses not found");
             return (course);
         }
+
+
+
 
         public async Task<int> GetCoursesCount()
         {

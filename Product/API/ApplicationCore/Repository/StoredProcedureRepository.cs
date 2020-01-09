@@ -501,7 +501,20 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
 
- 
+        public async Task<List<CourseDetailDto>> GetCoursesByTopic(string topic, int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@Topic", topic),
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+
+            List<CourseDetailDto> rval = null;
+            rval = await _dbContext.CourseDetails.FromSql<CourseDetailDto>("System_Get_CoursesByTopic @topic,  @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
 
 
 
