@@ -14,12 +14,10 @@ namespace UpDiddyApi.ApplicationCore.Services
     public class StateService : IStateService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
-        private readonly IMemoryCacheService _memoryCacheService;
         private readonly IMapper _mapper;
-        public StateService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IMemoryCacheService memoryCacheService)
+        public StateService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
         {
             _repositoryWrapper = repositoryWrapper;
-            _memoryCacheService = memoryCacheService;
             _mapper = mapper;
         }
 
@@ -27,15 +25,11 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (stateGuid == null || stateGuid == Guid.Empty)
                 throw new NullReferenceException("stateGuid cannot be null");
-            string cacheKey = $"GetStateDetail";
-            IList<StateDetailDto> rval = (IList<StateDetailDto>)_memoryCacheService.GetCacheValue(cacheKey);
-            if (rval == null)
-            {
-                var states = await _repositoryWrapper.State.GetAllStatesAsync();
-                if (states == null)
-                    throw new NotFoundException("States not found");
-                _memoryCacheService.SetCacheValue(cacheKey, rval);
-            }
+            IList<StateDetailDto> rval;
+            var states = await _repositoryWrapper.State.GetAllStatesAsync();
+            if (states == null)
+                throw new NotFoundException("States not found");
+            rval = _mapper.Map<List<StateDetailDto>>(states);
             return rval?.Where(x => x.StateGuid == stateGuid).FirstOrDefault();
         }
 
