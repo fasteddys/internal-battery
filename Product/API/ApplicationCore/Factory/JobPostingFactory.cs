@@ -211,22 +211,40 @@ namespace UpDiddyApi.ApplicationCore.Factory
             {
                 jobPosting.PostingExpirationDateUTC = DateTime.UtcNow.AddDays(postingTTL);
             }
-            // save the job to sql server 
-            // todo make saving the job posting and skills more efficient with a stored procedure 
-            repositoryWrapper.JobPosting.Create(jobPosting);
-            repositoryWrapper.JobPosting.SaveAsync().Wait();
-            // update associated job posting skills
-            JobPostingFactory.UpdateJobPostingSkills(repositoryWrapper, jobPosting.JobPostingId, jobPostingDto?.JobPostingSkills);
-            //index active jobs into google 
-            if (jobPosting.JobStatus == (int)JobPostingStatus.Active)
-                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(jobPosting.JobPostingGuid));
+
+            // adding this try/catch to troubleshoot an issue that i am unable to replicate in my local environment
+            try
+            {
+                // save the job to sql server 
+                // todo make saving the job posting and skills more efficient with a stored procedure 
+                repositoryWrapper.JobPosting.Create(jobPosting);
+                repositoryWrapper.JobPosting.SaveAsync().Wait();
+                // update associated job posting skills
+                JobPostingFactory.UpdateJobPostingSkills(repositoryWrapper, jobPosting.JobPostingId, jobPostingDto?.JobPostingSkills);
+                //index active jobs into google 
+                if (jobPosting.JobStatus == (int)JobPostingStatus.Active)
+                    _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(jobPosting.JobPostingGuid));
 
 
-            newPostingGuid = jobPosting.JobPostingGuid;
-            syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
+                newPostingGuid = jobPosting.JobPostingGuid;
+            }
+            catch (AggregateException ae)
+            {
+                foreach (var e in ae.InnerExceptions)
+                {
+                    if(e.InnerException != null)
+                    {
+                        syslog.Log(LogLevel.Information, $"***** JobPostingFactory:PostJob error: {e.InnerException.Message}, Source: {e.InnerException.Source}, StackTrace: {e.InnerException.StackTrace}");
+                    }                        
+                }
+                throw;
+            }
+            finally
+            {
+                syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
 
             return true;
-
         }
 
 
@@ -371,10 +389,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
         }
         public static async Task<List<JobPostingSkill>> GetPostingSkills(IRepositoryWrapper repositoryWrapper, JobPosting jobPosting)
         {
-             return await repositoryWrapper.JobPostingSkillRepository.GetAllWithTracking()
-                .Include(c => c.Skill)
-                .Where(s => s.IsDeleted == 0 && s.JobPostingId == jobPosting.JobPostingId)
-                .ToListAsync();
+            return await repositoryWrapper.JobPostingSkillRepository.GetAllWithTracking()
+               .Include(c => c.Skill)
+               .Where(s => s.IsDeleted == 0 && s.JobPostingId == jobPosting.JobPostingId)
+               .ToListAsync();
         }
 
         [Obsolete("This method of modifying job skills is slow and should not be used.", true)]
@@ -472,7 +490,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             return true;
         }
-        
+
         [Obsolete("This method of modifying job skills is slow and should not be used.", true)]
         public static async Task CopyPostingSkills(IRepositoryWrapper repositoryWrapper, int sourcePostingId, int destinationPostingId)
         {
@@ -481,7 +499,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             {
                 await JobPostingSkillFactory.Add(repositoryWrapper, destinationPostingId, s.Skill.SkillGuid.Value);
             }
-           await repositoryWrapper.JobPostingSkillRepository.SaveAsync();
+            await repositoryWrapper.JobPostingSkillRepository.SaveAsync();
         }
 
 
@@ -660,8 +678,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 JobPosting jobPosting = null;
 
                 // for backward compatability, try and find the posting by the value specified in the jobposting DTO, if not it's not specified try and find int based on the passed job posting guid
-                if (jobPostingDto.JobPostingGuid != null )
-                    jobPosting =  JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(repositoryWrapper, jobPostingDto.JobPostingGuid.Value).Result;
+                if (jobPostingDto.JobPostingGuid != null)
+                    jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(repositoryWrapper, jobPostingDto.JobPostingGuid.Value).Result;
                 else
                     jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(repositoryWrapper, jobPostingGuid).Result;
 
