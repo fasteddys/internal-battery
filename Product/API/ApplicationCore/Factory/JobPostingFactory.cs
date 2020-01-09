@@ -230,14 +230,22 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
             catch (AggregateException ae)
             {
+                syslog.Log(LogLevel.Information, $"***** JobPostingFactory:PostJob aggregate exception : {ae.Message}, Source: {ae.Source}, StackTrace: {ae.StackTrace}");
+
                 foreach (var e in ae.InnerExceptions)
                 {
-                    if(e.InnerException != null)
+                    if (e.InnerException != null)
                     {
-                        syslog.Log(LogLevel.Information, $"***** JobPostingFactory:PostJob error: {e.InnerException.Message}, Source: {e.InnerException.Source}, StackTrace: {e.InnerException.StackTrace}");
-                    }                        
+                        syslog.Log(LogLevel.Information, $"***** JobPostingFactory:PostJob aggregate exception inner exception instance: {e.InnerException.Message}, Source: {e.InnerException.Source}, StackTrace: {e.InnerException.StackTrace}");
+                    }
                 }
                 throw;
+            }
+            catch (Exception e)
+            {
+                syslog.Log(LogLevel.Information, $"***** JobPostingFactory:PostJob generic exception: {e.Message}, Source: {e.Source}, StackTrace: {e.StackTrace}");
+                if (e.InnerException != null)
+                    syslog.Log(LogLevel.Information, $"***** JobPostingFactory:PostJob generic inner exception: {e.InnerException.Message}, Source: {e.InnerException.Source}, StackTrace: {e.InnerException.StackTrace}");
             }
             finally
             {
