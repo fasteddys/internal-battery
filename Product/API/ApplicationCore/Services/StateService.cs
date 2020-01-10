@@ -27,7 +27,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new NullReferenceException("stateGuid cannot be null");
             IList<StateDetailDto> rval;
             var states = await _repositoryWrapper.State.GetAllStatesAsync();
-            if (states == null)
+            if (states == null || states.Count() == 0)
                 throw new NotFoundException("States not found");
             rval = _mapper.Map<List<StateDetailDto>>(states);
             return rval?.Where(x => x.StateGuid == stateGuid).FirstOrDefault();
@@ -41,7 +41,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (country == null)
                 throw new NotFoundException("Country not found");
             var states = await _repositoryWrapper.State.GetByConditionWithSorting(x => x.CountryId == country.CountryId && x.IsDeleted == 0, limit, offset, sort, order);
-            if (states == null)
+            if (states == null || states.Count() == 0)
                 throw new NotFoundException("States not found");
             return _mapper.Map<List<StateDetailDto>>(states);
         }
@@ -70,7 +70,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var country = await _repositoryWrapper.Country.GetbyCountryGuid(countryGuid);
             if (country == null)
                 throw new NotFoundException("Country not found");
-            var state = await _repositoryWrapper.State.GetByStateGuid(stateGuid);
+            var state = await _repositoryWrapper.State.GetByCountryGuidAndStateGuid(countryGuid, stateGuid);
             if (state == null)
                 throw new NotFoundException("State not found");
             state.Name = stateDetailDto.Name;
@@ -82,11 +82,14 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _repositoryWrapper.SaveAsync();
         }
 
-        public async Task DeleteState(Guid stateGuid)
+        public async Task DeleteState(Guid countryGuid, Guid stateGuid)
         {
-            if (stateGuid == null || stateGuid == Guid.Empty)
-                throw new NullReferenceException("StateGuid cannot be null");
-            var state = await _repositoryWrapper.State.GetByStateGuid(stateGuid);
+            if (stateGuid == null || stateGuid == Guid.Empty || countryGuid == null || countryGuid == Guid.Empty)
+                throw new NullReferenceException("StateGuid and CountryGuid cannot be null");
+            var country = await _repositoryWrapper.Country.GetbyCountryGuid(countryGuid);
+            if (country == null)
+                throw new NotFoundException("Country not found");
+            var state = await _repositoryWrapper.State.GetByCountryGuidAndStateGuid(countryGuid, stateGuid);
             if (state == null)
                 throw new NotFoundException("State not found");
             state.IsDeleted = 1;

@@ -27,7 +27,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new NullReferenceException("countryGuid cannot be null");
             IList<CountryDetailDto> rval;
             var countries = await _repositoryWrapper.Country.GetAllCountries();
-            if (countries == null)
+            if (countries == null || countries.Count() == 0)
                 throw new NotFoundException("country not found");
             rval = _mapper.Map<List<CountryDetailDto>>(countries);
             return rval?.Where(x => x.CountryGuid == countryGuid).FirstOrDefault();
