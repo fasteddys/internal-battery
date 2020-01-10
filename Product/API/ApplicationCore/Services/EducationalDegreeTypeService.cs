@@ -14,12 +14,10 @@ namespace UpDiddyApi.ApplicationCore.Services
     public class EducationalDegreeTypeService : IEducationalDegreeTypeService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
-        private readonly IMemoryCacheService _memoryCacheService;
         private readonly IMapper _mapper;
-        public EducationalDegreeTypeService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IMemoryCacheService memoryCacheService)
+        public EducationalDegreeTypeService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
         {
             _repositoryWrapper = repositoryWrapper;
-            _memoryCacheService = memoryCacheService;
             _mapper = mapper;
         }
 
@@ -27,31 +25,21 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (educationalDegreeTypeGuid == null || educationalDegreeTypeGuid == Guid.Empty)
                 throw new NullReferenceException("EducationalDegreeTypeGuid cannot be null");
-            string cacheKey = $"GetEducationalDegreeType";
-            IList<EducationalDegreeTypeDto> rval = (IList<EducationalDegreeTypeDto>)_memoryCacheService.GetCacheValue(cacheKey);
-            if (rval == null)
-            {
-                var educationalDegreeTypes = await _repositoryWrapper.EducationalDegreeTypeRepository.GetAllEducationDegreeTypes();
-                if (educationalDegreeTypes == null)
-                    throw new NotFoundException("EducationalDegreeTypes not found");
-                rval = _mapper.Map<List<EducationalDegreeTypeDto>>(educationalDegreeTypes);
-                _memoryCacheService.SetCacheValue(cacheKey, rval);
-            }
+            IList<EducationalDegreeTypeDto> rval;
+            var educationalDegreeTypes = await _repositoryWrapper.EducationalDegreeTypeRepository.GetAllEducationDegreeTypes();
+            if (educationalDegreeTypes == null)
+                throw new NotFoundException("EducationalDegreeTypes not found");
+            rval = _mapper.Map<List<EducationalDegreeTypeDto>>(educationalDegreeTypes);
             return rval?.Where(x => x.EducationalDegreeTypeGuid == educationalDegreeTypeGuid).FirstOrDefault();
         }
 
         public async Task<List<EducationalDegreeTypeDto>> GetAllEducationDegreeTypes()
         {
-            string cacheKey = $"GetEducationalDegreeType";
-            IList<EducationalDegreeTypeDto> rval = (IList<EducationalDegreeTypeDto>)_memoryCacheService.GetCacheValue(cacheKey);
-            if (rval == null)
-            {
-                var educationalDegreeTypes = await _repositoryWrapper.EducationalDegreeTypeRepository.GetAllEducationDegreeTypes();
-                if (educationalDegreeTypes == null)
-                    throw new NotFoundException("EducationalDegreeTypes not found");
-                rval = _mapper.Map<List<EducationalDegreeTypeDto>>(educationalDegreeTypes);
-                _memoryCacheService.SetCacheValue(cacheKey, rval);
-            }
+            IList<EducationalDegreeTypeDto> rval;
+            var educationalDegreeTypes = await _repositoryWrapper.EducationalDegreeTypeRepository.GetAllEducationDegreeTypes();
+            if (educationalDegreeTypes == null)
+                throw new NotFoundException("EducationalDegreeTypes not found");
+            rval = _mapper.Map<List<EducationalDegreeTypeDto>>(educationalDegreeTypes);
             return rval.ToList();
         }
 

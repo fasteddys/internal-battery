@@ -14,12 +14,10 @@ namespace UpDiddyApi.ApplicationCore.Services
     public class CourseLevelService : ICourseLevelService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
-        private readonly IMemoryCacheService _memoryCacheService;
         private readonly IMapper _mapper;
-        public CourseLevelService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IMemoryCacheService memoryCacheService)
+        public CourseLevelService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
         {
             _repositoryWrapper = repositoryWrapper;
-            _memoryCacheService = memoryCacheService;
             _mapper = mapper;
         }
 
@@ -27,16 +25,11 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (courseLevelGuid == null || courseLevelGuid == Guid.Empty)
                 throw new NullReferenceException("CourseLevelGuid cannot be null");
-            string cacheKey = $"GetCourseLevel";
-            IList<CourseLevelDto> rval = (IList<CourseLevelDto>)_memoryCacheService.GetCacheValue(cacheKey);
-            if (rval == null)
-            {
-                var courseLevels = await _repositoryWrapper.CourseLevelRepository.GetAllCourseLevels();
-                if (courseLevels == null)
-                    throw new NotFoundException("CourseLevelGuid not found");
-                rval = _mapper.Map<List<CourseLevelDto>>(courseLevels);
-                _memoryCacheService.SetCacheValue(cacheKey, rval);
-            }
+            IList<CourseLevelDto> rval;
+            var courseLevels = await _repositoryWrapper.CourseLevelRepository.GetAllCourseLevels();
+            if (courseLevels == null)
+                throw new NotFoundException("CourseLevelGuid not found");
+            rval = _mapper.Map<List<CourseLevelDto>>(courseLevels);
             return rval?.Where(x => x.CourseLevelGuid == courseLevelGuid).FirstOrDefault();
         }
 

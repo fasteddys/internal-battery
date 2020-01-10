@@ -14,12 +14,10 @@ namespace UpDiddyApi.ApplicationCore.Services
     public class CountryService : ICountryService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
-        private readonly IMemoryCacheService _memoryCacheService;
         private readonly IMapper _mapper;
-        public CountryService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IMemoryCacheService memoryCacheService)
+        public CountryService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
         {
             _repositoryWrapper = repositoryWrapper;
-            _memoryCacheService = memoryCacheService;
             _mapper = mapper;
         }
 
@@ -27,16 +25,11 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (countryGuid == null || countryGuid == Guid.Empty)
                 throw new NullReferenceException("countryGuid cannot be null");
-            string cacheKey = $"GetCountryDetail";
-            IList<CountryDetailDto> rval = (IList<CountryDetailDto>)_memoryCacheService.GetCacheValue(cacheKey);
-            if (rval == null)
-            {
-                var countries = await _repositoryWrapper.Country.GetAllCountries();
-                if (countries == null)
-                    throw new NotFoundException("country not found");
-                rval = _mapper.Map<List<CountryDetailDto>>(countries);
-                _memoryCacheService.SetCacheValue(cacheKey, rval);
-            }
+            IList<CountryDetailDto> rval;
+            var countries = await _repositoryWrapper.Country.GetAllCountries();
+            if (countries == null || countries.Count() == 0)
+                throw new NotFoundException("country not found");
+            rval = _mapper.Map<List<CountryDetailDto>>(countries);
             return rval?.Where(x => x.CountryGuid == countryGuid).FirstOrDefault();
         }
 

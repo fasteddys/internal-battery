@@ -80,7 +80,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult GetJobsForSubscriber(int numRecords)
         {
             var stats = _repositoryWrapper.JobSiteScrapeStatistic.GetJobScrapeStatisticsAsync(numRecords).Result;
-            return Ok(_mapper.Map<IList<JobSiteScrapeStatisticDto>>(stats));
+            return Ok(_mapper.Map<List<JobSiteScrapeStatisticDto>>(stats));
         }
 
 

@@ -10,8 +10,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
 {
     public class StateRepository : UpDiddyRepositoryBase<State>, IStateRepository
     {
-
-
         private readonly UpDiddyDbContext _dbContext;
 
         public StateRepository(UpDiddyDbContext dbContext) : base(dbContext)
@@ -19,15 +17,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
             _dbContext = dbContext;
         }
 
-
         public async Task<State> GetStateBySubscriberGuid(Guid subscriberGuid)
         {
-            return await (from s in _dbContext.State join
-                          su in _dbContext.Subscriber on s.StateId equals su.StateId
+            return await (from s in _dbContext.State
+                          join su in _dbContext.Subscriber on s.StateId equals su.StateId
                           where su.SubscriberGuid == subscriberGuid
                           select s).FirstOrDefaultAsync();
         }
-
 
         public async Task<IEnumerable<State>> GetAllStatesAsync()
         {
@@ -35,7 +31,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return await states
                                .Include(s => s.Country)
                                .Where(x => x.IsDeleted == 0)
-                               .ToListAsync();                             
+                               .ToListAsync();
         }
 
         public async Task<IEnumerable<State>> GetStatesByCountryGuid(Guid countryGuid)
@@ -43,7 +39,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var states = GetAll();
             return await states
                                 .Include(s => s.Country)
-                                .Where(s=>s.IsDeleted==0 && s.Country.CountryGuid== countryGuid)
+                                .Where(s => s.IsDeleted == 0 && s.Country.CountryGuid == countryGuid)
                                 .ToListAsync();
         }
 
@@ -53,13 +49,14 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return await states
                                .Include(s => s.Country)
                                .Where(s => s.IsDeleted == 0 && s.Country.Sequence == 1)
-                               .OrderBy(s=>s.Sequence)
+                               .OrderBy(s => s.Sequence)
                                .ToListAsync();
         }
 
-         public async Task<State> GetByStateGuid(Guid stateGuid)
+        public async Task<State> GetByCountryGuidAndStateGuid(Guid countryGuid, Guid stateGuid)
         {
-            return await (from s in _dbContext.State 
+            return await (from s in _dbContext.State
+                          join c in _dbContext.Country on s.CountryId equals c.CountryId
                           where s.StateGuid == stateGuid
                           select s).FirstOrDefaultAsync();
         }

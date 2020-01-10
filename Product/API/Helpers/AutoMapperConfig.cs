@@ -50,6 +50,8 @@ namespace UpDiddyApi.Helpers
             CreateMap<Enrollment, EnrollmentDto>().ReverseMap();
             CreateMap<WozCourseEnrollment, WozCourseEnrollmentDto>().ReverseMap();
             CreateMap<Country, CountryDto>().ReverseMap();
+            CreateMap<CountryDetailDto, Country>().ReverseMap();
+            CreateMap<StateDetailDto, State>().ReverseMap();
             CreateMap<EnrollmentLog, EnrollmentLogDto>().ReverseMap();
             CreateMap<CourseVariantType, CourseVariantTypeDto>().ReverseMap();
             CreateMap<Skill, UpDiddyLib.Dto.SkillDto>().ReverseMap();

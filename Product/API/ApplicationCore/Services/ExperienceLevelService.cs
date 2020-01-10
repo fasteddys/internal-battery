@@ -14,12 +14,10 @@ namespace UpDiddyApi.ApplicationCore.Services
     public class ExperienceLevelService : IExperienceLevelService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
-        private readonly IMemoryCacheService _memoryCacheService;
         private readonly IMapper _mapper;
-        public ExperienceLevelService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IMemoryCacheService memoryCacheService)
+        public ExperienceLevelService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
         {
             _repositoryWrapper = repositoryWrapper;
-            _memoryCacheService = memoryCacheService;
             _mapper = mapper;
         }
 
@@ -27,16 +25,11 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (experienceLevelGuid == null || experienceLevelGuid == Guid.Empty)
                 throw new NullReferenceException("ExperienceLevelGuid cannot be null");
-            string cacheKey = $"GetExperienceLevel";
-            IList<ExperienceLevelDto> rval = (IList<ExperienceLevelDto>)_memoryCacheService.GetCacheValue(cacheKey);
-            if (rval == null)
-            {
-                var experienceLevels = await _repositoryWrapper.ExperienceLevelRepository.GetAllExperienceLevels();
-                if (experienceLevels == null)
-                    throw new NotFoundException("ExperienceLevelGuid not found");
-                rval = _mapper.Map<List<ExperienceLevelDto>>(experienceLevels);
-                _memoryCacheService.SetCacheValue(cacheKey, rval);
-            }
+            IList<ExperienceLevelDto> rval;
+            var experienceLevels = await _repositoryWrapper.ExperienceLevelRepository.GetAllExperienceLevels();
+            if (experienceLevels == null)
+                throw new NotFoundException("ExperienceLevelGuid not found");
+            rval = _mapper.Map<List<ExperienceLevelDto>>(experienceLevels);
             return rval?.Where(x => x.ExperienceLevelGuid == experienceLevelGuid).FirstOrDefault();
         }
 
