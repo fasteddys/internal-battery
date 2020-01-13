@@ -86,15 +86,5 @@
     @RenderSection("Scripts", false)
     @Html.ReactInitJavaScript()
 
-    <script type="text/javascript">
-        $(window).on('load', function () {
-            if ($.cookie('.AspNet.Consent') == undefined) {
-                $('#cookiePolicyModal').modal('show');
-            }
-            else {
-                $('#cookiePolicyModal').modal('hide');
-            }
-        });
-    </script>
 </body>
 </html>
