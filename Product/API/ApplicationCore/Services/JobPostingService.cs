@@ -258,6 +258,30 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _mapper.Map<List<UpDiddyLib.Dto.JobPostingDto>>(jobPostings);
         }
 
+
+
+
+        public async Task<JobCrudListDto> GetJobPostingCrudForSubscriber(Guid subscriberGuid, int limit, int offset, string sort, string order)
+        {
+            return _mapper.Map<JobCrudListDto> (await _repositoryWrapper.StoredProcedureRepository.GetSubscriberJobPostingCruds(subscriberGuid, limit, offset, sort, order)) ;
+        }
+
+        public async Task<JobCrudDto> GetJobPostingCrud(Guid subscriberGuid, Guid jobPostingGuid)
+        {
+
+            JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuid(_repositoryWrapper, jobPostingGuid);
+            if (jobPosting == null)
+                throw new NotFoundException("Job posting {jobPostingGuid} does not exist");
+
+            if (jobPosting.Recruiter.Subscriber.SubscriberGuid != subscriberGuid)
+                throw new UnauthorizedAccessException("JobPosting owner is not specified or does not match user posting job");
+
+            return _mapper.Map<JobCrudDto>(jobPosting);
+        }
+
+
+
+
         #region Helper functions 
 
         private async Task<UpDiddyLib.Dto.JobPostingDto> MapPostingCrudToJobPosting(Guid subscriberGuid, JobCrudDto jobCrudDto)

@@ -325,18 +325,21 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsRecruiterPolicy")]
         public async Task<IActionResult> GetJobAdmin(Guid jobGuid)
         {
-
-            UpDiddyLib.Dto.JobPostingDto jobPostingDto =  await _jobPostingService.GetJobPosting(GetSubscriberGuid(), jobGuid);
+            JobCrudDto jobPostingDto =  await _jobPostingService.GetJobPostingCrud(GetSubscriberGuid(), jobGuid);
             return Ok(jobPostingDto);
         }
+
+        // todo jab put in migration for sproc 
+        //todo jab include paginiation info in result 
+
 
         [HttpGet]
         [Route("admin")]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        public async Task<IActionResult> GetJobAdminForSubscriber(Guid jobGuid)
+        public async Task<IActionResult> GetJobAdminForSubscriber(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-
-            List<UpDiddyLib.Dto.JobPostingDto> postings = await _jobPostingService.GetJobPostingForSubscriber(GetSubscriberGuid());
+     
+            JobCrudListDto postings = await _jobPostingService.GetJobPostingCrudForSubscriber(GetSubscriberGuid(),limit,offset,sort,order);
             return Ok(postings);
         }
 
