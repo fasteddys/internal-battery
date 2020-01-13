@@ -327,9 +327,52 @@ namespace UpDiddyApi.Helpers
                .ForMember(x => x.CloudTalentIndexStatus, opt => opt.Ignore())
                .ReverseMap();
 
+
  
 
-    }
+
+            CreateMap< JobCrudDto,JobPosting > ()
+               .ForPath(x =>  x.Recruiter.RecruiterGuid, opt => opt.MapFrom(src => src.RecruiterGuid))
+               .ForPath(x => x.Company.CompanyGuid, opt => opt.MapFrom(src => src.CompanyGuid))
+               .ForPath(x => x.Industry.IndustryGuid, opt => opt.MapFrom(src => src.IndustryGuid))
+               .ForPath(x => x.JobCategory.JobCategoryGuid, opt => opt.MapFrom(src => src.JobCategoryGuid))
+               .ForPath(x => x.ExperienceLevel.ExperienceLevelGuid, opt => opt.MapFrom(src => src.ExperienceLevelGuid))
+               .ForPath(x => x.EducationLevel.EducationLevelGuid, opt => opt.MapFrom(src => src.EducationLevelGuid))
+               .ForPath(x => x.CompensationType.CompensationTypeGuid, opt => opt.MapFrom(src => src.CompensationTypeGuid))
+               .ForPath(x => x.SecurityClearance.SecurityClearanceGuid, opt => opt.MapFrom(src => src.SecurityClearanceGuid))
+               .ForPath(x => x.EmploymentType.EmploymentTypeGuid, opt => opt.MapFrom(src => src.EmploymentTypeGuid))
+               .ForMember(x => x.Recruiter, opt => opt.Ignore())
+               .ForMember(x => x.Company, opt => opt.Ignore())
+               .ForMember(x => x.Industry, opt => opt.Ignore())
+               .ForMember(x => x.JobCategory, opt => opt.Ignore())
+               .ForMember(x => x.ExperienceLevel, opt => opt.Ignore())
+               .ForMember(x => x.EducationLevel, opt => opt.Ignore())
+               .ForMember(x => x.CompensationType, opt => opt.Ignore())
+               .ForMember(x => x.SecurityClearance, opt => opt.Ignore())
+               .ForMember(x => x.EmploymentType, opt => opt.Ignore())
+               .ForMember(x => x.EmploymentType, opt => opt.Ignore())
+               .ForMember(x => x.EmploymentType, opt => opt.Ignore())
+               .ForMember(x => x.CloudTalentUri, opt => opt.Ignore())
+               .ForMember(x => x.CloudTalentIndexStatus, opt => opt.Ignore())
+               .ReverseMap();
+
+
+            CreateMap<List<JobCrudDto>, JobCrudListDto>()
+            .AfterMap((src, dest) =>
+            {
+                if (src != null && src.Count() > 0)
+                    dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                else
+                    dest.TotalRecords = 0;
+            })
+            .ForMember(dest => dest.Entities, opt => opt.MapFrom(src => src.ToList()))
+            .ReverseMap();
+
+
+
+
+
+        }
     }
 
 

@@ -105,11 +105,6 @@ namespace UpDiddyApi.Controllers
         [Route("topic/{topicName}")]
         public async Task<IActionResult> GetCoursesByTopic(string topicName, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-
-            // TODO JAB Put in script for adding tag data 
-            // TODO JAB Put in migration for course topics view 
-            // TODO JAB Add migration for CourseByTopic SP
-
             var courses = await _courseService.GetCoursesByTopic(topicName, limit,offset,sort,order);
             return Ok(courses);
         }
