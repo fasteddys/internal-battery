@@ -60,16 +60,16 @@ namespace UpDiddyApi.Controllers.V2
         #region subscriber notifications
 
         [HttpPost]
-     //   [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("{notificationGuid}/subscribers/{subscriberGuid}")]
         public async Task<IActionResult> CreateSubscriberNotification(Guid NotificationGuid, Guid subscriberGuid)
         {
             Guid rval = await _subscriberNotificationService.CreateSubscriberNotification(GetSubscriberGuid(), NotificationGuid, subscriberGuid);
             return StatusCode(201);
         }
-        
+
         [HttpDelete]
-      //  [Authorize]
+        [Authorize]
         [Route("{notificationGuid}/subscribers/{subscriberGuid}")]
         public async Task<IActionResult> DeleteSubscriberNotification(Guid NotificationGuid, Guid subscriberGuid)
         {
@@ -80,7 +80,7 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         [HttpPut]
-     //   [Authorize]
+        [Authorize]
         [Route("{notificationGuid}/subscribers/{subscriberGuid}")]
         public async Task<IActionResult> UpdateSubscriberNotification([FromBody] NotificationDto notification, Guid NotificationGuid, Guid subscriberGuid)
         {
@@ -89,7 +89,7 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         [HttpGet]
-     //   [Authorize]
+        [Authorize]
         [Route("subscribers")]
         public async Task<IActionResult> GetSubscriberNotifications(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
@@ -98,11 +98,11 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         #endregion
-        
+
         #region notifications
 
         [HttpPost]
-     //   [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateNotification([FromBody] NotificationDto notification, [FromQuery] Guid? groupGuid = null)
         {
             Guid rval = await _notificationService.CreateNotification(GetSubscriberGuid(), notification, groupGuid);
@@ -111,7 +111,7 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         [HttpDelete("{notificationGuid}")]
-     //   [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> DeleteNotification(Guid notificationGuid)
         {
             await _notificationService.DeleteNotification(GetSubscriberGuid(), notificationGuid);
@@ -119,7 +119,7 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         [HttpPut("{notificationGuid}")]
-     //   [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> UpdateNotification([FromBody] NotificationDto notification, Guid notificationGuid)
         {
             await _notificationService.UpdateNotification(GetSubscriberGuid(), notification, notificationGuid);
@@ -127,7 +127,7 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         [HttpGet]
-  //      [Authorize(Policy = "IsCareerCircleAdmin")]
+
         public async Task<IActionResult> GetNotifications(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             NotificationListDto rVal = await _notificationService.GetNotifications(limit, offset, sort, order);
@@ -135,7 +135,7 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         [HttpGet("{notificationGuid}")]
-     //   [Authorize]
+        [Authorize]
         public async Task<IActionResult> GetSubscriberNotification(Guid notificationGuid)
         {
             NotificationDto rVal = null;
