@@ -17,6 +17,7 @@ namespace UpDiddy.Controllers
             _api = api;
         }
         
+        /*
         [Authorize]
         [HttpGet]
         public async Task<PartialViewResult> CampaignStatisticsGrid()
@@ -54,7 +55,7 @@ namespace UpDiddy.Controllers
         {         
            return PartialView("_CampaignDetailsGrid", campaignDetails);
         }
-
+        */
 
     }
 }
