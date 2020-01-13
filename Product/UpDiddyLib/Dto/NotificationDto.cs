@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -12,6 +13,5 @@ namespace UpDiddyLib.Dto
         public bool IsTargeted { get; set; }
         public DateTime? ExpirationDate { get; set; }
         public int HasRead { get; set; }
-        
     }
 }

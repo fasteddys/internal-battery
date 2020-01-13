@@ -213,7 +213,8 @@ namespace UpDiddyApi.Models
         public DbQuery<SubscriberNotesDto> SubscriberNoteQuery { get; set; }
         public DbQuery<SubscriberCourseDto> SubscriberCourses { get; set; }
         public DbQuery<JobSitemapDto> JobSitemap {get;set;}
-        public DbQuery<NotificationDto> Notifications { get; set; }
+        public DbQuery<UpDiddyLib.Dto.NotificationDto> LegacyNotifications { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.NotificationDto> Notifications { get; set; }
 
         #endregion
 

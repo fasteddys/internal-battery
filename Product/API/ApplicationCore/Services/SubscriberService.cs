@@ -1416,7 +1416,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         #endregion
 
-        public async Task<IList<Subscriber>> GetSubscribersInGroupAsync(Guid GroupGuid)
+        public async Task<IList<Subscriber>> GetSubscribersInGroupAsync(Guid? GroupGuid)
         {
             IEnumerable<UpDiddyApi.Models.Group> ieGroup = await _repository.GroupRepository.GetByConditionAsync(g => g.GroupGuid == GroupGuid);
             UpDiddyApi.Models.Group Group = ieGroup.FirstOrDefault();

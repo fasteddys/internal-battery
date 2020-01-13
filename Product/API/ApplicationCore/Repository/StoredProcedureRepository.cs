@@ -235,7 +235,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             if (errorLine.Value != DBNull.Value && errorMessage.Value != DBNull.Value && errorProcedure.Value != DBNull.Value)
                 throw new ApplicationException($"An error occurred in {errorProcedure.Value.ToString()} at line {errorLine.Value.ToString()}: {errorMessage.Value.ToString()}");
         }
-        
+
         public async Task<List<CourseDetailDto>> GetCoursesRandom(int NumCourses)
         {
             var spParams = new object[] {
@@ -251,7 +251,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             return await _dbContext.KeywordSearchTerms.FromSql<SearchTermDto>("System_Get_KeywordSearchTerms").ToListAsync();
         }
-
 
         public async Task<List<SearchTermDto>> GetLocationdSearchTermsAsync()
         {
@@ -409,8 +408,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return rval;
         }
 
-
-
         public async Task<List<CourseVariantDetailDto>> GetCourseVariants(Guid courseGuid)
         {
             var spParams = new object[] {
@@ -421,7 +418,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
             rval = await _dbContext.CourseVariants.FromSql<CourseVariantDetailDto>("System_Get_CourseVariants @CourseGuid", spParams).ToListAsync();
             return rval;
         }
-
 
         public async Task<List<CourseFavoriteDto>> GetFavoriteCourses(Guid subscriberGuid, int limit, int offset, string sort, string order)
         {
@@ -438,8 +434,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return rval;
         }
 
-
-
         public async Task<List<SubscriberNotesDto>> GetSubscriberNotes(Guid subscriberGuid, Guid talentGuid, int limit, int offset, string sort, string order)
         {
             var spParams = new object[] {
@@ -455,7 +449,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             rval = await _dbContext.SubscriberNoteQuery.FromSql<SubscriberNotesDto>("System_Get_SubscriberNotes @SubscriberGuid, @TalentGuid, @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
             return rval;
         }
- 
+
         public async Task<List<SubscriberCourseDto>> GetSubscriberCourses(Guid subscriberGuid, int excludeCompleted, int excludeActive)
 
         {
@@ -470,8 +464,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return rval;
         }
 
-
-        public async Task<List<NotificationDto>> GetNotifications(int limit, int offset, string sort, string order)
+        public async Task<List<UpDiddyLib.Dto.NotificationDto>> GetLegacyNotifications(int limit, int offset, string sort, string order)
         {
             var spParams = new object[] {
                 new SqlParameter("@Limit", limit),
@@ -480,12 +473,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 new SqlParameter("@Order", order),
                 };
 
-            List<NotificationDto> rval = null;
-            rval = await _dbContext.Notifications.FromSql<NotificationDto>("System_Get_Notifications  @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            List<UpDiddyLib.Dto.NotificationDto> rval = null;
+            rval = await _dbContext.LegacyNotifications.FromSql<UpDiddyLib.Dto.NotificationDto>("System_Get_LegacyNotifications  @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
             return rval;
         }
 
-        public async Task<List<NotificationDto>> GetSubscriberNotifications(Guid subscriberGuid, int limit, int offset, string sort, string order)
+        public async Task<List<UpDiddyLib.Dto.NotificationDto>> GetLegacySubscriberNotifications(Guid subscriberGuid, int limit, int offset, string sort, string order)
         {
             var spParams = new object[] {
                 new SqlParameter("@SubscriberGuid", subscriberGuid),
@@ -495,11 +488,39 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 new SqlParameter("@Order", order),
                 };
 
-            List<NotificationDto> rval = null;
-            rval = await _dbContext.Notifications.FromSql<NotificationDto>("System_Get_SubscriberNotifications @SubscriberGuid, @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            List<UpDiddyLib.Dto.NotificationDto> rval = null;
+            rval = await _dbContext.LegacyNotifications.FromSql<UpDiddyLib.Dto.NotificationDto>("System_Get_LegacySubscriberNotifications @SubscriberGuid, @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
             return rval;
         }
 
+        public async Task<List<UpDiddyLib.Domain.Models.NotificationDto>> GetNotifications(int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+
+            List<UpDiddyLib.Domain.Models.NotificationDto> rval = null;
+            rval = await _dbContext.Notifications.FromSql<UpDiddyLib.Domain.Models.NotificationDto>("System_Get_Notifications  @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
+
+        public async Task<List<UpDiddyLib.Domain.Models.NotificationDto>> GetSubscriberNotifications(Guid subscriberGuid, int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@SubscriberGuid", subscriberGuid),
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+
+            List<UpDiddyLib.Domain.Models.NotificationDto> rval = null;
+            rval = await _dbContext.Notifications.FromSql<UpDiddyLib.Domain.Models.NotificationDto>("System_Get_SubscriberNotifications @SubscriberGuid, @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
 
         public async Task<List<CourseDetailDto>> GetCoursesByTopic(string topic, int limit, int offset, string sort, string order)
         {
@@ -515,14 +536,5 @@ namespace UpDiddyApi.ApplicationCore.Repository
             rval = await _dbContext.CourseDetails.FromSql<CourseDetailDto>("System_Get_CoursesByTopic @topic,  @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
             return rval;
         }
-
-
-
-
-
-
-
-
-
     }
 }

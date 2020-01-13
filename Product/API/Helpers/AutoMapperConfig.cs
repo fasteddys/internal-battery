@@ -252,8 +252,26 @@ namespace UpDiddyApi.Helpers
                 .ReverseMap();
 
             CreateMap<SubscriberNotification, SubscriberNotificationDto>().ReverseMap();
-            CreateMap<Notification, NotificationDto>()
-                .ForMember(n => n.HasRead, opt => opt.Ignore());
+
+            CreateMap<UpDiddyApi.Models.Notification, UpDiddyLib.Dto.NotificationDto>()
+                .ForMember(dest => dest.HasRead, opt => opt.Ignore())
+                .ReverseMap();
+
+            CreateMap<UpDiddyApi.Models.Notification, UpDiddyLib.Domain.Models.NotificationDto>()
+                .ForMember(dest => dest.HasRead, opt => opt.Ignore())
+                .ForMember(dest => dest.TotalRecords, opt => opt.Ignore())
+                .ReverseMap();
+
+            CreateMap<List<UpDiddyLib.Domain.Models.NotificationDto>, UpDiddyLib.Domain.Models.NotificationListDto>()
+                  .AfterMap((src, dest) =>
+                  {
+                      if (src != null && src.Count() > 0)
+                          dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                      else
+                          dest.TotalRecords = 0;
+                  })
+                .ForMember(dest => dest.Notifications, opt => opt.MapFrom(src => src.ToList()))              
+                .ReverseMap();
 
             CreateMap<CourseSite, CourseSiteDto>()
                 .ForMember(x => x.SyncCount, opt => opt.MapFrom(src => src.CoursePages.Count(cp => cp.CoursePageStatus.Name == "Synced")))
@@ -292,7 +310,7 @@ namespace UpDiddyApi.Helpers
                 .ForAllOtherMembers(opts => opts.Ignore());
 
 
-            CreateMap<SubscriberNotification, NotificationDto>()
+            CreateMap<SubscriberNotification, UpDiddyLib.Dto.NotificationDto>()
             .ForMember(c => c.CreateDate, opt => opt.MapFrom(src => src.CreateDate))
             .ForMember(c => c.CreateGuid, opt => opt.MapFrom(src => src.CreateGuid))
             .ForMember(c => c.Description, opt => opt.MapFrom(src => src.Notification.Description))

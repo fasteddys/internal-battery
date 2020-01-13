@@ -37,10 +37,12 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<SubscriberCourseDto>> GetSubscriberCourses(Guid subscriberGuid, int excludeCompleted, int excludeActive);
         Task<List<JobSitemapDto>> GetJobSitemapUrls(Uri baseSiteUri);
         Task<List<CourseVariantDetailDto>> GetCourseVariants(Guid courseGuid);
-
-        Task<List<NotificationDto>> GetNotifications(int limit, int offset, string sort, string order);
-        Task<List<NotificationDto>> GetSubscriberNotifications(Guid subscriberGuid, int limit, int offset, string sort, string order);
-
+        [Obsolete("Remove this after the legacy admin portal is gone.")]
+        Task<List<UpDiddyLib.Dto.NotificationDto>> GetLegacyNotifications(int limit, int offset, string sort, string order);
+        [Obsolete("Remove this after the legacy admin portal is gone.")]
+        Task<List<UpDiddyLib.Dto.NotificationDto>> GetLegacySubscriberNotifications(Guid subscriberGuid, int limit, int offset, string sort, string order);
+        Task<List<UpDiddyLib.Domain.Models.NotificationDto>> GetNotifications(int limit, int offset, string sort, string order);
+        Task<List<UpDiddyLib.Domain.Models.NotificationDto>> GetSubscriberNotifications(Guid subscriberGuid, int limit, int offset, string sort, string order);
         Task<List<CourseDetailDto>> GetCoursesByTopic(string topic, int limit, int offset, string sort, string order);
     }
 }

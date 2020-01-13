@@ -10,7 +10,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
-using UpDiddyLib.Dto;
+using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -31,43 +31,38 @@ namespace UpDiddyApi.ApplicationCore.Services
             _hangfireService = hangfireService;
         }
 
-        public async Task<Guid> CreateNotification(Guid subscriberGuid, NewNotificationDto newNotificationDto)
+        public async Task<Guid> CreateNotification(Guid subscriberGuid, NotificationDto notificationDto, Guid? groupGuid = null)
         {
-            NotificationDto notificationDto = newNotificationDto.NotificationDto;
             // Ensure required information is present prior to creating new partner
             if (notificationDto == null || string.IsNullOrEmpty(notificationDto.Title) || string.IsNullOrEmpty(notificationDto.Description))
             {
                 throw new FailedValidationException("Notifiction information is required");
             }
  
-            Guid NewNotificationGuid = Guid.NewGuid();
             DateTime CurrentDateTime = DateTime.UtcNow;
  
             Notification notification = new Notification();
             notification.Title = notificationDto.Title;
             notification.Description = notificationDto.Description;
-            notification.NotificationGuid = NewNotificationGuid;
+            notification.NotificationGuid = Guid.NewGuid();
             notification.IsTargeted = notificationDto.IsTargeted == true ? 1 : 0;
             notification.ExpirationDate = notificationDto.ExpirationDate;
             notification.CreateDate = CurrentDateTime;
             notification.ModifyDate = CurrentDateTime;
             notification.IsDeleted = 0;
-            notification.ModifyGuid = subscriberGuid;
-            notification.CreateGuid = subscriberGuid;
+            notification.ModifyGuid = Guid.Empty;
+            notification.CreateGuid = Guid.Empty;
             await _repositoryWrapper.NotificationRepository.Create(notification);
             await _repositoryWrapper.NotificationRepository.SaveAsync();
 
-            Notification NewNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == NewNotificationGuid).Result.FirstOrDefault();
-            IList<Subscriber> Subscribers = await _subscriberService.GetSubscribersInGroupAsync(newNotificationDto.GroupGuid);
+            Notification NewNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == notification.NotificationGuid).Result.FirstOrDefault();
+            IList<Subscriber> Subscribers = await _subscriberService.GetSubscribersInGroupAsync(groupGuid);
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, Subscribers));
-            return NewNotificationGuid;
+            return notification.NotificationGuid;
         }
-
 
         public async Task DeleteNotification(Guid subscriberGuid, Guid notificationGuid)
         {
-            
-
             if (notificationGuid == null)
                 throw new FailedValidationException("Notification guid is required");
     
@@ -87,7 +82,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             return;
                    
         }
-
 
         public async Task UpdateNotification(Guid subscriberGuid, NotificationDto notification, Guid notificationGuid)
         {
@@ -113,15 +107,12 @@ namespace UpDiddyApi.ApplicationCore.Services
         
         }
 
-
-
-        public async Task<List<NotificationDto>> GetNotifications(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<NotificationListDto> GetNotifications(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {    
-            List<NotificationDto> rVal = await _repositoryWrapper.StoredProcedureRepository.GetNotifications(limit, offset, sort, order); 
-            return rVal;
+            List<NotificationDto> notifications = await _repositoryWrapper.StoredProcedureRepository.GetNotifications(limit, offset, sort, order);
+            return _mapper.Map<NotificationListDto>(notifications);
         }
-
-
+        
         public async Task<NotificationDto> GetNotification(Guid notificationGuid)
         {
             if (notificationGuid == null)
@@ -133,16 +124,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new NotFoundException($"Cannot find notification {notificationGuid}");
  
             return _mapper.Map<NotificationDto>(ExistingNotification);
-
         }
-
-
-
-
-
     }
-
-
-
-
 }
