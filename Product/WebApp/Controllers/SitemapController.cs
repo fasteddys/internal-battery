@@ -35,6 +35,8 @@ namespace UpDiddy.Controllers
             _butterService = butterCMSService;
         }
 
+        /*
+
         [HttpGet]
         [Route("[controller]/courses-sitemap.xml")]
         public async Task<IActionResult> Courses()
@@ -458,5 +460,7 @@ namespace UpDiddy.Controllers
             return await BuildBrowseSitemap("/browse-jobs-industry", facets, jobQueryBuilder, nextFacet);
         }
         #endregion
+
+    */
     }
 }

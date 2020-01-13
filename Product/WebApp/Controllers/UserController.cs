@@ -16,6 +16,7 @@ namespace UpDiddy.Controllers
         {
         }
 
+        /*
         [HttpGet("jobs")]
         public async Task<IActionResult> MyJobsAsync(int? page)
         {
@@ -39,5 +40,7 @@ namespace UpDiddy.Controllers
             ViewBag.JobAlerts = list;
             return View();
         }
+
+    */
     }
 }

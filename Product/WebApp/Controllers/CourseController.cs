@@ -42,7 +42,7 @@ namespace UpDiddy.Controllers
             _butterService = butterCMSService;
 
         }        
-
+        /*
         [ValidateAntiForgeryToken]
         [HttpPost]
         [Route("/Course/PromoCodeValidation/{code}/{courseVariantGuid}")]
@@ -351,5 +351,6 @@ namespace UpDiddy.Controllers
             
             return View(course);
         }
+        */
     }
 }

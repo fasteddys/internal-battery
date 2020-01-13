@@ -39,6 +39,7 @@ namespace WebApp.Controllers
             braintreeConfiguration = new BraintreeConfiguration(_configuration);
         }
 
+        /*
         [HttpGet("career-services")]
         public async Task<IActionResult> Index()
         {
@@ -318,5 +319,7 @@ namespace WebApp.Controllers
 
             return braintreePaymentDto;
         }
+
+    */
     }
 }

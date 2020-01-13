@@ -23,7 +23,7 @@
             columns.Add(model => model.StateCode).Titled("State").Sortable(true).Filterable(true);
             columns.Add(model => model.CreateDate).Sortable(true).Titled("Joined").RenderedAs(model => model.CreateDate != DateTime.MinValue  ? model.CreateDate.ToShortDateString() : string.Empty);
             columns.Add(model => model.ModifyDate).Sortable(true).Titled("Last Modified").RenderedAs(model => model.ModifyDate != DateTime.MinValue ? model.ModifyDate.ToShortDateString() : string.Empty);
-            columns.Add(model => $"<a href=\"Subscriber/{model.SubscriberGuid}/{model.CloudIdentifier}\"><i class=\"far fa-eye\"></i></a>").Titled("View").Encoded(false).AppendCss("text-center");
+            columns.Add(model => $"<a href=\"/talent/Subscriber/{model.SubscriberGuid}/{model.CloudIdentifier}\"><i class=\"far fa-eye\"></i></a>").Titled("View").Encoded(false).AppendCss("text-center");
             if (isCareerCircleAdmin)
                 columns.Add(model => $"<a href=\"javascript:deleteSubscriber('{model.SubscriberGuid}', '{model.CloudIdentifier}');\"><i class=\"fa fa-trash\"></i></a>").Titled("Delete").Encoded(false).AppendCss("text-center");
         })

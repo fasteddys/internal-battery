@@ -217,7 +217,7 @@ namespace UpDiddy.Controllers
 
         [HttpGet]
         [Route("/session/signin")]
-        public IActionResult SignIn(string returnUrl = "/Home/Profile")
+        public IActionResult SignIn(string returnUrl = "/Talent/Subscribers")
         {
             ViewData["ReturnUrl"] = returnUrl;
             return View();
@@ -225,7 +225,7 @@ namespace UpDiddy.Controllers
 
         [HttpPost]
         [Route("/session/signin")]
-        public async Task<IActionResult> SignIn(SignInViewModel vm, [FromQuery] string returnUrl = "/Home/Profile")
+        public async Task<IActionResult> SignIn(SignInViewModel vm, [FromQuery] string returnUrl = "/Talent/Subscribers")
         {
             int step = 0;
             if (ModelState.IsValid)
@@ -509,7 +509,7 @@ namespace UpDiddy.Controllers
             }
             else
             {
-                return RedirectToAction(nameof(HomeController.Index), "Home");
+                return RedirectToAction(nameof(TalentController.Subscribers), "Talent");
             }
         }
 
