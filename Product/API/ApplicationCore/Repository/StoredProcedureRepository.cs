@@ -536,5 +536,76 @@ namespace UpDiddyApi.ApplicationCore.Repository
             rval = await _dbContext.CourseDetails.FromSql<CourseDetailDto>("System_Get_CoursesByTopic @topic,  @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
             return rval;
         }
+
+        public async Task<List<CompanyDto>> GetCompanies(int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+
+            List<CompanyDto> rval = null;
+            rval = await _dbContext.Companies.FromSql<CompanyDto>("System_Get_Companies @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
+
+        public async Task<List<UpDiddyLib.Domain.Models.TopicDto>> GetTopics(int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+
+            List<UpDiddyLib.Domain.Models.TopicDto> rval = null;
+            // BK TODO: something is wrong with the mapping between the result set from the sproc and TopicDto. TotalRecords works but none of the other properties do
+            rval = await _dbContext.Topics.FromSql<UpDiddyLib.Domain.Models.TopicDto>("System_Get_Topics @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
+
+        public async Task<List<UpDiddyLib.Domain.Models.CompensationTypeDto>> GetCompensationTypes(int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+
+            List<UpDiddyLib.Domain.Models.CompensationTypeDto> rval = null;
+            rval = await _dbContext.CompensationTypes.FromSql<UpDiddyLib.Domain.Models.CompensationTypeDto>("System_Get_CompensationTypes @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
+
+        public async Task<List<CountryDetailDto>> GetCountries(int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+
+            List<CountryDetailDto> rval = null;
+            rval = await _dbContext.Countries.FromSql<CountryDetailDto>("System_Get_Countries @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
+
+        public async Task<List<CourseLevelDto>> GetCourseLevels(int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+
+            List<CourseLevelDto> rval = null;
+            rval = await _dbContext.CourseLevels.FromSql<CourseLevelDto>("System_Get_CourseLevels @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
     }
 }

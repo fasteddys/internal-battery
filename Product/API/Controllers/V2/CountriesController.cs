@@ -27,7 +27,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCountries(int limit = 100, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<IActionResult> GetCountries(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var countries = await _countryService.GetAllCountries(limit, offset, sort, order);
             return Ok(countries);

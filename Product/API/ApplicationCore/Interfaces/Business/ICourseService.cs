@@ -20,7 +20,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<int> EditCourseAsync(CourseDto courseDto);
         Task DeleteCourseAsync(Guid courseGuid);
         Task<List<CourseDetailDto>> GetCoursesRandom(IQueryCollection query);
-        Task<List<CourseDetailDto>> GetCourses(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending");
+        Task<CourseDetailListDto> GetCourses(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending");
         Task<List<CourseDetailDto>> GetCoursesByTopic(string topic, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending");
         Task<CourseDetailDto> GetCourse(Guid course);
 

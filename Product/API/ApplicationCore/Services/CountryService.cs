@@ -28,17 +28,17 @@ namespace UpDiddyApi.ApplicationCore.Services
             IList<CountryDetailDto> rval;
             var countries = await _repositoryWrapper.Country.GetAllCountries();
             if (countries == null || countries.Count() == 0)
-                throw new NotFoundException("country not found");
+                throw new NotFoundException("Country not found");
             rval = _mapper.Map<List<CountryDetailDto>>(countries);
             return rval?.Where(x => x.CountryGuid == countryGuid).FirstOrDefault();
         }
 
-        public async Task<List<CountryDetailDto>> GetAllCountries(int limit = 100, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<CountryDetailListDto> GetAllCountries(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var country = await _repositoryWrapper.Country.GetByConditionWithSorting(x => x.IsDeleted == 0, limit, offset, sort, order);
-            if (country == null)
-                throw new NotFoundException("Country not found");
-            return _mapper.Map<List<CountryDetailDto>>(country);
+            var countries = await _repositoryWrapper.StoredProcedureRepository.GetCountries(limit, offset, sort, order);
+            if (countries == null)
+                throw new NotFoundException("Countries not found");
+            return _mapper.Map<CountryDetailListDto>(countries);
         }
 
         public async Task CreateCountry(CountryDetailDto countryDetailDto)

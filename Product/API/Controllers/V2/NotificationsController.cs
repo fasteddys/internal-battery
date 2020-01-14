@@ -76,7 +76,7 @@ namespace UpDiddyApi.Controllers.V2
             var isAuth = await _authorizationService.AuthorizeAsync(User, "IsCareerCircleAdmin");
 
             bool rval = await _subscriberNotificationService.DeleteSubscriberNotification(isAuth.Succeeded, GetSubscriberGuid(), NotificationGuid, subscriberGuid);
-            return StatusCode(201);
+            return StatusCode(204);
         }
 
         [HttpPut]
@@ -85,7 +85,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> UpdateSubscriberNotification([FromBody] NotificationDto notification, Guid NotificationGuid, Guid subscriberGuid)
         {
             bool rval = await _subscriberNotificationService.UpdateSubscriberNotification(GetSubscriberGuid(), NotificationGuid, subscriberGuid, notification);
-            return StatusCode(201);
+            return StatusCode(200);
         }
 
         [HttpGet]
@@ -123,11 +123,11 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> UpdateNotification([FromBody] NotificationDto notification, Guid notificationGuid)
         {
             await _notificationService.UpdateNotification(GetSubscriberGuid(), notification, notificationGuid);
-            return StatusCode(204);
+            return StatusCode(200);
         }
 
         [HttpGet]
-
+        [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> GetNotifications(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             NotificationListDto rVal = await _notificationService.GetNotifications(limit, offset, sort, order);

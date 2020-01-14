@@ -215,6 +215,11 @@ namespace UpDiddyApi.Models
         public DbQuery<JobSitemapDto> JobSitemap {get;set;}
         public DbQuery<UpDiddyLib.Dto.NotificationDto> LegacyNotifications { get; set; }
         public DbQuery<UpDiddyLib.Domain.Models.NotificationDto> Notifications { get; set; }
+        public DbQuery<CompanyDto> Companies { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.TopicDto> Topics { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.CompensationTypeDto> CompensationTypes { get; set; }
+        public DbQuery<CountryDetailDto> Countries { get; set; }
+        public DbQuery<CourseLevelDto> CourseLevels { get; set; }
 
         #endregion
 

@@ -82,12 +82,12 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
-        public async Task<List<CourseDetailDto>> GetCourses(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<CourseDetailListDto> GetCourses(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCourses(limit, offset, sort, order);
             if (courses == null)
                 throw new NotFoundException("Courses not found");
-            return (courses);
+            return _mapper.Map<CourseDetailListDto>(courses);
         }
 
 

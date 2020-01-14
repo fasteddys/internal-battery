@@ -27,10 +27,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             _configuration = configuration;
         }
 
-        public async Task<List<UpDiddyLib.Domain.Models.TopicDto>> GetTopics(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<TopicListDto> GetTopics(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var careerPaths = await _repositoryWrapper.Topic.GetByConditionWithSorting(x => x.IsDeleted == 0, limit, offset, sort, order);
-            return _mapper.Map<List<UpDiddyLib.Domain.Models.TopicDto>>(careerPaths);
+            var careerPaths = await _repositoryWrapper.StoredProcedureRepository.GetTopics(limit, offset, sort, order);
+            return _mapper.Map<TopicListDto>(careerPaths);
         }
 
         public async Task<UpDiddyLib.Domain.Models.TopicDto> GetTopic(Guid topicGuid)

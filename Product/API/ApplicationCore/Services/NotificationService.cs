@@ -39,25 +39,21 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new FailedValidationException("Notifiction information is required");
             }
  
-            DateTime CurrentDateTime = DateTime.UtcNow;
- 
             Notification notification = new Notification();
             notification.Title = notificationDto.Title;
             notification.Description = notificationDto.Description;
             notification.NotificationGuid = Guid.NewGuid();
             notification.IsTargeted = notificationDto.IsTargeted == true ? 1 : 0;
             notification.ExpirationDate = notificationDto.ExpirationDate;
-            notification.CreateDate = CurrentDateTime;
-            notification.ModifyDate = CurrentDateTime;
+            notification.CreateDate = DateTime.UtcNow;
             notification.IsDeleted = 0;
-            notification.ModifyGuid = Guid.Empty;
             notification.CreateGuid = Guid.Empty;
             await _repositoryWrapper.NotificationRepository.Create(notification);
             await _repositoryWrapper.NotificationRepository.SaveAsync();
 
-            Notification NewNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == notification.NotificationGuid).Result.FirstOrDefault();
+            Notification newNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == notification.NotificationGuid).Result.FirstOrDefault();
             IList<Subscriber> Subscribers = await _subscriberService.GetSubscribersInGroupAsync(groupGuid);
-            _hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, Subscribers));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(newNotification, Subscribers));
             return notification.NotificationGuid;
         }
 

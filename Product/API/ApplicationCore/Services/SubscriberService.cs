@@ -1419,9 +1419,12 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<IList<Subscriber>> GetSubscribersInGroupAsync(Guid? GroupGuid)
         {
             IEnumerable<UpDiddyApi.Models.Group> ieGroup = await _repository.GroupRepository.GetByConditionAsync(g => g.GroupGuid == GroupGuid);
-            UpDiddyApi.Models.Group Group = ieGroup.FirstOrDefault();
+            UpDiddyApi.Models.Group group = ieGroup.FirstOrDefault();
 
-            return await _repository.SubscriberGroupRepository.GetSubscribersAssociatedWithGroupAsync(Group.GroupId);
+            if (group != null)
+                return await _repository.SubscriberGroupRepository.GetSubscribersAssociatedWithGroupAsync(group.GroupId);
+            else
+                return null;
         }
 
         public async Task<Subscriber> GetSubscriber(ODataQueryOptions<Subscriber> options)

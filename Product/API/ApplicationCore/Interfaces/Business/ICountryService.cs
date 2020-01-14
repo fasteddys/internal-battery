@@ -7,7 +7,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     public interface ICountryService
     {
         Task<CountryDetailDto> GetCountryDetail(Guid countryGuid);
-        Task<List<CountryDetailDto>> GetAllCountries(int limit = 100, int offset = 0, string sort = "modifyDate", string order = "descending");
+        Task<CountryDetailListDto> GetAllCountries(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending");
         Task UpdateCountry(Guid countryGuid, CountryDetailDto countryDetailDto);
         Task CreateCountry(CountryDetailDto countryDetailDto);
         Task DeleteCountry(Guid countryGuid);

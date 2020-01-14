@@ -44,5 +44,10 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<UpDiddyLib.Domain.Models.NotificationDto>> GetNotifications(int limit, int offset, string sort, string order);
         Task<List<UpDiddyLib.Domain.Models.NotificationDto>> GetSubscriberNotifications(Guid subscriberGuid, int limit, int offset, string sort, string order);
         Task<List<CourseDetailDto>> GetCoursesByTopic(string topic, int limit, int offset, string sort, string order);
+        Task<List<CompanyDto>> GetCompanies(int limit, int offset, string sort, string order);
+        Task<List<UpDiddyLib.Domain.Models.TopicDto>> GetTopics(int limit, int offset, string sort, string order);
+        Task<List<UpDiddyLib.Domain.Models.CompensationTypeDto>> GetCompensationTypes(int limit, int offset, string sort, string order);
+        Task<List<CountryDetailDto>> GetCountries(int limit, int offset, string sort, string order);
+        Task<List<CourseLevelDto>> GetCourseLevels(int limit, int offset, string sort, string order);
     }
 }
