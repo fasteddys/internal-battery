@@ -41,7 +41,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<NotificationDto>> GetNotifications(int limit, int offset, string sort, string order);
         Task<List<NotificationDto>> GetSubscriberNotifications(Guid subscriberGuid, int limit, int offset, string sort, string order);
 
-        Task<List<CourseDetailDto>> GetCoursesByTopic(string topic, int limit, int offset, string sort, string order);
+        Task<List<CourseDetailDto>> GetCoursesByTopic(Guid topic, int limit, int offset, string sort, string order);
 
         Task<List<JobCrudDto>> GetSubscriberJobPostingCruds(Guid subscriberGuid, int limit, int offset, string sort, string order);
 

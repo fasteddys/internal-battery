@@ -501,7 +501,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
 
-        public async Task<List<CourseDetailDto>> GetCoursesByTopic(string topic, int limit, int offset, string sort, string order)
+        public async Task<List<CourseDetailDto>> GetCoursesByTopic(Guid topic, int limit, int offset, string sort, string order)
         {
             var spParams = new object[] {
                 new SqlParameter("@Topic", topic),
