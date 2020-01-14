@@ -102,10 +102,10 @@ namespace UpDiddyApi.Controllers
 
 
         [HttpGet]
-        [Route("topic/{topicName}")]
-        public async Task<IActionResult> GetCoursesByTopic(string topicName, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        [Route("topic/{topicGuid:guid}")]
+        public async Task<IActionResult> GetCoursesByTopic(Guid topicGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var courses = await _courseService.GetCoursesByTopic(topicName, limit,offset,sort,order);
+            var courses = await _courseService.GetCoursesByTopic(topicGuid, limit,offset,sort,order);
             return Ok(courses);
         }
 
