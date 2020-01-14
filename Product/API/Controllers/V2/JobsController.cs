@@ -329,10 +329,7 @@ namespace UpDiddyApi.Controllers
             return Ok(jobPostingDto);
         }
 
-        // todo jab put in migration for sproc 
-        //todo jab include paginiation info in result 
-
-
+  
         [HttpGet]
         [Route("admin")]
         [Authorize(Policy = "IsRecruiterPolicy")]
@@ -342,6 +339,20 @@ namespace UpDiddyApi.Controllers
             JobCrudListDto postings = await _jobPostingService.GetJobPostingCrudForSubscriber(GetSubscriberGuid(),limit,offset,sort,order);
             return Ok(postings);
         }
+
+
+
+        [HttpPut]
+        [Route("admin/{jobGuid:guid}/skills")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        public async Task<IActionResult> UpdateJobSkills([FromBody] List<UpDiddyLib.Domain.Models.SkillDto> skills , Guid jobGuid)
+        {
+
+           await _jobPostingService.UpdateJobPostingSkills(GetSubscriberGuid(), jobGuid, skills);
+            return StatusCode(204);
+        }
+
+
 
         #endregion
 
