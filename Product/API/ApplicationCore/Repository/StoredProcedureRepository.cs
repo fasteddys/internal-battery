@@ -607,5 +607,61 @@ namespace UpDiddyApi.ApplicationCore.Repository
             rval = await _dbContext.CourseLevels.FromSql<CourseLevelDto>("System_Get_CourseLevels @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
             return rval;
         }
+
+        public async Task<List<UpDiddyLib.Domain.Models.EducationLevelDto>> GetEducationLevels(int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+
+            List<UpDiddyLib.Domain.Models.EducationLevelDto> rval = null;
+            rval = await _dbContext.EducationLevels.FromSql<UpDiddyLib.Domain.Models.EducationLevelDto>("System_Get_EducationLevels @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
+
+        public async Task<List<UpDiddyLib.Domain.Models.EducationalDegreeTypeDto>> GetEducationalDegreeTypes(int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+
+            List<UpDiddyLib.Domain.Models.EducationalDegreeTypeDto> rval = null;
+            rval = await _dbContext.EducationalDegreeTypes.FromSql<UpDiddyLib.Domain.Models.EducationalDegreeTypeDto>("System_Get_EducationalDegreeTypes @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
+
+        public async Task<List<UpDiddyLib.Domain.Models.EmploymentTypeDto>> GetEmploymentTypes(int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+
+            List<UpDiddyLib.Domain.Models.EmploymentTypeDto> rval = null;
+            rval = await _dbContext.EmploymentTypes.FromSql<UpDiddyLib.Domain.Models.EmploymentTypeDto>("System_Get_EmploymentTypes @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
+
+        public async Task<List<UpDiddyLib.Domain.Models.ExperienceLevelDto>> GetExperienceLevels(int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+
+            List<UpDiddyLib.Domain.Models.ExperienceLevelDto> rval = null;
+            rval = await _dbContext.ExperienceLevels.FromSql<UpDiddyLib.Domain.Models.ExperienceLevelDto>("System_Get_ExperienceLevels @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
     }
 }

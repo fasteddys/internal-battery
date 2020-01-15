@@ -37,7 +37,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> UpdateSecurityClearance(Guid securityClearance, [FromBody]  SecurityClearanceDto securityClearanceDto)
         {
             await _securityClearanceService.UpdateSecurityClearance(securityClearance, securityClearanceDto);
-            return StatusCode(204);
+            return StatusCode(200);
         }
 
         [HttpDelete]

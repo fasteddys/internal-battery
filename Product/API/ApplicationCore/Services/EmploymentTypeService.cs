@@ -33,12 +33,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             return rval?.Where(x => x.EmploymentTypeGuid == employmentTypeGuid).FirstOrDefault();
         }
 
-        public async Task<List<EmploymentTypeDto>> GetEmploymentTypes(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<EmploymentTypeListDto> GetEmploymentTypes(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var employmentTypes = await _repositoryWrapper.EmploymentTypeRepository.GetByConditionWithSorting(x => x.IsDeleted == 0, limit, offset, sort, order);
+            var employmentTypes = await _repositoryWrapper.StoredProcedureRepository.GetExperienceLevels(limit, offset, sort, order);
             if (employmentTypes == null)
                 throw new NotFoundException("EmploymentTypes not found");
-            return _mapper.Map<List<EmploymentTypeDto>>(employmentTypes);
+            return _mapper.Map<EmploymentTypeListDto>(employmentTypes);
         }
 
         public async Task CreateEmploymentType(EmploymentTypeDto employmentTypeDto)

@@ -37,7 +37,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> UpdateCourseLevel(Guid courseLevel, [FromBody]  CourseLevelDto courseLevelDto)
         {
             await _courseLevelService.UpdateCourseLevel(courseLevel, courseLevelDto);
-            return StatusCode(204);
+            return StatusCode(200);
         }
 
         [HttpDelete]

@@ -312,7 +312,7 @@ namespace UpDiddyApi
             services.AddScoped<ISitemapService, SitemapService>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IEducationalDegreeTypeService, EducationalDegreeTypeService>();
-
+            services.AddScoped<IEducationLevelService, EducationLevelService>();
             
             #endregion
 

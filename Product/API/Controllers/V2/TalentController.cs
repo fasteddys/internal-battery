@@ -152,7 +152,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> AddTalentNote([FromBody] SubscriberNotesDto subscriberNotesDto, Guid talent, Guid note)
         {
             await _talentNoteService.UpdateNote(GetSubscriberGuid(), talent, note, subscriberNotesDto);
-            return StatusCode(204);
+            return StatusCode(200);
         }
 
 

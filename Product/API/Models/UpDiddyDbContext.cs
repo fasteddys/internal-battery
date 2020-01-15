@@ -220,6 +220,10 @@ namespace UpDiddyApi.Models
         public DbQuery<UpDiddyLib.Domain.Models.CompensationTypeDto> CompensationTypes { get; set; }
         public DbQuery<CountryDetailDto> Countries { get; set; }
         public DbQuery<CourseLevelDto> CourseLevels { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.EducationLevelDto> EducationLevels { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.EducationalDegreeTypeDto> EducationalDegreeTypes { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.EmploymentTypeDto> EmploymentTypes { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.ExperienceLevelDto> ExperienceLevels { get; set; }
 
         #endregion
 

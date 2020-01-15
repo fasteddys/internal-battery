@@ -579,6 +579,174 @@ BEGIN
     OFFSET @Offset ROWS
     FETCH FIRST @Limit ROWS ONLY
 END')");
+
+            migrationBuilder.Sql(@"EXEC('
+/*
+<remarks>
+2020.01.15 - Bill Koenig - Created
+</remarks>
+<description>
+Retrieves education levels
+</description>
+<example>
+EXEC [dbo].[System_Get_EducationLevels] @Limit = 10, @Offset = 0, @Sort = ''ascending'', @Order = ''level''
+</example>
+*/
+CREATE PROCEDURE [dbo].[System_Get_EducationLevels] (
+    @Limit int,
+    @Offset int,
+    @Sort varchar(max),
+    @Order varchar(max)
+)
+AS
+BEGIN 
+	WITH allRecords AS (
+		SELECT EducationLevelId
+		FROM EducationLevel 		
+		WHERE IsDeleted = 0
+	)
+    SELECT EducationLevelGuid
+        , [Level]        
+		, (SELECT COUNT(1) FROM allRecords) [TotalRecords]
+    FROM EducationLevel
+    WHERE IsDeleted = 0
+    ORDER BY 
+    CASE WHEN @Sort = ''ascending'' AND @Order = ''level'' THEN [Level] END,
+    CASE WHEN @Sort = ''ascending'' AND @Order = ''createDate'' THEN CreateDate END,
+    CASE WHEN @Sort = ''ascending'' AND @Order = ''modifyDate'' THEN ModifyDate END,
+    CASE WHEN @Sort = ''descending'' AND @Order = ''level'' THEN [Level]  END DESC,
+    CASE WHEN @Sort = ''descending'' AND @Order = ''createDate'' THEN CreateDate END DESC ,
+    CASE WHEN @Sort = ''descending'' AND @Order = ''modifyDate'' THEN ModifyDate END DESC 
+    OFFSET @Offset ROWS
+    FETCH FIRST @Limit ROWS ONLY
+END')");
+
+            migrationBuilder.Sql(@"EXEC('
+/*
+<remarks>
+2020.01.15 - Bill Koenig - Created
+</remarks>
+<description>
+Retrieves educational degree types
+</description>
+<example>
+EXEC [dbo].[System_Get_EducationalDegreeTypes] @Limit = 22, @Offset = 0, @Sort = ''ascending'', @Order = ''degreeType''
+</example>
+*/
+CREATE PROCEDURE [dbo].[System_Get_EducationalDegreeTypes] (
+    @Limit int,
+    @Offset int,
+    @Sort varchar(max),
+    @Order varchar(max)
+)
+AS
+BEGIN 
+	WITH allRecords AS (
+		SELECT EducationalDegreeTypeId
+		FROM EducationalDegreeType 		
+		WHERE IsDeleted = 0
+	)
+    SELECT EducationalDegreeTypeGuid
+        , DegreeType        
+		, (SELECT COUNT(1) FROM allRecords) [TotalRecords]
+    FROM EducationalDegreeType
+    WHERE IsDeleted = 0
+    ORDER BY 
+    CASE WHEN @Sort = ''ascending'' AND @Order = ''degreeType'' THEN DegreeType END,
+    CASE WHEN @Sort = ''ascending'' AND @Order = ''createDate'' THEN CreateDate END,
+    CASE WHEN @Sort = ''ascending'' AND @Order = ''modifyDate'' THEN ModifyDate END,
+    CASE WHEN @Sort = ''descending'' AND @Order = ''degreeType'' THEN DegreeType  END DESC,
+    CASE WHEN @Sort = ''descending'' AND @Order = ''createDate'' THEN CreateDate END DESC ,
+    CASE WHEN @Sort = ''descending'' AND @Order = ''modifyDate'' THEN ModifyDate END DESC 
+    OFFSET @Offset ROWS
+    FETCH FIRST @Limit ROWS ONLY
+END')");
+
+            migrationBuilder.Sql(@"EXEC('
+/*
+<remarks>
+2020.01.15 - Bill Koenig - Created
+</remarks>
+<description>
+Retrieves employment types
+</description>
+<example>
+EXEC [dbo].[System_Get_EmploymentTypes] @Limit = 10, @Offset = 0, @Sort = ''ascending'', @Order = ''name''
+</example>
+*/
+CREATE PROCEDURE [dbo].[System_Get_EmploymentTypes] (
+    @Limit int,
+    @Offset int,
+    @Sort varchar(max),
+    @Order varchar(max)
+)
+AS
+BEGIN 
+	WITH allRecords AS (
+		SELECT EmploymentTypeId
+		FROM EmploymentType 		
+		WHERE IsDeleted = 0
+	)
+    SELECT EmploymentTypeGuid
+        , [Name]        
+		, (SELECT COUNT(1) FROM allRecords) [TotalRecords]
+    FROM EmploymentType
+    WHERE IsDeleted = 0
+    ORDER BY 
+    CASE WHEN @Sort = ''ascending'' AND @Order = ''name'' THEN [Name] END,
+    CASE WHEN @Sort = ''ascending'' AND @Order = ''createDate'' THEN CreateDate END,
+    CASE WHEN @Sort = ''ascending'' AND @Order = ''modifyDate'' THEN ModifyDate END,
+    CASE WHEN @Sort = ''descending'' AND @Order = ''name'' THEN [Name]  END DESC,
+    CASE WHEN @Sort = ''descending'' AND @Order = ''createDate'' THEN CreateDate END DESC ,
+    CASE WHEN @Sort = ''descending'' AND @Order = ''modifyDate'' THEN ModifyDate END DESC 
+    OFFSET @Offset ROWS
+    FETCH FIRST @Limit ROWS ONLY
+END')");
+
+            migrationBuilder.Sql(@"EXEC('
+
+/*
+<remarks>
+2020.01.15 - Bill Koenig - Created
+</remarks>
+<description>
+Retrieves experience levels
+</description>
+<example>
+EXEC [dbo].[System_Get_ExperienceLevels] @Limit = 10, @Offset = 0, @Sort = ''ascending'', @Order = ''code''
+</example>
+*/
+CREATE PROCEDURE [dbo].[System_Get_ExperienceLevels] (
+    @Limit int,
+    @Offset int,
+    @Sort varchar(max),
+    @Order varchar(max)
+)
+AS
+BEGIN 
+	WITH allRecords AS (
+		SELECT ExperienceLevelId
+		FROM ExperienceLevel 		
+		WHERE IsDeleted = 0
+	)
+    SELECT ExperienceLevelGuid
+        , DisplayName
+		, Code   
+		, (SELECT COUNT(1) FROM allRecords) [TotalRecords]
+    FROM ExperienceLevel
+    WHERE IsDeleted = 0
+    ORDER BY 
+    CASE WHEN @Sort = ''ascending'' AND @Order = ''displayName'' THEN DisplayName END,
+	CASE WHEN @Sort = ''ascending'' AND @Order = ''code'' THEN Code END,
+    CASE WHEN @Sort = ''ascending'' AND @Order = ''createDate'' THEN CreateDate END,
+    CASE WHEN @Sort = ''ascending'' AND @Order = ''modifyDate'' THEN ModifyDate END,
+    CASE WHEN @Sort = ''descending'' AND @Order = ''displayName'' THEN DisplayName  END DESC,
+	CASE WHEN @Sort = ''descending'' AND @Order = ''code'' THEN Code  END DESC,
+    CASE WHEN @Sort = ''descending'' AND @Order = ''createDate'' THEN CreateDate END DESC ,
+    CASE WHEN @Sort = ''descending'' AND @Order = ''modifyDate'' THEN ModifyDate END DESC 
+    OFFSET @Offset ROWS
+    FETCH FIRST @Limit ROWS ONLY
+END')");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

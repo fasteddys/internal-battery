@@ -17,7 +17,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetEducationalDegreeTypes(int limit, int offset, string sort, string order)
+        public async Task<IActionResult> GetEducationalDegreeTypes(int limit = 10, int offset = 0, string sort = "descending", string order = "modifyDate")
         {
             var educationalDegreeTypes = await _educationalDegreeTypeService.GetEducationalDegreeTypes(limit, offset, sort, order);
             return Ok(educationalDegreeTypes);
@@ -45,7 +45,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> UpdateEducationalDegreeType(Guid educationalDegreeType, [FromBody]  EducationalDegreeTypeDto educationalDegreeTypeDto)
         {
             await _educationalDegreeTypeService.UpdateEducationalDegreeType(educationalDegreeType, educationalDegreeTypeDto);
-            return StatusCode(204);
+            return StatusCode(200);
         }
 
         [HttpDelete]
