@@ -38,7 +38,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
              
                 IList<ServiceOffering> serviceOfferings = await _repositoryWrapper.ServiceOfferingRepository.GetAllServiceOfferings();
-                var rVal = _mapper.Map<IList<ServiceOfferingDto>>(serviceOfferings);
+                var rVal = _mapper.Map<List<ServiceOfferingDto>>(serviceOfferings);
                 return rVal;                   
         }
 

@@ -264,7 +264,8 @@ namespace UpDiddy
             else if (!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
             {
                 app.UseExceptionHandler("/Home/Error");
-                app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
+                // remove www redirect rule for talent.careercircle.com admin portal
+                //app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
             }
 
             // Initialise ReactJS.NET. Must be before static files.
@@ -328,7 +329,7 @@ namespace UpDiddy
             });
 
             app.UseStaticFiles();
-            app.UseCookiePolicy();
+            //app.UseCookiePolicy();
             app.UseAuthentication();
 
             // TODO - Change template action below to index upon site launch.
@@ -340,7 +341,7 @@ namespace UpDiddy
                     new { controller = "Sitemap", action = "SiteMap" });
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    template: "{controller=Talent}/{action=Subscribers}/{id?}");
                 routes.MapRoute(
                     "NotFound",
                     "{*url}",

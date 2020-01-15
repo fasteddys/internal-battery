@@ -26,7 +26,7 @@ namespace UpDiddy.Controllers
         {
             _butterService = butterService;
         }
-
+        /*
         [HttpGet]
         public async Task<IActionResult> IndexAsync()
         {
@@ -136,5 +136,6 @@ namespace UpDiddy.Controllers
 
             return View("Details", TopicViewModel);
         }
+        */
     }
 }

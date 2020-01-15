@@ -14,12 +14,10 @@ namespace UpDiddyApi.ApplicationCore.Services
     public class EmploymentTypeService : IEmploymentTypeService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
-        private readonly IMemoryCacheService _memoryCacheService;
         private readonly IMapper _mapper;
-        public EmploymentTypeService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IMemoryCacheService memoryCacheService)
+        public EmploymentTypeService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
         {
             _repositoryWrapper = repositoryWrapper;
-            _memoryCacheService = memoryCacheService;
             _mapper = mapper;
         }
 
@@ -27,16 +25,11 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (employmentTypeGuid == null || employmentTypeGuid == Guid.Empty)
                 throw new NullReferenceException("EmploymentTypeGuid cannot be null");
-            string cacheKey = $"GetEmploymentType";
-            IList<EmploymentTypeDto> rval = (IList<EmploymentTypeDto>)_memoryCacheService.GetCacheValue(cacheKey);
-            if (rval == null)
-            {
-                var employmentTypes = await _repositoryWrapper.EmploymentTypeRepository.GetAllEmploymentTypes();
-                if (employmentTypes == null)
-                    throw new NotFoundException("EmploymentTypeGuid not found");
-                rval = _mapper.Map<List<EmploymentTypeDto>>(employmentTypes);
-                _memoryCacheService.SetCacheValue(cacheKey, rval);
-            }
+            IList<EmploymentTypeDto> rval;
+            var employmentTypes = await _repositoryWrapper.EmploymentTypeRepository.GetAllEmploymentTypes();
+            if (employmentTypes == null)
+                throw new NotFoundException("EmploymentTypeGuid not found");
+            rval = _mapper.Map<List<EmploymentTypeDto>>(employmentTypes);
             return rval?.Where(x => x.EmploymentTypeGuid == employmentTypeGuid).FirstOrDefault();
         }
 

@@ -501,7 +501,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
 
-        public async Task<List<CourseDetailDto>> GetCoursesByTopic(string topic, int limit, int offset, string sort, string order)
+        public async Task<List<CourseDetailDto>> GetCoursesByTopic(Guid topic, int limit, int offset, string sort, string order)
         {
             var spParams = new object[] {
                 new SqlParameter("@Topic", topic),
@@ -517,6 +517,20 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
 
+        public async Task<List<JobCrudDto>> GetSubscriberJobPostingCruds(Guid subscriberGuid, int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@SubscriberGuid", subscriberGuid),
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+
+            List<JobCrudDto> rval = null;
+            rval = await _dbContext.JobCruds.FromSql<JobCrudDto>("[System_Get_JobCrudBySubscriber] @SubscriberGuid, @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
 
 
 

@@ -14,12 +14,10 @@ namespace UpDiddyApi.ApplicationCore.Services
     public class CompensationTypeService : ICompensationTypeService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
-        private readonly IMemoryCacheService _memoryCacheService;
         private readonly IMapper _mapper;
-        public CompensationTypeService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IMemoryCacheService memoryCacheService)
+        public CompensationTypeService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
         {
             _repositoryWrapper = repositoryWrapper;
-            _memoryCacheService = memoryCacheService;
             _mapper = mapper;
         }
 
@@ -27,16 +25,11 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (compensationTypeGuid == null || compensationTypeGuid == Guid.Empty)
                 throw new NullReferenceException("CompensationTypeGuid cannot be null");
-            string cacheKey = $"GetCompensationType";
-            IList<CompensationTypeDto> rval = (IList<CompensationTypeDto>)_memoryCacheService.GetCacheValue(cacheKey);
-            if (rval == null)
-            {
+            IList<CompensationTypeDto> rval;
                 var compensationTypes = await _repositoryWrapper.CompensationTypeRepository.GetAllCompensationTypes();
                 if (compensationTypes == null)
                     throw new NotFoundException("CompensationTypeGuid not found");
                 rval = _mapper.Map<List<CompensationTypeDto>>(compensationTypes);
-                _memoryCacheService.SetCacheValue(cacheKey, rval);
-            }
             return rval?.Where(x => x.CompensationTypeGuid == compensationTypeGuid).FirstOrDefault();
         }
 

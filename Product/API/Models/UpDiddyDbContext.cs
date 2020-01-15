@@ -214,6 +214,10 @@ namespace UpDiddyApi.Models
         public DbQuery<SubscriberCourseDto> SubscriberCourses { get; set; }
         public DbQuery<JobSitemapDto> JobSitemap {get;set;}
         public DbQuery<NotificationDto> Notifications { get; set; }
+        public DbQuery<JobCrudDto>  JobCruds { get; set; }
+
+
+
 
         #endregion
 

@@ -14,12 +14,10 @@ namespace UpDiddyApi.ApplicationCore.Services
     public class SecurityClearanceService : ISecurityClearanceService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
-        private readonly IMemoryCacheService _memoryCacheService;
         private readonly IMapper _mapper;
-        public SecurityClearanceService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IMemoryCacheService memoryCacheService)
+        public SecurityClearanceService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
         {
             _repositoryWrapper = repositoryWrapper;
-            _memoryCacheService = memoryCacheService;
             _mapper = mapper;
         }
 
@@ -27,16 +25,12 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (securityClearanceGuid == null || securityClearanceGuid == Guid.Empty)
                 throw new NullReferenceException("SecurityClearanceGuid cannot be null");
-            string cacheKey = $"GetSecurityClearance";
-            IList<SecurityClearanceDto> rval = (IList<SecurityClearanceDto>)_memoryCacheService.GetCacheValue(cacheKey);
-            if (rval == null)
-            {
-                var securityClearances = await _repositoryWrapper.SecurityClearanceRepository.GetAllSecurityClearances();
-                if (securityClearances == null)
-                    throw new NotFoundException("SecurityClearanceGuid not found");
-                rval = _mapper.Map<List<SecurityClearanceDto>>(securityClearances);
-                _memoryCacheService.SetCacheValue(cacheKey, rval);
-            }
+
+            IList<SecurityClearanceDto> rval;
+            var securityClearances = await _repositoryWrapper.SecurityClearanceRepository.GetAllSecurityClearances();
+            if (securityClearances == null)
+                throw new NotFoundException("SecurityClearanceGuid not found");
+            rval = _mapper.Map<List<SecurityClearanceDto>>(securityClearances);
             return rval?.Where(x => x.SecurityClearanceGuid == securityClearanceGuid).FirstOrDefault();
         }
 

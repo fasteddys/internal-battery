@@ -91,7 +91,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
-        public async Task<List<CourseDetailDto>> GetCoursesByTopic(string topic, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<List<CourseDetailDto>> GetCoursesByTopic(Guid topic, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesByTopic(topic, limit, offset, sort, order);
             if (courses == null)

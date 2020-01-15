@@ -1,4 +1,4 @@
-@using System.Globalization
+﻿@using System.Globalization
 @using Microsoft.AspNetCore.Http.Features
 @using Microsoft.AspNetCore.Localization
 @using Microsoft.AspNetCore.Mvc.Localization
@@ -30,7 +30,7 @@
     </script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    @await Component.InvokeAsync("MetaTags", new { PagePath = Context.Request.Path.ToString() })
+    <!-- @await Component.InvokeAsync("MetaTags", new { PagePath = Context.Request.Path.ToString() }) -->
     <link rel="shortcut icon" href="~/images/Icon-20.png" />
     <environment names="Development">
         <link rel="stylesheet" type="text/css" href="~/css/site.dev.css" asp-append-version="true" />
@@ -40,24 +40,16 @@
     </environment>
 </head>
 <body>
-    <div class="modal fade" id="cookiePolicyModal" role="dialog">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-body">
-                    <div class="row">
-                        <partial name="_CookieConsentPartial" />
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
     <noscript>
         <iframe src="https://www.googletagmanager.com/ns.html?id=@Configuration["GoogleTagManager:Code"].ToString()"
                 height="0" width="0" style="display:none;visibility:hidden"></iframe>
     </noscript>
 
+    @Html.ActionLink("log in", "signin", "session", new { returnUrl = "/talent/subscribers", rel = "nofollow" })
+    @Html.ActionLink("logout", "signout", "session", new { returnUrl = "/talent/subscribers", rel = "nofollow" })
+
+
+    ALERTS
     @await Component.InvokeAsync("PublicSiteNavigation")
 
     @{
@@ -94,15 +86,5 @@
     @RenderSection("Scripts", false)
     @Html.ReactInitJavaScript()
 
-    <script type="text/javascript">
-        $(window).on('load', function () {
-            if ($.cookie('.AspNet.Consent') == undefined) {
-                $('#cookiePolicyModal').modal('show');
-            }
-            else{
-                $('#cookiePolicyModal').modal('hide');
-            }          
-        });
-    </script>
 </body>
 </html>

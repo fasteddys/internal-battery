@@ -45,7 +45,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IHttpClientFactory _httpClientFactory = null;
         private readonly ICompanyService _companyService;
         private readonly ISubscriberService _subscriberService;
-        private readonly IMemoryCacheService _cache;
         private IAuthorizationService _authorizationService;
         private readonly IDistributedCache _redisCache;
 
@@ -62,7 +61,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             _configuration = _services.GetService<Microsoft.Extensions.Configuration.IConfiguration>();
             _companyService = services.GetService<ICompanyService>();
             _subscriberService = services.GetService<ISubscriberService>();
-            _cache = services.GetService<IMemoryCacheService>();
             _hangfireService = hangfireService;
             _cloudTalentService = cloudTalentService;
             _authorizationService = services.GetService<IAuthorizationService>();

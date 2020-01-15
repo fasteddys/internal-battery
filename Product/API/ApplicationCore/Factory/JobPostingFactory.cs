@@ -282,6 +282,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// <returns></returns>        
         public static async Task<List<JobPosting>> GetJobPostingsForSubscriber(IRepositoryWrapper repositoryWrapper, Guid guid)
         {
+ 
             return await repositoryWrapper.JobPosting.GetAllWithTracking()
                 .Include(c => c.Company)
                 .Include(c => c.Industry)
