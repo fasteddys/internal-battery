@@ -181,7 +181,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (subscriberGuid == talentGuid || isRecruiter)
             {
 
-                UpDiddyLib.Dto.SubscriberDto subscriberDto = await SubscriberFactory.GetSubscriber(_repositoryWrapper, subscriberGuid, _syslog, _mapper);
+                UpDiddyLib.Dto.SubscriberDto subscriberDto = await SubscriberFactory.GetSubscriber(_repositoryWrapper, talentGuid, _syslog, _mapper);
 
                 if (subscriberDto == null)
                     throw new NotFoundException("Subscriber does not exist");
