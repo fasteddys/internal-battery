@@ -17,7 +17,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetEducationalDegreeTypes(int limit = 10, int offset = 0, string sort = "descending", string order = "modifyDate")
+        public async Task<IActionResult> GetEducationalDegreeTypes(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var educationalDegreeTypes = await _educationalDegreeTypeService.GetEducationalDegreeTypes(limit, offset, sort, order);
             return Ok(educationalDegreeTypes);

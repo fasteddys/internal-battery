@@ -71,7 +71,7 @@ namespace UpDiddyApi.Controllers
         [Route("{country:guid}/states")]
         public async Task<IActionResult> GetStates(Guid country, int limit = 100, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var states = await _stateService.GetAllStates(country, limit, offset, sort, order);
+            var states = await _stateService.GetStates(country, limit, offset, sort, order);
             return Ok(states);
         }
 

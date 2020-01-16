@@ -224,6 +224,13 @@ namespace UpDiddyApi.Models
         public DbQuery<UpDiddyLib.Domain.Models.EducationalDegreeTypeDto> EducationalDegreeTypes { get; set; }
         public DbQuery<UpDiddyLib.Domain.Models.EmploymentTypeDto> EmploymentTypes { get; set; }
         public DbQuery<UpDiddyLib.Domain.Models.ExperienceLevelDto> ExperienceLevels { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.IndustryDto> Industries { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.OfferDto> Offers { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.SecurityClearanceDto> SecurityClearances { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.SkillDto> Skills { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.StateDetailDto> States { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.TalentFavoriteDto> TalentFavorites { get; set; }
+        public DbQuery<SubscriberNotesDto> SubscriberNotesDto { get; set; }
 
         #endregion
 

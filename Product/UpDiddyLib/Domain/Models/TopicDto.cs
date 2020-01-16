@@ -9,13 +9,12 @@ namespace UpDiddyLib.Domain.Models
         public List<TopicDto> Topics { get; set; } = new List<TopicDto>();
         public int TotalRecords { get; set; }
     }
-
     public class TopicDto 
     {
-        public Guid? TopicGuid;
-        public string Name;
-        public string Description;
-        public int? SortOrder;
+        public Guid? TopicGuid { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public int? SortOrder { get; set; }
         [JsonIgnore]
         public int TotalRecords { get; set; }
     }

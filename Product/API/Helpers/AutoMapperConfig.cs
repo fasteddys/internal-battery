@@ -75,6 +75,17 @@ namespace UpDiddyApi.Helpers
                 .ReverseMap();
 
             CreateMap<StateDetailDto, State>().ReverseMap();
+            CreateMap<List<StateDetailDto>, StateDetailListDto>()
+                  .AfterMap((src, dest) =>
+                  {
+                      if (src != null && src.Count() > 0)
+                          dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                      else
+                          dest.TotalRecords = 0;
+                  })
+                .ForMember(dest => dest.States, opt => opt.MapFrom(src => src.ToList()))
+                .ReverseMap();
+
             CreateMap<EnrollmentLog, EnrollmentLogDto>().ReverseMap();
             CreateMap<CourseVariantType, CourseVariantTypeDto>().ReverseMap();
             CreateMap<Skill, UpDiddyLib.Dto.SkillDto>().ReverseMap();
@@ -153,7 +164,21 @@ namespace UpDiddyApi.Helpers
                       .ForMember(dest => dest.EmploymentTypes, opt => opt.MapFrom(src => src.ToList()))
                       .ReverseMap();
 
-            CreateMap<Industry, IndustryDto>().ReverseMap();
+            CreateMap<Industry, UpDiddyLib.Dto.IndustryDto>().ReverseMap();
+            CreateMap<Industry, UpDiddyLib.Domain.Models.IndustryDto>()
+                .ForMember(dest => dest.TotalRecords, opt => opt.Ignore())
+                .ReverseMap();
+
+            CreateMap<List<UpDiddyLib.Domain.Models.IndustryDto>, IndustryListDto>()
+                        .AfterMap((src, dest) =>
+                        {
+                            if (src != null && src.Count() > 0)
+                                dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                            else
+                                dest.TotalRecords = 0;
+                        })
+                      .ForMember(dest => dest.Industries, opt => opt.MapFrom(src => src.ToList()))
+                      .ReverseMap();
 
             CreateMap<JobPostingSkill, JobPostingSkillDto>().ReverseMap();
             CreateMap<ExperienceLevel, UpDiddyLib.Dto.ExperienceLevelDto>().ReverseMap();
@@ -217,9 +242,38 @@ namespace UpDiddyApi.Helpers
             CreateMap<ServiceOfferingPromoCodeRedemption, ServiceOfferingPromoCodeRedemptionDto>().ReverseMap();
             CreateMap<FileDownloadTracker, FileDownloadTrackerDto>().ReverseMap();
             CreateMap<Offer, UpDiddyLib.Domain.Models.OfferDto>()
-            .ForMember(c => c.PartnerName, opt => opt.MapFrom(src => src.Partner.Name))
-            .ForMember(dest => dest.PartnerLogoUrl, opt => opt.MapFrom(src => src.Partner.LogoUrl))
-            .ForMember(dest => dest.PartnerGuid, opt => opt.MapFrom(src => src.Partner.PartnerGuid)).ReverseMap();
+                .ForMember(c => c.PartnerName, opt => opt.MapFrom(src => src.Partner.Name))
+                .ForMember(dest => dest.PartnerLogoUrl, opt => opt.MapFrom(src => src.Partner.LogoUrl))
+                .ForMember(dest => dest.PartnerGuid, opt => opt.MapFrom(src => src.Partner.PartnerGuid))
+                .ForMember(dest => dest.TotalRecords, opt => opt.Ignore())
+                .ReverseMap();
+
+            CreateMap<List<UpDiddyLib.Domain.Models.OfferDto>, OfferListDto>()
+                .AfterMap((src, dest) =>
+                {
+                    if (src != null && src.Count() > 0)
+                        dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                    else
+                        dest.TotalRecords = 0;
+                })
+              .ForMember(dest => dest.Offers, opt => opt.MapFrom(src => src.ToList()))
+              .ReverseMap();
+
+            CreateMap<SecurityClearance, UpDiddyLib.Domain.Models.SecurityClearanceDto>()
+                .ForMember(dest => dest.TotalRecords, opt => opt.Ignore())
+                .ReverseMap();
+
+            CreateMap<List<UpDiddyLib.Domain.Models.SecurityClearanceDto>, SecurityClearanceListDto>()
+                .AfterMap((src, dest) =>
+                {
+                    if (src != null && src.Count() > 0)
+                        dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                    else
+                        dest.TotalRecords = 0;
+                })
+              .ForMember(dest => dest.SecurityClearances, opt => opt.MapFrom(src => src.ToList()))
+              .ReverseMap();
+
             CreateMap<RelatedJobDto, CareerPathJobDto>()
             .ForMember(c => c.CompanyLogoUrl, opt => opt.MapFrom(src => src.LogoUrl)).ReverseMap();
             CreateMap<Traitify, TraitifyDto>().ReverseMap();
@@ -295,10 +349,20 @@ namespace UpDiddyApi.Helpers
 
             CreateMap<JobViewDto, UpDiddyLib.Domain.Models.JobPostingDto>().ReverseMap();
             CreateMap<Skill, UpDiddyLib.Domain.Models.SkillDto>()
-            .ForMember(c => c.Name, opt => opt.MapFrom(src => src.SkillName)).ReverseMap();
+                .ForMember(c => c.Name, opt => opt.MapFrom(src => src.SkillName))
+                .ReverseMap();
 
-
-
+            CreateMap<List<UpDiddyLib.Domain.Models.SkillDto>, UpDiddyLib.Domain.Models.SkillListDto>()
+                  .AfterMap((src, dest) =>
+                  {
+                      if (src != null && src.Count() > 0)
+                          dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                      else
+                          dest.TotalRecords = 0;
+                  })
+                .ForMember(dest => dest.Skills, opt => opt.MapFrom(src => src.ToList()))
+                .ReverseMap();
+                        
             // todo: had difficulty mapping JObject to Dictionary<string,string> via automapper for PartnerContact -> ContactDto, revisit later if time allows
             //CreateMap<Contact, ContactDto>().ReverseMap();
             //CreateMap<Contact, EmailContactDto>()
@@ -384,6 +448,18 @@ namespace UpDiddyApi.Helpers
 
             CreateMap<SubscriberNotes, SubscriberNotesDto>()
                 .ForMember(s => s.ModifiedDate, opt => opt.MapFrom(src => src.ModifyDate))
+                .ForMember(s => s.TotalRecords, opt => opt.Ignore())
+                .ReverseMap();
+
+            CreateMap<List<SubscriberNotesDto>, SubscriberNotesListDto>()
+                  .AfterMap((src, dest) =>
+                  {
+                      if (src != null && src.Count() > 0)
+                          dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                      else
+                          dest.TotalRecords = 0;
+                  })
+                .ForMember(dest => dest.SubscriberNotes, opt => opt.MapFrom(src => src.ToList()))
                 .ReverseMap();
 
             CreateMap<SubscriberNotification, SubscriberNotificationDto>().ReverseMap();
@@ -425,6 +501,18 @@ namespace UpDiddyApi.Helpers
                 .ForMember(x => x.ProfileImage, opt => opt.MapFrom(src => src.Talent.ProfileImage))
                 .ForMember(x => x.ModifyDate, opt => opt.MapFrom(src => src.Talent.ModifyDate))
                 .ForMember(x => x.JoinDate, opt => opt.MapFrom(src => src.Talent.CreateDate))
+                .ForMember(x => x.TotalRecords, opt => opt.Ignore())
+                .ReverseMap();
+
+            CreateMap<List<TalentFavoriteDto>, TalentFavoriteListDto>()
+                  .AfterMap((src, dest) =>
+                  {
+                      if (src != null && src.Count() > 0)
+                          dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                      else
+                          dest.TotalRecords = 0;
+                  })
+                .ForMember(dest => dest.TalentFavorites, opt => opt.MapFrom(src => src.ToList()))
                 .ReverseMap();
 
             CreateMap<CourseEnrollmentDto, BraintreePaymentDto>()

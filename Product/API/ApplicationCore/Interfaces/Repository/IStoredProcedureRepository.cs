@@ -48,10 +48,18 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<UpDiddyLib.Domain.Models.TopicDto>> GetTopics(int limit, int offset, string sort, string order);
         Task<List<UpDiddyLib.Domain.Models.CompensationTypeDto>> GetCompensationTypes(int limit, int offset, string sort, string order);
         Task<List<CountryDetailDto>> GetCountries(int limit, int offset, string sort, string order);
+        Task<List<StateDetailDto>> GetStates(Guid country, int limit, int offset, string sort, string order);
         Task<List<CourseLevelDto>> GetCourseLevels(int limit, int offset, string sort, string order);
         Task<List<UpDiddyLib.Domain.Models.EducationLevelDto>> GetEducationLevels(int limit, int offset, string sort, string order);
         Task<List<UpDiddyLib.Domain.Models.EducationalDegreeTypeDto>> GetEducationalDegreeTypes(int limit, int offset, string sort, string order);
         Task<List<UpDiddyLib.Domain.Models.EmploymentTypeDto>> GetEmploymentTypes(int limit, int offset, string sort, string order);
         Task<List<UpDiddyLib.Domain.Models.ExperienceLevelDto>> GetExperienceLevels(int limit, int offset, string sort, string order);
+        Task<List<UpDiddyLib.Domain.Models.IndustryDto>> GetIndustries(int limit, int offset, string sort, string order);
+        Task<List<UpDiddyLib.Domain.Models.OfferDto>> GetOffers(int limit, int offset, string sort, string order);
+        Task<List<UpDiddyLib.Domain.Models.SecurityClearanceDto>> GetSecurityClearances(int limit, int offset, string sort, string order);
+        Task<List<UpDiddyLib.Domain.Models.SkillDto>> GetSkills(int limit, int offset, string sort, string order);
+        Task<List<UpDiddyLib.Domain.Models.TalentFavoriteDto>> GetTalentFavorites(Guid subscriberGuid, int limit, int offset, string sort, string order);
+        Task<List<SubscriberNotesDto>> GetSubscriberNotes(Guid subscriberGuid, int limit, int offset, string sort, string order);
+
     }
 }

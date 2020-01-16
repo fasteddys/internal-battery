@@ -4,15 +4,15 @@ using System.Collections.Generic;
 
 namespace UpDiddyLib.Domain.Models
 {
-    public class SkillListDto
+    public class IndustryListDto
     {
-        public List<SkillDto> Skills { get; set; } = new List<SkillDto>();
+        public List<IndustryDto> Industries { get; set; } = new List<IndustryDto>();
         public int TotalRecords { get; set; }
     }
 
-    public class SkillDto
+    public class IndustryDto
     {
-        public Guid SkillGuid { get; set; }
+        public Guid IndustryGuid { get; set; }
         public string Name { get; set; }
         [JsonIgnore]
         public int TotalRecords { get; set; }
