@@ -35,7 +35,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<EmploymentTypeListDto> GetEmploymentTypes(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var employmentTypes = await _repositoryWrapper.StoredProcedureRepository.GetExperienceLevels(limit, offset, sort, order);
+            var employmentTypes = await _repositoryWrapper.StoredProcedureRepository.GetEmploymentTypes(limit, offset, sort, order);
             if (employmentTypes == null)
                 throw new NotFoundException("EmploymentTypes not found");
             return _mapper.Map<EmploymentTypeListDto>(employmentTypes);
