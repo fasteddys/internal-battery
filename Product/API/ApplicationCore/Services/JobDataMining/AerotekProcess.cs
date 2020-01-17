@@ -29,7 +29,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             : base(jobSite, logger, companyGuid, config, employmentTypeService)
         {
             var newEmploymentTypes = employmentTypeService.GetEmploymentTypes().Result;
-            _employmentTypes = newEmploymentTypes.Select(et => new EmploymentTypeDto() { EmploymentTypeGuid = et.EmploymentTypeGuid, Name = et.Name }).ToList();
+            _employmentTypes = newEmploymentTypes.EmploymentTypes.Select(et => new EmploymentTypeDto() { EmploymentTypeGuid = et.EmploymentTypeGuid, Name = et.Name }).ToList();
         }
 
         #region Private Members

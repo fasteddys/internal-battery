@@ -1,7 +1,15 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 
 namespace UpDiddyLib.Domain.Models
 {
+    public class CourseDetailListDto
+    {
+        public List<CourseDetailDto> Courses { get; set; } = new List<CourseDetailDto>();
+        public int TotalRecords { get; set; }
+    }
+
     public class CourseDetailDto
     {
         public string Title { get; set; }
@@ -25,5 +33,7 @@ namespace UpDiddyLib.Domain.Models
         public string Topic { get; set; }
         public string CourseSkills { get; set; }
         public string ExternalUrl { get; set; }
+        [JsonIgnore]
+        public int TotalRecords { get; set; }
     }
 }

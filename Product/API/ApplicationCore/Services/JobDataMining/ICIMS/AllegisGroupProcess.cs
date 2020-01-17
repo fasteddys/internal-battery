@@ -23,7 +23,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
             : base(jobSite, logger, companyGuid, config, employmentTypeService)
         {
             var newEmploymentTypes = employmentTypeService.GetEmploymentTypes().Result;
-            _employmentTypes = newEmploymentTypes.Select(et => new EmploymentTypeDto() { EmploymentTypeGuid = et.EmploymentTypeGuid, Name = et.Name }).ToList();
+            _employmentTypes = newEmploymentTypes.EmploymentTypes.Select(et => new EmploymentTypeDto() { EmploymentTypeGuid = et.EmploymentTypeGuid, Name = et.Name }).ToList();
         }
 
         public async Task<List<JobPage>> DiscoverJobPages(List<JobPage> existingJobPages)

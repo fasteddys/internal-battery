@@ -17,7 +17,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCompanies(int limit, int offset, string sort, string order)
+        public async Task<IActionResult> GetCompanies(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var companies = await _companyService.GetCompanies(limit, offset, sort, order);
             return Ok(companies);
@@ -46,7 +46,7 @@ namespace UpDiddyApi.Controllers
         {
             companyDto.CompanyGuid = company;
             await _companyService.EditCompanyAsync(companyDto);
-            return StatusCode(204);
+            return StatusCode(200);
         }
 
         [HttpDelete]

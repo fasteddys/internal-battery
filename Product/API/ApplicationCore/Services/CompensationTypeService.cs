@@ -33,12 +33,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             return rval?.Where(x => x.CompensationTypeGuid == compensationTypeGuid).FirstOrDefault();
         }
 
-        public async Task<List<CompensationTypeDto>> GetCompensationTypes(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<CompensationTypeListDto> GetCompensationTypes(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var compensationTypes = await _repositoryWrapper.CompensationTypeRepository.GetByConditionWithSorting(x => x.IsDeleted == 0, limit, offset, sort, order);
+            var compensationTypes = await _repositoryWrapper.StoredProcedureRepository.GetCompensationTypes(limit, offset, sort, order);
             if (compensationTypes == null)
                 throw new NotFoundException("CompensationTypes not found");
-            return _mapper.Map<List<CompensationTypeDto>>(compensationTypes);
+            return _mapper.Map<CompensationTypeListDto>(compensationTypes);
         }
 
         public async Task CreateCompensationType(CompensationTypeDto compensationTypeDto)

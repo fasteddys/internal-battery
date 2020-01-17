@@ -43,12 +43,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             return rval.ToList();
         }
 
-        public async Task<List<EducationalDegreeTypeDto>> GetEducationalDegreeTypes(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<EducationalDegreeTypeListDto> GetEducationalDegreeTypes(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var educationalDegreeTypes = await _repositoryWrapper.EducationalDegreeTypeRepository.GetByConditionWithSorting(x => x.IsDeleted == 0, limit, offset, sort, order);
+            var educationalDegreeTypes = await _repositoryWrapper.StoredProcedureRepository.GetEducationalDegreeTypes(limit, offset, sort, order);
             if (educationalDegreeTypes == null)
                 throw new NotFoundException("EducationalDegreeTypes not found");
-            return _mapper.Map<List<EducationalDegreeTypeDto>>(educationalDegreeTypes);
+            return _mapper.Map<EducationalDegreeTypeListDto>(educationalDegreeTypes);
         }
 
         public async Task CreateEducationalDegreeType(EducationalDegreeTypeDto educationalDegreeTypeDto)

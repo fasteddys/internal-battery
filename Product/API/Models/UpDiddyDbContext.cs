@@ -213,11 +213,25 @@ namespace UpDiddyApi.Models
         public DbQuery<SubscriberNotesDto> SubscriberNoteQuery { get; set; }
         public DbQuery<SubscriberCourseDto> SubscriberCourses { get; set; }
         public DbQuery<JobSitemapDto> JobSitemap {get;set;}
-        public DbQuery<NotificationDto> Notifications { get; set; }
-        public DbQuery<JobCrudDto>  JobCruds { get; set; }
-
-
-
+        public DbQuery<UpDiddyLib.Dto.NotificationDto> LegacyNotifications { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.NotificationDto> Notifications { get; set; }
+        public DbQuery<CompanyDto> Companies { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.TopicDto> Topics { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.CompensationTypeDto> CompensationTypes { get; set; }
+        public DbQuery<CountryDetailDto> Countries { get; set; }
+        public DbQuery<CourseLevelDto> CourseLevels { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.EducationLevelDto> EducationLevels { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.EducationalDegreeTypeDto> EducationalDegreeTypes { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.EmploymentTypeDto> EmploymentTypes { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.ExperienceLevelDto> ExperienceLevels { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.IndustryDto> Industries { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.OfferDto> Offers { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.SecurityClearanceDto> SecurityClearances { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.SkillDto> Skills { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.StateDetailDto> States { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.TalentFavoriteDto> TalentFavorites { get; set; }
+        public DbQuery<SubscriberNotesDto> SubscriberNotesDto { get; set; }
+        public DbQuery<JobCrudDto> JobCruds { get; set; }
 
         #endregion
 

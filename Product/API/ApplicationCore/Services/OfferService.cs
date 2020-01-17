@@ -33,11 +33,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             _hangfireService = hangfireService;
         }
 
-        public async Task<List<OfferDto>> GetAllOffers(int limit = 5, int offset = 0)
+        public async Task<OfferListDto> GetOffers(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var offers = await _repositoryWrapper.Offer.GetAllOffers(limit, offset);
-            var offerDto = _mapper.Map<List<OfferDto>>(offers);
-            return offerDto;
+            var offers = await _repositoryWrapper.StoredProcedureRepository.GetOffers(limit, offset, sort, order);
+            return _mapper.Map<OfferListDto>(offers);
         }
 
         public async Task<OfferDto> GetOffer(Guid offerGuid)

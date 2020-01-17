@@ -50,7 +50,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             subscriberNotes.RecruiterId = recruiter.RecruiterId;
             subscriberNotes.CreateGuid = subscriberGuid;
             BaseModelFactory.SetDefaultsForAddNew(subscriberNotes);
-            await _repositoryWrapper.SubscriberNotesRepository.AddNotes(subscriberNotes);   
+            await _repositoryWrapper.SubscriberNotesRepository.AddNotes(subscriberNotes);
             return true;
         }
 
@@ -68,7 +68,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var recruiter = await _repositoryWrapper.RecruiterRepository.GetRecruiterBySubscriberGuid(subscriberGuid);
             if (recruiter == null)
                 throw new NotFoundException("Recruiter not found");
- 
+
             var subscriberNotes = await _repositoryWrapper.SubscriberNotesRepository.GetByGuid(noteGuid);
             if (subscriberNotes == null)
                 throw new NotFoundException("Talent note not found");
@@ -100,21 +100,15 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (recruiter.RecruiterId != subscriberNotes.RecruiterId)
                 throw new UnauthorizedAccessException("Not owner of the talent note");
 
-            subscriberNotes.IsDeleted = 1;            
-            subscriberNotes.ModifyDate = DateTime.UtcNow; 
+            subscriberNotes.IsDeleted = 1;
+            subscriberNotes.ModifyDate = DateTime.UtcNow;
             await _repositoryWrapper.SubscriberNotesRepository.SaveAsync();
-            
+
             return true;
-
         }
-
-
-
-
+        
         public async Task<SubscriberNotesDto> GetNote(Guid subscriberGuid, Guid noteGuid)
         {
-
-
             var subscriberNotes = await _repositoryWrapper.SubscriberNotesRepository.GetByGuid(noteGuid);
             if (subscriberNotes == null)
                 throw new NotFoundException("Talent note not found");
@@ -128,7 +122,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (recruiter.RecruiterId != subscriberNotes.RecruiterId)
                 throw new UnauthorizedAccessException("Not owner of the talent note");
 
-            SubscriberNotesDto rVal =  _mapper.Map< SubscriberNotesDto>(subscriberNotes);
+            SubscriberNotesDto rVal = _mapper.Map<SubscriberNotesDto>(subscriberNotes);
 
             // Manually map some items due to some mismatches between the model and the dto  
             rVal.RecruiterGuid = recruiter.RecruiterGuid;
@@ -139,30 +133,14 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         }
 
-
-
-
-        public async Task<List<SubscriberNotesDto>> GetNotesForSubscriber(Guid subscriberGuid, Guid talentGuid, int limit = 30, int offset = 0, string sort = "CreateDate", string order = "descending")
+        public async Task<SubscriberNotesListDto> GetNotesForSubscriber(Guid subscriberGuid, Guid talentGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-
             var talent = await _repositoryWrapper.SubscriberRepository.GetByGuid(talentGuid);
             if (talent == null)
                 throw new NotFoundException("Talent not found");
-   
-            var notes =  await _repositoryWrapper.StoredProcedureRepository.GetSubscriberNotes(subscriberGuid, talentGuid, limit, offset, sort, order);
 
-            return notes;
+            var notes = await _repositoryWrapper.StoredProcedureRepository.GetSubscriberNotes(subscriberGuid, talentGuid, limit, offset, sort, order);
+            return _mapper.Map<SubscriberNotesListDto>(notes);
         }
-
-
-
-
     }
- 
-
-
- 
 }
-
-
- 

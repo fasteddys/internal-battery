@@ -1,9 +1,15 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace UpDiddyLib.Dto
 {
+    public class SubscriberNotesListDto
+    {
+        public List<SubscriberNotesDto> SubscriberNotes { get; set; } = new List<SubscriberNotesDto>();
+        public int TotalRecords { get; set; }
+    }
+
     public class SubscriberNotesDto
     {
         public Guid? SubscriberNotesGuid { get; set; }
@@ -14,5 +20,7 @@ namespace UpDiddyLib.Dto
         public bool ViewableByOthersInRecruiterCompany { get; set; }
         public DateTime CreateDate { get; set; }
         public DateTime ModifiedDate { get; set; }
+        [JsonIgnore]
+        public int TotalRecords { get; set; }
     }
 }
