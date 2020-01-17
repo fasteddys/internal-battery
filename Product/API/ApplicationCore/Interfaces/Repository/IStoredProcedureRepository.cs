@@ -45,6 +45,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 
         Task<List<JobCrudDto>> GetSubscriberJobPostingCruds(Guid subscriberGuid, int limit, int offset, string sort, string order);
 
+        Task<bool> InsertSendGridEvents(string sendGridJson);
+
 
 
     }

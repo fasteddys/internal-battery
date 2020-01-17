@@ -533,6 +533,19 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
 
+        public async Task<bool> InsertSendGridEvents(string sendGridJson)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@SendGridJson", sendGridJson),
+ 
+                };
+
+            List<JobCrudDto> rval = null;
+           _dbContext.Database.ExecuteSqlCommand("[System_Insert_SendGridEvents]  @SendGridJson", spParams);
+            return true;
+        }
+
+
 
 
 

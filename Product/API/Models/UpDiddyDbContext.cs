@@ -183,6 +183,9 @@ namespace UpDiddyApi.Models
         public DbSet<TalentFavorite> TalentFavorite { get; set; }
         public DbSet<CourseLevel> CourseLevel { get; set; }
         public DbSet<CourseReferral> CourseReferral { get; set; }
+        public DbSet<SendGridEvent> SendGridEvent { get; set; }
+
+        public DbSet<SubscriberSendGridEvent> SubscriberSendGridEvent { get; set; }
 
 
         #region DBQueries

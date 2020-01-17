@@ -367,7 +367,9 @@ namespace UpDiddyApi.Helpers
             .ReverseMap();
 
 
-
+            CreateMap<SendGridEventDto, SendGridEvent>()
+                .ForMember(x => x.SendGridEventGuid, opt => opt.Ignore())
+                .ReverseMap();
 
 
         }

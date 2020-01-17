@@ -85,5 +85,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         ICourseLevelRepository CourseLevelRepository { get; }
 
         ICourseReferralRepository CourseReferralRepository { get; }
+        ISendGridEventRepository SendGridEventRepository { get; }
+
+
     }
 }
