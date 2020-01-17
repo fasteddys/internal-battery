@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using UpDiddyLib.Dto;
@@ -7,7 +8,10 @@ namespace UpDiddyLib.Domain.Models
 {
     public class JobCrudDto
     {
- 
+
+        [JsonIgnore]
+        public int TotalRecords { get; set;  }
+
 
         public Guid? JobPostingGuid { get; set; }
 
@@ -39,18 +43,14 @@ namespace UpDiddyLib.Domain.Models
 
         public string StreetAddress { get; set; }
 
-        public List<UpDiddyLib.Dto.SkillDto> JobPostingSkills { get; set; }
 
         public int IsPrivate { get; set; }
 
         public int JobStatus { get; set; }
 
-        public string SemanticJobPath { get; set; }
+ 
         public string ThirdPartyIdentifier { get; set; }
-
-        public string MetaDescription { get; set; }
-        public string MetaTitle { get; set; }
-        public string MetaKeywords { get; set; }
+ 
 
         // Guids for related object 
 

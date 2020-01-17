@@ -18,6 +18,9 @@ using UpDiddyLib.Dto.User;
 using UpDiddyLib.Helpers;
 using UpDiddyApi.Workflow;
 using UpDiddyApi.Helpers.Job;
+using System.Data.SqlClient;
+using System.Data;
+
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class JobPostingService : IJobPostingService
@@ -218,11 +221,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             string ErrorMsg = string.Empty;
 
 
-            JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(_repositoryWrapper, jobPostingGuid).Result;
+            JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(_repositoryWrapper, jobPostingGuid);
             if (jobPosting == null)
-                throw new NotFoundException("Job posting {jobPostingGuid} does not exist");
+                throw new NotFoundException($"Job posting {jobPostingGuid} does not exist");
 
-            Recruiter recruiter = RecruiterFactory.GetRecruiterById(_repositoryWrapper, jobPosting.RecruiterId.Value).Result;
+            Recruiter recruiter = await RecruiterFactory.GetRecruiterById(_repositoryWrapper, jobPosting.RecruiterId.Value);
             if (recruiter == null)
                 throw new NotFoundException($"Recruiter {jobPosting.RecruiterId.Value} rec not found");
 
@@ -241,7 +244,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuid(_repositoryWrapper, jobPostingGuid);
             if (jobPosting == null)
-                throw new NotFoundException("Job posting {jobPostingGuid} does not exist");
+                throw new NotFoundException($"Job posting {jobPostingGuid} does not exist");
 
             if (jobPosting.Recruiter.Subscriber.SubscriberGuid != subscriberGuid)
                 throw new UnauthorizedAccessException("JobPosting owner is not specified or does not match user posting job");
@@ -257,6 +260,30 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             return _mapper.Map<List<UpDiddyLib.Dto.JobPostingDto>>(jobPostings);
         }
+
+
+
+
+        public async Task<JobCrudListDto> GetJobPostingCrudForSubscriber(Guid subscriberGuid, int limit, int offset, string sort, string order)
+        {
+            return _mapper.Map<JobCrudListDto> (await _repositoryWrapper.StoredProcedureRepository.GetSubscriberJobPostingCruds(subscriberGuid, limit, offset, sort, order)) ;
+        }
+
+        public async Task<JobCrudDto> GetJobPostingCrud(Guid subscriberGuid, Guid jobPostingGuid)
+        {
+
+            JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuid(_repositoryWrapper, jobPostingGuid);
+            if (jobPosting == null)
+                throw new NotFoundException($"Job posting {jobPostingGuid} does not exist");
+
+            if (jobPosting.Recruiter.Subscriber.SubscriberGuid != subscriberGuid)
+                throw new UnauthorizedAccessException("JobPosting owner is not specified or does not match user posting job");
+
+            return _mapper.Map<JobCrudDto>(jobPosting);
+        }
+
+
+
 
         #region Helper functions 
 
@@ -332,6 +359,70 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
         }
+
+
+
+        public async Task<bool> UpdateJobPostingSkills(Guid subscriberGuid, Guid jobPostingGuid, List<UpDiddyLib.Domain.Models.SkillDto> skills)
+        {
+            if (skills == null)
+                throw new NotFoundException("JobPostingService.UpdateJobPostingSkills: Recruiter Guid not specified for job posting");
+
+            Recruiter recruiter = _repositoryWrapper.RecruiterRepository.GetAll()
+                .Include(s => s.Subscriber)
+                .Where(r => r.IsDeleted == 0 && r.Subscriber.SubscriberGuid == subscriberGuid)
+                .FirstOrDefault();
+
+            if (recruiter == null)
+                throw new NotFoundException($"JobPostingService.UpdateJobPostingSkills: Cannot locate Recruiter {subscriberGuid}");
+
+            JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuid(_repositoryWrapper, jobPostingGuid);
+
+            if (jobPosting == null)
+                throw new NotFoundException($"Job posting {jobPostingGuid} does not exist");
+
+            // For now only allow posting to be updatded by their creator
+            if (jobPosting.Recruiter.Subscriber.SubscriberGuid != subscriberGuid)
+                throw new UnauthorizedAccessException();
+
+            await UpdateJobPostingSkills(jobPosting.JobPostingId, skills);
+
+            return true;
+
+        }
+
+
+
+     
+        public async Task<bool> UpdateJobPostingSkills(int jobPostingId, List<UpDiddyLib.Domain.Models.SkillDto> jobPostingSkills)
+        {
+            var jobPostingIdParam = new SqlParameter("@JobPostingId", jobPostingId);
+
+            DataTable table = new DataTable();
+            table.Columns.Add("Guid", typeof(Guid));
+            if (jobPostingSkills != null)
+            {
+                foreach (var skill in jobPostingSkills)
+                {
+                    table.Rows.Add(skill.SkillGuid);
+                }
+            }
+
+            var skillGuids = new SqlParameter("@SkillGuids", table);
+            skillGuids.SqlDbType = SqlDbType.Structured;
+            skillGuids.TypeName = "dbo.GuidList";
+
+            var spParams = new object[] { jobPostingIdParam, skillGuids };
+
+            var rowsAffected = _repositoryWrapper.JobPostingSkillRepository.ExecuteSQL(@"
+                EXEC [dbo].[System_Update_JobPostingSkills] 
+                    @JobPostingId,
+	                @SkillGuids", spParams);
+
+            return true;
+        }
+
+
+
 
 
         #endregion

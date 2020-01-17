@@ -325,20 +325,34 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsRecruiterPolicy")]
         public async Task<IActionResult> GetJobAdmin(Guid jobGuid)
         {
-
-            UpDiddyLib.Dto.JobPostingDto jobPostingDto =  await _jobPostingService.GetJobPosting(GetSubscriberGuid(), jobGuid);
+            JobCrudDto jobPostingDto =  await _jobPostingService.GetJobPostingCrud(GetSubscriberGuid(), jobGuid);
             return Ok(jobPostingDto);
         }
 
+  
         [HttpGet]
         [Route("admin")]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        public async Task<IActionResult> GetJobAdminForSubscriber(Guid jobGuid)
+        public async Task<IActionResult> GetJobAdminForSubscriber(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-
-            List<UpDiddyLib.Dto.JobPostingDto> postings = await _jobPostingService.GetJobPostingForSubscriber(GetSubscriberGuid());
+     
+            JobCrudListDto postings = await _jobPostingService.GetJobPostingCrudForSubscriber(GetSubscriberGuid(),limit,offset,sort,order);
             return Ok(postings);
         }
+
+
+
+        [HttpPut]
+        [Route("admin/{jobGuid:guid}/skills")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        public async Task<IActionResult> UpdateJobSkills([FromBody] List<UpDiddyLib.Domain.Models.SkillDto> skills , Guid jobGuid)
+        {
+
+           await _jobPostingService.UpdateJobPostingSkills(GetSubscriberGuid(), jobGuid, skills);
+            return StatusCode(204);
+        }
+
+
 
         #endregion
 

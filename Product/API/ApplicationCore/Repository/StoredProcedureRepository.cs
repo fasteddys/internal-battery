@@ -522,7 +522,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return rval;
         }
 
-        public async Task<List<CourseDetailDto>> GetCoursesByTopic(string topic, int limit, int offset, string sort, string order)
+
+        public async Task<List<CourseDetailDto>> GetCoursesByTopic(Guid topic, int limit, int offset, string sort, string order)
         {
             var spParams = new object[] {
                 new SqlParameter("@Topic", topic),
@@ -533,7 +534,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 };
 
             List<CourseDetailDto> rval = null;
-            rval = await _dbContext.CourseDetails.FromSql<CourseDetailDto>("System_Get_CoursesByTopic @topic,  @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            rval = await _dbContext.CourseDetails.FromSql<CourseDetailDto>("System_Get_CoursesByTopic @topic, @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
             return rval;
         }
 
@@ -548,6 +549,21 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             List<CompanyDto> rval = null;
             rval = await _dbContext.Companies.FromSql<CompanyDto>("System_Get_Companies @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
+
+        public async Task<List<JobCrudDto>> GetSubscriberJobPostingCruds(Guid subscriberGuid, int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@SubscriberGuid", subscriberGuid),
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+
+            List<JobCrudDto> rval = null;
+            rval = await _dbContext.JobCruds.FromSql<JobCrudDto>("[System_Get_JobCrudBySubscriber] @SubscriberGuid, @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
             return rval;
         }
 

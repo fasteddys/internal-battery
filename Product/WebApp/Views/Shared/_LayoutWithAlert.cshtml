@@ -40,19 +40,6 @@
     </environment>
 </head>
 <body>
-    <div class="modal fade" id="cookiePolicyModal" role="dialog">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-body">
-                    <div class="row">
-                        <partial name="_CookieConsentPartial" />
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
     <noscript>
         <iframe src="https://www.googletagmanager.com/ns.html?id=@Configuration["GoogleTagManager:Code"].ToString()"
                 height="0" width="0" style="display:none;visibility:hidden"></iframe>
@@ -62,7 +49,7 @@
     @Html.ActionLink("logout", "signout", "session", new { returnUrl = "/talent/subscribers", rel = "nofollow" })
 
 
-    ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd ALERTS
+    ALERTS
     @await Component.InvokeAsync("PublicSiteNavigation")
 
     @{
@@ -99,15 +86,5 @@
     @RenderSection("Scripts", false)
     @Html.ReactInitJavaScript()
 
-    <script type="text/javascript">
-        $(window).on('load', function () {
-            if ($.cookie('.AspNet.Consent') == undefined) {
-                $('#cookiePolicyModal').modal('show');
-            }
-            else {
-                $('#cookiePolicyModal').modal('hide');
-            }
-        });
-    </script>
 </body>
 </html>
