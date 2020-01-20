@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
+using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Services
@@ -31,24 +33,73 @@ namespace UpDiddyApi.ApplicationCore.Services
             _hangfireService = hangfireService;
         }
 
-        public async Task<Guid> CreateNotification(Guid subscriberGuid, NewNotificationDto newNotificationDto)
+
+        // TODO JAB Implement 
+
+        public async Task<bool> SendNotifcation(Guid subscriberGuid, Guid notificationGuid)
         {
-            NotificationDto notificationDto = newNotificationDto.NotificationDto;
-            // Ensure required information is present prior to creating new partner
-            if (notificationDto == null || string.IsNullOrEmpty(notificationDto.Title) || string.IsNullOrEmpty(notificationDto.Description))
+           
+            // todo jab implment after notification groups 
+            /*
+            Notification notification = _repositoryWrapper.NotificationRepository.GetAll()
+                .Include( g => g.gn)
+                .where( not)
+                
+                GetByConditionAsync(n => n.NotificationGuid == notificationGuid).Result.FirstOrDefault();
+
+            if (notification == null)
+                throw new NotFoundException($"Could not find notification {notificationGuid}");
+
+
+            // adding support for multiple groups
+            if (notificationCreateDto.Groups != null && notificationCreateDto.Groups.Count > 0)
+            {
+                foreach (Guid groupGuid in notificationCreateDto.Groups)
+                {
+                    IList<Subscriber> Subscribers = await _subscriberService.GetSubscribersInGroupAsync(groupGuid);
+                    // Only queue sending the notifications if a valid group which contains members is specified 
+                    if (Subscribers != null && Subscribers.Count > 0)
+                        _hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, Subscribers));
+                }
+            }
+            */
+            return true;
+        }
+
+
+ 
+        //todo jab test this endpoint
+        public async Task<Guid> CreateNotification(Guid subscriberGuid, NotificationCreateDto notificationCreateDto)
+        {
+ 
+            if (notificationCreateDto == null || string.IsNullOrEmpty(notificationCreateDto.Title) || string.IsNullOrEmpty(notificationCreateDto.Description))
             {
                 throw new FailedValidationException("Notifiction information is required");
             }
- 
+            // Validate the groups 
+            List<Group> NotificationGroups = new List<Group>();
+            if (notificationCreateDto.Groups != null && notificationCreateDto.Groups.Count > 0)
+            {
+                foreach (Guid groupGuid in notificationCreateDto.Groups)
+                {
+                    Group group = await _repositoryWrapper.GroupRepository.GetByGuid(groupGuid);
+                    if (group == null)
+                        throw new FailedValidationException($"{groupGuid} is not a valid group");
+                    NotificationGroups.Add(group);
+                }
+            }
+
+
+
             Guid NewNotificationGuid = Guid.NewGuid();
             DateTime CurrentDateTime = DateTime.UtcNow;
  
             Notification notification = new Notification();
-            notification.Title = notificationDto.Title;
-            notification.Description = notificationDto.Description;
+            notification.Title = notificationCreateDto.Title;
+            notification.Description = notificationCreateDto.Description;
             notification.NotificationGuid = NewNotificationGuid;
-            notification.IsTargeted = notificationDto.IsTargeted == true ? 1 : 0;
-            notification.ExpirationDate = notificationDto.ExpirationDate;
+            notification.IsTargeted = notificationCreateDto.IsTargeted == true ? 1 : 0;
+            notification.ExpirationDate = notificationCreateDto.ExpirationDate;
             notification.CreateDate = CurrentDateTime;
             notification.ModifyDate = CurrentDateTime;
             notification.IsDeleted = 0;
@@ -57,9 +108,25 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _repositoryWrapper.NotificationRepository.Create(notification);
             await _repositoryWrapper.NotificationRepository.SaveAsync();
 
+
             Notification NewNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == NewNotificationGuid).Result.FirstOrDefault();
-            IList<Subscriber> Subscribers = await _subscriberService.GetSubscribersInGroupAsync(newNotificationDto.GroupGuid);
-            _hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, Subscribers));
+ 
+            foreach (Group g in NotificationGroups)
+            {
+                NotificationGroup newGroup = new NotificationGroup()
+                {
+                     CreateGuid = Guid.NewGuid(),
+                     GroupId = g.GroupId,
+                     IsDeleted = 0,
+                     NotificationGroupGuid = Guid.NewGuid(),
+                     NotificationId = NewNotification.NotificationId
+                };
+
+                await _repositoryWrapper.NotificationGroupRepository.Create(newGroup);
+            }
+           
+            await _repositoryWrapper.NotificationGroupRepository.SaveAsync();
+
             return NewNotificationGuid;
         }
 

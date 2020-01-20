@@ -119,10 +119,9 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpPost]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<IActionResult> CreateNotification([FromBody] NewNotificationDto newNotification)
+        public async Task<IActionResult> CreateNotification([FromBody] NotificationCreateDto newNotification)
         {
             Guid rval = await _notificationService.CreateNotification(GetSubscriberGuid(), newNotification);
-
             return Ok(rval);
         }
 
@@ -134,7 +133,18 @@ namespace UpDiddyApi.Controllers.V2
              return StatusCode(204);
         }
 
-
+       // todo jab would you also take a look at section 19.3 question 1? 
+       // TODO JAB
+       /*
+        * 
+        * 
+        * 
+        * Hi Koenig, Bill and Brazil, Jim, thanks for the update on the endpoints. The Job Admin - 
+        * List is returning 9444 of total records available but there are only 15,
+        * I added the list of talents guids that last week was provided with the real guids to the account dfrayo@hellobuild.co as talent favorites,
+        * the endpoint Talent favorite by subscriber List is returning the correct data but the endpoint Talent Favorite - 
+        * Delete is returning 404 for all the guids provided and previous added as favorite fot this account. Could you please check the two endpoints
+        */
 
         [HttpPut("{notificationGuid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
