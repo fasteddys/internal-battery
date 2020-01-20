@@ -127,24 +127,12 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpDelete("{notificationGuid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<IActionResult> DeleteNotification (Guid notificationGuid)
+        public async Task<IActionResult> DeleteNotification(Guid notificationGuid)
         {
-             await _notificationService.DeleteNotification(GetSubscriberGuid(), notificationGuid);            
-             return StatusCode(204);
+            await _notificationService.DeleteNotification(GetSubscriberGuid(), notificationGuid);
+            return StatusCode(204);
         }
 
-       // todo jab would you also take a look at section 19.3 question 1? 
-       // TODO JAB
-       /*
-        * 
-        * 
-        * 
-        * Hi Koenig, Bill and Brazil, Jim, thanks for the update on the endpoints. The Job Admin - 
-        * List is returning 9444 of total records available but there are only 15,
-        * I added the list of talents guids that last week was provided with the real guids to the account dfrayo@hellobuild.co as talent favorites,
-        * the endpoint Talent favorite by subscriber List is returning the correct data but the endpoint Talent Favorite - 
-        * Delete is returning 404 for all the guids provided and previous added as favorite fot this account. Could you please check the two endpoints
-        */
 
         [HttpPut("{notificationGuid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
@@ -172,6 +160,18 @@ namespace UpDiddyApi.Controllers.V2
             rVal = await _notificationService.GetNotification(NotificationGuid);
             return Ok(rVal);
         }
+
+        // send notification 
+        [HttpPost]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("{notificationGuid}")]
+        public async Task<IActionResult> SendNotification(Guid notificationGuid)
+        {
+            await _notificationService.SendNotifcation(GetSubscriberGuid(), notificationGuid);
+            return StatusCode(201);
+        }
+
+
         #endregion
 
 

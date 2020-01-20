@@ -34,41 +34,50 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
-        // TODO JAB Implement 
-
+  
+        // Send notification 
         public async Task<bool> SendNotifcation(Guid subscriberGuid, Guid notificationGuid)
         {
-           
-            // todo jab implment after notification groups 
-            /*
-            Notification notification = _repositoryWrapper.NotificationRepository.GetAll()
-                .Include( g => g.gn)
-                .where( not)
-                
-                GetByConditionAsync(n => n.NotificationGuid == notificationGuid).Result.FirstOrDefault();
 
+
+            Notification notification = await _repositoryWrapper.NotificationRepository.GetByGuid(notificationGuid);
             if (notification == null)
                 throw new NotFoundException($"Could not find notification {notificationGuid}");
 
+            if ( notification.SentDate != null )
+                throw new FailedValidationException($"Notification {notification.NotificationGuid} was already sent on {notification.SentDate.Value.ToLongDateString()}");
 
-            // adding support for multiple groups
-            if (notificationCreateDto.Groups != null && notificationCreateDto.Groups.Count > 0)
+
+            // get the groups for the notification 
+            List<NotificationGroup> groups = _repositoryWrapper.NotificationGroupRepository.GetAll()
+                .Include ( g => g.Group)
+                .Where(g => g.IsDeleted == 0 && g.NotificationId == notification.NotificationId)
+                .ToList();
+
+            if (groups == null || groups.Count == 0)
+                throw new FailedValidationException($"Notification {notification.NotificationGuid} does not have any groups defined");
+
+            // send out notification to each specified grouop
+            foreach (NotificationGroup ng in groups)
             {
-                foreach (Guid groupGuid in notificationCreateDto.Groups)
-                {
-                    IList<Subscriber> Subscribers = await _subscriberService.GetSubscribersInGroupAsync(groupGuid);
-                    // Only queue sending the notifications if a valid group which contains members is specified 
-                    if (Subscribers != null && Subscribers.Count > 0)
-                        _hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, Subscribers));
-                }
+                IList<Subscriber> Subscribers = await _subscriberService.GetSubscribersInGroupAsync(ng.Group.GroupGuid);
+                // Only queue sending the notifications if a valid group which contains members is specified 
+                if (Subscribers != null && Subscribers.Count > 0)
+                    _hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(notification, notification.IsTargeted, Subscribers));
             }
-            */
+
+
+            notification.SentDate = DateTime.UtcNow;
+            notification.ModifyGuid = subscriberGuid;
+            await _repositoryWrapper.NotificationRepository.SaveAsync();
+        
+                      
             return true;
         }
 
 
  
-        //todo jab test this endpoint
+       
         public async Task<Guid> CreateNotification(Guid subscriberGuid, NotificationCreateDto notificationCreateDto)
         {
  
@@ -90,7 +99,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
 
-
+            // create notification
             Guid NewNotificationGuid = Guid.NewGuid();
             DateTime CurrentDateTime = DateTime.UtcNow;
  
@@ -110,7 +119,8 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
             Notification NewNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == NewNotificationGuid).Result.FirstOrDefault();
- 
+
+            // create notification group records for each group associated with the notification 
             foreach (Group g in NotificationGroups)
             {
                 NotificationGroup newGroup = new NotificationGroup()
@@ -165,6 +175,9 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             if (ExistingNotification == null)
                 throw new NotFoundException($"Cannot find notification {notificationGuid}");
+
+            if (ExistingNotification.SentDate != null)
+                throw new FailedValidationException("You cannot edit a sent notification");
  
 
             ExistingNotification.Title = notification.Title;
