@@ -306,7 +306,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             };
 
             if (jobCrudDto.IndustryGuid != null)
-                jobPostingDto.Industry = new IndustryDto()
+                jobPostingDto.Industry = new UpDiddyLib.Dto.IndustryDto()
                 {
                     IndustryGuid = jobCrudDto.IndustryGuid
                 };

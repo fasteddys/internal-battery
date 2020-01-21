@@ -9,7 +9,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface IOfferService
     {
-        Task<List<OfferDto>> GetAllOffers(int limit = 5, int offset = 0);
+        Task<OfferListDto> GetOffers(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending");
         Task<OfferDto> GetOffer(Guid offerGuid);
         Task ClaimOffer(Guid subscriberGuid, Guid offerGuid);
         Task<bool> HasSubscriberClaimedOffer(Guid subscriberGuid, Guid offerGuid);

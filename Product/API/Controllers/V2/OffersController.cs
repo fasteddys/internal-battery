@@ -21,9 +21,9 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetOffers(int limit = 5, int offset = 0)
+        public async Task<IActionResult> GetOffers(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var offers = await _offerService.GetAllOffers(limit, offset);
+            var offers = await _offerService.GetOffers(limit, offset, sort, order);
             return Ok(offers);
         }
 
@@ -67,7 +67,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> UpdateOffer(Guid offer, [FromBody]  OfferDto offerDto)
         {
             await _offerService.UpdateOffer(offer, offerDto);
-            return StatusCode(204);
+            return StatusCode(200);
         }
 
         [HttpDelete]

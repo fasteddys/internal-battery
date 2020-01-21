@@ -34,12 +34,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             return rval?.Where(x => x.SecurityClearanceGuid == securityClearanceGuid).FirstOrDefault();
         }
 
-        public async Task<List<SecurityClearanceDto>> GetSecurityClearances(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<SecurityClearanceListDto> GetSecurityClearances(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var securityClearances = await _repositoryWrapper.SecurityClearanceRepository.GetByConditionWithSorting(x => x.IsDeleted == 0, limit, offset, sort, order);
+            var securityClearances = await _repositoryWrapper.StoredProcedureRepository.GetSecurityClearances(limit, offset, sort, order);
             if (securityClearances == null)
                 throw new NotFoundException("SecurityClearances not found");
-            return _mapper.Map<List<SecurityClearanceDto>>(securityClearances);
+            return _mapper.Map<SecurityClearanceListDto>(securityClearances);
         }
 
         public async Task CreateSecurityClearance(SecurityClearanceDto securityClearanceDto)

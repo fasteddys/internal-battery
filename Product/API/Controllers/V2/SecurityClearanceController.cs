@@ -17,7 +17,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetSecurityClearances(int limit, int offset, string sort, string order)
+        public async Task<IActionResult> GetSecurityClearances(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var securityClearances = await _securityClearanceService.GetSecurityClearances(limit, offset, sort, order);
             return Ok(securityClearances);
@@ -37,7 +37,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> UpdateSecurityClearance(Guid securityClearance, [FromBody]  SecurityClearanceDto securityClearanceDto)
         {
             await _securityClearanceService.UpdateSecurityClearance(securityClearance, securityClearanceDto);
-            return StatusCode(204);
+            return StatusCode(200);
         }
 
         [HttpDelete]

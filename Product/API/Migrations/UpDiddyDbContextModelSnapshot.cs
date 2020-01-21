@@ -2278,6 +2278,10 @@ namespace UpDiddyApi.Migrations
 
                     b.HasIndex("NotificationId");
 
+                    b.HasIndex("NotificationGroupId", "GroupId")
+                        .IsUnique()
+                        .HasName("UIX_NotificationGroup_Group");
+
                     b.ToTable("NotificationGroup");
                 });
 

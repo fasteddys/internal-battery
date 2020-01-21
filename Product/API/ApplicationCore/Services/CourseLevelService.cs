@@ -33,12 +33,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             return rval?.Where(x => x.CourseLevelGuid == courseLevelGuid).FirstOrDefault();
         }
 
-        public async Task<List<CourseLevelDto>> GetCourseLevels(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<CourseLevelListDto> GetCourseLevels(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var courseLevels = await _repositoryWrapper.CourseLevelRepository.GetByConditionWithSorting(x => x.IsDeleted == 0, limit, offset, sort, order);
+            var courseLevels = await _repositoryWrapper.StoredProcedureRepository.GetCourseLevels(limit, offset, sort, order);
             if (courseLevels == null)
                 throw new NotFoundException("CourseLevels not found");
-            return _mapper.Map<List<CourseLevelDto>>(courseLevels);
+            return _mapper.Map<CourseLevelListDto>(courseLevels);
         }
 
         public async Task CreateCourseLevel(CourseLevelDto courseLevelDto)

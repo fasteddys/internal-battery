@@ -33,17 +33,14 @@ namespace UpDiddyApi.ApplicationCore.Services
             return rval?.Where(x => x.StateGuid == stateGuid).FirstOrDefault();
         }
 
-        public async Task<List<StateDetailDto>> GetAllStates(Guid countryGuid, int limit = 100, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<StateDetailListDto> GetStates(Guid countryGuid, int limit = 100, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             if (countryGuid == null || countryGuid == Guid.Empty)
                 throw new NullReferenceException("CountryGuid cannot be null");
-            var country = await _repositoryWrapper.Country.GetbyCountryGuid(countryGuid);
-            if (country == null)
-                throw new NotFoundException("Country not found");
-            var states = await _repositoryWrapper.State.GetByConditionWithSorting(x => x.CountryId == country.CountryId && x.IsDeleted == 0, limit, offset, sort, order);
+            var states = await _repositoryWrapper.StoredProcedureRepository.GetStates(countryGuid, limit, offset, sort, order);
             if (states == null || states.Count() == 0)
                 throw new NotFoundException("States not found");
-            return _mapper.Map<List<StateDetailDto>>(states);
+            return _mapper.Map<StateDetailListDto>(states);
         }
 
         public async Task CreateState(Guid countryGuid, StateDetailDto stateDetailDto)

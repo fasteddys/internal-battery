@@ -37,12 +37,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             _subscriberService = subscriberService;
         }
 
-        public async Task<List<SkillDto>> GetSkills(int limit, int offset, string sort, string order)
+        public async Task<SkillListDto> GetSkills(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var skills = await _repositoryWrapper.SkillRepository.GetByConditionWithSorting(x => x.IsDeleted == 0, limit, offset, sort, order);
+            var skills = await _repositoryWrapper.StoredProcedureRepository.GetSkills(limit, offset, sort, order);
             if (skills == null)
                 throw new NotFoundException("Skills not found");
-            return _mapper.Map<List<SkillDto>>(skills);
+            return _mapper.Map<SkillListDto>(skills);
         }
 
         public async Task<SkillDto> GetSkill(Guid skillGuid)

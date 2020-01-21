@@ -1667,10 +1667,10 @@ namespace UpDiddyApi.Workflow
         /// <param name="Notification"></param>
         /// <param name="Subscribers"></param>
         [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
-        public async Task<bool> CreateSubscriberNotificationRecords(Notification Notification, int IsTargeted, IList<Subscriber> Subscribers = null)
+        public async Task<bool> CreateSubscriberNotificationRecords(Notification notification, IList<Subscriber> Subscribers = null)
         {
 
-            if (IsTargeted == 0)
+            if (notification.IsTargeted == 0)
                 Subscribers = _repositoryWrapper.SubscriberRepository.GetByConditionAsync(s => s.IsDeleted == 0).Result.ToList();
             else
             {
@@ -1687,7 +1687,7 @@ namespace UpDiddyApi.Workflow
                 {
                     SubscriberNotificationGuid = Guid.NewGuid(),
                     SubscriberId = sub.SubscriberId,
-                    NotificationId = Notification.NotificationId,
+                    NotificationId = notification.NotificationId,
                     CreateDate = CurrentDateTime,
                     ModifyDate = CurrentDateTime,
                     HasRead = 0

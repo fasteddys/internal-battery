@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using UpDiddyLib.Dto;
+using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
@@ -26,7 +26,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         Task<bool> UpdateSubscriberNotification(Guid subscriberGuid, Guid notificationGuid, Guid recipientGuid, NotificationDto updateNotification);
 
-        Task<List<NotificationDto>> GetNotifications(Guid subscriberGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending");
+        Task<NotificationListDto> GetNotifications(Guid subscriberGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending");
 
     }
 }

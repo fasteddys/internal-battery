@@ -102,12 +102,12 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
  
  
-        public async Task<List<TalentFavoriteDto>> GetFavoriteTalent(Guid subscriberGuid, int limit, int offset, string sort, string order)
+        public async Task<TalentFavoriteListDto> GetFavoriteTalent(Guid subscriberGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var talent = await _repositoryWrapper.TalentFavoriteRepository.GetTalentForSubscriber(subscriberGuid);
+            var talent = await _repositoryWrapper.StoredProcedureRepository.GetTalentFavorites(subscriberGuid, limit, offset, sort, order);
             if (talent == null)
                 throw new NotFoundException("Talent not found");
-            return ( _mapper.Map<List<TalentFavoriteDto>>(talent) );
+            return ( _mapper.Map<TalentFavoriteListDto>(talent) );
         }
     }
 }
