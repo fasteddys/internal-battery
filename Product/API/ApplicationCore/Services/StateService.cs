@@ -37,9 +37,12 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (countryGuid == null || countryGuid == Guid.Empty)
                 throw new NullReferenceException("CountryGuid cannot be null");
+            var country = await _repositoryWrapper.Country.GetbyCountryGuid(countryGuid);
+            if (country == null)
+                throw new NotFoundException("Country not found");
             var states = await _repositoryWrapper.StoredProcedureRepository.GetStates(countryGuid, limit, offset, sort, order);
             if (states == null || states.Count() == 0)
-                throw new NotFoundException("States not found");
+                return new StateDetailListDto() { States = new List<StateDetailDto>(), TotalRecords = 0 };
             return _mapper.Map<StateDetailListDto>(states);
         }
 
