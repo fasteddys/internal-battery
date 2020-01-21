@@ -274,6 +274,17 @@ namespace UpDiddyApi.Helpers
               .ForMember(dest => dest.SecurityClearances, opt => opt.MapFrom(src => src.ToList()))
               .ReverseMap();
 
+            CreateMap<List<UpDiddyLib.Domain.Models.PartnerDto>, PartnerListDto>()
+                .AfterMap((src, dest) =>
+                {
+                    if (src != null && src.Count() > 0)
+                        dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                    else
+                        dest.TotalRecords = 0;
+                })
+                .ForMember(dest => dest.Partners, opt => opt.MapFrom(src => src.ToList()))
+                .ReverseMap();
+
             CreateMap<RelatedJobDto, CareerPathJobDto>()
             .ForMember(c => c.CompanyLogoUrl, opt => opt.MapFrom(src => src.LogoUrl)).ReverseMap();
             CreateMap<Traitify, TraitifyDto>().ReverseMap();

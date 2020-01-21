@@ -122,6 +122,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         public async Task Create(TEntity entity)
         {
             entity.GetType().GetProperty("CreateDate").SetValue(entity, DateTime.UtcNow);
+            entity.GetType().GetProperty("ModifyDate").SetValue(entity, DateTime.UtcNow);
             await this._dbContext.Set<TEntity>().AddAsync(entity);
         }
 
