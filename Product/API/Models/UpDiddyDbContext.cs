@@ -233,6 +233,8 @@ namespace UpDiddyApi.Models
         public DbQuery<UpDiddyLib.Domain.Models.TalentFavoriteDto> TalentFavorites { get; set; }
         public DbQuery<SubscriberNotesDto> SubscriberNotesDto { get; set; }
         public DbQuery<JobCrudDto> JobCruds { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.PartnerDto> Partners { get; set; }
+
 
         public DbQuery<GroupInfoDto> Groups { get; set; }
 
