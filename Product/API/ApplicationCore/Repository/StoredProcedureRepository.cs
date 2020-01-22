@@ -779,5 +779,75 @@ namespace UpDiddyApi.ApplicationCore.Repository
             rval = await _dbContext.SubscriberNotesDto.FromSql<SubscriberNotesDto>("System_Get_SubscriberNotes @Subscriber, @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
             return rval;
         }
+
+        public async Task<List<UpDiddyLib.Domain.Models.PartnerDto>> GetPartners(int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+
+            List<UpDiddyLib.Domain.Models.PartnerDto> rval = null;
+            rval = await _dbContext.Partners.FromSql<UpDiddyLib.Domain.Models.PartnerDto>("System_Get_Partners @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
+
+        public async Task<int> UpdateNotificationCoursesAsync(Guid subscriberGuid, Guid notificationGuid, List<Guid> groups)
+        {
+
+            DataTable groupTable = new DataTable();
+            groupTable.Columns.Add("Guid", typeof(Guid));
+            if (groups != null && groups.Count > 0)
+            {
+                foreach (var groupGuid in groups)
+                {
+                    groupTable.Rows.Add(groupGuid);
+                }
+            }
+
+
+            var subscriberParam = new SqlParameter("@SubscriberGuid", SqlDbType.UniqueIdentifier);
+            subscriberParam.Value = subscriberGuid;
+
+            var notificationParam = new SqlParameter("@NotificationGuid", SqlDbType.UniqueIdentifier);
+            notificationParam.Value = notificationGuid;
+
+            var groupParams = new SqlParameter("@GroupGuids", groupTable);
+            groupParams.SqlDbType = SqlDbType.Structured;
+            groupParams.TypeName = "dbo.GuidList";
+
+            var spParams = new object[] { subscriberParam, notificationParam, groupParams };
+
+
+
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"
+                EXEC [dbo].[System_Update_NotificationGroups] 
+                    @SubscriberGuid,
+                    @NotificationGuid,
+	                @GroupGuids", spParams);
+
+            return rowsAffected;
+
+        }
+
+
+        public async Task<List<GroupInfoDto>> GetGroups(int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+
+            List<GroupInfoDto> rval = null;
+            rval = await _dbContext.Groups.FromSql<GroupInfoDto>("[System_Get_Groups]  @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
+
+
+
     }
 }

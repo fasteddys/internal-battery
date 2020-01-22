@@ -314,6 +314,11 @@ namespace UpDiddyApi
             services.AddScoped<IEducationalDegreeTypeService, EducationalDegreeTypeService>();
             services.AddScoped<IEducationLevelService, EducationLevelService>();
             services.AddScoped<IIndustryService, IndustryService>();
+            services.AddScoped<IPartnerService, PartnerService>();
+            
+            services.AddScoped<IGroupService, GroupService>();
+
+            services.AddScoped<IPartnerService, PartnerService>();
             
             #endregion
 
