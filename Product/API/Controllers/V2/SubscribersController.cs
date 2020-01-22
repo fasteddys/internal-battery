@@ -39,6 +39,14 @@ namespace UpDiddyApi.Controllers.V2
             return Ok(new { subscriberGuid = newSubscriberGuid });
         }
 
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
+        [HttpPut]        
+        [Route("{subscriber:guid}/track-sign-in")]
+        public async Task<IActionResult> TrackSignIn(Guid subscriber)
+        {
+            _subscriberService.TrackSubscriberSignIn(subscriber);
+            return StatusCode(200);
+        }
 
         [HttpPost]
         [Authorize]
