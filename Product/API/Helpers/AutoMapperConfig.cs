@@ -273,7 +273,9 @@ namespace UpDiddyApi.Helpers
                 })
               .ForMember(dest => dest.SecurityClearances, opt => opt.MapFrom(src => src.ToList()))
               .ReverseMap();
-
+            CreateMap<Partner, UpDiddyLib.Domain.Models.PartnerDto>()
+                .ForMember(dest => dest.TotalRecords, opt => opt.Ignore())
+                .ReverseMap();
             CreateMap<List<UpDiddyLib.Domain.Models.PartnerDto>, PartnerListDto>()
                 .AfterMap((src, dest) =>
                 {

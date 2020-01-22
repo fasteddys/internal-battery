@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace UpDiddyApi.Controllers.V2
 {
     [Route("/V2/[controller]/")]
-            [Authorize(Policy = "IsCareerCircleAdmin")]
+    [Authorize(Policy = "IsCareerCircleAdmin")]
     public class PartnersController : ControllerBase
     {
         private readonly IPartnerService _partnerService;
