@@ -45,7 +45,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> UpdateEducationalDegreeType(Guid educationalDegreeType, [FromBody]  EducationalDegreeTypeDto educationalDegreeTypeDto)
         {
             await _educationalDegreeTypeService.UpdateEducationalDegreeType(educationalDegreeType, educationalDegreeTypeDto);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         [HttpDelete]

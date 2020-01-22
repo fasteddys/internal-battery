@@ -50,7 +50,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> UpdateSkill(Guid skill, [FromBody] SkillDto skillDto)
         {
             await _skillservice.UpdateSkill(skill, skillDto);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         [HttpDelete]

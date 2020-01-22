@@ -232,7 +232,7 @@ namespace UpDiddyApi.Controllers
         {
 
             await _jobAlertService.UpdateJobAlert(GetSubscriberGuid(), jobAlert, jobPostingAlertDto);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         [HttpDelete]
@@ -256,7 +256,7 @@ namespace UpDiddyApi.Controllers
         {
 
             await _jobFavoriteService.AddJobToFavorite(GetSubscriberGuid(), job);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         [HttpGet]
@@ -305,7 +305,7 @@ namespace UpDiddyApi.Controllers
         {
 
             await _jobPostingService.UpdateJobPosting(GetSubscriberGuid(), jobGuid,jobPostingDto);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
 

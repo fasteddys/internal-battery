@@ -39,7 +39,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> UpdateCountry(Guid country, [FromBody]  CountryDetailDto countryDetailDto)
         {
             await _countryService.UpdateCountry(country, countryDetailDto);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         [HttpDelete]
@@ -81,7 +81,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> UpdateState(Guid country, Guid state, [FromBody] StateDetailDto stateDetailDto)
         {
             await _stateService.UpdateState(country, state, stateDetailDto);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         [HttpDelete]

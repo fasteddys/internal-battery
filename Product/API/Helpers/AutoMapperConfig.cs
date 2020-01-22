@@ -132,6 +132,9 @@ namespace UpDiddyApi.Helpers
                 .ReverseMap();
 
             CreateMap<CompensationType, UpDiddyLib.Dto.CompensationTypeDto>().ReverseMap();
+            CreateMap<CompensationType, UpDiddyLib.Domain.Models.CompensationTypeDto>()
+            .ForMember(x => x.TotalRecords, opt => opt.Ignore())
+            .ReverseMap();
             CreateMap<List<UpDiddyLib.Domain.Models.CompensationTypeDto>, CompensationTypeListDto>()
                   .AfterMap((src, dest) =>
                   {
@@ -152,6 +155,9 @@ namespace UpDiddyApi.Helpers
             CreateMap<v_SubscriberSources, SubscriberSourceStatisticDto>().ReverseMap();
             CreateMap<SecurityClearance, UpDiddyLib.Dto.SecurityClearanceDto>().ReverseMap();
             CreateMap<EmploymentType, UpDiddyLib.Dto.EmploymentTypeDto>().ReverseMap();
+            CreateMap<EmploymentType, UpDiddyLib.Domain.Models.EmploymentTypeDto>()
+            .ForMember(x => x.TotalRecords, opt => opt.Ignore())
+            .ReverseMap();
 
             CreateMap<List<UpDiddyLib.Domain.Models.EmploymentTypeDto>, EmploymentTypeListDto>()
                         .AfterMap((src, dest) =>
