@@ -318,6 +318,8 @@ namespace UpDiddyApi
             
             services.AddScoped<IGroupService, GroupService>();
 
+            services.AddScoped<IPartnerService, PartnerService>();
+            
             #endregion
 
             // Configure SnapshotCollector from application settings
