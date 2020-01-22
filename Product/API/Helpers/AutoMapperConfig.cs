@@ -624,6 +624,20 @@ namespace UpDiddyApi.Helpers
 
 
 
+            CreateMap<List<GroupInfoDto>, GroupInfoListDto>()
+            .AfterMap((src, dest) =>
+            {
+                if (src != null && src.Count() > 0)
+                    dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                else
+                    dest.TotalRecords = 0;
+            })
+            .ForMember(dest => dest.Entities, opt => opt.MapFrom(src => src.ToList()))
+            .ReverseMap();
+
+
+
+
 
 
         }

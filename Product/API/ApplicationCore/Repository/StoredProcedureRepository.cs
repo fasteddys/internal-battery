@@ -831,5 +831,23 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return rowsAffected;
 
         }
+
+
+        public async Task<List<GroupInfoDto>> GetGroups(int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+
+            List<GroupInfoDto> rval = null;
+            rval = await _dbContext.Groups.FromSql<GroupInfoDto>("[System_Get_Groups]  @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
+
+
+
     }
 }

@@ -236,6 +236,9 @@ namespace UpDiddyApi.Models
         public DbQuery<UpDiddyLib.Domain.Models.PartnerDto> Partners { get; set; }
 
 
+        public DbQuery<GroupInfoDto> Groups { get; set; }
+
+
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
