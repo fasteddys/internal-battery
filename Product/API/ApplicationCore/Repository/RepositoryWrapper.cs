@@ -91,6 +91,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IPasswordResetRequestRepository _passwordResetRequestRepository;
         private ICourseLevelRepository _courseLevelRepository;
         private ICourseReferralRepository _courseReferralRepository;
+        private INotificationGroupRepository _notificationGroupRepository;
+
         private readonly IConfiguration _configuration;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
@@ -1069,6 +1071,20 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 return _courseReferralRepository;
             }
         }
+
+
+        public INotificationGroupRepository NotificationGroupRepository
+        {
+            get
+            {
+                if (_notificationGroupRepository == null)
+                {
+                    _notificationGroupRepository = new NotificationGroupRepository(_dbContext);
+                }
+                return _notificationGroupRepository;
+            }
+        }
+
 
 
         public async Task SaveAsync()

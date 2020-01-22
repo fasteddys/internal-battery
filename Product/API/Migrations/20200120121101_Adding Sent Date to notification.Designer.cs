@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200120121101_Adding Sent Date to notification")]
+    partial class AddingSentDatetonotification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2277,10 +2279,6 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("GroupId");
 
                     b.HasIndex("NotificationId");
-
-                    b.HasIndex("NotificationGroupId", "GroupId")
-                        .IsUnique()
-                        .HasName("UIX_NotificationGroup_Group");
 
                     b.ToTable("NotificationGroup");
                 });

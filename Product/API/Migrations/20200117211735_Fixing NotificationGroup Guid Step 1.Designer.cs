@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200117211735_Fixing NotificationGroup Guid Step 1")]
+    partial class FixingNotificationGroupGuidStep1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2240,8 +2242,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("NotificationGuid");
 
-                    b.Property<DateTime?>("SentDate");
-
                     b.Property<string>("Title")
                         .IsRequired();
 
@@ -2268,8 +2268,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("ModifyGuid");
 
-                    b.Property<Guid>("NotificationGroupGuid");
-
                     b.Property<int>("NotificationId");
 
                     b.HasKey("NotificationGroupId");
@@ -2277,10 +2275,6 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("GroupId");
 
                     b.HasIndex("NotificationId");
-
-                    b.HasIndex("NotificationGroupId", "GroupId")
-                        .IsUnique()
-                        .HasName("UIX_NotificationGroup_Group");
 
                     b.ToTable("NotificationGroup");
                 });
