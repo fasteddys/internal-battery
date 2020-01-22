@@ -171,7 +171,7 @@ namespace UpDiddyApi.Controllers
         #region Course Query
         [HttpGet]
         [Route("query")]
-        public async Task<IActionResult> SearchCourses(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending", string keyword = "*", string level = "", string topic = "")
+        public async Task<IActionResult> SearchCourses(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", string level = "", string topic = "")
         {
            var rVal = await _courseService.SearchCoursesAsync(limit, offset, sort, order, keyword,level,topic);
            return Ok(rVal);
