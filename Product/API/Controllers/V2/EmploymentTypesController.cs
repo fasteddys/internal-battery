@@ -17,7 +17,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetEmploymentTypes(int limit, int offset, string sort, string order)
+        public async Task<IActionResult> GetEmploymentTypes(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var employmentTypes = await _employmentTypeService.GetEmploymentTypes(limit, offset, sort, order);
             return Ok(employmentTypes);

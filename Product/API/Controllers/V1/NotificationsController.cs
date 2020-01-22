@@ -95,16 +95,14 @@ namespace UpDiddyApi.Controllers
                 notification.IsTargeted = notificationDto.IsTargeted == true ? 1 : 0;
                 notification.ExpirationDate = notificationDto.ExpirationDate;
                 notification.CreateDate = CurrentDateTime;
-                notification.ModifyDate = CurrentDateTime;
                 notification.IsDeleted = 0;
-                notification.ModifyGuid = loggedInUserGuid;
                 notification.CreateGuid = loggedInUserGuid;
                 await _repositoryWrapper.NotificationRepository.Create(notification);
                 await _repositoryWrapper.NotificationRepository.SaveAsync();
 
-                Notification NewNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == NewNotificationGuid).Result.FirstOrDefault();
+                Notification newNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == NewNotificationGuid).Result.FirstOrDefault();
                 IList<Subscriber> Subscribers = await _subscriberService.GetSubscribersInGroupAsync(newNotificationDto.GroupGuid);
-                _hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, Subscribers));
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(newNotification, Subscribers));
                 return Created(_configuration["Environment:ApiUrl"] + "notification/" + notification.NotificationGuid, new NewNotificationDto{NotificationDto = _mapper.Map<NotificationDto>(notification)} );
             }
             else

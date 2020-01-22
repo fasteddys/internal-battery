@@ -262,8 +262,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
-
-
         public async Task<JobCrudListDto> GetJobPostingCrudForSubscriber(Guid subscriberGuid, int limit, int offset, string sort, string order)
         {
             return _mapper.Map<JobCrudListDto> (await _repositoryWrapper.StoredProcedureRepository.GetSubscriberJobPostingCruds(subscriberGuid, limit, offset, sort, order)) ;
@@ -308,7 +306,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             };
 
             if (jobCrudDto.IndustryGuid != null)
-                jobPostingDto.Industry = new IndustryDto()
+                jobPostingDto.Industry = new UpDiddyLib.Dto.IndustryDto()
                 {
                     IndustryGuid = jobCrudDto.IndustryGuid
                 };

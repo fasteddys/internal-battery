@@ -21,9 +21,9 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetOffers(int limit = 5, int offset = 0)
+        public async Task<IActionResult> GetOffers(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var offers = await _offerService.GetAllOffers(limit, offset);
+            var offers = await _offerService.GetOffers(limit, offset, sort, order);
             return Ok(offers);
         }
 

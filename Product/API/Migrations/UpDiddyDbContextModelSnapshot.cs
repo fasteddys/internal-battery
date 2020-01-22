@@ -2240,12 +2240,49 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("NotificationGuid");
 
+                    b.Property<DateTime?>("SentDate");
+
                     b.Property<string>("Title")
                         .IsRequired();
 
                     b.HasKey("NotificationId");
 
                     b.ToTable("Notification");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.NotificationGroup", b =>
+                {
+                    b.Property<int>("NotificationGroupId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("GroupId");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<Guid>("NotificationGroupGuid");
+
+                    b.Property<int>("NotificationId");
+
+                    b.HasKey("NotificationGroupId");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("NotificationId");
+
+                    b.HasIndex("NotificationGroupId", "GroupId")
+                        .IsUnique()
+                        .HasName("UIX_NotificationGroup_Group");
+
+                    b.ToTable("NotificationGroup");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Offer", b =>
@@ -4776,6 +4813,19 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany()
                         .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.NotificationGroup", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Notification", "Notification")
+                        .WithMany()
+                        .HasForeignKey("NotificationId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

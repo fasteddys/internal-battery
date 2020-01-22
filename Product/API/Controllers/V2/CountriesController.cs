@@ -27,7 +27,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCountries(int limit = 100, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<IActionResult> GetCountries(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var countries = await _countryService.GetAllCountries(limit, offset, sort, order);
             return Ok(countries);
@@ -39,7 +39,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> UpdateCountry(Guid country, [FromBody]  CountryDetailDto countryDetailDto)
         {
             await _countryService.UpdateCountry(country, countryDetailDto);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         [HttpDelete]
@@ -71,7 +71,7 @@ namespace UpDiddyApi.Controllers
         [Route("{country:guid}/states")]
         public async Task<IActionResult> GetStates(Guid country, int limit = 100, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var states = await _stateService.GetAllStates(country, limit, offset, sort, order);
+            var states = await _stateService.GetStates(country, limit, offset, sort, order);
             return Ok(states);
         }
 
@@ -81,7 +81,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> UpdateState(Guid country, Guid state, [FromBody] StateDetailDto stateDetailDto)
         {
             await _stateService.UpdateState(country, state, stateDetailDto);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         [HttpDelete]

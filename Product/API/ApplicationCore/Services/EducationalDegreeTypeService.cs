@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
-using UpDiddyApi.ApplicationCore.Interfaces;
 using AutoMapper;
 using UpDiddyLib.Domain.Models;
 using UpDiddyApi.Models;
@@ -25,12 +24,10 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (educationalDegreeTypeGuid == null || educationalDegreeTypeGuid == Guid.Empty)
                 throw new NullReferenceException("EducationalDegreeTypeGuid cannot be null");
-            IList<EducationalDegreeTypeDto> rval;
-            var educationalDegreeTypes = await _repositoryWrapper.EducationalDegreeTypeRepository.GetAllEducationDegreeTypes();
-            if (educationalDegreeTypes == null)
-                throw new NotFoundException("EducationalDegreeTypes not found");
-            rval = _mapper.Map<List<EducationalDegreeTypeDto>>(educationalDegreeTypes);
-            return rval?.Where(x => x.EducationalDegreeTypeGuid == educationalDegreeTypeGuid).FirstOrDefault();
+            var educationalDegreeType = await  _repositoryWrapper.EducationalDegreeTypeRepository.GetByGuid(educationalDegreeTypeGuid);
+            if (educationalDegreeType == null)
+                throw new NotFoundException($"EducationalDegreeType with guid: {educationalDegreeTypeGuid} does not exist");
+            return _mapper.Map<EducationalDegreeTypeDto>(educationalDegreeType);
         }
 
         public async Task<List<EducationalDegreeTypeDto>> GetAllEducationDegreeTypes()
@@ -43,12 +40,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             return rval.ToList();
         }
 
-        public async Task<List<EducationalDegreeTypeDto>> GetEducationalDegreeTypes(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<EducationalDegreeTypeListDto> GetEducationalDegreeTypes(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var educationalDegreeTypes = await _repositoryWrapper.EducationalDegreeTypeRepository.GetByConditionWithSorting(x => x.IsDeleted == 0, limit, offset, sort, order);
+            var educationalDegreeTypes = await _repositoryWrapper.StoredProcedureRepository.GetEducationalDegreeTypes(limit, offset, sort, order);
             if (educationalDegreeTypes == null)
                 throw new NotFoundException("EducationalDegreeTypes not found");
-            return _mapper.Map<List<EducationalDegreeTypeDto>>(educationalDegreeTypes);
+            return _mapper.Map<EducationalDegreeTypeListDto>(educationalDegreeTypes);
         }
 
         public async Task CreateEducationalDegreeType(EducationalDegreeTypeDto educationalDegreeTypeDto)

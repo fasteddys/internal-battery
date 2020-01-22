@@ -256,7 +256,7 @@ namespace UpDiddyApi.Controllers
         {
 
             await _jobFavoriteService.AddJobToFavorite(GetSubscriberGuid(), job);
-            return StatusCode(201);
+            return StatusCode(204);
         }
 
         [HttpGet]

@@ -25,25 +25,23 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (stateGuid == null || stateGuid == Guid.Empty)
                 throw new NullReferenceException("stateGuid cannot be null");
-            IList<StateDetailDto> rval;
-            var states = await _repositoryWrapper.State.GetAllStatesAsync();
-            if (states == null || states.Count() == 0)
-                throw new NotFoundException("States not found");
-            rval = _mapper.Map<List<StateDetailDto>>(states);
-            return rval?.Where(x => x.StateGuid == stateGuid).FirstOrDefault();
+            var state = await _repositoryWrapper.State.GetByGuid(stateGuid);
+            if (state == null)
+                throw new NotFoundException($"State with guid: {stateGuid} does not exist");
+            return _mapper.Map<StateDetailDto>(state);
         }
 
-        public async Task<List<StateDetailDto>> GetAllStates(Guid countryGuid, int limit = 100, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<StateDetailListDto> GetStates(Guid countryGuid, int limit = 100, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             if (countryGuid == null || countryGuid == Guid.Empty)
                 throw new NullReferenceException("CountryGuid cannot be null");
             var country = await _repositoryWrapper.Country.GetbyCountryGuid(countryGuid);
             if (country == null)
                 throw new NotFoundException("Country not found");
-            var states = await _repositoryWrapper.State.GetByConditionWithSorting(x => x.CountryId == country.CountryId && x.IsDeleted == 0, limit, offset, sort, order);
+            var states = await _repositoryWrapper.StoredProcedureRepository.GetStates(countryGuid, limit, offset, sort, order);
             if (states == null || states.Count() == 0)
-                throw new NotFoundException("States not found");
-            return _mapper.Map<List<StateDetailDto>>(states);
+                return new StateDetailListDto() { States = new List<StateDetailDto>(), TotalRecords = 0 };
+            return _mapper.Map<StateDetailListDto>(states);
         }
 
         public async Task CreateState(Guid countryGuid, StateDetailDto stateDetailDto)

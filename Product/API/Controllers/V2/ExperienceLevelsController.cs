@@ -17,7 +17,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetExperienceLevels(int limit, int offset, string sort, string order)
+        public async Task<IActionResult> GetExperienceLevels(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var experienceLevels = await _experienceLevelService.GetExperienceLevels(limit, offset, sort, order);
             return Ok(experienceLevels);

@@ -278,7 +278,7 @@ namespace UpDiddyApi.Controllers.V2
         [HttpPut]
         [Route("skills")]
         [Authorize]
-        public async Task<IActionResult> UpdateSubscriberSkills([FromBody] List<string> skills)
+        public async Task<IActionResult> UpdateSubscriberSkills([FromBody] List<Guid> skills)
         {
             await _skillservice.UpdateSubscriberSkills(GetSubscriberGuid(), skills);
             return StatusCode(204);
@@ -351,7 +351,7 @@ namespace UpDiddyApi.Controllers.V2
             }
             else 
             {
-                return StatusCode(204);
+                return StatusCode(404);
             }
         }
 
