@@ -37,7 +37,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> UpdateCompensationType(Guid compensationType, [FromBody]  CompensationTypeDto compensationTypeDto)
         {
             await _compensationTypeService.UpdateCompensationType(compensationType, compensationTypeDto);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         [HttpDelete]

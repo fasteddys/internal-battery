@@ -37,7 +37,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> UpdateExperienceLevel(Guid experienceLevel, [FromBody]  ExperienceLevelDto experienceLevelDto)
         {
             await _experienceLevelService.UpdateExperienceLevel(experienceLevel, experienceLevelDto);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         [HttpDelete]

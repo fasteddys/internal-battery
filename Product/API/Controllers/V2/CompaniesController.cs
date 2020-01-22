@@ -46,7 +46,7 @@ namespace UpDiddyApi.Controllers
         {
             companyDto.CompanyGuid = company;
             await _companyService.EditCompanyAsync(companyDto);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         [HttpDelete]

@@ -37,7 +37,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> UpdateEmploymentType(Guid employmentType, [FromBody]  EmploymentTypeDto employmentTypeDto)
         {
             await _employmentTypeService.UpdateEmploymentType(employmentType, employmentTypeDto);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         [HttpDelete]

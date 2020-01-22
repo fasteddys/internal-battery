@@ -37,7 +37,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> UpdateIndustry(Guid industry, [FromBody] IndustryDto industryDto)
         {
             await _industryService.UpdateIndustry(industry, industryDto);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         [HttpDelete]

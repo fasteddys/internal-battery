@@ -37,7 +37,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> UpdatePartner(Guid partner, [FromBody]  PartnerDto partnerDto)
         {
             await _partnerService.UpdatePartner(partner, partnerDto);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         [HttpDelete]

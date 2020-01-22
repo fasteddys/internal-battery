@@ -25,13 +25,10 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (securityClearanceGuid == null || securityClearanceGuid == Guid.Empty)
                 throw new NullReferenceException("SecurityClearanceGuid cannot be null");
-
-            IList<SecurityClearanceDto> rval;
-            var securityClearances = await _repositoryWrapper.SecurityClearanceRepository.GetAllSecurityClearances();
-            if (securityClearances == null)
-                throw new NotFoundException("SecurityClearanceGuid not found");
-            rval = _mapper.Map<List<SecurityClearanceDto>>(securityClearances);
-            return rval?.Where(x => x.SecurityClearanceGuid == securityClearanceGuid).FirstOrDefault();
+            var securityClearance = await _repositoryWrapper.SecurityClearanceRepository.GetByGuid(securityClearanceGuid);
+            if (securityClearance == null)
+                throw new NotFoundException($"SecurityClearance with guid: {securityClearanceGuid} does not exist");
+            return _mapper.Map<SecurityClearanceDto>(securityClearance);
         }
 
         public async Task<SecurityClearanceListDto> GetSecurityClearances(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")

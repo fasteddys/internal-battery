@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
-using UpDiddyApi.ApplicationCore.Interfaces;
 using AutoMapper;
 using UpDiddyLib.Domain.Models;
 using UpDiddyApi.Models;
@@ -25,12 +24,10 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (educationalDegreeTypeGuid == null || educationalDegreeTypeGuid == Guid.Empty)
                 throw new NullReferenceException("EducationalDegreeTypeGuid cannot be null");
-            IList<EducationalDegreeTypeDto> rval;
-            var educationalDegreeTypes = await _repositoryWrapper.EducationalDegreeTypeRepository.GetAllEducationDegreeTypes();
-            if (educationalDegreeTypes == null)
-                throw new NotFoundException("EducationalDegreeTypes not found");
-            rval = _mapper.Map<List<EducationalDegreeTypeDto>>(educationalDegreeTypes);
-            return rval?.Where(x => x.EducationalDegreeTypeGuid == educationalDegreeTypeGuid).FirstOrDefault();
+            var educationalDegreeType = await  _repositoryWrapper.EducationalDegreeTypeRepository.GetByGuid(educationalDegreeTypeGuid);
+            if (educationalDegreeType == null)
+                throw new NotFoundException($"EducationalDegreeType with guid: {educationalDegreeTypeGuid} does not exist");
+            return _mapper.Map<EducationalDegreeTypeDto>(educationalDegreeType);
         }
 
         public async Task<List<EducationalDegreeTypeDto>> GetAllEducationDegreeTypes()
