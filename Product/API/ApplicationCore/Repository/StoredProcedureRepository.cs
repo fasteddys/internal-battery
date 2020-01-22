@@ -780,7 +780,19 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return rval;
         }
 
+        public async Task<List<UpDiddyLib.Domain.Models.PartnerDto>> GetPartners(int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
 
+            List<UpDiddyLib.Domain.Models.PartnerDto> rval = null;
+            rval = await _dbContext.Partners.FromSql<UpDiddyLib.Domain.Models.PartnerDto>("System_Get_Partners @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
 
         public async Task<int> UpdateNotificationCoursesAsync(Guid subscriberGuid, Guid notificationGuid, List<Guid> groups)
         {
