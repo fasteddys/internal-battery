@@ -233,6 +233,9 @@ namespace UpDiddyApi.Models
         public DbQuery<SubscriberNotesDto> SubscriberNotesDto { get; set; }
         public DbQuery<JobCrudDto> JobCruds { get; set; }
 
+        public DbQuery<GroupInfoDto> Groups { get; set; }
+
+
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

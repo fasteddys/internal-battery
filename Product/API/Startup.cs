@@ -314,7 +314,8 @@ namespace UpDiddyApi
             services.AddScoped<IEducationalDegreeTypeService, EducationalDegreeTypeService>();
             services.AddScoped<IEducationLevelService, EducationLevelService>();
             services.AddScoped<IIndustryService, IndustryService>();
-            
+            services.AddScoped<IGroupService, GroupService>();
+
             #endregion
 
             // Configure SnapshotCollector from application settings
