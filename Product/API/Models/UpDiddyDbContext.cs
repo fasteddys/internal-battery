@@ -183,6 +183,7 @@ namespace UpDiddyApi.Models
         public DbSet<TalentFavorite> TalentFavorite { get; set; }
         public DbSet<CourseLevel> CourseLevel { get; set; }
         public DbSet<CourseReferral> CourseReferral { get; set; }
+        public DbSet<NotificationGroup> NotificationGroup { get; set; }
 
 
         #region DBQueries
@@ -548,6 +549,14 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<Subscriber>()
                 .Property(s => s.NotificationEmailsEnabled)
                 .HasDefaultValue(true);
+
+
+            modelBuilder.Entity <NotificationGroup>()
+               .HasIndex(p => new {  p.NotificationGroupId, p.GroupId })
+               .HasName("UIX_NotificationGroup_Group")
+               .IsUnique(true);
+
+
         }
     }
 }
