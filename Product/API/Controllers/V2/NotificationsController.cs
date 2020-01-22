@@ -103,10 +103,9 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpPost]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<IActionResult> CreateNotification([FromBody] NotificationDto notification, [FromQuery] Guid? groupGuid = null)
+        public async Task<IActionResult> CreateNotification([FromBody] NotificationCreateDto newNotification)
         {
-            Guid rval = await _notificationService.CreateNotification(GetSubscriberGuid(), notification, groupGuid);
-
+            Guid rval = await _notificationService.CreateNotification(GetSubscriberGuid(), newNotification);
             return Ok(rval);
         }
 
@@ -117,10 +116,10 @@ namespace UpDiddyApi.Controllers.V2
             await _notificationService.DeleteNotification(GetSubscriberGuid(), notificationGuid);
             return StatusCode(204);
         }
-
+ 
         [HttpPut("{notificationGuid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<IActionResult> UpdateNotification([FromBody] NotificationDto notification, Guid notificationGuid)
+        public async Task<IActionResult> UpdateNotification([FromBody] NotificationCreateDto notification, Guid notificationGuid)
         {
             await _notificationService.UpdateNotification(GetSubscriberGuid(), notification, notificationGuid);
             return StatusCode(200);
@@ -130,7 +129,7 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> GetNotifications(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            NotificationListDto rVal = await _notificationService.GetNotifications(limit, offset, sort, order);
+            NotificationListDto rVal = _mapper.Map<NotificationListDto>( await _notificationService.GetNotifications(limit, offset, sort, order));
             return Ok(rVal);
         }
 
@@ -142,6 +141,17 @@ namespace UpDiddyApi.Controllers.V2
             rVal = await _notificationService.GetNotification(notificationGuid);
             return Ok(rVal);
         }
+
+        // send notification 
+        [HttpPost]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("{notificationGuid}")]
+        public async Task<IActionResult> SendNotification(Guid notificationGuid)
+        {
+            await _notificationService.SendNotifcation(GetSubscriberGuid(), notificationGuid);
+            return StatusCode(201);
+        }
+
 
         #endregion
     }

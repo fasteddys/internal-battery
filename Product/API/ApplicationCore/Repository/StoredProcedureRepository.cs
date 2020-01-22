@@ -779,5 +779,45 @@ namespace UpDiddyApi.ApplicationCore.Repository
             rval = await _dbContext.SubscriberNotesDto.FromSql<SubscriberNotesDto>("System_Get_SubscriberNotes @Subscriber, @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
             return rval;
         }
+
+
+
+        public async Task<int> UpdateNotificationCoursesAsync(Guid subscriberGuid, Guid notificationGuid, List<Guid> groups)
+        {
+
+            DataTable groupTable = new DataTable();
+            groupTable.Columns.Add("Guid", typeof(Guid));
+            if (groups != null && groups.Count > 0)
+            {
+                foreach (var groupGuid in groups)
+                {
+                    groupTable.Rows.Add(groupGuid);
+                }
+            }
+
+
+            var subscriberParam = new SqlParameter("@SubscriberGuid", SqlDbType.UniqueIdentifier);
+            subscriberParam.Value = subscriberGuid;
+
+            var notificationParam = new SqlParameter("@NotificationGuid", SqlDbType.UniqueIdentifier);
+            notificationParam.Value = notificationGuid;
+
+            var groupParams = new SqlParameter("@GroupGuids", groupTable);
+            groupParams.SqlDbType = SqlDbType.Structured;
+            groupParams.TypeName = "dbo.GuidList";
+
+            var spParams = new object[] { subscriberParam, notificationParam, groupParams };
+
+
+
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"
+                EXEC [dbo].[System_Update_NotificationGroups] 
+                    @SubscriberGuid,
+                    @NotificationGuid,
+	                @GroupGuids", spParams);
+
+            return rowsAffected;
+
+        }
     }
 }

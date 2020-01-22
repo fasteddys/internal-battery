@@ -20,5 +20,7 @@ namespace UpDiddyLib.Domain.Models
         public int HasRead { get; set; }
         [JsonIgnore]
         public int TotalRecords { get; set; }
+
+        public DateTime? SentDate { get; set; } 
     }
 }

@@ -83,7 +83,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IPasswordResetRequestRepository PasswordResetRequestRepository { get; }
         ITalentFavoriteRepository TalentFavoriteRepository { get; }
         ICourseLevelRepository CourseLevelRepository { get; }
-
         ICourseReferralRepository CourseReferralRepository { get; }
+        INotificationGroupRepository NotificationGroupRepository { get; }
     }
 }
