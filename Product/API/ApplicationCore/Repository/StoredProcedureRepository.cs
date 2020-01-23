@@ -890,9 +890,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return rval;
         }
 
-      
+        public async Task<List<UpDiddyLib.Domain.Models.JobSiteScrapeStatisticDto>> GetJobSiteScrapeStatistics(int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
 
-
-
+            List<UpDiddyLib.Domain.Models.JobSiteScrapeStatisticDto> rval = null;
+            rval = await _dbContext.JobSiteScrapeStatistics.FromSql<UpDiddyLib.Domain.Models.JobSiteScrapeStatisticDto>("System_Get_JobSiteScrapeStatistics @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
     }
 }

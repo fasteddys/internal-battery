@@ -281,7 +281,11 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
-
+        public async Task<JobSiteScrapeStatisticsListDto> GetJobSiteScrapeStatistics(int limit, int offset, string sort, string order)
+        {
+            var jobSiteScrapeStatistics = await _repositoryWrapper.StoredProcedureRepository.GetJobSiteScrapeStatistics(limit, offset, sort, order);
+            return _mapper.Map<JobSiteScrapeStatisticsListDto>(jobSiteScrapeStatistics);
+        }
 
         #region Helper functions 
 

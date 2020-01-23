@@ -224,7 +224,20 @@ namespace UpDiddyApi.Helpers
             CreateMap<JobPostingFavorite, JobPostingFavoriteDto>().ReverseMap();
             CreateMap<Recruiter, RecruiterDto>().ReverseMap();
             CreateMap<JobSite, JobSiteDto>().ReverseMap();
-            CreateMap<JobSiteScrapeStatistic, JobSiteScrapeStatisticDto>().ReverseMap();
+            CreateMap<JobSiteScrapeStatistic, UpDiddyLib.Dto.JobSiteScrapeStatisticDto>().ReverseMap();
+
+
+            CreateMap<List<UpDiddyLib.Domain.Models.JobSiteScrapeStatisticDto>, JobSiteScrapeStatisticsListDto>()
+                .AfterMap((src, dest) =>
+                {
+                    if (src != null && src.Count() > 0)
+                        dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                    else
+                        dest.TotalRecords = 0;
+                })
+                .ForMember(dest => dest.JobSiteScrapeStatistics, opt => opt.MapFrom(src => src.ToList()))
+                .ReverseMap();
+
             CreateMap<ResumeParse, ResumeParseDto>().ReverseMap();
             CreateMap<ResumeParseResult, ResumeParseResultDto>().ReverseMap();
             CreateMap<Subscriber, FailedSubscriberDto>().ReverseMap();

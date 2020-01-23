@@ -66,5 +66,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task UpdateEntitySkills(Guid entityGuid, string entityType, List<Guid> skillGuids);
         Task<List<GroupInfoDto>> GetGroups(int limit, int offset, string sort, string order);
         Task<List<RecruiterInfoDto>> GetRecruiters(int limit, int offset, string sort, string order);
+        Task<List<UpDiddyLib.Domain.Models.JobSiteScrapeStatisticDto>> GetJobSiteScrapeStatistics(int limit, int offset, string sort, string order);
     }
 }
