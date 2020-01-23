@@ -14,7 +14,7 @@ namespace UpDiddyLib.Dto
         public string Email { get; set; }
         public string  PhoneNumber { get; set; }
         public virtual CompanyDto Company { get; set; }
-        public bool IsInAuth0RecruiterGroupRecruiter { get; set; }
+        public bool IsInAuth0RecruiterGroup { get; set; }
 
     }
 }

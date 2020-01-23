@@ -65,7 +65,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 
         Task<int> UpdateNotificationCoursesAsync(Guid subscriberGuid, Guid notificationGuid, List<Guid> groups);
 
-
         Task<List<GroupInfoDto>> GetGroups(int limit, int offset, string sort, string order);
+        Task<List<RecruiterInfoDto>> GetRecruiters(int limit, int offset, string sort, string order);
     }
 }

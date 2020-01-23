@@ -849,5 +849,23 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
 
 
+        public async Task<List<RecruiterInfoDto>> GetRecruiters(int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+
+            List<RecruiterInfoDto> rval = null;
+            rval = await _dbContext.Recruiters.FromSql<RecruiterInfoDto>("[System_Get_Recruiters]  @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
+
+
+
+
+
     }
 }

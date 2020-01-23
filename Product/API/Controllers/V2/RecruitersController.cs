@@ -23,7 +23,7 @@ namespace UpDiddyApi.Controllers.V2
 {
     [Route("/V2/[controller]/")]
     [ApiController]
-    public class RecruitersController : ControllerBase
+    public class RecruitersController : BaseApiController
     {
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
@@ -63,17 +63,54 @@ namespace UpDiddyApi.Controllers.V2
 
 
 
+        // TODO JAB Add migration for sproc 
+
         [HttpGet]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> GetJobAdminForSubscriber(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-
-            //   JobCrudListDto postings = await _jobPostingService.GetJobPostingCrudForSubscriber(GetSubscriberGuid(), limit, offset, sort, order);
-            // return Ok(postings);
-
-            return Ok();
+            var rVal = await  _recruiterService.GetRecruiters(limit, offset, sort, order); 
+            return Ok(rVal);
         }
 
+        [HttpPost]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        public async Task<IActionResult> CreateRecruiter( [FromBody] RecruiterInfoDto recruiterInfoDto)
+        {
+
+            await _recruiterService.AddRecruiterAsync(recruiterInfoDto);
+            return StatusCode(201);
+        }
+
+
+        [HttpPut]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        public async Task<IActionResult> UpdateRecruiter([FromBody] RecruiterInfoDto recruiterInfoDto)
+        {
+
+            await _recruiterService.EditRecruiterAsync(recruiterInfoDto);
+            return StatusCode(204);
+        }
+
+        [HttpDelete]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("{RecruiterGuid}")]
+        public async Task<IActionResult> DeleteRecruiter( Guid RecruiterGuid)
+        {
+
+            await _recruiterService.DeleteRecruiterAsync(GetSubscriberGuid(), RecruiterGuid);
+            return StatusCode(204);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("{RecruiterGuid}")]
+        public async Task<IActionResult> GetRecruiter(Guid RecruiterGuid)
+        {
+
+            RecruiterInfoDto rVal = await _recruiterService.GetRecruiter(RecruiterGuid);
+            return Ok(rVal);
+        }
 
 
     }
