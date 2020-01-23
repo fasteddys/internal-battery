@@ -1445,5 +1445,15 @@ namespace UpDiddyApi.ApplicationCore.Services
             subscriber.ModifyGuid = Guid.Empty;
             await _repository.SubscriberRepository.SaveAsync();
         }
+
+        public async Task SyncAuth0UserId(Guid subscriberGuid, string auth0UserId)
+        {
+            var currentUtcDateTime = DateTime.UtcNow;
+            var subscriber = await _repository.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+            subscriber.Auth0UserId = auth0UserId;
+            subscriber.ModifyDate = currentUtcDateTime;
+            subscriber.ModifyGuid = Guid.Empty;
+            await _repository.SubscriberRepository.SaveAsync();
+        }
     }
 }

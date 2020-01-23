@@ -142,5 +142,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         Task<Subscriber> GetBySubscriberGuid(Guid subscriberGuid);
         Task TrackSubscriberSignIn(Guid subscriberGuid);
+        Task SyncAuth0UserId(Guid subscriberGuid, string auth0UserId);
     }
 }

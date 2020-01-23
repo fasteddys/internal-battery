@@ -39,11 +39,22 @@ namespace UpDiddyApi.Controllers.V2
             return Ok(new { subscriberGuid = newSubscriberGuid });
         }
 
+        [HttpPut]
         [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
-        [HttpPut]        
+        [Route("sync-auth0-userid")]
+        public async Task<IActionResult> SyncAuth0UserId([FromBody] SubscriberDto subscriberDto)
+        {
+            // the lack of an await is intentional here
+            _subscriberService.SyncAuth0UserId(subscriberDto.SubscriberGuid, subscriberDto.Auth0UserId);
+            return StatusCode(200);
+        }
+                
+        [HttpPut]
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
         [Route("{subscriber:guid}/track-sign-in")]
         public async Task<IActionResult> TrackSignIn(Guid subscriber)
         {
+            // the lack of an await is intentional here
             _subscriberService.TrackSubscriberSignIn(subscriber);
             return StatusCode(200);
         }

@@ -31,5 +31,7 @@ namespace UpDiddyLib.Domain.Models
         public string AssessmentId { get; set; }
 
         public string Auth0UserId { get; set; }
+
+        public Guid SubscriberGuid { get; set; }
     }
 }
