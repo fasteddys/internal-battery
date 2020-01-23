@@ -22,7 +22,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                           join tt in _dbContext.TagTopic on ta.TagId equals tt.TagId
                           join topic in _dbContext.Topic on tt.TopicId equals topic.TopicId
                           join c in _dbContext.Course on tc.CourseId equals c.CourseId
-                          where c.IsDeleted == 0 
+                          where c.IsDeleted == 0 && topic.TopicGuid == topicGuid
                           select c).Include(x => x.Vendor).OrderBy(x =>x.SortOrder).ToListAsync();
         }
 
