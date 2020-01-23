@@ -63,8 +63,6 @@ namespace UpDiddyApi.Controllers.V2
 
 
 
-        // TODO JAB Add migration for sproc 
-
         [HttpGet]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> GetJobAdminForSubscriber(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
