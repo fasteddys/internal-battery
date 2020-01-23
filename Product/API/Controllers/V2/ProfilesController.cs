@@ -275,10 +275,19 @@ namespace UpDiddyApi.Controllers.V2
             return Ok(skills);
         }
 
+        // [HttpPut]
+        // [Route("skills")]
+        // [Authorize]
+        // public async Task<IActionResult> UpdateSubscriberSkills([FromBody] List<Guid> skills)
+        // {
+        //     await _skillservice.UpdateSubscriberSkills(GetSubscriberGuid(), skills);
+        //     return StatusCode(204);
+        // }
+        
         [HttpPut]
         [Route("skills")]
         [Authorize]
-        public async Task<IActionResult> UpdateSubscriberSkills([FromBody] List<Guid> skills)
+        public async Task<IActionResult> UpdateSubscriberSkills([FromBody] List<string> skills)
         {
             await _skillservice.UpdateSubscriberSkills(GetSubscriberGuid(), skills);
             return StatusCode(204);
