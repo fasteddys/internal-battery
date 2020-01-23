@@ -234,9 +234,8 @@ namespace UpDiddyApi.Models
         public DbQuery<SubscriberNotesDto> SubscriberNotesDto { get; set; }
         public DbQuery<JobCrudDto> JobCruds { get; set; }
         public DbQuery<UpDiddyLib.Domain.Models.PartnerDto> Partners { get; set; }
-
-
         public DbQuery<GroupInfoDto> Groups { get; set; }
+        public DbQuery<RecruiterInfoDto> Recruiters { get; set; }
 
 
         #endregion

@@ -63,7 +63,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<JobCrudDto>> GetSubscriberJobPostingCruds(Guid subscriberGuid, int limit, int offset, string sort, string order);
         Task<List<UpDiddyLib.Domain.Models.PartnerDto>> GetPartners(int limit, int offset, string sort, string order);
         Task<int> UpdateNotificationCoursesAsync(Guid subscriberGuid, Guid notificationGuid, List<Guid> groups);
-        Task<List<GroupInfoDto>> GetGroups(int limit, int offset, string sort, string order);
         Task UpdateEntitySkills(Guid entityGuid, string entityType, List<Guid> skillGuids);
+        Task<List<GroupInfoDto>> GetGroups(int limit, int offset, string sort, string order);
+        Task<List<RecruiterInfoDto>> GetRecruiters(int limit, int offset, string sort, string order);
     }
 }

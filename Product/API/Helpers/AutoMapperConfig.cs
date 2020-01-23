@@ -643,6 +643,34 @@ namespace UpDiddyApi.Helpers
 
 
 
+            CreateMap<List<RecruiterInfoDto>, RecruiterInfoListDto>()
+            .AfterMap((src, dest) =>
+            {
+                if (src != null && src.Count() > 0)
+                    dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                else
+                    dest.TotalRecords = 0;
+            })
+            .ForMember(dest => dest.Entities, opt => opt.MapFrom(src => src.ToList()))
+            .ReverseMap();
+ 
+
+            CreateMap<Recruiter, RecruiterInfoDto>()
+               .ForPath(x => x.SubscriberGuid, opt => opt.MapFrom(src => src.Subscriber.SubscriberGuid))             
+               .ForMember(x => x.TotalRecords, opt => opt.Ignore())
+               .ForMember(x => x.IsInAuth0RecruiterGroup, opt => opt.Ignore())
+               .ForMember(c => c.RecruiterGuid, opt => opt.MapFrom(src => src.RecruiterGuid))
+               .ForMember(c => c.FirstName, opt => opt.MapFrom(src => src.FirstName))
+               .ForMember(c => c.LastName, opt => opt.MapFrom(src => src.LastName))
+               .ForMember(c => c.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+               .ForMember(c => c.Email, opt => opt.MapFrom(src => src.Email))
+               .ForMember(c => c.CompanyGuid, opt => opt.MapFrom(src => src.Company.CompanyGuid))
+               .ReverseMap();
+
+ 
+
+
+
 
 
 
