@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
-using UpDiddyApi.ApplicationCore.Interfaces;
 using AutoMapper;
 using UpDiddyLib.Domain.Models;
 using UpDiddyApi.Models;
@@ -25,12 +23,10 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (compensationTypeGuid == null || compensationTypeGuid == Guid.Empty)
                 throw new NullReferenceException("CompensationTypeGuid cannot be null");
-            IList<CompensationTypeDto> rval;
-                var compensationTypes = await _repositoryWrapper.CompensationTypeRepository.GetAllCompensationTypes();
-                if (compensationTypes == null)
-                    throw new NotFoundException("CompensationTypeGuid not found");
-                rval = _mapper.Map<List<CompensationTypeDto>>(compensationTypes);
-            return rval?.Where(x => x.CompensationTypeGuid == compensationTypeGuid).FirstOrDefault();
+            var compensationType = await _repositoryWrapper.CompensationTypeRepository.GetByGuid(compensationTypeGuid);
+            if( compensationType == null)
+                throw new NotFoundException($"CompensationType with guid: {compensationTypeGuid} does not exist");
+            return _mapper.Map<CompensationTypeDto>(compensationType);
         }
 
         public async Task<CompensationTypeListDto> GetCompensationTypes(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")

@@ -1,24 +1,12 @@
 ﻿using System;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using UpDiddyApi.ApplicationCore.Services;
-using UpDiddyApi.Models;
 using AutoMapper;
-using System.Security.Claims;
-using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using Microsoft.Extensions.DependencyInjection;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
-using Microsoft.AspNetCore.Http;
-using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyLib.Domain.Models;
-using UpDiddyApi.ApplicationCore.Exceptions;
-using UpDiddyLib.Shared.GoogleJobs;
-using System.Collections.Generic;
-using UpDiddyLib.Helpers;
-
 namespace UpDiddyApi.Controllers.V2
 {
     [Route("/V2/notifications/")]

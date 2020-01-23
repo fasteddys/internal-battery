@@ -82,7 +82,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> UpdateSocialProfile([FromBody] SubscriberProfileSocialDto subscribeProfileSocialDto)
         {
             await _profileService.UpdateSubscriberProfileSocialAsync(subscribeProfileSocialDto, GetSubscriberGuid());
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         [HttpGet]
@@ -112,7 +112,7 @@ namespace UpDiddyApi.Controllers.V2
         {
 
             await _profileService.UpdateSubscriberProfileBasicAsync(subscribeProfileBasicDto, GetSubscriberGuid());
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
 
@@ -143,7 +143,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> UpdateProfileEducationHistory([FromBody] SubscriberEducationHistoryDto subscriberEducationHistoryDto, Guid educationalHistoryGuid)
         {
             await _subscriberEducationalHistoryService.UpdateEducationalHistory(subscriberEducationHistoryDto, GetSubscriberGuid(), educationalHistoryGuid);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         [HttpDelete]
@@ -183,7 +183,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> UpdateWorkHistory([FromBody] SubscriberWorkHistoryDto subscriberEducationHistoryDto, Guid workHistoryGuid)
         {
             await _subscriberWorkHistoryService.UpdateEducationalHistory(subscriberEducationHistoryDto, GetSubscriberGuid(), workHistoryGuid);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         [HttpDelete]
@@ -275,13 +275,22 @@ namespace UpDiddyApi.Controllers.V2
             return Ok(skills);
         }
 
+        // [HttpPut]
+        // [Route("skills")]
+        // [Authorize]
+        // public async Task<IActionResult> UpdateSubscriberSkills([FromBody] List<Guid> skills)
+        // {
+        //     await _skillservice.UpdateSubscriberSkills(GetSubscriberGuid(), skills);
+        //     return StatusCode(204);
+        // }
+        
         [HttpPut]
         [Route("skills")]
         [Authorize]
         public async Task<IActionResult> UpdateSubscriberSkills([FromBody] List<string> skills)
         {
             await _skillservice.UpdateSubscriberSkills(GetSubscriberGuid(), skills);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         #endregion
@@ -313,7 +322,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> UploadAvatar([FromBody] UpDiddyLib.Domain.Models.FileDto fileDto)
         {
             await _avatarService.UploadAvatar(GetSubscriberGuid(), fileDto);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         [HttpDelete]
@@ -362,7 +371,7 @@ namespace UpDiddyApi.Controllers.V2
         {
 
             await _profileService.UpdateSubscriberCareerPath(careerPath, GetSubscriberGuid());
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         #endregion

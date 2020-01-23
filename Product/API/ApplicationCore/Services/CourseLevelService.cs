@@ -25,12 +25,10 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (courseLevelGuid == null || courseLevelGuid == Guid.Empty)
                 throw new NullReferenceException("CourseLevelGuid cannot be null");
-            IList<CourseLevelDto> rval;
-            var courseLevels = await _repositoryWrapper.CourseLevelRepository.GetAllCourseLevels();
-            if (courseLevels == null)
-                throw new NotFoundException("CourseLevelGuid not found");
-            rval = _mapper.Map<List<CourseLevelDto>>(courseLevels);
-            return rval?.Where(x => x.CourseLevelGuid == courseLevelGuid).FirstOrDefault();
+            var courseLevel = await  _repositoryWrapper.CourseLevelRepository.GetByGuid(courseLevelGuid);
+            if (courseLevel == null)
+                throw new NotFoundException($"CourseLevel with guid: {courseLevelGuid} does not exist");
+            return _mapper.Map<CourseLevelDto>(courseLevel);
         }
 
         public async Task<CourseLevelListDto> GetCourseLevels(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")

@@ -30,7 +30,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> CompleteAssessment(string assessmentId)
         {
             await _traitifyService.CompleteAssessment(assessmentId);
-            return StatusCode(200);
+            return StatusCode(204);
         }
     }
 }

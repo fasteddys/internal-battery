@@ -25,12 +25,10 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (stateGuid == null || stateGuid == Guid.Empty)
                 throw new NullReferenceException("stateGuid cannot be null");
-            IList<StateDetailDto> rval;
-            var states = await _repositoryWrapper.State.GetAllStatesAsync();
-            if (states == null || states.Count() == 0)
-                throw new NotFoundException("States not found");
-            rval = _mapper.Map<List<StateDetailDto>>(states);
-            return rval?.Where(x => x.StateGuid == stateGuid).FirstOrDefault();
+            var state = await _repositoryWrapper.State.GetByGuid(stateGuid);
+            if (state == null)
+                throw new NotFoundException($"State with guid: {stateGuid} does not exist");
+            return _mapper.Map<StateDetailDto>(state);
         }
 
         public async Task<StateDetailListDto> GetStates(Guid countryGuid, int limit = 100, int offset = 0, string sort = "modifyDate", string order = "descending")

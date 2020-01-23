@@ -832,7 +832,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         }
 
-
         public async Task<List<GroupInfoDto>> GetGroups(int limit, int offset, string sort, string order)
         {
             var spParams = new object[] {
@@ -847,8 +846,36 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return rval;
         }
 
+        public async Task UpdateEntitySkills(Guid entityGuid, string entityType, List<Guid> skillGuids)
+        {
+            DataTable skillTable = new DataTable();
+            skillTable.Columns.Add("Guid", typeof(Guid));
+            if (skillGuids != null && skillGuids.Count > 0)
+            {
+                foreach (var skillGuid in skillGuids)
+                {
+                    skillTable.Rows.Add(skillGuid);
+                }
+            }
 
+            var entityParam = new SqlParameter("@EntityGuid", SqlDbType.UniqueIdentifier);
+            entityParam.Value = entityGuid;
 
+            var entityTypeParam = new SqlParameter("@EntityType", SqlDbType.VarChar, 100);
+            entityTypeParam.Value = entityType;
+
+            var skillsParam = new SqlParameter("@SkillGuids", skillTable);
+            skillsParam.SqlDbType = SqlDbType.Structured;
+            skillsParam.TypeName = "dbo.GuidList";
+
+            var spParams = new object[] { entityParam, entityTypeParam, skillsParam };
+            
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"
+                EXEC [dbo].[System_Update_EntitySkills] 
+                    @EntityGuid,
+                    @EntityType,
+	                @SkillGuids", spParams);
+        }
         public async Task<List<RecruiterInfoDto>> GetRecruiters(int limit, int offset, string sort, string order)
         {
             var spParams = new object[] {
@@ -863,7 +890,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return rval;
         }
 
-
+      
 
 
 

@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
-using UpDiddyApi.ApplicationCore.Interfaces;
 using AutoMapper;
 using UpDiddyLib.Domain.Models;
 using UpDiddyApi.Models;
@@ -25,12 +22,10 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (countryGuid == null || countryGuid == Guid.Empty)
                 throw new NullReferenceException("countryGuid cannot be null");
-            IList<CountryDetailDto> rval;
-            var countries = await _repositoryWrapper.Country.GetAllCountries();
-            if (countries == null || countries.Count() == 0)
-                throw new NotFoundException("Country not found");
-            rval = _mapper.Map<List<CountryDetailDto>>(countries);
-            return rval?.Where(x => x.CountryGuid == countryGuid).FirstOrDefault();
+            var country = await  _repositoryWrapper.Country.GetByGuid(countryGuid);
+            if (country == null)
+                throw new NotFoundException($"Country with guid: {countryGuid} does not exist");
+            return _mapper.Map<CountryDetailDto>(country);
         }
 
         public async Task<CountryDetailListDto> GetAllCountries(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")

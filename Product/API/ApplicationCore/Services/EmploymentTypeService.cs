@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
-using UpDiddyApi.ApplicationCore.Interfaces;
 using AutoMapper;
 using UpDiddyLib.Domain.Models;
 using UpDiddyApi.Models;
@@ -25,12 +22,10 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (employmentTypeGuid == null || employmentTypeGuid == Guid.Empty)
                 throw new NullReferenceException("EmploymentTypeGuid cannot be null");
-            IList<EmploymentTypeDto> rval;
-            var employmentTypes = await _repositoryWrapper.EmploymentTypeRepository.GetAllEmploymentTypes();
-            if (employmentTypes == null)
-                throw new NotFoundException("EmploymentTypeGuid not found");
-            rval = _mapper.Map<List<EmploymentTypeDto>>(employmentTypes);
-            return rval?.Where(x => x.EmploymentTypeGuid == employmentTypeGuid).FirstOrDefault();
+            var employmentType = await  _repositoryWrapper.EmploymentTypeRepository.GetByGuid(employmentTypeGuid);
+            if (employmentType == null)
+                throw new NotFoundException($"EmploymentType with guid: {employmentTypeGuid} does not exist");
+            return _mapper.Map<EmploymentTypeDto>(employmentType);
         }
 
         public async Task<EmploymentTypeListDto> GetEmploymentTypes(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
