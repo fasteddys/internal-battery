@@ -118,7 +118,54 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _repositoryWrapper.StoredProcedureRepository.UpdateEntitySkills(courseGuid, "Course", skills);
         }
 
-        public async Task UpdateSubscriberSkills(Guid subscriberGuid, List<Guid> skills)
+        public async Task UpdateSubscriberSkills(Guid subscriberGuid, List<string> skills)
+        {
+            var subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
+            if (subscriber == null)
+                throw new NotFoundException("Subscriber not found");
+            var subscriberSkillsList = await _repositoryWrapper.SubscriberSkillRepository.GetAllSkillsBySubscriberGuid(subscriberGuid);
+            foreach (var subscriberSkill in subscriberSkillsList)
+            {
+                subscriberSkill.IsDeleted = 1;
+                if (skills.Contains(subscriberSkill.Skill.SkillName, StringComparer.CurrentCultureIgnoreCase))
+                {
+                    subscriberSkill.IsDeleted = 0;
+                    skills.RemoveAll(n => n.Equals(subscriberSkill.Skill.SkillName, StringComparison.OrdinalIgnoreCase));
+                }
+            }
+            foreach (var skill in skills)
+            {
+                Skill skillEntity = new Skill();
+                var existingSkill = await _repositoryWrapper.SkillRepository.GetByName(skill);
+                if (existingSkill == null)
+                {
+                    skillEntity.SkillGuid = Guid.NewGuid();
+                    skillEntity.SkillName = skill;
+                    skillEntity.CreateDate = DateTime.UtcNow;
+                    skillEntity.ModifyDate = DateTime.UtcNow;
+                }
+                else
+                {
+                    skillEntity.SkillId = existingSkill.SkillId;
+                }
+                SubscriberSkill subscriberSkill = new SubscriberSkill
+                {
+                    SubscriberId = subscriber.SubscriberId,
+                    SubscriberSkillGuid = Guid.NewGuid(),
+                    Skill = skillEntity,
+                    CreateDate = DateTime.UtcNow,
+                    ModifyDate = DateTime.UtcNow
+                };
+                await _repositoryWrapper.SubscriberSkillRepository.Create(subscriberSkill);
+            }
+            if (_repositoryWrapper.SubscriberSkillRepository.HasUnsavedChanges())
+            {
+                await _repositoryWrapper.SaveAsync();
+            }
+        }
+
+
+        public async Task UpdateSubscriberSkillsByGuid(Guid subscriberGuid, List<Guid> skills)
         {
             var subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
             if (subscriber == null)
