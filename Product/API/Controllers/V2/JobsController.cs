@@ -291,8 +291,9 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> CreateJob([FromBody] JobCrudDto jobPostingDto)
         {
 
-            await _jobPostingService.CreateJobPosting(GetSubscriberGuid(), jobPostingDto);
-            return StatusCode(201);
+            Guid newJobGuid =  await _jobPostingService.CreateJobPosting(GetSubscriberGuid(), jobPostingDto);
+            Response.StatusCode = 201;
+            return StatusCode(201, newJobGuid);
         }
 
 

@@ -131,7 +131,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
         
-        public async Task<bool> CreateJobPosting(Guid subscriberGuid,JobCrudDto jobCrudDto)
+        public async Task<Guid> CreateJobPosting(Guid subscriberGuid,JobCrudDto jobCrudDto)
         {
 
 
@@ -159,14 +159,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             jobPostingDto.CreateGuid = subscriberGuid;
             // mark the jobposting modify guid to empty to signify un-modified 
             jobPostingDto.ModifyGuid = Guid.Empty;
+
+            return PostJob(_repositoryWrapper, recruiter.RecruiterId, jobPostingDto, ref newPostingGuid, ref errorMsg, _syslog, _mapper, _configuration, _hangfireService);            
             
-            if (JobPostingFactory.PostJob(_repositoryWrapper, recruiter.RecruiterId, jobPostingDto, ref newPostingGuid, ref errorMsg, _syslog, _mapper, _configuration, _hangfireService) == true)
-                return true;
-            else
-            {
-                _syslog.Log(LogLevel.Error, $"JobPostingService:UpdateJobPosting error updating job posting {jobCrudDto.JobPostingGuid} error = {errorMsg}");
-                throw new JobPostingCreation(errorMsg);
-            }
                 
           
         }
@@ -288,6 +283,100 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
         #region Helper functions 
+
+        private  Guid PostJob(IRepositoryWrapper repositoryWrapper, int recruiterId, UpDiddyLib.Dto.JobPostingDto jobPostingDto, ref Guid newPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, IHangfireService _hangfireService)
+        {
+            Guid rVal = Guid.Empty;
+            int postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
+
+            if (jobPostingDto == null)
+            {
+                ErrorMsg = "JobPosting is required";
+                return rVal;
+            }
+
+            syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
+
+            JobPosting jobPosting = mapper.Map<JobPosting>(jobPostingDto);
+            // todo find a better way to deal with the job posting having a collection of JobPostingSkill and the job posting DTO having a collection of SkillDto
+            // ignore posting skills that were mapped via automapper, they will be associated with the posting below 
+            jobPosting.JobPostingSkills = null;
+            // assign recruiter
+            jobPosting.RecruiterId = recruiterId;
+            // use factory method to make sure all the base data values are set just 
+            // in case the caller didn't set them
+            BaseModelFactory.SetDefaultsForAddNew(jobPosting);
+            // important! Init all reference object ids to null since further logic will use < 0 to check for 
+            // their validity
+            JobPostingFactory.SetDefaultsForAddNew(jobPosting);
+            // Asscociate related objects that were passed by guid
+            // todo find a more efficient way to do this
+            JobPostingFactory.MapRelatedObjects(repositoryWrapper, jobPosting, jobPostingDto).Wait();
+
+            string msg = string.Empty;
+
+            if (JobPostingFactory.ValidateJobPosting(jobPosting, configuration, ref msg) == false)
+            {
+                ErrorMsg = msg;
+                syslog.Log(LogLevel.Warning, "JobPostingController.CreateJobPosting:: Bad Request {Description} {JobPosting}", msg, jobPostingDto);
+                return rVal;
+            }
+
+            jobPosting.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.NotIndexed;
+            jobPosting.JobPostingGuid = Guid.NewGuid();
+            // set expiration date 
+            if (jobPosting.PostingDateUTC < DateTime.UtcNow)
+                jobPosting.PostingDateUTC = DateTime.UtcNow;
+            if (jobPosting.PostingExpirationDateUTC < DateTime.UtcNow)
+            {
+                jobPosting.PostingExpirationDateUTC = DateTime.UtcNow.AddDays(postingTTL);
+            }
+
+            // adding this try/catch to troubleshoot an issue that i am unable to replicate in my local environment
+            try
+            {
+                // save the job to sql server 
+                // todo make saving the job posting and skills more efficient with a stored procedure 
+                repositoryWrapper.JobPosting.Create(jobPosting);
+                repositoryWrapper.JobPosting.SaveAsync().Wait();
+                // update associated job posting skills
+                JobPostingFactory.UpdateJobPostingSkills(repositoryWrapper, jobPosting.JobPostingId, jobPostingDto?.JobPostingSkills);
+                //index active jobs into google 
+                if (jobPosting.JobStatus == (int)JobPostingStatus.Active)
+                    _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(jobPosting.JobPostingGuid));
+
+
+                newPostingGuid = jobPosting.JobPostingGuid;
+            }
+            catch (AggregateException ae)
+            {
+                syslog.Log(LogLevel.Information, $"***** JobPostingFactory:PostJob aggregate exception : {ae.Message}, Source: {ae.Source}, StackTrace: {ae.StackTrace}");
+
+                foreach (var e in ae.InnerExceptions)
+                {
+                    if (e.InnerException != null)
+                    {
+                        syslog.Log(LogLevel.Information, $"***** JobPostingFactory:PostJob aggregate exception inner exception instance: {e.InnerException.Message}, Source: {e.InnerException.Source}, StackTrace: {e.InnerException.StackTrace}");
+                    }
+                }
+                throw;
+            }
+            catch (Exception e)
+            {
+                syslog.Log(LogLevel.Information, $"***** JobPostingFactory:PostJob generic exception: {e.Message}, Source: {e.Source}, StackTrace: {e.StackTrace}");
+                if (e.InnerException != null)
+                    syslog.Log(LogLevel.Information, $"***** JobPostingFactory:PostJob generic inner exception: {e.InnerException.Message}, Source: {e.InnerException.Source}, StackTrace: {e.InnerException.StackTrace}");
+            }
+            finally
+            {
+                syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
+
+            return jobPosting.JobPostingGuid;
+        }
+
+
+
 
         private async Task<UpDiddyLib.Dto.JobPostingDto> MapPostingCrudToJobPosting(Guid subscriberGuid, JobCrudDto jobCrudDto)
         {
