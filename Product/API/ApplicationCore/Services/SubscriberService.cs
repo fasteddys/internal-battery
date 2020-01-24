@@ -256,6 +256,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 FirstName = !string.IsNullOrWhiteSpace(subscriberDto.FirstName) ? subscriberDto.FirstName : null,
                 LastName = !string.IsNullOrWhiteSpace(subscriberDto.LastName) ? subscriberDto.LastName : null,
                 PhoneNumber = !string.IsNullOrWhiteSpace(subscriberDto.PhoneNumber) ? subscriberDto.PhoneNumber : null,
+                Auth0UserId = subscriberDto.Auth0UserId,
                 CreateDate = DateTime.UtcNow,
                 CreateGuid = Guid.Empty,
                 IsDeleted = 0
@@ -1435,8 +1436,24 @@ namespace UpDiddyApi.ApplicationCore.Services
             return subscriberList.Count > 0 ? subscriberList[0] : null;
         }
 
+        public async Task TrackSubscriberSignIn(Guid subscriberGuid)
+        {
+            var currentUtcDateTime = DateTime.UtcNow;
+            var subscriber = await _repository.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+            subscriber.LastSignIn = currentUtcDateTime;
+            subscriber.ModifyDate = currentUtcDateTime;
+            subscriber.ModifyGuid = Guid.Empty;
+            await _repository.SubscriberRepository.SaveAsync();
+        }
+
+        public async Task SyncAuth0UserId(Guid subscriberGuid, string auth0UserId)
+        {
+            var currentUtcDateTime = DateTime.UtcNow;
+            var subscriber = await _repository.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+            subscriber.Auth0UserId = auth0UserId;
+            subscriber.ModifyDate = currentUtcDateTime;
+            subscriber.ModifyGuid = Guid.Empty;
+            await _repository.SubscriberRepository.SaveAsync();
+        }
     }
-
-
-
 }

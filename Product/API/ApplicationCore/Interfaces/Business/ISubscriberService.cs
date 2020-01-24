@@ -141,5 +141,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<IList<SubscriberSourceDto>> GetSubscriberSources(int subscriberId);
 
         Task<Subscriber> GetBySubscriberGuid(Guid subscriberGuid);
+        Task TrackSubscriberSignIn(Guid subscriberGuid);
+        Task SyncAuth0UserId(Guid subscriberGuid, string auth0UserId);
     }
 }
