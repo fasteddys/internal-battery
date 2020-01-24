@@ -102,9 +102,6 @@ namespace UpDiddyApi.Controllers
             return Ok(rVal);
         }
 
-
-        // todo jab enter endpoint in api gateway
-
         [HttpGet]
         [Authorize]
         [Route("search/{talent:guid}/resume")]

@@ -57,7 +57,7 @@ namespace UpDiddyApi.Controllers.V2
 
         #endregion
 
-        //todo jab put in migration for sproc
+ 
         [HttpGet]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> GetGroups(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
