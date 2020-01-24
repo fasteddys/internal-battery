@@ -248,9 +248,9 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
  
-        public async Task EditRecruiterAsync(RecruiterInfoDto recruiterDto)
+        public async Task EditRecruiterAsync(RecruiterInfoDto recruiterDto, Guid recruiterGuid)
         {
-            var recruiter = await _repositoryWrapper.RecruiterRepository.GetRecruiterByRecruiterGuid(recruiterDto.RecruiterGuid);
+            var recruiter = await _repositoryWrapper.RecruiterRepository.GetRecruiterByRecruiterGuid(recruiterGuid);
             if (recruiter == null)
                 throw new FailedValidationException($"{recruiterDto.RecruiterGuid} is not a valid recruiter");
 
