@@ -44,8 +44,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("sync-auth0-userid")]
         public async Task<IActionResult> SyncAuth0UserId([FromBody] SubscriberDto subscriberDto)
         {
-            // the lack of an await is intentional here
-            _subscriberService.SyncAuth0UserId(subscriberDto.SubscriberGuid, subscriberDto.Auth0UserId);
+            await _subscriberService.SyncAuth0UserId(subscriberDto.SubscriberGuid, subscriberDto.Auth0UserId);
             return StatusCode(200);
         }
                 
@@ -54,8 +53,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("{subscriber:guid}/track-sign-in")]
         public async Task<IActionResult> TrackSignIn(Guid subscriber)
         {
-            // the lack of an await is intentional here
-            _subscriberService.TrackSubscriberSignIn(subscriber);
+            await _subscriberService.TrackSubscriberSignIn(subscriber);
             return StatusCode(200);
         }
 
