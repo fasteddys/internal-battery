@@ -25,5 +25,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<bool> UpdateJobPostingSkills(Guid subscriberGuid, Guid jobPostingGuid, List<UpDiddyLib.Domain.Models.SkillDto> skills);
         Task<bool> UpdateJobPostingSkills(int jobPostingId, List<UpDiddyLib.Domain.Models.SkillDto> jobPostingSkills);
         Task<JobSiteScrapeStatisticsListDto> GetJobSiteScrapeStatistics(int limit, int offset, string sort, string order);
+        Task<List<UpDiddyLib.Domain.Models.SkillDto>> GetJobPostingSkills(Guid subscriberGuid, Guid jobPostingGuid);
     }
 }
