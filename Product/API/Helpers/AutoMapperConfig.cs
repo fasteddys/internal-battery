@@ -680,7 +680,14 @@ namespace UpDiddyApi.Helpers
                .ForMember(c => c.CompanyGuid, opt => opt.MapFrom(src => src.Company.CompanyGuid))
                .ReverseMap();
 
- 
+
+            CreateMap<JobPostingSkill, UpDiddyLib.Domain.Models.SkillDto>()
+                .ForMember(c => c.Name, opt => opt.MapFrom(src => src.Skill.SkillName))
+                .ForMember(c => c.SkillGuid, opt => opt.MapFrom(src => src.Skill.SkillGuid))
+                .ForMember(x => x.TotalRecords, opt => opt.Ignore())
+                .ReverseMap();
+
+
 
 
 

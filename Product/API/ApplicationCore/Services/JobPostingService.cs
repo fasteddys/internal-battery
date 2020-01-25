@@ -516,6 +516,40 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
+
+        public async Task<List<UpDiddyLib.Domain.Models.SkillDto>> GetJobPostingSkills(Guid subscriberGuid, Guid jobPostingGuid )
+        {
+       
+            Recruiter recruiter = _repositoryWrapper.RecruiterRepository.GetAll()
+                .Include(s => s.Subscriber)
+                .Where(r => r.IsDeleted == 0 && r.Subscriber.SubscriberGuid == subscriberGuid)
+                .FirstOrDefault();
+
+            if (recruiter == null)
+                throw new NotFoundException($"JobPostingService.UpdateJobPostingSkills: Cannot locate Recruiter {subscriberGuid}");
+
+            JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuid(_repositoryWrapper, jobPostingGuid);
+
+            if (jobPosting == null)
+                throw new NotFoundException($"Job posting {jobPostingGuid} does not exist");
+
+            // For now only allow posting to be updatded by their creator
+            if (jobPosting.Recruiter.Subscriber.SubscriberGuid != subscriberGuid)
+                throw new UnauthorizedAccessException();
+
+            List<UpDiddyLib.Domain.Models.SkillDto> rVal = null;
+
+            List<JobPostingSkill> jobSkills = _repositoryWrapper.JobPostingSkillRepository.GetByJobPostingId(jobPosting.JobPostingId);
+
+            rVal = _mapper.Map<List<UpDiddyLib.Domain.Models.SkillDto>>(jobSkills);
+
+            return rVal;
+
+        }
+
+
+
+
         #endregion
     }
 }

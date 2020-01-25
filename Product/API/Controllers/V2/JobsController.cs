@@ -350,6 +350,18 @@ namespace UpDiddyApi.Controllers
             return StatusCode(204);
         }
 
+
+        [HttpGet]
+        [Route("admin/{jobGuid:guid}/skills")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        public async Task<IActionResult> GetJobSkills( Guid jobGuid)
+        { 
+            return Ok (await _jobPostingService.GetJobPostingSkills(GetSubscriberGuid(), jobGuid) );
+            
+        }
+
+
+
         #endregion
 
         #region Related Entities
