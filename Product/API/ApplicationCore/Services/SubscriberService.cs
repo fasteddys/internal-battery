@@ -1438,22 +1438,12 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task TrackSubscriberSignIn(Guid subscriberGuid)
         {
-            var currentUtcDateTime = DateTime.UtcNow;
-            var subscriber = await _repository.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
-            subscriber.LastSignIn = currentUtcDateTime;
-            subscriber.ModifyDate = currentUtcDateTime;
-            subscriber.ModifyGuid = Guid.Empty;
-            await _repository.SubscriberRepository.SaveAsync();
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.TrackSubscriberSignIn(subscriberGuid));
         }
 
         public async Task SyncAuth0UserId(Guid subscriberGuid, string auth0UserId)
         {
-            var currentUtcDateTime = DateTime.UtcNow;
-            var subscriber = await _repository.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
-            subscriber.Auth0UserId = auth0UserId;
-            subscriber.ModifyDate = currentUtcDateTime;
-            subscriber.ModifyGuid = Guid.Empty;
-            await _repository.SubscriberRepository.SaveAsync();
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.SyncAuth0UserId(subscriberGuid, auth0UserId));
         }
     }
 }
