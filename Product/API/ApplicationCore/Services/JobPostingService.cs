@@ -194,7 +194,10 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
             UpDiddyLib.Dto.JobPostingDto jobPostingDto = await MapPostingCrudToJobPosting(subscriberGuid, jobCrudDto);
-              
+
+            if ( jobPostingDto == null )
+                throw new FailedValidationException("The passed job information is in an invalid format");
+
 
             _syslog.Log(LogLevel.Information, $"***** JobPostingService:UpdateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
             // update the job posting 
