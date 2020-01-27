@@ -199,15 +199,25 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new FailedValidationException("The passed job information is in an invalid format");
 
 
+   
+
+
             _syslog.Log(LogLevel.Information, $"***** JobPostingService:UpdateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
             // update the job posting 
             string ErrorMsg = string.Empty;
-            bool UpdateOk = JobPostingFactory.UpdateJobPosting(_repositoryWrapper, jobPostingGuid, jobPostingDto, ref ErrorMsg, _hangfireService);
-            _syslog.Log(LogLevel.Information, $"***** JobPostingService:UpdateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
+            bool UpdateOk = JobPostingFactory.UpdateJobPosting(_repositoryWrapper, jobPostingGuid, jobPostingDto, ref ErrorMsg, _hangfireService,_configuration);
+            
             if (UpdateOk)
+            {
+                _syslog.Log(LogLevel.Information, $"***** JobPostingService:UpdateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
                 return true;
+            }                
             else
+            {
+                _syslog.Log(LogLevel.Information, $"***** JobPostingService:UpdateJobPosting Error {ErrorMsg} at: {DateTime.UtcNow.ToLongDateString()}");
                 throw new JobPostingUpdate(ErrorMsg);
+            }
+             
 
         }
 
@@ -541,7 +551,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             // For now only allow posting to be updatded by their creator
             if (jobPosting.Recruiter.Subscriber.SubscriberGuid != subscriberGuid)
-                throw new UnauthorizedAccessException();
+                throw new InvalidOperationException("Requestor is not owner of posting");
 
             List<UpDiddyLib.Domain.Models.SkillDto> rVal = null;
 
