@@ -144,7 +144,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             Recruiter recruiter = await _repositoryWrapper.RecruiterRepository.GetByGuid(jobCrudDto.RecruiterGuid);
 
             if (recruiter == null)
-                throw new NotFoundException("JobPostingService.CreateJobPosting: Recruiter not specified for job posting");
+                throw new NotFoundException($"JobPostingService.CreateJobPosting: The specified recruiter {jobCrudDto.RecruiterGuid} does not exist.");
 
 
             if (jobCrudDto.CompanyGuid == null)

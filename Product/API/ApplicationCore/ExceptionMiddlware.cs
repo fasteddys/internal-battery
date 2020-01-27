@@ -63,7 +63,7 @@ public class ExceptionMiddleware
         }
         catch (InvalidOperationException ex)
         {
-            await CreateResponse(401, ex, context);
+            await CreateResponse(400, ex, context);
         }
         catch (TraitifyException ex)
         {
