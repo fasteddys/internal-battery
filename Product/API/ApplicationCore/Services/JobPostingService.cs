@@ -144,7 +144,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             Recruiter recruiter = await _repositoryWrapper.RecruiterRepository.GetByGuid(jobCrudDto.RecruiterGuid);
 
             if (recruiter == null)
-                throw new NotFoundException("JobPostingService.CreateJobPosting: Recruiter not specified for job posting");
+                throw new NotFoundException($"JobPostingService.CreateJobPosting: The specified recruiter {jobCrudDto.RecruiterGuid} does not exist.");
 
 
             if (jobCrudDto.CompanyGuid == null)
@@ -160,9 +160,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             // mark the jobposting modify guid to empty to signify un-modified 
             jobPostingDto.ModifyGuid = Guid.Empty;
 
-            return PostJob(_repositoryWrapper, recruiter.RecruiterId, jobPostingDto, ref newPostingGuid, ref errorMsg, _syslog, _mapper, _configuration, _hangfireService);            
-            
-                
+            Guid jobGuid =  PostJob(_repositoryWrapper, recruiter.RecruiterId, jobPostingDto, ref newPostingGuid, ref errorMsg, _syslog, _mapper, _configuration, _hangfireService);
+
+            if (jobGuid == Guid.Empty)
+                throw new FailedValidationException(errorMsg);
+
+            return jobGuid;                            
           
         }
 
@@ -191,7 +194,10 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
             UpDiddyLib.Dto.JobPostingDto jobPostingDto = await MapPostingCrudToJobPosting(subscriberGuid, jobCrudDto);
-              
+
+            if ( jobPostingDto == null )
+                throw new FailedValidationException("The passed job information is in an invalid format");
+
 
             _syslog.Log(LogLevel.Information, $"***** JobPostingService:UpdateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
             // update the job posting 
@@ -398,48 +404,48 @@ namespace UpDiddyApi.ApplicationCore.Services
                 CompanyGuid = jobCrudDto.CompanyGuid
             };
 
-            if (jobCrudDto.IndustryGuid != null)
+            if (jobCrudDto.IndustryGuid != null && jobCrudDto.IndustryGuid != Guid.Empty)
                 jobPostingDto.Industry = new UpDiddyLib.Dto.IndustryDto()
                 {
                     IndustryGuid = jobCrudDto.IndustryGuid
                 };
 
 
-            if (jobCrudDto.JobCategoryGuid != null)
+            if (jobCrudDto.JobCategoryGuid != null && jobCrudDto.JobCategoryGuid != Guid.Empty)
                 jobPostingDto.JobCategory = new JobCategoryDto()
                 {
                     JobCategoryGuid = jobCrudDto.JobCategoryGuid
                 };
 
-            if (jobCrudDto.ExperienceLevelGuid != null)
+            if (jobCrudDto.ExperienceLevelGuid != null && jobCrudDto.ExperienceLevelGuid != Guid.Empty)
                 jobPostingDto.ExperienceLevel = new UpDiddyLib.Dto.ExperienceLevelDto()
                 {
                     ExperienceLevelGuid = jobCrudDto.ExperienceLevelGuid
                 };
 
 
-            if (jobCrudDto.EducationLevelGuid != null)
+            if (jobCrudDto.EducationLevelGuid != null && jobCrudDto.EducationLevelGuid != Guid.Empty)
                 jobPostingDto.EducationLevel = new UpDiddyLib.Dto.EducationLevelDto()
                 {
                     EducationLevelGuid = jobCrudDto.EducationLevelGuid
                 };
 
 
-            if (jobCrudDto.CompensationTypeGuid != null)
+            if (jobCrudDto.CompensationTypeGuid != null && jobCrudDto.CompensationTypeGuid != Guid.Empty)
                 jobPostingDto.CompensationType = new UpDiddyLib.Dto.CompensationTypeDto()
                 {
                     CompensationTypeGuid = jobCrudDto.CompensationTypeGuid
                 };
 
 
-            if (jobCrudDto.SecurityClearanceGuid != null)
+            if (jobCrudDto.SecurityClearanceGuid != null && jobCrudDto.SecurityClearanceGuid != Guid.Empty)
                 jobPostingDto.SecurityClearance = new UpDiddyLib.Dto.SecurityClearanceDto()
                 {
                     SecurityClearanceGuid = jobCrudDto.SecurityClearanceGuid
                 };
 
 
-            if (jobCrudDto.EmploymentTypeGuid != null)
+            if (jobCrudDto.EmploymentTypeGuid != null && jobCrudDto.EmploymentTypeGuid != Guid.Empty)
                 jobPostingDto.EmploymentType = new UpDiddyLib.Dto.EmploymentTypeDto()
                 {
                     EmploymentTypeGuid = jobCrudDto.EmploymentTypeGuid
