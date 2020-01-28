@@ -190,21 +190,21 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<bool> AddRecruiterAsync(RecruiterInfoDto recruiterDto)
         {
 
-             // Do validations             
+            // Do validations             
             if (recruiterDto.SubscriberGuid == null)
                 throw new FailedValidationException("Subscriber must be specified");
 
             var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(recruiterDto.SubscriberGuid.Value);
-            if ( subscriber == null )
+            if (subscriber == null)
                 throw new FailedValidationException($"{recruiterDto.SubscriberGuid.Value} is not a valid subscriber");
 
-            if ( recruiterDto.CompanyGuid == null)
+            if (recruiterDto.CompanyGuid == null)
                 throw new FailedValidationException("Company must be specified");
 
             var company = await _repositoryWrapper.Company.GetByGuid(recruiterDto.CompanyGuid.Value);
-            if  ( company == null )
+            if (company == null)
                 throw new FailedValidationException($"{recruiterDto.CompanyGuid.Value} is not a valid company");
- 
+
             //check if recruiter exist
             var queryableRecruiter = _repositoryWrapper.RecruiterRepository.GetAllRecruiters();
             var existingRecruiter = await queryableRecruiter.Where(r => r.SubscriberId == subscriber.SubscriberId).FirstOrDefaultAsync();
@@ -220,8 +220,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                     existingRecruiter.ModifyDate = DateTime.Now;
                     await _repositoryWrapper.RecruiterRepository.UpdateRecruiter(existingRecruiter);
                 }
-                else                   
-                    throw new FailedValidationException($"Subscriber {subscriber.SubscriberGuid} is already a Recruiter");                
+                else
+                    throw new FailedValidationException($"Subscriber {subscriber.SubscriberGuid} is already a Recruiter");
             }
             else
             {
@@ -239,18 +239,18 @@ namespace UpDiddyApi.ApplicationCore.Services
                 BaseModelFactory.SetDefaultsForAddNew(newRecruiter);
                 await _repositoryWrapper.RecruiterRepository.AddRecruiter(newRecruiter);
 
-            }         
+            }
             //Assign permission to recruiter
-            if (recruiterDto.IsInAuth0RecruiterGroup != null && recruiterDto.IsInAuth0RecruiterGroup.Value == true )
+            if (recruiterDto.IsInAuth0RecruiterGroup != null && recruiterDto.IsInAuth0RecruiterGroup.Value == true)
                 await AssignRecruiterPermissionsAsync(recruiterDto.SubscriberGuid.Value);
-            
+
             return true;
         }
 
- 
-        public async Task EditRecruiterAsync(RecruiterInfoDto recruiterDto, Guid recruiterGuid)
+
+        public async Task EditRecruiterAsync(RecruiterInfoDto recruiterDto)
         {
-            var recruiter = await _repositoryWrapper.RecruiterRepository.GetRecruiterByRecruiterGuid(recruiterGuid);
+            var recruiter = await _repositoryWrapper.RecruiterRepository.GetRecruiterByRecruiterGuid(recruiterDto.RecruiterGuid);
             if (recruiter == null)
                 throw new FailedValidationException($"{recruiterDto.RecruiterGuid} is not a valid recruiter");
 
@@ -261,10 +261,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (subscriber == null)
                 throw new FailedValidationException($"{recruiterDto.SubscriberGuid.Value} is not a valid subscriber");
 
-                       
-            if ( recruiterDto.CompanyGuid == null )
+
+            if (recruiterDto.CompanyGuid == null)
                 throw new FailedValidationException($"Recruiters company is not specified");
-       
+
             // validate that the update specifies a valid company
             var company = await _repositoryWrapper.Company.GetByGuid(recruiterDto.CompanyGuid.Value);
             if (company == null)
@@ -281,7 +281,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             await _repositoryWrapper.RecruiterRepository.UpdateRecruiter(recruiter);
 
-            if ( recruiterDto.IsInAuth0RecruiterGroup != null )
+            if (recruiterDto.IsInAuth0RecruiterGroup != null)
             {
                 var getUserResponse = await _userService.GetUserByEmailAsync(recruiter.Email);
                 if (getUserResponse.Success)
@@ -300,8 +300,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                     }
                 }
             }
-            
-            
+
+
         }
 
         public async Task DeleteRecruiterAsync(Guid SubscriberGuid, Guid RecruiterGuid)
@@ -323,19 +323,19 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             // delete the user's permissions  
             var getUserResponse = await _userService.GetUserByEmailAsync(recruiter.Email);
-            if ( getUserResponse.Success && getUserResponse.User != null && getUserResponse.User.UserId != null && string.IsNullOrWhiteSpace(getUserResponse.User.UserId) == false )                
+            if (getUserResponse.Success && getUserResponse.User != null && getUserResponse.User.UserId != null && string.IsNullOrWhiteSpace(getUserResponse.User.UserId) == false)
                 await _userService.RemoveRoleFromUserAsync(getUserResponse.User.UserId, Role.Recruiter);
-                            
+
         }
 
-        public async Task<RecruiterInfoDto> GetRecruiter(Guid RecruiterGuid)
+        public async Task<RecruiterInfoDto> GetRecruiterAsync(Guid RecruiterGuid)
         {
             var recruiter = _repositoryWrapper.RecruiterRepository.GetAll()
                 .Include(s => s.Subscriber)
                 .Include(c => c.Company)
                 .Where(r => r.IsDeleted == 0 && r.RecruiterGuid == RecruiterGuid)
                 .FirstOrDefault();
- 
+
             if (recruiter == null)
                 throw new FailedValidationException($"{RecruiterGuid} is not a valid recruiter");
 
@@ -344,6 +344,26 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             return rVal;
         }
+
+
+        public async Task<RecruiterInfoDto> GetRecruiterBySubscriberAsync(Guid SubscriberGuid)
+        {
+            var recruiter = _repositoryWrapper.RecruiterRepository.GetAll()
+                .Include(s => s.Subscriber)
+                .Include(c => c.Company)
+                .Where(r => r.IsDeleted == 0 && r.Subscriber.SubscriberGuid == SubscriberGuid)
+                .FirstOrDefault();
+
+            if (recruiter == null)
+                throw new FailedValidationException($"The subscriber {SubscriberGuid} is not a recruiter");
+
+            RecruiterInfoDto rVal = _mapper.Map<RecruiterInfoDto>(recruiter);
+            rVal.IsInAuth0RecruiterGroup = await CheckRecruiterPermissionAsync(recruiter);
+
+            return rVal;
+        }
+
+
 
 
 
@@ -393,13 +413,13 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (!response.Success)
                 throw new ApplicationException("There was a problem retrieving users in the recruiter role");
             var usersInRole = response.Users;
-            
-                var user = usersInRole.Where(u => u.Email == recruiter.Email).FirstOrDefault();
+
+            var user = usersInRole.Where(u => u.Email == recruiter.Email).FirstOrDefault();
             if (user != null)
                 return true;
             else
                 return false;
-           
+
         }
 
 

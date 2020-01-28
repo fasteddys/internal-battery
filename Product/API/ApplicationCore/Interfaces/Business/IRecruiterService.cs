@@ -16,8 +16,12 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task DeleteRecruiterAsync(RecruiterDto recruiterDto);
         Task<RecruiterInfoListDto> GetRecruiters(int limit, int offset, string sort, string order);
         Task<bool> AddRecruiterAsync(RecruiterInfoDto recruiterDto);
-        Task EditRecruiterAsync(RecruiterInfoDto recruiterDto, Guid recruiter);
-        Task DeleteRecruiterAsync(Guid subsceiberGuid, Guid recruiter);
-        Task<RecruiterInfoDto> GetRecruiter(Guid recruiter);
+        Task EditRecruiterAsync(RecruiterInfoDto recruiterDto);
+        Task DeleteRecruiterAsync(Guid subsceiberGuid, Guid recruiterDto);
+
+        Task<RecruiterInfoDto> GetRecruiterAsync(Guid RecruiterGuid);
+
+        Task<RecruiterInfoDto> GetRecruiterBySubscriberAsync(Guid SubscriberGuid);
+
     }
 }
