@@ -32,6 +32,8 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using Microsoft.EntityFrameworkCore;
+using UpDiddyApi.Workflow;
+
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class CloudTalentService : BusinessVendorBase, ICloudTalentService
@@ -459,7 +461,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
         /// <summary>
-        /// Search the cloud talent solution for jobs 
+        /// Search the cloud talent solution for jobs. 
         /// </summary>
         /// <param name="jobQuery"></param>
         /// <param name="isJobPostingAlertSearch">If specified and set to TRUE, the search query is optimized for email alerts. For details, 
@@ -496,7 +498,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // pass back any information returned from google 
                 rVal.Info = searchResults.Description;
 
-
+                // invoke the Hangfire job that purges orphaned subscribers from search results                
+                _hangfireService.Enqueue<ScheduledJobs>(x => x.PurgeOrphanedSubscribersFromCloudTalent(rVal.Profiles));
             }
             catch (Exception ex)
             {
