@@ -30,12 +30,11 @@ namespace UpDiddyApi.Controllers.V2
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly ILogger _syslog;
         private readonly IHttpClientFactory _httpClientFactory = null;
-        private readonly int _postingTTL = 30;        
+        private readonly int _postingTTL = 30;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IServiceProvider _services;
         private readonly IJobService _jobService;
         private readonly IRecruiterService _recruiterService;
-
 
         #region constructor 
         public RecruitersController(IServiceProvider services
@@ -55,32 +54,29 @@ namespace UpDiddyApi.Controllers.V2
             _configuration = _services.GetService<Microsoft.Extensions.Configuration.IConfiguration>();
             _syslog = _services.GetService<ILogger<JobController>>();
             _httpClientFactory = _services.GetService<IHttpClientFactory>();
-            _repositoryWrapper = _services.GetService<IRepositoryWrapper>();            
-            _recruiterService = recruiterService;            
+            _repositoryWrapper = _services.GetService<IRepositoryWrapper>();
+            _recruiterService = recruiterService;
         }
 
         #endregion
-
-
 
         [HttpGet]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> GetRecruiters(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var rVal = await  _recruiterService.GetRecruiters(limit, offset, sort, order); 
+            var rVal = await _recruiterService.GetRecruiters(limit, offset, sort, order);
             return Ok(rVal);
         }
 
         [HttpPost]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<IActionResult> CreateRecruiter( [FromBody] RecruiterInfoDto recruiterInfoDto)
+        public async Task<IActionResult> CreateRecruiter([FromBody] RecruiterInfoDto recruiterInfoDto)
         {
-
             await _recruiterService.AddRecruiterAsync(recruiterInfoDto);
             return StatusCode(201);
         }
 
-
+    
         [HttpPut]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> UpdateRecruiter([FromBody] RecruiterInfoDto recruiterInfoDto)
@@ -90,15 +86,17 @@ namespace UpDiddyApi.Controllers.V2
             return StatusCode(204);
         }
 
+
+
         [HttpDelete]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        [Route("{RecruiterGuid}")]
-        public async Task<IActionResult> DeleteRecruiter( Guid RecruiterGuid)
+        [Route("{recruiter:guid}")]
+        public async Task<IActionResult> DeleteRecruiter(Guid recruiter)
         {
-
-            await _recruiterService.DeleteRecruiterAsync(GetSubscriberGuid(), RecruiterGuid);
+            await _recruiterService.DeleteRecruiterAsync(GetSubscriberGuid(), recruiter);
             return StatusCode(204);
         }
+
 
         [HttpGet]
         [Authorize(Policy = "IsCareerCircleAdmin")]
@@ -111,6 +109,7 @@ namespace UpDiddyApi.Controllers.V2
         }
 
 
+
         [HttpGet]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("subscribers/{SubscriberGuid}")]
@@ -120,7 +119,5 @@ namespace UpDiddyApi.Controllers.V2
             RecruiterInfoDto rVal = await _recruiterService.GetRecruiterBySubscriberAsync(SubscriberGuid);
             return Ok(rVal);
         }
-
-
     }
 }

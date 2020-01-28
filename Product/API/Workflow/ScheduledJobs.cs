@@ -1868,6 +1868,33 @@ namespace UpDiddyApi.Workflow
                 _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.UpdateAllegisGroupJobPageRawDataField encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }
         }
+
+        public async Task SyncAuth0UserId(Guid subscriberGuid, string auth0UserId)
+        {
+            var currentUtcDateTime = DateTime.UtcNow;
+            var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+            if (subscriber != null)
+            {
+                subscriber.Auth0UserId = auth0UserId;
+                subscriber.ModifyDate = currentUtcDateTime;
+                subscriber.ModifyGuid = Guid.Empty;
+                await _repositoryWrapper.SubscriberRepository.SaveAsync();
+            }
+        }
+
+        public async Task TrackSubscriberSignIn(Guid subscriberGuid)
+        {
+            var currentUtcDateTime = DateTime.UtcNow;
+            var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+            if (subscriber != null)
+            {
+                subscriber.LastSignIn = currentUtcDateTime;
+                subscriber.ModifyDate = currentUtcDateTime;
+                subscriber.ModifyGuid = Guid.Empty;
+                await _repositoryWrapper.SubscriberRepository.SaveAsync();
+            }
+        }
+
         #endregion
     }
 }
