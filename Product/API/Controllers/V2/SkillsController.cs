@@ -37,6 +37,14 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
+        [Route("keyword")]
+        public async Task<IActionResult> GetSkillsByKeyword([FromQuery] string value)
+        {
+            var skills = await _skillservice.GetSkillsByKeyword(value);
+            return Ok(skills);
+        }
+
+        [HttpGet]
         [Route("{skill:guid}")]
         public async Task<IActionResult> GetSkill(Guid skill)
         {
@@ -71,6 +79,7 @@ namespace UpDiddyApi.Controllers
             return StatusCode(201);
         }
 
+        [Obsolete("Remove this once the React app is using the route in the CoursesController.", false)]
         [HttpGet]
         [Route("courses/{course:guid}")]
         public async Task<IActionResult> GetSkillForCourse(Guid course)
