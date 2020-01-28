@@ -7,6 +7,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     public interface ISkillService
     {
         Task<SkillListDto> GetSkills(int limit, int offset, string sort, string order);
+        Task<List<SkillDto>> GetSkillsByKeyword(string keyword);
         Task<SkillDto> GetSkill(Guid skillGuid);
         Task CreateSkill(SkillDto skillDto);
         Task UpdateSkill(Guid skillGuid, SkillDto skillDto);
@@ -16,6 +17,5 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task UpdateCourseSkills(Guid course, List<Guid> skills);
         Task UpdateSubscriberSkills(Guid subscriber, List<string> skills);
         Task UpdateSubscriberSkillsByGuid(Guid subscriber, List<Guid> skills);
-
     }
 }

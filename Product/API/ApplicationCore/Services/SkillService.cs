@@ -46,6 +46,15 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _mapper.Map<SkillListDto>(skills);
         }
 
+        public async Task<List<SkillDto>> GetSkillsByKeyword(string keyword)
+        {
+            var skills = await _repositoryWrapper.SkillRepository.GetByConditionAsync(x => x.SkillName.Contains(keyword));            
+            if (skills == null)
+                throw new NotFoundException("Skills not found");
+
+            return _mapper.Map<List<SkillDto>>(skills);
+        }
+
         public async Task<SkillDto> GetSkill(Guid skillGuid)
         {
             var skill = await _repositoryWrapper.SkillRepository.GetByGuid(skillGuid);
