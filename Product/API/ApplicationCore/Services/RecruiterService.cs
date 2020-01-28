@@ -328,7 +328,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                             
         }
 
-        public async Task<RecruiterInfoDto> GetRecruiter(Guid RecruiterGuid)
+        public async Task<RecruiterInfoDto> GetRecruiterAsync(Guid RecruiterGuid)
         {
             var recruiter = _repositoryWrapper.RecruiterRepository.GetAll()
                 .Include(s => s.Subscriber)
@@ -345,6 +345,26 @@ namespace UpDiddyApi.ApplicationCore.Services
             return rVal;
         }
 
+
+        public async Task<RecruiterInfoDto> GetRecruiterBySubscriberAsync(Guid SubscriberGuid)
+        {
+            var recruiter = _repositoryWrapper.RecruiterRepository.GetAll()
+                .Include(s => s.Subscriber)
+                .Include(c => c.Company)
+                .Where(r => r.IsDeleted == 0 && r.Subscriber.SubscriberGuid == SubscriberGuid  )
+                .FirstOrDefault();
+
+            if (recruiter == null)
+                throw new FailedValidationException($"The subscriber {SubscriberGuid} is not a recruiter");
+
+            RecruiterInfoDto rVal = _mapper.Map<RecruiterInfoDto>(recruiter);
+            rVal.IsInAuth0RecruiterGroup = await CheckRecruiterPermissionAsync(recruiter);
+
+            return rVal;
+        }
+
+
+        
 
 
 

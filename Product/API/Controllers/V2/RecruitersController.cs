@@ -65,7 +65,7 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<IActionResult> GetJobAdminForSubscriber(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<IActionResult> GetRecruiters(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var rVal = await  _recruiterService.GetRecruiters(limit, offset, sort, order); 
             return Ok(rVal);
@@ -106,7 +106,18 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> GetRecruiter(Guid RecruiterGuid)
         {
 
-            RecruiterInfoDto rVal = await _recruiterService.GetRecruiter(RecruiterGuid);
+            RecruiterInfoDto rVal = await _recruiterService.GetRecruiterAsync(RecruiterGuid);
+            return Ok(rVal);
+        }
+
+
+        [HttpGet]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("subscribers/{SubscriberGuid}")]
+        public async Task<IActionResult> GetRecruiteBySubscriber(Guid SubscriberGuid)
+        {
+
+            RecruiterInfoDto rVal = await _recruiterService.GetRecruiterBySubscriberAsync(SubscriberGuid);
             return Ok(rVal);
         }
 

@@ -20,7 +20,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task EditRecruiterAsync(RecruiterInfoDto recruiterDto);
         Task DeleteRecruiterAsync(Guid subsceiberGuid, Guid recruiterDto);
 
-        Task<RecruiterInfoDto> GetRecruiter(Guid RecruiterGuid);
- 
+        Task<RecruiterInfoDto> GetRecruiterAsync(Guid RecruiterGuid);
+
+        Task<RecruiterInfoDto> GetRecruiterBySubscriberAsync(Guid SubscriberGuid);
+
     }
 }
