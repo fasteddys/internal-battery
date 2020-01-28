@@ -1628,6 +1628,12 @@ namespace UpDiddyApi.Workflow
             return true;
         }
 
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
+        public async Task PurgeOrphanedSubscribersFromCloudTalent()
+        {
+
+        }
+
         #endregion
 
         #region Cloud Talent Jobs 

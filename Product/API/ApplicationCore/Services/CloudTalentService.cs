@@ -43,11 +43,11 @@ namespace UpDiddyApi.ApplicationCore.Services
         private GoogleProfileService _profileApi = null;
         private GoogleProfileService _googleProfile = null;
         private ISubscriberService _subscriberService;
-
+        private IHangfireService _hangfireService;
         //  private RepositoryWrapper repositoryWrapper;
 
         #region Constructor
-        public CloudTalentService(IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<CloudTalentService> sysLog, IHttpClientFactory httpClientFactory, IRepositoryWrapper repositoryWrapper, ISubscriberService ISubscriberService)
+        public CloudTalentService(IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<CloudTalentService> sysLog, IHttpClientFactory httpClientFactory, IRepositoryWrapper repositoryWrapper, ISubscriberService ISubscriberService, IHangfireService hangfireService)
         {
             _mapper = mapper;
             _apiBaseUri = configuration["SysEmail:ApiUrl"];
@@ -57,7 +57,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _httpClientFactory = httpClientFactory;
             _repositoryWrapper = repositoryWrapper;
             _subscriberService = ISubscriberService;
-
+            _hangfireService = hangfireService;
             // cloud talent configuration
             _projectId = configuration["CloudTalent:Project"];
             _projectPath = configuration["CloudTalent:ProjectPath"];
@@ -495,6 +495,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 rVal = ProfileMappingHelper.MapSearchResults(_syslog, _mapper, _configuration, searchProfileResponse, profileQuery);
                 // pass back any information returned from google 
                 rVal.Info = searchResults.Description;
+
+
             }
             catch (Exception ex)
             {
