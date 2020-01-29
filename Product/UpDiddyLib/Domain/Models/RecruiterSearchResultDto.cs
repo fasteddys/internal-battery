@@ -9,7 +9,7 @@ namespace UpDiddyLib.Domain.Models
 
         public int PageSize { get; set; }
         public int PageNum { get; set; }
-        public int CourseCount { get; set; }
+        public int RecruiterCount { get; set; }
         public long TotalHits { get; set; }
         public int NumPages { get; set; }
 
@@ -23,7 +23,7 @@ namespace UpDiddyLib.Domain.Models
         /// </summary>
         public long SearchMappingTimeInTicks { get; set; }
 
-        public List<RecruiterInfoDto> Courses { get; set; } = new List<RecruiterInfoDto>();
+        public List<RecruiterInfoDto> Recruiters { get; set; } = new List<RecruiterInfoDto>();
 
     }
 }

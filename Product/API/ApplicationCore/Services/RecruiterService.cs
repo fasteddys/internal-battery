@@ -370,16 +370,14 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-        public async Task<RecruiterSearchResultDto> SearchRecruitersAsync(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", string level = "", string topic = "")
+        public async Task<RecruiterSearchResultDto> SearchRecruitersAsync(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", string companyName = "")
         {
             DateTime startSearch = DateTime.Now;
             RecruiterSearchResultDto searchResults = new RecruiterSearchResultDto();
 
-
-            // todo jab get these correct 
             string searchServiceName = _configuration["AzureSearch:SearchServiceName"];
             string adminApiKey = _configuration["AzureSearch:SearchServiceQueryApiKey"];
-            string courseIndexName = _configuration["AzureSearch:CourseIndexName"];
+            string recruiterIndexName = _configuration["AzureSearch:RecruiterIndexName"];
 
             // map descending to azure search sort syntax of "asc" or "desc"  default is ascending so only map descending 
             string orderBy = sort;
@@ -391,7 +389,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(adminApiKey));
 
             // Create an index named hotels
-            ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(courseIndexName);
+            ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(recruiterIndexName);
 
             SearchParameters parameters;
             DocumentSearchResult<RecruiterInfoDto> results;
@@ -406,29 +404,22 @@ namespace UpDiddyApi.ApplicationCore.Services
                 };
 
 
-            //todo jab implment filters on company 
+            //todo implement case insensitive filtering if it becomes necessary - strategry would be to index the companyname as lowercase into a filter field
 
-            if (level != "")
-                parameters.Filter = $"Level eq '{level}'";
-
-            if (string.IsNullOrEmpty(parameters.Filter) == false && topic != "")
-                parameters.Filter += " and  ";
-
-            if (topic != "")
-                parameters.Filter += $"Topic eq '{topic}'";
-
+            if (companyName != "")
+                parameters.Filter = $"CompanyName eq '{companyName}'"; 
 
             results = indexClient.Documents.Search<RecruiterInfoDto>(keyword, parameters);
 
             DateTime startMap = DateTime.Now;
-            searchResults.Courses = results?.Results?
+            searchResults.Recruiters = results?.Results?
                 .Select(s => (RecruiterInfoDto)s.Document)
                 .ToList();
 
             searchResults.TotalHits = results.Count.Value;
             searchResults.PageSize = limit;
             searchResults.NumPages = searchResults.PageSize != 0 ? (int)Math.Ceiling((double)searchResults.TotalHits / searchResults.PageSize) : 0;
-            searchResults.CourseCount = searchResults.Courses.Count;
+            searchResults.RecruiterCount = searchResults.Recruiters.Count;
             searchResults.PageNum = (offset / limit) + 1;
 
             DateTime stopMap = DateTime.Now;

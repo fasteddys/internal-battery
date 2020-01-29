@@ -678,6 +678,7 @@ namespace UpDiddyApi.Helpers
                .ForMember(c => c.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
                .ForMember(c => c.Email, opt => opt.MapFrom(src => src.Email))
                .ForMember(c => c.CompanyGuid, opt => opt.MapFrom(src => src.Company.CompanyGuid))
+               .ForMember(c => c.CompanyName, opt => opt.MapFrom(src => src.Company.CompanyName))
                .ReverseMap();
 
 
