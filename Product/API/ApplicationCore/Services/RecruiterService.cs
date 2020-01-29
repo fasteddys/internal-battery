@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.Azure.Search;
+using Microsoft.Azure.Search.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -368,6 +370,75 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
+
+
+
+
+        public async Task<RecruiterSearchResultDto> SearchRecruitersAsync(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", string companyName = "")
+        {
+            DateTime startSearch = DateTime.Now;
+            RecruiterSearchResultDto searchResults = new RecruiterSearchResultDto();
+
+            string searchServiceName = _configuration["AzureSearch:SearchServiceName"];
+            string adminApiKey = _configuration["AzureSearch:SearchServiceQueryApiKey"];
+            string recruiterIndexName = _configuration["AzureSearch:RecruiterIndexName"];
+
+            // map descending to azure search sort syntax of "asc" or "desc"  default is ascending so only map descending 
+            string orderBy = sort;
+            if (order == "descending")
+                orderBy = orderBy + " desc";
+            List<String> orderByList = new List<string>();
+            orderByList.Add(orderBy);
+
+            SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(adminApiKey));
+
+            // Create an index named hotels
+            ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(recruiterIndexName);
+
+            SearchParameters parameters;
+            DocumentSearchResult<RecruiterInfoDto> results;
+
+            parameters =
+                new SearchParameters()
+                {
+                    Top = limit,
+                    Skip = offset,
+                    OrderBy = orderByList,
+                    IncludeTotalResultCount = true,
+                };
+
+
+            //todo implement case insensitive filtering if it becomes necessary - strategry would be to index the companyname as lowercase into a filter field
+
+            if (companyName != "")
+                parameters.Filter = $"CompanyName eq '{companyName}'"; 
+
+            results = indexClient.Documents.Search<RecruiterInfoDto>(keyword, parameters);
+
+            DateTime startMap = DateTime.Now;
+            searchResults.Recruiters = results?.Results?
+                .Select(s => (RecruiterInfoDto)s.Document)
+                .ToList();
+
+            searchResults.TotalHits = results.Count.Value;
+            searchResults.PageSize = limit;
+            searchResults.NumPages = searchResults.PageSize != 0 ? (int)Math.Ceiling((double)searchResults.TotalHits / searchResults.PageSize) : 0;
+            searchResults.RecruiterCount = searchResults.Recruiters.Count;
+            searchResults.PageNum = (offset / limit) + 1;
+
+            DateTime stopMap = DateTime.Now;
+
+            // calculate search timing metrics 
+            TimeSpan intervalTotalSearch = stopMap - startSearch;
+            TimeSpan intervalSearchTime = startMap - startSearch;
+            TimeSpan intervalMapTime = stopMap - startMap;
+
+            // assign search metrics to search results 
+            searchResults.SearchTimeInMilliseconds = intervalTotalSearch.TotalMilliseconds;
+            searchResults.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
+            searchResults.SearchMappingTimeInTicks = intervalMapTime.Ticks;
+            return searchResults;
+        }
 
 
 
