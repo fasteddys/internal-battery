@@ -922,7 +922,7 @@ namespace UpDiddyApi.Workflow
                             // the factory method uses the guid property of the dto for GetJobPostingByGuidWithRelatedObjects - need to set that too
                             jobPostingDto.JobPostingGuid = jobPostingGuid;
                             // attempt to update job posting
-                            isJobPostingOperationSuccessful = JobPostingFactory.UpdateJobPosting(_repositoryWrapper, jobPostingGuid, jobPostingDto, ref errorMessage, true, _hangfireService,_configuration);
+                            isJobPostingOperationSuccessful = JobPostingFactory.UpdateJobPosting(_repositoryWrapper, jobPostingGuid, jobPostingDto, ref errorMessage, true, _hangfireService, _configuration);
                             // increment updated count in stats
                             if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
                                 jobDataMiningStats.NumJobsUpdated += 1;
@@ -1626,6 +1626,26 @@ namespace UpDiddyApi.Workflow
 
             }
             return true;
+        }
+
+        /// <summary>
+        /// Inspects all profiles returned from a Google Talent Cloud search request. If any of those returned do not exist in the 
+        /// environment's database, the record will be purged from the Google Talent Cloud platform. 
+        /// </summary>
+        /// <param name="profiles">A collection of profiles that were returned from a Google Talent Cloud search request</param>
+        /// <returns></returns>
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
+        public async Task PurgeOrphanedSubscribersFromCloudTalent(List<ProfileViewDto> profiles)
+        {
+            foreach (var profile in profiles)
+            {
+                Subscriber subscriber = null;
+                if (profile.SubscriberGuid.HasValue)
+                    subscriber = await _repositoryWrapper.SubscriberRepository.GetByGuid(profile.SubscriberGuid.Value, false);
+
+                if (subscriber == null && !string.IsNullOrWhiteSpace(profile.CloudTalentUri))
+                    _cloudTalentService.DeleteProfileFromCloudTalentByUri(profile.CloudTalentUri);
+            }
         }
 
         #endregion
