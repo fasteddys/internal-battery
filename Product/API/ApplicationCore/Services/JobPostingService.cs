@@ -151,7 +151,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new FailedValidationException("Company must be specified");
 
 
-            UpDiddyLib.Dto.JobPostingDto jobPostingDto = await MapPostingCrudToJobPosting(subscriberGuid, jobCrudDto);
+            UpDiddyLib.Dto.JobPostingDto jobPostingDto = await MapPostingCrudToJobPosting(subscriberGuid, jobCrudDto,recruiter);
       
             string errorMsg = string.Empty;
             Guid newPostingGuid = Guid.Empty;
@@ -193,7 +193,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new FailedValidationException("Jobposting guid from url does not match job posting guid specified in request body");
 
 
-            UpDiddyLib.Dto.JobPostingDto jobPostingDto = await MapPostingCrudToJobPosting(subscriberGuid, jobCrudDto);
+            UpDiddyLib.Dto.JobPostingDto jobPostingDto = await MapPostingCrudToJobPosting(subscriberGuid, jobCrudDto,recruiter);
 
             if ( jobPostingDto == null )
                 throw new FailedValidationException("The passed job information is in an invalid format");
@@ -394,7 +394,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-        private async Task<UpDiddyLib.Dto.JobPostingDto> MapPostingCrudToJobPosting(Guid subscriberGuid, JobCrudDto jobCrudDto)
+        private async Task<UpDiddyLib.Dto.JobPostingDto> MapPostingCrudToJobPosting(Guid subscriberGuid, JobCrudDto jobCrudDto, Recruiter recruiter)
         {
             // map base properties
             UpDiddyLib.Dto.JobPostingDto jobPostingDto = _mapper.Map<UpDiddyLib.Dto.JobPostingDto>(jobCrudDto);
@@ -402,6 +402,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             jobPostingDto.Recruiter = new RecruiterDto()
             {
                 RecruiterGuid = jobCrudDto.RecruiterGuid,
+                FirstName = recruiter.FirstName,
+                LastName = recruiter.LastName,
+                PhoneNumber = recruiter.PhoneNumber,
+                Email = recruiter.Email,
+                 
                 Subscriber = new UpDiddyLib.Dto.SubscriberDto()
                 {
                     SubscriberGuid = subscriberGuid
