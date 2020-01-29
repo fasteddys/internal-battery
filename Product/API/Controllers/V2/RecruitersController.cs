@@ -79,10 +79,11 @@ namespace UpDiddyApi.Controllers.V2
     
         [HttpPut]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<IActionResult> UpdateRecruiter([FromBody] RecruiterInfoDto recruiterInfoDto)
+        [Route("{recruiter:guid}")]
+        public async Task<IActionResult> UpdateRecruiter([FromBody] RecruiterInfoDto recruiterInfoDto, Guid Recruiter)
         {
 
-            await _recruiterService.EditRecruiterAsync(recruiterInfoDto);
+            await _recruiterService.EditRecruiterAsync(recruiterInfoDto, Recruiter);
             return StatusCode(204);
         }
 
