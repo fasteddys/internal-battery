@@ -170,13 +170,14 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
                 string ResponseJson = string.Empty;
                 string encodedUri = WebUtility.UrlEncode(profileUri);
                 ExecuteProfileApiDelete($"profile\\{encodedUri}", ref ResponseJson);
+                _syslog.LogInformation($"GoogleProfileInterface.DeleteProfile response from ExecuteProfileApiDelete: {ResponseJson}");
                 Rval = Newtonsoft.Json.JsonConvert.DeserializeObject<BasicResponseDto>(ResponseJson);
                 if (Rval.StatusCode != 200)
                     throw new Exception(Rval.Description);
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Error, $"GoogleProfileInterface error deleting google profile for {profileUri} Exception = {e.Message}", profileUri);
+                _syslog.Log(LogLevel.Error, $"GoogleProfileInterface error deleting google profile for {profileUri} Exception = {e.Message} StackTrace = {e.StackTrace}", profileUri);
                 errorMsg = e.Message;
             }
             return Rval;
