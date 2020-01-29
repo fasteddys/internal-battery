@@ -1637,14 +1637,25 @@ namespace UpDiddyApi.Workflow
         [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task PurgeOrphanedSubscribersFromCloudTalent(List<ProfileViewDto> profiles)
         {
+            if (profiles != null && profiles.Count() > 0)
+                _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: {profiles.Count} profiles being checked for orphaned subscribers.");
+
             foreach (var profile in profiles)
             {
+                _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: Verifying subscriber {profile.Email} in database.");
                 Subscriber subscriber = null;
                 if (profile.SubscriberGuid.HasValue)
+                {
+                    _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: Subscriber {profile.Email} has a subscriber guid of {profile.SubscriberGuid.Value.ToString()}.");
                     subscriber = await _repositoryWrapper.SubscriberRepository.GetByGuid(profile.SubscriberGuid.Value, false);
 
-                if (subscriber == null && !string.IsNullOrWhiteSpace(profile.CloudTalentUri))
-                    _cloudTalentService.DeleteProfileFromCloudTalentByUri(profile.CloudTalentUri);
+                    if (subscriber == null && !string.IsNullOrWhiteSpace(profile.CloudTalentUri))
+                    {
+                        _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: Subscriber {profile.Email} does not exist in the database, the cloud talent uri to be purged is: {profile.CloudTalentUri}");
+                        var response = _cloudTalentService.DeleteProfileFromCloudTalentByUri(profile.CloudTalentUri);
+                        _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: The response from the cloud talent delete endpoint for subscriber {profile.Email} was: {response.Description}, status code: {response.StatusCode}");
+                    }
+                }
             }
         }
 
