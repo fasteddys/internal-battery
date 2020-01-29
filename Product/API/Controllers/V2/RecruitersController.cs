@@ -119,5 +119,15 @@ namespace UpDiddyApi.Controllers.V2
             RecruiterInfoDto rVal = await _recruiterService.GetRecruiterBySubscriberAsync(SubscriberGuid);
             return Ok(rVal);
         }
+        // TODO JAB Do migration for view - ITS ALREADY IN StAGE, Account for that 
+        [HttpGet]
+        [Route("query")]
+        public async Task<IActionResult> SearchCourses(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", string level = "", string topic = "")
+        {
+           // Startup here, call this from postman
+            var rVal = await _recruiterService.SearchRecruitersAsync(limit, offset, sort, order, keyword, level, topic);
+            return Ok(rVal);
+        }
+
     }
 }

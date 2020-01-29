@@ -23,5 +23,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         Task<RecruiterInfoDto> GetRecruiterBySubscriberAsync(Guid SubscriberGuid);
 
+        Task<RecruiterSearchResultDto> SearchRecruitersAsync(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", string level = "", string topic = "");
+
     }
 }
