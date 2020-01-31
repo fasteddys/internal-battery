@@ -30,6 +30,8 @@ using UpDiddyLib.Domain;
 using UpDiddyLib.Domain.Models;
 using UpDiddyApi.Helpers;
 using Newtonsoft.Json.Linq;
+using Microsoft.Azure.Search;
+using Microsoft.Azure.Search.Models;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -1445,5 +1447,71 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             _hangfireService.Enqueue<ScheduledJobs>(j => j.SyncAuth0UserId(subscriberGuid, auth0UserId));
         }
+
+        public async Task<SubscriberSearchResultDto> SearchSubscribersAsync(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*")
+        {
+            DateTime startSearch = DateTime.Now;
+            SubscriberSearchResultDto searchResults = new SubscriberSearchResultDto();
+
+            string searchServiceName = _configuration["AzureSearch:SearchServiceName"];
+            string adminApiKey = _configuration["AzureSearch:SearchServiceQueryApiKey"];
+            string subscriberIndexName = _configuration["AzureSearch:SubscriberIndexName"];
+
+            // map descending to azure search sort syntax of "asc" or "desc"  default is ascending so only map descending 
+            string orderBy = sort;
+            if (order == "descending")
+                orderBy = orderBy + " desc";
+            List<String> orderByList = new List<string>();
+            orderByList.Add(orderBy);
+
+            SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(adminApiKey));
+
+            // Create an index named hotels
+            ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(subscriberIndexName);
+
+            SearchParameters parameters;
+            DocumentSearchResult<SubscriberInfoDto> results;
+
+            parameters =
+                new SearchParameters()
+                {
+                    Top = limit,
+                    Skip = offset,
+                    OrderBy = orderByList,
+                    IncludeTotalResultCount = true,
+                };
+ 
+            results = indexClient.Documents.Search<SubscriberInfoDto>(keyword, parameters);
+      
+
+            DateTime startMap = DateTime.Now;
+            searchResults.Subscribers = results?.Results?
+                .Select(s => (SubscriberInfoDto)s.Document)
+                .ToList();
+            
+            searchResults.TotalHits = results.Count.Value;
+            searchResults.PageSize = limit;
+            searchResults.NumPages = searchResults.PageSize != 0 ? (int)Math.Ceiling((double)searchResults.TotalHits / searchResults.PageSize) : 0;
+            searchResults.SubscriberCount = searchResults.Subscribers.Count;
+            searchResults.PageNum = (offset / limit) + 1;
+            
+            DateTime stopMap = DateTime.Now;
+
+            // calculate search timing metrics 
+            TimeSpan intervalTotalSearch = stopMap - startSearch;
+            TimeSpan intervalSearchTime = startMap - startSearch;
+            TimeSpan intervalMapTime = stopMap - startMap;
+
+            // assign search metrics to search results 
+            searchResults.SearchTimeInMilliseconds = intervalTotalSearch.TotalMilliseconds;
+            searchResults.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
+            searchResults.SearchMappingTimeInTicks = intervalMapTime.Ticks;
+            
+            return searchResults;
+        }
+
+
+
+
     }
 }

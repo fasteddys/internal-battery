@@ -17,6 +17,8 @@ using UpDiddyLib.Dto.User;
 using UpDiddyLib.Domain.Models;
 using Microsoft.Extensions.Configuration;
 using UpDiddyLib.Domain;
+using UpDiddyLib.Domain.AzureSearch;
+
 namespace UpDiddyApi.Helpers
 {
     public class AutoMapperConfiguration
@@ -687,6 +689,18 @@ namespace UpDiddyApi.Helpers
                 .ForMember(c => c.SkillGuid, opt => opt.MapFrom(src => src.Skill.SkillGuid))
                 .ForMember(x => x.TotalRecords, opt => opt.Ignore())
                 .ReverseMap();
+
+
+
+            CreateMap<Subscriber, SubscriberSDOC>()
+            .ForMember(c => c.SubscriberGuid, opt => opt.MapFrom(src => src.SubscriberGuid))
+            .ForMember(c => c.FirstName, opt => opt.MapFrom(src => src.FirstName))
+            .ForMember(c => c.LastName, opt => opt.MapFrom(src => src.LastName))
+            .ForMember(c => c.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+            .ForMember(c => c.Email, opt => opt.MapFrom(src => src.Email))
+            .ForAllOtherMembers(opt => opt.Ignore());
+       
+
 
 
 
