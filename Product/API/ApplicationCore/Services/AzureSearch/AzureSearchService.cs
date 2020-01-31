@@ -18,8 +18,6 @@ using UpDiddyLib.Helpers;
 namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
 {
 
- 
-    
     public class AzureSearchService : IAzureSearchService
     {
         private readonly IHttpClientFactory _httpClientFactory;
@@ -82,17 +80,12 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
                 SubscriberSDOC doc = _mapper.Map<SubscriberSDOC>(subscriber);
                 doc.SearchAction = cmd;
                 docs.value.Add(doc);
-                SendSearchRequest(index, docs);
+                string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs);
+                SendSearchRequest(index, Json);         
             });
             return true;
         }
-
-        private async Task<bool> SendSearchRequest(string indexName, SDOCRequest<SubscriberSDOC> docs)
-        {
-            string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs);
-            return  await SendSearchRequest(indexName, Json);
-        }
-
+        
         private async Task<bool> SendSearchRequest(string indexName, string jsonDocs )
         {
             string SearchBaseUrl = _configuration["AzureSearch:SearchServiceBaseUrl"];

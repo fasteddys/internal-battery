@@ -78,7 +78,7 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("query")]
         public async Task<IActionResult> SearchSubscribers(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*")
-        {
+        {         
             var rVal = await _subscriberService.SearchSubscribersAsync(limit, offset, sort, order, keyword);
             return Ok(rVal);
         }

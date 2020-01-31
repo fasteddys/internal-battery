@@ -331,6 +331,7 @@ namespace UpDiddyApi
             services.AddScoped<IGroupService, GroupService>();
             services.AddScoped<IPartnerService, PartnerService>();
             services.AddScoped<IAzureSearchService, AzureSearchService>();
+            services.AddScoped<IReportsService, ReportsService>();
 
             #endregion
 
