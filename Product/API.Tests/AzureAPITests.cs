@@ -198,7 +198,7 @@ namespace API.Tests.AzureApi
 
                     // todo: apiEndpointTest.RequestBody - how will we determine what values to put here - use definition/schema?
                     var rawRequestBody = operation.SelectToken("$.request.representations[0].sample");                    
-                    if (rawRequestBody != null && rawRequestBody.HasValues)
+                    if (rawRequestBody != null)
                     {
                         try
                         {
