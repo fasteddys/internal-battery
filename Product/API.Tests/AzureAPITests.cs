@@ -182,8 +182,8 @@ namespace API.Tests.AzureApi
                 if (replacement != null)
                     urlTemplate = urlTemplate.Replace(replacement.Key, replacement.Value);
 
-                
-                
+
+
 
                 // check to see if a 401 response is possible. if it is, we need to add a valid subscriber JWT to the request when testing successful responses
                 // todo: one without a valid jwt (to ensure that the endpoint is secured)
@@ -197,9 +197,21 @@ namespace API.Tests.AzureApi
                     apiEndpointTest.Uri = new Uri(Utilities.UrlCombine(baseUrl, urlTemplate));
 
                     // todo: apiEndpointTest.RequestBody - how will we determine what values to put here - use definition/schema?
-
-                    // assume that every request is protected with a subscription
-                    apiEndpointTest.Headers.Add(subscriptionKeyParameterKey, subscriptionKeyParameterValue);
+                    var rawRequestBody = operation.SelectToken("$.request.representations[0].sample");                    
+                    if (rawRequestBody != null && rawRequestBody.HasValues)
+                    {
+                        try
+                        {
+                            // todo: parse as json, does that succeed, compare to schema for associated type, is that valid
+                            apiEndpointTest.RequestBody = rawRequestBody.Value<string>();                            
+                        }
+                        catch(Exception e)
+                        {
+                            apiEndpointTest.DefinitionErrors.Add($"A sample request body was found but could not be parsed; error message: {e.Message}");
+                        }
+                    }
+                        // assume that every request is protected with a subscription
+                        apiEndpointTest.Headers.Add(subscriptionKeyParameterKey, subscriptionKeyParameterValue);
                     if (isRequiresSubscriberJwtForSuccessfulResponse)
                         apiEndpointTest.Headers.Add("Authorization", $"Bearer {subscriberJwt}");
 
@@ -230,14 +242,17 @@ namespace API.Tests.AzureApi
                     try
                     {
                         var representation = response.SelectToken("$.representations[0]");
-                        string typeName = representation.SelectToken("$.typeName").Value<string>();
-                        string escapedTypeName = $"['{typeName}']";
-                        var responseSchema = schemas.SelectToken($"$.{escapedTypeName}");
-                        JSchema jschema = JSchema.Parse(responseSchema.ToString(Formatting.None));
-                        JObject example = responseSchema["example"].Value<JObject>();
-                        if (!example.IsValid(jschema))
-                            throw new ApplicationException("Response example is not valid according to the schema definition.");
-                        apiEndpointTest.ResponseSchema = jschema.ToString(SchemaVersion.Unset);
+                        if (representation != null)
+                        {
+                            string typeName = representation.SelectToken("$.typeName").Value<string>();
+                            string escapedTypeName = $"['{typeName}']";
+                            var responseSchema = schemas.SelectToken($"$.{escapedTypeName}");
+                            JSchema jschema = JSchema.Parse(responseSchema.ToString(Formatting.None));
+                            JObject example = responseSchema["example"].Value<JObject>();
+                            if (!example.IsValid(jschema))
+                                throw new ApplicationException("Response example is not valid according to the schema definition.");
+                            apiEndpointTest.ResponseSchema = jschema.ToString(SchemaVersion.Unset);
+                        }
                     }
                     catch (Exception e)
                     {
