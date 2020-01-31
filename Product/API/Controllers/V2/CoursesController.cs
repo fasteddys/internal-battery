@@ -14,7 +14,6 @@ using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
 using UpDiddyLib.Domain.Models;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyLib.Dto;
@@ -40,7 +39,7 @@ namespace UpDiddyApi.Controllers
         private readonly ICourseFavoriteService _courseFavoriteService;
         private readonly ICourseEnrollmentService _courseEnrollmentService;
         private readonly IPromoCodeService _promoCodeService;
-
+        private readonly ISkillService _skillService;
 
         public CoursesController(UpDiddyDbContext db
         , IMapper mapper
@@ -52,9 +51,10 @@ namespace UpDiddyApi.Controllers
         , IHangfireService hangfireService
         , IRepositoryWrapper repositoryWrapper
         , ICourseService courseService
+        , ISkillService skillService
         , ICourseFavoriteService courseFavoriteService
         , ICourseEnrollmentService courseEnrollmentService
-        , IPromoCodeService  promoCodeService)
+        , IPromoCodeService promoCodeService)
         {
             _db = db;
             _mapper = mapper;
@@ -70,6 +70,7 @@ namespace UpDiddyApi.Controllers
             _courseFavoriteService = courseFavoriteService;
             _courseEnrollmentService = courseEnrollmentService;
             _promoCodeService = promoCodeService;
+            _skillService = skillService;
         }
 
         #region course metrics 
@@ -99,6 +100,14 @@ namespace UpDiddyApi.Controllers
         #region CourseDetails
 
         [HttpGet]
+        [Route("topic/{topicGuid:guid}")]
+        public async Task<IActionResult> GetCoursesByTopic(Guid topicGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        {
+            var courses = await _courseService.GetCoursesByTopic(topicGuid, limit, offset, sort, order);
+            return Ok(courses);
+        }
+
+        [HttpGet]
         [Route("{course:guid}")]
         public async Task<IActionResult> GetCourse(Guid course)
         {
@@ -112,14 +121,14 @@ namespace UpDiddyApi.Controllers
             var courses = await _courseService.GetCourses(limit, offset, sort, order);
             return Ok(courses);
         }
-        
+
         [HttpGet]
         [Route("random")]
         public async Task<IActionResult> Random()
         {
             return Ok(await _courseService.GetCoursesRandom(Request.Query));
         }
-        
+
         #endregion
 
         #region Course Enrollments
@@ -127,23 +136,23 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet]
         [Authorize]
-        [Route("{courseSlug}/{courseVariant}/promocodes/{promoCode}")]
-        public async Task<IActionResult> GetCoursesEnrollmentInfo(string courseSlug, Guid courseVariant, string promoCode)
+        [Route("{courseGuid}/variant/{courseVariant}/promocodes/{promoCode}")]
+        public async Task<IActionResult> GetCoursesEnrollmentInfo(Guid courseGuid, Guid courseVariant, string promoCode)
         {
             PromoCodeDto rVal = _promoCodeService.GetPromoCode(GetSubscriberGuid(), promoCode, courseVariant);
             return Ok(rVal);
         }
-        
+
 
         [HttpGet]
         [Authorize]
         [Route("{courseGuid}/enroll")]
         public async Task<IActionResult> GetCoursesEnrollmentInfo(Guid courseGuid)
         {
-           CourseCheckoutInfoDto rVal = await _courseEnrollmentService.GetCourseCheckoutInfo(GetSubscriberGuid(), courseGuid);
+            CourseCheckoutInfoDto rVal = await _courseEnrollmentService.GetCourseCheckoutInfo(GetSubscriberGuid(), courseGuid);
             return Ok(rVal);
         }
-        
+
         [HttpPost]
         [Authorize]
         [Route("{courseGuid}/enroll")]
@@ -160,10 +169,10 @@ namespace UpDiddyApi.Controllers
         #region Course Query
         [HttpGet]
         [Route("query")]
-        public async Task<IActionResult> SearchCourses(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*")
+        public async Task<IActionResult> SearchCourses(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", string level = "", string topic = "")
         {
-           var rVal = await _courseService.SearchCoursesAsync(limit, offset, sort, order, keyword);
-           return Ok(rVal);
+            var rVal = await _courseService.SearchCoursesAsync(limit, offset, sort, order, keyword, level, topic);
+            return Ok(rVal);
         }
 
         #endregion 
@@ -284,7 +293,25 @@ namespace UpDiddyApi.Controllers
         }
         #endregion
 
+        #region Skills
+        
+        [HttpGet]
+        [Route("{course:guid}/skills")]
+        public async Task<IActionResult> GetSkillForCourse(Guid course)
+        {
+            var result = await _skillService.GetSkillsByCourseGuid(course);
+            return Ok(result);
+        }
 
+        [HttpPut]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("{course:guid}/skills")]
+        public async Task<IActionResult> UpdateCourseSkills(Guid course, [FromBody] List<Guid> skills)
+        {
+            await _skillService.UpdateCourseSkills(course, skills);
+            return StatusCode(200);
+        }
 
+        #endregion
     }
 }

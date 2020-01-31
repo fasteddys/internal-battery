@@ -922,7 +922,7 @@ namespace UpDiddyApi.Workflow
                             // the factory method uses the guid property of the dto for GetJobPostingByGuidWithRelatedObjects - need to set that too
                             jobPostingDto.JobPostingGuid = jobPostingGuid;
                             // attempt to update job posting
-                            isJobPostingOperationSuccessful = JobPostingFactory.UpdateJobPosting(_repositoryWrapper, jobPostingGuid, jobPostingDto, ref errorMessage, true, _hangfireService);
+                            isJobPostingOperationSuccessful = JobPostingFactory.UpdateJobPosting(_repositoryWrapper, jobPostingGuid, jobPostingDto, ref errorMessage, true, _hangfireService, _configuration);
                             // increment updated count in stats
                             if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
                                 jobDataMiningStats.NumJobsUpdated += 1;
@@ -1628,6 +1628,44 @@ namespace UpDiddyApi.Workflow
             return true;
         }
 
+        /// <summary>
+        /// Inspects all profiles returned from a Google Talent Cloud search request. If any of those returned do not exist in the 
+        /// environment's database, the record will be purged from the Google Talent Cloud platform. 
+        /// </summary>
+        /// <param name="profiles">A collection of profiles that were returned from a Google Talent Cloud search request</param>
+        /// <returns></returns>
+        [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
+        public async Task PurgeOrphanedSubscribersFromCloudTalent(List<ProfileViewDto> profiles)
+        {
+            if (profiles != null && profiles.Count() > 0)
+                _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: {profiles.Count} profiles being checked for orphaned subscribers.");
+
+            foreach (var profile in profiles)
+            {
+                _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: Verifying subscriber {profile.Email} in database.");
+                Subscriber subscriber = null;
+                if (profile.SubscriberGuid.HasValue)
+                {
+                    _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: Subscriber {profile.Email} has a subscriber guid of {profile.SubscriberGuid.Value.ToString()}.");
+                    subscriber = await _repositoryWrapper.SubscriberRepository.GetByGuid(profile.SubscriberGuid.Value, false);
+
+                    if (subscriber == null && !string.IsNullOrWhiteSpace(profile.CloudTalentUri))
+                    {
+                        try
+                        {
+                            _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: Subscriber {profile.Email} does not exist in the database, the cloud talent uri to be purged is: {profile.CloudTalentUri}");
+                            var response = _cloudTalentService.DeleteProfileFromCloudTalentByUri(profile.CloudTalentUri);
+                            _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: The response from the cloud talent delete endpoint for subscriber {profile.Email} was: {response.Description}, status code: {response.StatusCode}");
+                        }
+                        catch (Exception e)
+                        {
+                            _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: An exception occurred; message={e.Message}, source={e.Source}, stack trace={e.StackTrace}");
+                        }
+                    }
+                }
+            }
+        }
+
         #endregion
 
         #region Cloud Talent Jobs 
@@ -1667,10 +1705,10 @@ namespace UpDiddyApi.Workflow
         /// <param name="Notification"></param>
         /// <param name="Subscribers"></param>
         [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
-        public async Task<bool> CreateSubscriberNotificationRecords(Notification Notification, int IsTargeted, IList<Subscriber> Subscribers = null)
+        public async Task<bool> CreateSubscriberNotificationRecords(Notification notification, IList<Subscriber> Subscribers = null)
         {
 
-            if (IsTargeted == 0)
+            if (notification.IsTargeted == 0)
                 Subscribers = _repositoryWrapper.SubscriberRepository.GetByConditionAsync(s => s.IsDeleted == 0).Result.ToList();
             else
             {
@@ -1687,7 +1725,7 @@ namespace UpDiddyApi.Workflow
                 {
                     SubscriberNotificationGuid = Guid.NewGuid(),
                     SubscriberId = sub.SubscriberId,
-                    NotificationId = Notification.NotificationId,
+                    NotificationId = notification.NotificationId,
                     CreateDate = CurrentDateTime,
                     ModifyDate = CurrentDateTime,
                     HasRead = 0
@@ -1868,6 +1906,33 @@ namespace UpDiddyApi.Workflow
                 _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.UpdateAllegisGroupJobPageRawDataField encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }
         }
+
+        public async Task SyncAuth0UserId(Guid subscriberGuid, string auth0UserId)
+        {
+            var currentUtcDateTime = DateTime.UtcNow;
+            var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+            if (subscriber != null)
+            {
+                subscriber.Auth0UserId = auth0UserId;
+                subscriber.ModifyDate = currentUtcDateTime;
+                subscriber.ModifyGuid = Guid.Empty;
+                await _repositoryWrapper.SubscriberRepository.SaveAsync();
+            }
+        }
+
+        public async Task TrackSubscriberSignIn(Guid subscriberGuid)
+        {
+            var currentUtcDateTime = DateTime.UtcNow;
+            var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+            if (subscriber != null)
+            {
+                subscriber.LastSignIn = currentUtcDateTime;
+                subscriber.ModifyDate = currentUtcDateTime;
+                subscriber.ModifyGuid = Guid.Empty;
+                await _repositoryWrapper.SubscriberRepository.SaveAsync();
+            }
+        }
+
         #endregion
     }
 }

@@ -82,13 +82,23 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
-        public async Task<List<CourseDetailDto>> GetCourses(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<CourseDetailListDto> GetCourses(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCourses(limit, offset, sort, order);
             if (courses == null)
                 throw new NotFoundException("Courses not found");
-            return (courses);
+            return _mapper.Map<CourseDetailListDto>(courses);
         }
+
+
+        public async Task<CourseDetailListDto> GetCoursesByTopic(Guid topic, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        {
+            var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesByTopic(topic, limit, offset, sort, order);
+            if (courses == null)
+                throw new NotFoundException("Courses not found");
+            return _mapper.Map<CourseDetailListDto>(courses);
+        }
+
 
         public async Task<CourseDetailDto> GetCourse(Guid courseGuid)
         {
@@ -99,6 +109,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new NotFoundException("Courses not found");
             return (course);
         }
+
+
+
 
         public async Task<int> GetCoursesCount()
         {
@@ -216,11 +229,11 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         #region Course Search 
  
-        public async Task<List<CourseDetailDto>> SearchCoursesAsync(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*")
-        {
-
-            List<CourseDetailDto> rVal = null;
-
+        public async Task<CourseSearchResultDto> SearchCoursesAsync(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", string level = "", string topic = "" )
+        { 
+            DateTime startSearch = DateTime.Now;
+            CourseSearchResultDto searchResults = new CourseSearchResultDto();
+     
             string searchServiceName =  _config["AzureSearch:SearchServiceName"];
             string adminApiKey = _config["AzureSearch:SearchServiceQueryApiKey"];
             string courseIndexName = _config["AzureSearch:CourseIndexName"];
@@ -245,16 +258,46 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                    Top = limit,
                    Skip = offset,
-                   OrderBy = orderByList
+                   OrderBy = orderByList,
+                   IncludeTotalResultCount = true ,                 
                 };
-            
+
+
+            if ( level != "" )
+                parameters.Filter = $"Level eq '{level}'";
+
+            if (string.IsNullOrEmpty(parameters.Filter) == false && topic != "")
+                parameters.Filter += " and  ";
+
+            if ( topic != "")
+                parameters.Filter += $"Topic eq '{topic}'";
+
+ 
             results = indexClient.Documents.Search<CourseDetailDto>(keyword, parameters);
 
-            rVal = results?.Results?
+            DateTime startMap = DateTime.Now;
+            searchResults.Courses = results?.Results?
                 .Select(s => (CourseDetailDto) s.Document)
                 .ToList();
 
-            return rVal;
+            searchResults.TotalHits = results.Count.Value;
+            searchResults.PageSize = limit;
+            searchResults.NumPages = searchResults.PageSize != 0 ? (int)Math.Ceiling((double)searchResults.TotalHits / searchResults.PageSize) : 0;
+            searchResults.CourseCount = searchResults.Courses.Count;
+            searchResults.PageNum = (offset / limit) + 1;
+ 
+            DateTime stopMap = DateTime.Now;
+
+            // calculate search timing metrics 
+            TimeSpan intervalTotalSearch = stopMap - startSearch;
+            TimeSpan intervalSearchTime = startMap - startSearch;
+            TimeSpan intervalMapTime = stopMap - startMap;
+
+            // assign search metrics to search results 
+            searchResults.SearchTimeInMilliseconds = intervalTotalSearch.TotalMilliseconds;
+            searchResults.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
+            searchResults.SearchMappingTimeInTicks = intervalMapTime.Ticks;
+            return searchResults;
         }
 
 
@@ -481,7 +524,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             var referralUrl = $"{_config["Environment:BaseUrl"].TrimEnd('/')}/course/{courseReferralDto.CourseGuid}";
             _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(
-                courseReferralDto.ReferralName,
+                courseReferralDto.ReferralEmail,
                 _config["SysEmail:Transactional:TemplateIds:CourseReferral-ReferAFriend"],
                 new
                 {

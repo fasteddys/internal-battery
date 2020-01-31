@@ -51,8 +51,8 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<List<UpDiddyLib.Domain.Models.JobPostingDto>> GetSimilarJobs(Guid jobPostingGuid)
         {
-            var job = await _repositoryWrapper.JobPosting.GetJobPostingByGuid(jobPostingGuid);
-            if(job == null)
+            var job = await _repositoryWrapper.JobPosting.GetByGuid(jobPostingGuid, true);
+            if (job == null)
                 throw new NotFoundException("Job not found");
 
             JobQueryDto jobQuery = JobQueryHelper.CreateJobQueryForSimilarJobs(job.Province, job.City, job.Title, Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]));

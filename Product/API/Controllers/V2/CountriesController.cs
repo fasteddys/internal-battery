@@ -27,7 +27,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCountries(int limit, int offset, string sort, string order)
+        public async Task<IActionResult> GetCountries(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var countries = await _countryService.GetAllCountries(limit, offset, sort, order);
             return Ok(countries);
@@ -39,7 +39,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> UpdateCountry(Guid country, [FromBody]  CountryDetailDto countryDetailDto)
         {
             await _countryService.UpdateCountry(country, countryDetailDto);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         [HttpDelete]
@@ -60,37 +60,36 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("states/{state:guid}")]
+        [Route("{country:guid}/states/{state:guid}")]
         public async Task<IActionResult> GetStateDetail(Guid state)
         {
-            var countryDetail = await _stateService.GetStateDetail(state);
-            return Ok(countryDetail);
+            var stateDetail = await _stateService.GetStateDetail(state);
+            return Ok(stateDetail);
         }
 
         [HttpGet]
         [Route("{country:guid}/states")]
-        public async Task<IActionResult> GetStates(Guid country, int limit, int offset, string sort, string order)
+        public async Task<IActionResult> GetStates(Guid country, int limit = 100, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var states = await _stateService.GetAllStates(country, limit, offset, sort, order);
+            var states = await _stateService.GetStates(country, limit, offset, sort, order);
             return Ok(states);
         }
 
         [HttpPut]
         [Route("{country:guid}/states/{state:guid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-
-        public async Task<IActionResult> UpdateState(Guid country, Guid state, [FromBody]  StateDetailDto stateDetailDto)
+        public async Task<IActionResult> UpdateState(Guid country, Guid state, [FromBody] StateDetailDto stateDetailDto)
         {
             await _stateService.UpdateState(country, state, stateDetailDto);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         [HttpDelete]
-        [Route("states/{state:guid}")]
+        [Route("{country:guid}/states/{state:guid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<IActionResult> DeleteState(Guid state)
+        public async Task<IActionResult> DeleteState(Guid country, Guid state)
         {
-            await _stateService.DeleteState(state);
+            await _stateService.DeleteState(country, state);
             return StatusCode(204);
         }
 

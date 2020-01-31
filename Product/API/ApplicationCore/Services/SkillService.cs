@@ -1,5 +1,4 @@
-﻿
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
@@ -20,14 +19,15 @@ namespace UpDiddyApi.ApplicationCore.Services
         private ILogger _logger { get; set; }
         private IRepositoryWrapper _repositoryWrapper { get; set; }
         private readonly IMapper _mapper;
-
         private readonly ISubscriberService _subscriberService;
+        private readonly ICourseService _courseService;
 
         public SkillService(
             IConfiguration configuration,
             IRepositoryWrapper repository,
             ILogger<SubscriberService> logger,
             ISubscriberService subscriberService,
+            ICourseService courseService,
             IMapper mapper)
         {
             _configuration = configuration;
@@ -35,13 +35,23 @@ namespace UpDiddyApi.ApplicationCore.Services
             _logger = logger;
             _mapper = mapper;
             _subscriberService = subscriberService;
+            _courseService = courseService;
         }
 
-        public async Task<List<SkillDto>> GetSkills(int limit, int offset, string sort, string order)
+        public async Task<SkillListDto> GetSkills(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var skills = await _repositoryWrapper.SkillRepository.GetByConditionWithSorting(x => x.IsDeleted == 0, limit, offset, sort, order);
+            var skills = await _repositoryWrapper.StoredProcedureRepository.GetSkills(limit, offset, sort, order);
             if (skills == null)
                 throw new NotFoundException("Skills not found");
+            return _mapper.Map<SkillListDto>(skills);
+        }
+
+        public async Task<List<SkillDto>> GetSkillsByKeyword(string keyword)
+        {
+            var skills = await _repositoryWrapper.SkillRepository.GetByConditionAsync(x => x.SkillName.Contains(keyword));            
+            if (skills == null)
+                throw new NotFoundException("Skills not found");
+
             return _mapper.Map<List<SkillDto>>(skills);
         }
 
@@ -88,6 +98,15 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _repositoryWrapper.SaveAsync();
         }
 
+        public async Task<List<SkillDto>> GetSkillsByCourseGuid(Guid courseGuid)
+        {
+            if (courseGuid == null || courseGuid == Guid.Empty)
+                throw new NullReferenceException("Course cannot be null");
+            var skills = await _repositoryWrapper.SkillRepository.GetByCourseGuid(courseGuid);
+            if (skills == null)
+                throw new NotFoundException("Skill not found");
+            return _mapper.Map<List<Skill>, List<SkillDto>>(skills);
+        }
 
         public async Task<List<SkillDto>> GetSkillsBySubscriberGuid(Guid subscriberGuid)
         {
@@ -97,6 +116,15 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (skills == null)
                 throw new NotFoundException("Skill not found");
             return _mapper.Map<List<Skill>, List<SkillDto>>(skills);
+        }
+
+        public async Task UpdateCourseSkills(Guid courseGuid, List<Guid> skills)
+        {
+            var course = await _courseService.GetCourse(courseGuid);
+            if (course == null)
+                throw new NotFoundException("Course not found");
+
+            await _repositoryWrapper.StoredProcedureRepository.UpdateEntitySkills(courseGuid, "Course", skills);
         }
 
         public async Task UpdateSubscriberSkills(Guid subscriberGuid, List<string> skills)
@@ -114,7 +142,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                     skills.RemoveAll(n => n.Equals(subscriberSkill.Skill.SkillName, StringComparison.OrdinalIgnoreCase));
                 }
             }
-
             foreach (var skill in skills)
             {
                 Skill skillEntity = new Skill();
@@ -130,7 +157,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     skillEntity.SkillId = existingSkill.SkillId;
                 }
-
                 SubscriberSkill subscriberSkill = new SubscriberSkill
                 {
                     SubscriberId = subscriber.SubscriberId,
@@ -145,20 +171,16 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 await _repositoryWrapper.SaveAsync();
             }
-
         }
 
 
-        public async Task<List<SkillDto>> GetSkillsByCourseGuid(Guid courseGuid)
+        public async Task UpdateSubscriberSkillsByGuid(Guid subscriberGuid, List<Guid> skills)
         {
-            if (courseGuid == null || courseGuid == Guid.Empty)
-                throw new NullReferenceException("Course cannot be null");
-            var skills = await _repositoryWrapper.SkillRepository.GetByCourseGuid(courseGuid);
-            if (skills == null)
-                throw new NotFoundException("Skill not found");
-            return _mapper.Map<List<Skill>, List<SkillDto>>(skills);
+            var subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
+            if (subscriber == null)
+                throw new NotFoundException("Subscriber not found");
+
+            await _repositoryWrapper.StoredProcedureRepository.UpdateEntitySkills(subscriberGuid, "Subscriber", skills);
         }
-
-
     }
 }

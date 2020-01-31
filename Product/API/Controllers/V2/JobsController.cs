@@ -105,6 +105,15 @@ namespace UpDiddyApi.Controllers
             return StatusCode(201);
         }
 
+        [HttpGet]
+        [Route("{JobGuid:guid}/applications")]
+        [Authorize]
+        public async Task<IActionResult> HasJobApplication(Guid JobGuid)
+        {
+            var HasApplied = await _jobApplicationService.HasJobApplication(GetSubscriberGuid(), JobGuid);
+            return Ok(HasApplied);
+        }
+
 
         #endregion
 
@@ -247,7 +256,7 @@ namespace UpDiddyApi.Controllers
         {
 
             await _jobFavoriteService.AddJobToFavorite(GetSubscriberGuid(), job);
-            return StatusCode(201);
+            return StatusCode(204);
         }
 
         [HttpGet]
@@ -279,11 +288,12 @@ namespace UpDiddyApi.Controllers
         [HttpPost]
         [Route("admin")]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        public async Task<IActionResult> CreateJob([FromBody] UpDiddyLib.Dto.JobPostingDto jobPostingDto)
+        public async Task<IActionResult> CreateJob([FromBody] JobCrudDto jobPostingDto)
         {
 
-            await _jobPostingService.CreateJobPosting(GetSubscriberGuid(), jobPostingDto);
-            return StatusCode(201);
+            Guid newJobGuid =  await _jobPostingService.CreateJobPosting(GetSubscriberGuid(), jobPostingDto);
+            Response.StatusCode = 201;
+            return StatusCode(201, newJobGuid);
         }
 
 
@@ -292,7 +302,7 @@ namespace UpDiddyApi.Controllers
         [HttpPut]
         [Route("admin/{jobGuid:guid}")]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        public async Task<IActionResult> UpdateJob([FromBody] UpDiddyLib.Dto.JobPostingDto jobPostingDto, Guid jobGuid)
+        public async Task<IActionResult> UpdateJob([FromBody] JobCrudDto jobPostingDto, Guid jobGuid)
         {
 
             await _jobPostingService.UpdateJobPosting(GetSubscriberGuid(), jobGuid,jobPostingDto);
@@ -316,20 +326,41 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsRecruiterPolicy")]
         public async Task<IActionResult> GetJobAdmin(Guid jobGuid)
         {
-
-            UpDiddyLib.Dto.JobPostingDto jobPostingDto =  await _jobPostingService.GetJobPosting(GetSubscriberGuid(), jobGuid);
+            JobCrudDto jobPostingDto =  await _jobPostingService.GetJobPostingCrud(GetSubscriberGuid(), jobGuid);
             return Ok(jobPostingDto);
         }
-
+  
         [HttpGet]
         [Route("admin")]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        public async Task<IActionResult> GetJobAdminForSubscriber(Guid jobGuid)
+        public async Task<IActionResult> GetJobAdminForSubscriber(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-
-            List<UpDiddyLib.Dto.JobPostingDto> postings = await _jobPostingService.GetJobPostingForSubscriber(GetSubscriberGuid());
+     
+            JobCrudListDto postings = await _jobPostingService.GetJobPostingCrudForSubscriber(GetSubscriberGuid(),limit,offset,sort,order);
             return Ok(postings);
         }
+
+        [HttpPut]
+        [Route("admin/{jobGuid:guid}/skills")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        public async Task<IActionResult> UpdateJobSkills([FromBody] List<UpDiddyLib.Domain.Models.SkillDto> skills , Guid jobGuid)
+        {
+
+           await _jobPostingService.UpdateJobPostingSkills(GetSubscriberGuid(), jobGuid, skills);
+            return StatusCode(204);
+        }
+
+
+        [HttpGet]
+        [Route("admin/{jobGuid:guid}/skills")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        public async Task<IActionResult> GetJobSkills( Guid jobGuid)
+        { 
+            return Ok (await _jobPostingService.GetJobPostingSkills(GetSubscriberGuid(), jobGuid) );
+            
+        }
+
+
 
         #endregion
 
@@ -407,7 +438,17 @@ namespace UpDiddyApi.Controllers
 
         #endregion
 
+        #region Job Data Mining
+        
+        [HttpGet]
+        [Route("job-site-scrape-statistics")]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        public async Task<IActionResult> GetJobSiteScrapeStatistics(int limit = 10, int offset = 0, string sort = "endDate", string order = "descending")
+        {
+            JobSiteScrapeStatisticsListDto jobSiteScrapeStatistics = await _jobPostingService.GetJobSiteScrapeStatistics(limit, offset, sort, order);
+            return Ok(jobSiteScrapeStatistics);
+        }
 
-
+        #endregion
     }
 }

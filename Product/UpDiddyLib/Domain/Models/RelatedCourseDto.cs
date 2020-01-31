@@ -18,5 +18,6 @@ namespace UpDiddyLib.Domain.Models
         public string DesktopImage { get; set; }
         public string MobileImage { get; set; }
         public string ThumbnailImage { get; set; }
+        public string ExternalUrl { get; set; }
     }
 }

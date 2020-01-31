@@ -36,5 +36,7 @@ namespace UpDiddyLib.Domain.Models
 
         public Guid TopicGuid { get; set; }
 
+        public int? HasOnboarded { get; set; }
+
     }
 }

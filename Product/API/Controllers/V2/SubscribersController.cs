@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace UpDiddyApi.Controllers.V2
 {
     [Route("/V2/[controller]/")]
-    public class SubscribersController : ControllerBase
+    public class SubscribersController : BaseApiController
     {
         private readonly IConfiguration _configuration;
         private readonly ISubscriberService _subscriberService;
@@ -39,15 +39,32 @@ namespace UpDiddyApi.Controllers.V2
             return Ok(new { subscriberGuid = newSubscriberGuid });
         }
 
+        [HttpPut]
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
+        [Route("sync-auth0-userid")]
+        public async Task<IActionResult> SyncAuth0UserId([FromBody] SubscriberDto subscriberDto)
+        {
+            await _subscriberService.SyncAuth0UserId(subscriberDto.SubscriberGuid, subscriberDto.Auth0UserId);
+            return StatusCode(200);
+        }
+                
+        [HttpPut]
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
+        [Route("{subscriber:guid}/track-sign-in")]
+        public async Task<IActionResult> TrackSignIn(Guid subscriber)
+        {
+            await _subscriberService.TrackSubscriberSignIn(subscriber);
+            return StatusCode(200);
+        }
 
         [HttpPost]
         [Authorize]
         [Route("existing-subscriber-campaign-signup")]
         public async Task<IActionResult> ExistingUserCampaignSignup([FromBody] CreateUserDto createUserDto)
         {
+            createUserDto.SubscriberGuid = GetSubscriberGuid();
             await _subscriberService.ExistingSubscriberSignUp(createUserDto);
             return StatusCode(201);
         }
-
     }
 }

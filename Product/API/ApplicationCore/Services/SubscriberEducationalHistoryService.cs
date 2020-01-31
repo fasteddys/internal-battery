@@ -1,13 +1,8 @@
-﻿using Hangfire;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Graph;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Factory;
@@ -17,15 +12,8 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
 using UpDiddyLib.Dto;
-using UpDiddyLib.Dto.Marketing;
-using UpDiddyLib.Shared;
-using UpDiddyLib.Helpers;
-using System.Text.RegularExpressions;
 using System.Web;
 using AutoMapper;
-using System.Security.Claims;
-using Microsoft.AspNet.OData.Query;
-using Microsoft.AspNetCore.Http;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using AutoMapper.QueryableExtensions;
 
@@ -81,7 +69,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(_repository, EducationHistoryDto.EducationalDegree);
             int educationalDegreeId = educationalDegree.EducationalDegreeId;
             // Find or create the degree type 
-            EducationalDegreeType educationalDegreeType = await EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_repository, EducationHistoryDto.EducationalDegreeType);
+            EducationalDegreeType educationalDegreeType = await _repository.EducationalDegreeTypeRepository.GetByGuid(EducationHistoryDto.EducationalDegreeTypeGuid);
             int educationalDegreeTypeId = 0;
             if (educationalDegreeType == null)
                 educationalDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(_repository, UpDiddyLib.Helpers.Constants.NotSpecifedOption);
@@ -137,7 +125,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(_repository, EducationHistoryDto.EducationalDegree);
             int educationalDegreeId = educationalDegree.EducationalDegreeId;
             // Find or create the degree type 
-            EducationalDegreeType educationalDegreeType =  await EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeTypeAsync(_repository, EducationHistoryDto.EducationalDegreeType);
+            EducationalDegreeType educationalDegreeType =  await _repository.EducationalDegreeTypeRepository.GetByGuid(EducationHistoryDto.EducationalDegreeTypeGuid);
+
             int educationalDegreeTypeId = 0;
             if (educationalDegreeType == null)
                 educationalDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(_repository, UpDiddyLib.Helpers.Constants.NotSpecifedOption);

@@ -45,7 +45,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IHttpClientFactory _httpClientFactory = null;
         private readonly ICompanyService _companyService;
         private readonly ISubscriberService _subscriberService;
-        private readonly IMemoryCacheService _cache;
         private IAuthorizationService _authorizationService;
         private readonly IDistributedCache _redisCache;
 
@@ -62,7 +61,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             _configuration = _services.GetService<Microsoft.Extensions.Configuration.IConfiguration>();
             _companyService = services.GetService<ICompanyService>();
             _subscriberService = services.GetService<ISubscriberService>();
-            _cache = services.GetService<IMemoryCacheService>();
             _hangfireService = hangfireService;
             _cloudTalentService = cloudTalentService;
             _authorizationService = services.GetService<IAuthorizationService>();
@@ -183,14 +181,14 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (subscriberGuid == talentGuid || isRecruiter)
             {
 
-                UpDiddyLib.Dto.SubscriberDto subscriberDto = await SubscriberFactory.GetSubscriber(_repositoryWrapper, subscriberGuid, _syslog, _mapper);
+                UpDiddyLib.Dto.SubscriberDto subscriberDto = await SubscriberFactory.GetSubscriber(_repositoryWrapper, talentGuid, _syslog, _mapper);
 
                 if (subscriberDto == null)
                     throw new NotFoundException("Subscriber does not exist");
 
                 // track the subscriber action if performed by someone other than the user who owns the file
                 if (subscriberGuid != talentGuid)
-                    new SubscriberActionFactory(_repositoryWrapper, _db, _configuration, _syslog, _redisCache).TrackSubscriberAction(subscriberGuid, "TalentDetails", "Subscriber", subscriberDto.SubscriberGuid);
+                    new SubscriberActionFactory(_repositoryWrapper, _db, _configuration, _syslog, _redisCache).TrackSubscriberAction(subscriberGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);
 
                 return subscriberDto;
             }

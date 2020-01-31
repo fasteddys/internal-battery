@@ -109,12 +109,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             return false;
         }
 
-        public async Task<List<CourseFavoriteDto>> GetFavoriteCourses(Guid subscriberGuid, int limit, int offset, string sort, string order)
+        public async Task<CourseFavoriteListDto> GetFavoriteCourses(Guid subscriberGuid, int limit, int offset, string sort, string order)
         {
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetFavoriteCourses(subscriberGuid, limit, offset, sort, order);
             if (courses == null)
                 throw new NotFoundException("Courses not found");
-            return (courses);
+            return _mapper.Map<CourseFavoriteListDto>(courses);
         }
     }
 }

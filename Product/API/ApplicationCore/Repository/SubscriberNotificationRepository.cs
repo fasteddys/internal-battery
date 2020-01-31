@@ -18,7 +18,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 
         public async Task<SubscriberNotification> GetSubscriberNotificationByIdentifiersAsync(Guid subscriberGuid, Guid notificationGuid)
         {
-            return await _dbContext.SubscriberNotification
+            return await _dbContext.SubscriberNotification.IgnoreQueryFilters()
                 .Where(sn => sn.Subscriber.SubscriberGuid == subscriberGuid && sn.Notification.NotificationGuid == notificationGuid)
                 .FirstOrDefaultAsync();
         }

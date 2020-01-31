@@ -14,6 +14,7 @@ using UpDiddyLib.Dto.User;
 using UpDiddyLib.Dto;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.Authorization;
+using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.Controllers
 {
@@ -28,7 +29,8 @@ namespace UpDiddyApi.Controllers
         private readonly IB2CGraph _graphClient;
         private readonly IAPIGateway _adb2cApi;
         private readonly IPasswordResetRequestService _passwordResetRequestService;
-        public IdentityController(IServiceProvider services)
+        private ILogger _syslog = null;
+        public IdentityController(IServiceProvider services, ILogger<IdentityController> sysLog)
         {
             _mapper = services.GetService<IMapper>();
             _userService = services.GetService<IUserService>();
@@ -37,6 +39,7 @@ namespace UpDiddyApi.Controllers
             _graphClient = services.GetService<IB2CGraph>();
             _adb2cApi = services.GetService<IAPIGateway>();
             _passwordResetRequestService = services.GetService<IPasswordResetRequestService>();
+            _syslog = sysLog;
         }
 
         // intentionally using HttpPost rather than HttpGet because of how IIS treats certain special characters in routes even if they are escaped (such as +)
@@ -53,6 +56,7 @@ namespace UpDiddyApi.Controllers
             }
             else
             {
+                _syslog.LogError($"IdentityController:IsUserInAuth0  A user with that email does not exist in Auth0.");
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = "A user with that email does not exist in Auth0." });
             }
         }
@@ -72,6 +76,7 @@ namespace UpDiddyApi.Controllers
             }
             else
             {
+                _syslog.LogError($"IdentityController:IsUserInADB2C  A user with that email does not exist in ADB2C.");
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = "A user with that email does not exist in ADB2C." });
             }
         }
@@ -93,6 +98,7 @@ namespace UpDiddyApi.Controllers
             }
             else
             {
+                _syslog.LogError($"IdentityController:CheckADB2CLogin This login is not valid for ADB2C.");
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = "This login is not valid for ADB2C." });
             }
         }
@@ -116,6 +122,7 @@ namespace UpDiddyApi.Controllers
             }
             else
             {
+                _syslog.LogError($"IdentityController:MigrateUserAsync The user was not migrated successfully.");
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = "The user was not migrated successfully." });
             }
         }
@@ -132,7 +139,11 @@ namespace UpDiddyApi.Controllers
             var subscriber = await _subscriberService.GetSubscriberByEmail(emailDto.Email);
 
             if (subscriber == null || !subscriber.SubscriberGuid.HasValue)
+            {
+                _syslog.LogError($"IdentityController:CreateCustomPasswordResetAsync Subscriber does not exist.");
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = "Subscriber does not exist." });
+            }
+                
 
             try
             {
@@ -158,7 +169,11 @@ namespace UpDiddyApi.Controllers
             if (isPasswordResetRequestSuccessful)
                 return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Password reset completed successfully." });
             else
+            {
+                _syslog.LogError($"IdentityController:ConsumeCustomPasswordResetAsync Password reset was not completed successfully.");
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = "Password reset was not completed successfully." });
+            }
+                
         }
 
         [HttpGet("check-custom-password-reset/{passwordResetRequestGuid}")]
@@ -166,7 +181,11 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> CheckValidityOfPasswordResetRequest(Guid passwordResetRequestGuid)
         {
             if(passwordResetRequestGuid == null || passwordResetRequestGuid == Guid.Empty)
+            {
+                _syslog.LogError($"IdentityController:CheckValidityOfPasswordResetRequest Password reset request is not valid. Missing Guid");
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = "Password reset request is not valid." });
+            }
+                
 
             bool isPasswordResetRequestValid = await _passwordResetRequestService.CheckValidityOfPasswordResetRequest(passwordResetRequestGuid);
 
@@ -174,8 +193,14 @@ namespace UpDiddyApi.Controllers
             if (isPasswordResetRequestValid)
                 return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Password reset request is valid." });
             else
+            {
+                _syslog.LogError($"IdentityController:CheckValidityOfPasswordResetRequest Password reset request is not valid. Operation failed.");
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = "Password reset request is not valid." });
+            }
+                
         }
+        
+
         
         [HttpPost("create-user")]
         [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
@@ -193,6 +218,7 @@ namespace UpDiddyApi.Controllers
 
             if (!createLoginResponse.Success)
             {
+                _syslog.LogError($"IdentityController:CreateUserAsync {createLoginResponse.Message} for user {createUserDto.Email}");
                 return Ok(new BasicResponseDto() { StatusCode = 404, Description = createLoginResponse.Message });
             }
             else
@@ -203,6 +229,7 @@ namespace UpDiddyApi.Controllers
                 // if the subscriber is not created successfully, remove the associated login that was created and return a failure message
                 if (!createSubscriberResult)
                 {
+                    _syslog.LogError($"IdentityController:CreateUserAsync An error occurred creating the user with email {createUserDto.Email} ");
                     _userService.DeleteUserAsync(user.UserId);
                     return Ok(new BasicResponseDto() { StatusCode = 404, Description = "An error occurred creating the user." });
                 }

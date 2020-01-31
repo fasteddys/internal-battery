@@ -50,7 +50,9 @@ namespace UpDiddyLib.Domain.Models
         public long TelecommutePercentage { get; set; }
  
         public bool ThirdPartyApply { get; set; }
- 
+
+        public string ThirdPartyIdentifier { get; set; }
+
         public string Industry { get; set; }
      
         public string JobCategory { get; set; }

@@ -14,12 +14,11 @@ namespace UpDiddyApi.ApplicationCore.Services
     public class ExperienceLevelService : IExperienceLevelService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
-        private readonly IMemoryCacheService _memoryCacheService;
         private readonly IMapper _mapper;
-        public ExperienceLevelService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IMemoryCacheService memoryCacheService)
+
+        public ExperienceLevelService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
         {
             _repositoryWrapper = repositoryWrapper;
-            _memoryCacheService = memoryCacheService;
             _mapper = mapper;
         }
 
@@ -27,25 +26,19 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (experienceLevelGuid == null || experienceLevelGuid == Guid.Empty)
                 throw new NullReferenceException("ExperienceLevelGuid cannot be null");
-            string cacheKey = $"GetExperienceLevel";
-            IList<ExperienceLevelDto> rval = (IList<ExperienceLevelDto>)_memoryCacheService.GetCacheValue(cacheKey);
-            if (rval == null)
-            {
-                var experienceLevels = await _repositoryWrapper.ExperienceLevelRepository.GetAllExperienceLevels();
-                if (experienceLevels == null)
-                    throw new NotFoundException("ExperienceLevelGuid not found");
-                rval = _mapper.Map<List<ExperienceLevelDto>>(experienceLevels);
-                _memoryCacheService.SetCacheValue(cacheKey, rval);
-            }
-            return rval?.Where(x => x.ExperienceLevelGuid == experienceLevelGuid).FirstOrDefault();
+            IList<ExperienceLevelDto> rval;
+            var experienceLevel = await _repositoryWrapper.ExperienceLevelRepository.GetByGuid(experienceLevelGuid);
+            if (experienceLevel == null)
+                throw new NotFoundException("ExperienceLevel not found");
+            return _mapper.Map<ExperienceLevelDto>(experienceLevel);
         }
 
-        public async Task<List<ExperienceLevelDto>> GetExperienceLevels(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<ExperienceLevelListDto> GetExperienceLevels(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var experienceLevels = await _repositoryWrapper.ExperienceLevelRepository.GetByConditionWithSorting(x => x.IsDeleted == 0, limit, offset, sort, order);
+            var experienceLevels = await _repositoryWrapper.StoredProcedureRepository.GetExperienceLevels(limit, offset, sort, order);
             if (experienceLevels == null)
                 throw new NotFoundException("ExperienceLevels not found");
-            return _mapper.Map<List<ExperienceLevelDto>>(experienceLevels);
+            return _mapper.Map<ExperienceLevelListDto>(experienceLevels);
         }
 
         public async Task CreateExperienceLevel(ExperienceLevelDto experienceLevelDto)
