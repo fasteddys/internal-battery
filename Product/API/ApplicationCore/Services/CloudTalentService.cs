@@ -46,10 +46,21 @@ namespace UpDiddyApi.ApplicationCore.Services
         private GoogleProfileService _googleProfile = null;
         private ISubscriberService _subscriberService;
         private IHangfireService _hangfireService;
+        private  IAzureSearchService _azureSearchService;
         //  private RepositoryWrapper repositoryWrapper;
 
         #region Constructor
-        public CloudTalentService(IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<CloudTalentService> sysLog, IHttpClientFactory httpClientFactory, IRepositoryWrapper repositoryWrapper, ISubscriberService ISubscriberService, IHangfireService hangfireService)
+        public CloudTalentService(
+            IMapper mapper, 
+            Microsoft.Extensions.Configuration.IConfiguration configuration, 
+            ILogger<CloudTalentService> sysLog, 
+            IHttpClientFactory httpClientFactory, 
+            IRepositoryWrapper repositoryWrapper, 
+            ISubscriberService ISubscriberService, 
+            IHangfireService hangfireService,
+            IAzureSearchService azureSearchService
+        )
+ 
         {
             _mapper = mapper;
             _apiBaseUri = configuration["SysEmail:ApiUrl"];
@@ -67,6 +78,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             // in GOOGLE_APPLICATION_CREDENTIALS environmental variable
             _credential = GoogleCredential.GetApplicationDefaultAsync().Result;
             _profileApi = new GoogleProfileService(configuration, sysLog, httpClientFactory);
+            _azureSearchService = azureSearchService;
 
             // Specify the Service scope.
             if (_credential.IsCreateScopedRequired)
@@ -181,6 +193,18 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (subscriber == null)
                     return false;
 
+                // Add the subscriber to the azure subscriber index in addition to google profiles 
+                try
+                {
+                    _azureSearchService.AddOrUpdate(subscriber);
+                }
+                catch (Exception ex)
+                {
+                    _syslog.LogError($"CloudTalentService:AddOrUpdateProfileToCloudTalent error {ex.Message} adding profile from azure search");
+                }
+
+
+
                 IList<SubscriberSkill> skills = await SubscriberFactory.GetSubscriberSkillsById(_repositoryWrapper, subscriber.SubscriberId);
                 // index the job to google 
                 if (string.IsNullOrEmpty(subscriber.CloudTalentUri))
@@ -273,6 +297,16 @@ namespace UpDiddyApi.ApplicationCore.Services
             int step = 0;
             try
             {
+                // Add the subscriebr to the azure subscriber index in addition to google profiles 
+                try
+                {
+                    _azureSearchService.Delete(subscriber);
+                }
+                catch ( Exception ex )
+                {
+                    _syslog.LogError($"CloudTalentService:RemoveProfileFromIndex error {ex.Message} deleting profile from azure search");
+                }
+                
                 BasicResponseDto deleteStatus = null;
                 step = 1;
                 if (subscriber.CloudTalentUri != null && string.IsNullOrEmpty(subscriber.CloudTalentUri.Trim()) == false)
