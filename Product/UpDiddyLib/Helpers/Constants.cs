@@ -25,6 +25,7 @@ namespace UpDiddyLib.Helpers
         static public readonly int PollyStringCacheTimeInMinutes = 5;
         static public readonly string SysLogLogInformationTrue = "true";
         static public readonly string WozVendorName = "WozU";
+        static public readonly Guid WozVendorGuid = new Guid("00000000-0000-0000-0000-000000000001");
         static public readonly string RegionCodeUS = "US";
         static public readonly List<String> ValidTextFileExtensions = new List<String>
         {

@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.VisualBasic;
+using System;
 using System.Linq;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
@@ -7,9 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using Microsoft.EntityFrameworkCore;
-using AutoMapper.QueryableExtensions;
 using UpDiddyApi.Workflow;
-using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
@@ -19,6 +17,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using UpDiddyApi.ApplicationCore.Factory;
 using UpDiddyLib.MessageQueue;
 using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyLib.Helpers;
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace UpDiddyApi.Controllers
@@ -163,7 +162,7 @@ namespace UpDiddyApi.Controllers
                 int paymentMonth = 0;
                 int paymentYear = 0;
 
-                if (vendor == null || vendor.Name == "WozU")
+                if (vendor == null || vendor.VendorGuid == UpDiddyLib.Helpers.Constants.WozVendorGuid)
                 {
                     // calculate vendor invoice payment month and year
                     paymentMonth = currentDate.AddDays(30).Month;
