@@ -29,13 +29,15 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly IUserService _userService;
+        private readonly IAzureSearchService _azureSearchService;
 
-        public RecruiterService(IConfiguration configuration, IRepositoryWrapper repositoryWrapper, IMapper mapper, IUserService userService)
+        public RecruiterService(IConfiguration configuration, IRepositoryWrapper repositoryWrapper, IMapper mapper, IUserService userService, IAzureSearchService azureSearchService)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
             _configuration = configuration;
             _userService = userService;
+            _azureSearchService = azureSearchService;
         }
 
         public async Task<string> AddRecruiterAsync(RecruiterDto recruiterDto)
@@ -136,6 +138,9 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 await _repositoryWrapper.RecruiterRepository.UpdateRecruiter(recruiter);
 
+
+
+                // Assign autho permissions 
                 var getUserResponse = await _userService.GetUserByEmailAsync(recruiter.Email);
                 if (getUserResponse.Success)
                 {
@@ -221,6 +226,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                     existingRecruiter.IsDeleted = 0; //activates the recruiter if he is deleted
                     existingRecruiter.ModifyDate = DateTime.Now;
                     await _repositoryWrapper.RecruiterRepository.UpdateRecruiter(existingRecruiter);
+
+                    // Update recruiter in azure
+                    _azureSearchService.AddOrUpdateRecruiter(existingRecruiter);
                 }
                 else
                     throw new FailedValidationException($"Subscriber {subscriber.SubscriberGuid} is already a Recruiter");
@@ -240,6 +248,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 //assign companyGuid
                 BaseModelFactory.SetDefaultsForAddNew(newRecruiter);
                 await _repositoryWrapper.RecruiterRepository.AddRecruiter(newRecruiter);
+                // add recruiter in azure
+                _azureSearchService.AddOrUpdateRecruiter(newRecruiter);
 
             }
             //Assign permission to recruiter
@@ -287,6 +297,9 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             await _repositoryWrapper.RecruiterRepository.UpdateRecruiter(recruiter);
 
+            // Update recruiter in azure
+            _azureSearchService.AddOrUpdateRecruiter(recruiter);
+
             if (recruiterDto.IsInAuth0RecruiterGroup != null)
             {
                 var getUserResponse = await _userService.GetUserByEmailAsync(recruiter.Email);
@@ -326,6 +339,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             recruiter.ModifyGuid = SubscriberGuid;
 
             await _repositoryWrapper.RecruiterRepository.UpdateRecruiter(recruiter);
+
+            // Update recruiter in azure
+            _azureSearchService.DeleteRecruiter(recruiter);
 
             // delete the user's permissions  
             var getUserResponse = await _userService.GetUserByEmailAsync(recruiter.Email);
@@ -371,9 +387,6 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-
-
-
         public async Task<RecruiterSearchResultDto> SearchRecruitersAsync(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", string companyName = "")
         {
             DateTime startSearch = DateTime.Now;
@@ -392,7 +405,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(adminApiKey));
 
-            // Create an index named hotels
+            // Get recruiter search index 
             ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(recruiterIndexName);
 
             SearchParameters parameters;
@@ -409,7 +422,6 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
             //todo implement case insensitive filtering if it becomes necessary - strategry would be to index the companyname as lowercase into a filter field
-
             if (companyName != "")
                 parameters.Filter = $"CompanyName eq '{companyName}'"; 
 
@@ -439,9 +451,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             searchResults.SearchMappingTimeInTicks = intervalMapTime.Ticks;
             return searchResults;
         }
-
-
-
 
 
 

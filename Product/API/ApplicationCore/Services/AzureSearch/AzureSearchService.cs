@@ -55,13 +55,13 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
         }
 
         #region subscriber index 
-        public async Task<bool> AddOrUpdate(Subscriber subscriber)
+        public async Task<bool> AddOrUpdateSubscriber(Subscriber subscriber)
         {
             SendSubscriberRequest(subscriber, "upload");            
             return true;
         }
 
-        public async Task<bool> Delete(Subscriber subscriber)
+        public async Task<bool> DeleteSubscriber(Subscriber subscriber)
         {
             SendSubscriberRequest(subscriber, "delete");            
             return true;
@@ -69,7 +69,42 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
 
         #endregion
 
+
+        #region Recruiter index 
+        public async Task<bool> AddOrUpdateRecruiter(Recruiter recruiter)
+        {
+            SendRecruiterRequest(recruiter, "upload");
+            return true;
+        }
+
+        public async Task<bool> DeleteRecruiter(Recruiter recruiter)
+        {
+            SendRecruiterRequest(recruiter, "delete");
+            return true;
+        }
+
+        #endregion
+
+
+
         #region helper functions 
+
+        private async Task<bool> SendRecruiterRequest(Recruiter recruiter, string cmd)
+        {
+            // fire and forget 
+            Task.Run(() => {
+                string index = _configuration["AzureSearch:RecruiterIndexName"];
+                SDOCRequest<RecruiterSDOC> docs = new SDOCRequest<RecruiterSDOC>();
+                RecruiterSDOC doc = _mapper.Map<RecruiterSDOC>(recruiter);
+                doc.SearchAction = cmd;
+                docs.value.Add(doc);
+                string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs);
+                SendSearchRequest(index, Json);
+            });
+            return true;
+        }
+
+
 
         private async Task<bool> SendSubscriberRequest(Subscriber subscriber, string cmd)
         {

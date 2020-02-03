@@ -10,7 +10,10 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
 {
     public interface IAzureSearchService
     {
-        Task<bool> AddOrUpdate(Subscriber subscriber);
-        Task<bool> Delete(Subscriber subscriber);
+        Task<bool> AddOrUpdateSubscriber(Subscriber subscriber);
+        Task<bool> DeleteSubscriber(Subscriber subscriber);
+
+        Task<bool> AddOrUpdateRecruiter(Recruiter recruiter);
+        Task<bool> DeleteRecruiter(Recruiter recruiter);
     }
 }
