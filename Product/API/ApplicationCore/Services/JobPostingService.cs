@@ -281,7 +281,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<JobCrudDto> GetJobPostingCrud(Guid subscriberGuid, Guid jobPostingGuid)
         {
 
-            JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuid(_repositoryWrapper, jobPostingGuid);
+            JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuidWithRelatedObjectsAsync(_repositoryWrapper, jobPostingGuid);
             if (jobPosting == null)
                 throw new NotFoundException($"Job posting {jobPostingGuid} does not exist");
 

@@ -41,6 +41,7 @@ using UpDiddyApi.ApplicationCore.Services.Identity.Interfaces;
 using UpDiddyApi.ApplicationCore.Services.Identity;
 using UpDiddyApi.ApplicationCore.ActionFilter;
 using Microsoft.AspNetCore.Mvc.Versioning;
+using UpDiddyApi.ApplicationCore.Services.AzureSearch;
 
 namespace UpDiddyApi
 {
@@ -327,10 +328,10 @@ namespace UpDiddyApi
             services.AddScoped<IEducationLevelService, EducationLevelService>();
             services.AddScoped<IIndustryService, IndustryService>();
             services.AddScoped<IPartnerService, PartnerService>();
-
             services.AddScoped<IGroupService, GroupService>();
-
             services.AddScoped<IPartnerService, PartnerService>();
+            services.AddScoped<IAzureSearchService, AzureSearchService>();
+            services.AddScoped<IReportsService, ReportsService>();
 
             #endregion
 

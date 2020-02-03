@@ -123,9 +123,9 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet]
         [Route("query")]
-        public async Task<IActionResult> SearchCourses(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", string companyName = "")
+        public async Task<IActionResult> SearchRecruiters(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", string companyName = "")
         {
-           // Startup here, call this from postman
+           
             var rVal = await _recruiterService.SearchRecruitersAsync(limit, offset, sort, order, keyword, companyName);
             return Ok(rVal);
         }

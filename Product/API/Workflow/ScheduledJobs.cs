@@ -1651,9 +1651,16 @@ namespace UpDiddyApi.Workflow
 
                     if (subscriber == null && !string.IsNullOrWhiteSpace(profile.CloudTalentUri))
                     {
-                        _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: Subscriber {profile.Email} does not exist in the database, the cloud talent uri to be purged is: {profile.CloudTalentUri}");
-                        var response = _cloudTalentService.DeleteProfileFromCloudTalentByUri(profile.CloudTalentUri);
-                        _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: The response from the cloud talent delete endpoint for subscriber {profile.Email} was: {response.Description}, status code: {response.StatusCode}");
+                        try
+                        {
+                            _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: Subscriber {profile.Email} does not exist in the database, the cloud talent uri to be purged is: {profile.CloudTalentUri}");
+                            var response = _cloudTalentService.DeleteProfileFromCloudTalentByUri(profile.CloudTalentUri);
+                            _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: The response from the cloud talent delete endpoint for subscriber {profile.Email} was: {response.Description}, status code: {response.StatusCode}");
+                        }
+                        catch (Exception e)
+                        {
+                            _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: An exception occurred; message={e.Message}, source={e.Source}, stack trace={e.StackTrace}");
+                        }
                     }
                 }
             }

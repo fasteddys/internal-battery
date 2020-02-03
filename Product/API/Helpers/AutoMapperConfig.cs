@@ -17,6 +17,10 @@ using UpDiddyLib.Dto.User;
 using UpDiddyLib.Domain.Models;
 using Microsoft.Extensions.Configuration;
 using UpDiddyLib.Domain;
+using UpDiddyLib.Domain.Models.Reports;
+
+using UpDiddyLib.Domain.AzureSearch;
+
 namespace UpDiddyApi.Helpers
 {
     public class AutoMapperConfiguration
@@ -641,8 +645,6 @@ namespace UpDiddyApi.Helpers
             .ForMember(dest => dest.Entities, opt => opt.MapFrom(src => src.ToList()))
             .ReverseMap();
 
-
-
             CreateMap<List<GroupInfoDto>, GroupInfoListDto>()
             .AfterMap((src, dest) =>
             {
@@ -653,8 +655,6 @@ namespace UpDiddyApi.Helpers
             })
             .ForMember(dest => dest.Entities, opt => opt.MapFrom(src => src.ToList()))
             .ReverseMap();
-
-
 
             CreateMap<List<RecruiterInfoDto>, RecruiterInfoListDto>()
             .AfterMap((src, dest) =>
@@ -667,7 +667,6 @@ namespace UpDiddyApi.Helpers
             .ForMember(dest => dest.Entities, opt => opt.MapFrom(src => src.ToList()))
             .ReverseMap();
  
-
             CreateMap<Recruiter, RecruiterInfoDto>()
                .ForPath(x => x.SubscriberGuid, opt => opt.MapFrom(src => src.Subscriber.SubscriberGuid))             
                .ForMember(x => x.TotalRecords, opt => opt.Ignore())
@@ -681,12 +680,39 @@ namespace UpDiddyApi.Helpers
                .ForMember(c => c.CompanyName, opt => opt.MapFrom(src => src.Company.CompanyName))
                .ReverseMap();
 
-
             CreateMap<JobPostingSkill, UpDiddyLib.Domain.Models.SkillDto>()
                 .ForMember(c => c.Name, opt => opt.MapFrom(src => src.Skill.SkillName))
                 .ForMember(c => c.SkillGuid, opt => opt.MapFrom(src => src.Skill.SkillGuid))
                 .ForMember(x => x.TotalRecords, opt => opt.Ignore())
                 .ReverseMap();
+
+            CreateMap<List<UsersDto>, UsersListDto>()
+                  .AfterMap((src, dest) =>
+                  {
+                      if (src != null && src.Count() > 0)
+                      {
+                          dest.TotalEnrollments = src.FirstOrDefault().TotalEnrollments;
+                          dest.TotalUsers = src.FirstOrDefault().TotalUsers;
+                      }
+                      else
+                      {
+                          dest.TotalEnrollments = 0;
+                          dest.TotalUsers = 0;
+                      }
+                  })
+                .ForMember(dest => dest.NewUsers, opt => opt.MapFrom(src => src.ToList()))
+                .ReverseMap();
+
+
+            CreateMap<Subscriber, SubscriberSDOC>()
+            .ForMember(c => c.SubscriberGuid, opt => opt.MapFrom(src => src.SubscriberGuid))
+            .ForMember(c => c.FirstName, opt => opt.MapFrom(src => src.FirstName))
+            .ForMember(c => c.LastName, opt => opt.MapFrom(src => src.LastName))
+            .ForMember(c => c.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+            .ForMember(c => c.Email, opt => opt.MapFrom(src => src.Email))
+            .ForAllOtherMembers(opt => opt.Ignore());
+       
+
 
 
 
@@ -697,9 +723,4 @@ namespace UpDiddyApi.Helpers
 
         }
     }
-
-
-
 }
-
-

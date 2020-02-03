@@ -8,6 +8,7 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Domain.Models;
 using System.Collections.Generic;
+using UpDiddyLib.Domain.Models.Reports;
 
 namespace UpDiddyApi.Models
 {
@@ -237,6 +238,9 @@ namespace UpDiddyApi.Models
         public DbQuery<GroupInfoDto> Groups { get; set; }
         public DbQuery<RecruiterInfoDto> Recruiters { get; set; }
         public DbQuery<UpDiddyLib.Domain.Models.JobSiteScrapeStatisticDto> JobSiteScrapeStatistics { get; set; }
+        public DbQuery<UsersDto> Users { get; set; }
+        public DbQuery<UsersDetailDto> UsersDetail { get; set; }
+        public DbQuery<PartnerUsers> PartnerUsers { get; set; }
 
         #endregion
 
