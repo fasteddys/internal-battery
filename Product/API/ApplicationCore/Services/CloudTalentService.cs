@@ -196,7 +196,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // Add the subscriber to the azure subscriber index in addition to google profiles 
                 try
                 {
-                    _azureSearchService.AddOrUpdate(subscriber);
+                    _azureSearchService.AddOrUpdateSubscriber(subscriber);
                 }
                 catch (Exception ex)
                 {
@@ -300,7 +300,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // Add the subscriebr to the azure subscriber index in addition to google profiles 
                 try
                 {
-                    _azureSearchService.Delete(subscriber);
+                    _azureSearchService.DeleteSubscriber(subscriber);
                 }
                 catch ( Exception ex )
                 {

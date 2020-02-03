@@ -114,7 +114,7 @@ namespace UpDiddyApi.Controllers.V2
         [HttpGet]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("subscribers/{SubscriberGuid}")]
-        public async Task<IActionResult> GetRecruiteBySubscriber(Guid SubscriberGuid)
+        public async Task<IActionResult> GetRecruiterBySubscriber(Guid SubscriberGuid)
         {
 
             RecruiterInfoDto rVal = await _recruiterService.GetRecruiterBySubscriberAsync(SubscriberGuid);
