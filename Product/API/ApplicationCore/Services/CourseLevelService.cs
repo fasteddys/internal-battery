@@ -39,7 +39,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _mapper.Map<CourseLevelListDto>(courseLevels);
         }
 
-        public async Task CreateCourseLevel(CourseLevelDto courseLevelDto)
+        public async Task<Guid> CreateCourseLevel(CourseLevelDto courseLevelDto)
         {
             if (courseLevelDto == null)
                 throw new NullReferenceException("CourseLevelDto cannot be null");
@@ -47,6 +47,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             courseLevel.CourseLevelGuid = Guid.NewGuid();
             await _repositoryWrapper.CourseLevelRepository.Create(courseLevel);
             await _repositoryWrapper.SaveAsync();
+            return courseLevel.CourseLevelGuid;
         }
 
         public async Task UpdateCourseLevel(Guid courseLevelGuid, CourseLevelDto courseLevelDto)

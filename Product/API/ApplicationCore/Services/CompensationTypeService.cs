@@ -37,7 +37,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _mapper.Map<CompensationTypeListDto>(compensationTypes);
         }
 
-        public async Task CreateCompensationType(CompensationTypeDto compensationTypeDto)
+        public async Task<Guid> CreateCompensationType(CompensationTypeDto compensationTypeDto)
         {
             if (compensationTypeDto == null)
                 throw new NullReferenceException("CompensationTypeDto cannot be null");
@@ -46,6 +46,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             compensationType.CompensationTypeGuid = Guid.NewGuid();
             await _repositoryWrapper.CompensationTypeRepository.Create(compensationType);
             await _repositoryWrapper.SaveAsync();
+            return compensationType.CompensationTypeGuid;
         }
 
         public async Task UpdateCompensationType(Guid compensationTypeGuid, CompensationTypeDto compensationTypeDto)

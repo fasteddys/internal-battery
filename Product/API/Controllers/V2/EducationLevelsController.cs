@@ -27,7 +27,7 @@ namespace UpDiddyApi.Controllers
         [Route("{educationLevel:guid}")]
         public async Task<IActionResult> GetEducationLevel(Guid educationLevel)
         {
-            var result  = await _educationLevelService.GetEducationLevel(educationLevel);
+            var result = await _educationLevelService.GetEducationLevel(educationLevel);
             return Ok(result);
         }
 
@@ -53,9 +53,8 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateEducationLevel([FromBody] EducationLevelDto educationLevelDto)
         {
-            await _educationLevelService.CreateEducationLevel(educationLevelDto);
-            return StatusCode(201);
+            var educationLevelGuid = await _educationLevelService.CreateEducationLevel(educationLevelDto);
+            return StatusCode(201, educationLevelGuid);
         }
-       
     }
 }

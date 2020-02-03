@@ -8,7 +8,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface ITalentNoteService
     {
-        Task<bool> CreateNote(Guid subscriber, Guid talent, SubscriberNotesDto subscriberNoteDto);
+        Task<Guid> CreateNote(Guid subscriber, Guid talent, SubscriberNotesDto subscriberNoteDto);
         Task<bool> UpdateNote(Guid subscriberGuid, Guid talentGuid, Guid noteGuid, SubscriberNotesDto subscriberNoteDto);
         Task<bool> DeleteNote(Guid subscriberGuid, Guid notGuid);
         Task<SubscriberNotesDto> GetNote(Guid subscriberGuid, Guid notGuid);

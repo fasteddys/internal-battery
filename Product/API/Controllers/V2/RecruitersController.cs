@@ -72,8 +72,8 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateRecruiter([FromBody] RecruiterInfoDto recruiterInfoDto)
         {
-            await _recruiterService.AddRecruiterAsync(recruiterInfoDto);
-            return StatusCode(201);
+            var recruiterGuid = await _recruiterService.AddRecruiterAsync(recruiterInfoDto);
+            return StatusCode(201, recruiterGuid);
         }
 
     
@@ -82,7 +82,6 @@ namespace UpDiddyApi.Controllers.V2
         [Route("{recruiter:guid}")]
         public async Task<IActionResult> UpdateRecruiter([FromBody] RecruiterInfoDto recruiterInfoDto, Guid Recruiter)
         {
-
             await _recruiterService.EditRecruiterAsync(recruiterInfoDto, Recruiter);
             return StatusCode(204);
         }

@@ -13,7 +13,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<CompanyListDto> GetCompanies(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending");
         Task<CompanyDto> GetByCompanyName(string companyName);
         Task<CompanyDto> GetByCompanyGuid(Guid companyGuid);
-        Task AddCompanyAsync(CompanyDto companyDto);
+        Task<Guid> AddCompanyAsync(CompanyDto companyDto);
         Task EditCompanyAsync(CompanyDto companyDto);
         Task DeleteCompanyAsync(Guid companyGuid);
     }

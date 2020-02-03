@@ -41,7 +41,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _mapper.Map<IndustryListDto>(industrys);
         }
 
-        public async Task CreateIndustry(IndustryDto industryDto)
+        public async Task<Guid> CreateIndustry(IndustryDto industryDto)
         {
             if (industryDto == null)
                 throw new NullReferenceException("IndustryDto cannot be null");
@@ -50,6 +50,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             industry.IndustryGuid = Guid.NewGuid();
             await _repositoryWrapper.IndustryRepository.Create(industry);
             await _repositoryWrapper.SaveAsync();
+            return industry.IndustryGuid;
         }
 
         public async Task UpdateIndustry(Guid industryGuid, IndustryDto industryDto)

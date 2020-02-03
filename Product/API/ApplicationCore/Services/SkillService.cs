@@ -63,7 +63,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _mapper.Map<SkillDto>(skill);
         }
 
-        public async Task CreateSkill(SkillDto skillDto)
+        public async Task<Guid> CreateSkill(SkillDto skillDto)
         {
             if (skillDto == null)
                 throw new NullReferenceException("SkillDto cannot be null");
@@ -72,6 +72,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             skill.SkillGuid = Guid.NewGuid();
             await _repositoryWrapper.SkillRepository.Create(skill);
             await _repositoryWrapper.SaveAsync();
+            return skill.SkillGuid.Value;
         }
 
         public async Task UpdateSkill(Guid skillGuid, SkillDto skillDto)

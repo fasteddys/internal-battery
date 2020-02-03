@@ -58,9 +58,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await jobPosting.AnyAsync(x => x.SubscriberId == subscriberId && x.JobPostingId == jobPostingId);
         }
 
-        public async Task<bool> CreateJobApplication( Guid subscriberGuid, Guid jobGuid, ApplicationDto applicationDto)
+        public async Task<Guid> CreateJobApplication( Guid subscriberGuid, Guid jobGuid, ApplicationDto applicationDto)
         {
-            
             try
             {
                 _syslog.Log(LogLevel.Information, $"***** JobApplicationController:CreateJobApplication started at: {DateTime.UtcNow.ToLongDateString()}");
@@ -152,10 +151,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                         null
                     ));
                 }
-
-
+                
                 _syslog.Log(LogLevel.Information, $"***** JobApplicationController:CreateJobApplication completed at: {DateTime.UtcNow.ToLongDateString()}");
-                return true;
+                return jobApplication.JobApplicationGuid;
             }
             catch (Exception ex)
             {
@@ -163,9 +161,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw ex;
             }
         }
-
-
-
 
         #region helper functions 
 
@@ -236,13 +231,5 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
         #endregion
-
-
     }
-
-
-
-
-
 }
- 

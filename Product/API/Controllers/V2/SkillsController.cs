@@ -75,8 +75,8 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         public async Task<IActionResult> CreateSkill(Guid skill, [FromBody] SkillDto skillDto)
         {
-            await _skillservice.CreateSkill(skillDto);
-            return StatusCode(201);
+            var skillGuid = await _skillservice.CreateSkill(skillDto);
+            return StatusCode(201, skillGuid);
         }
 
         [Obsolete("Remove this once the React app is using the route in the CoursesController.", false)]

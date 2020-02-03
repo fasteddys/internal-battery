@@ -104,7 +104,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> AddProfile([FromBody] SubscribeProfileBasicDto subscribeProfileBasicDto)
         {
             await _profileService.CreateNewSubscriberAsync(subscribeProfileBasicDto);
-            return StatusCode(201);
+            return StatusCode(204);
         }
 
 
@@ -135,8 +135,8 @@ namespace UpDiddyApi.Controllers.V2
         [Route("education-histories")]
         public async Task<IActionResult> AddProfileEducationHistory([FromBody] SubscriberEducationHistoryDto subscriberEducationHistoryDto)
         {
-            var educationGuid = await _subscriberEducationalHistoryService.CreateEducationalHistory(subscriberEducationHistoryDto, GetSubscriberGuid());
-            return Ok(educationGuid);
+            var educationHistoryGuid = await _subscriberEducationalHistoryService.CreateEducationalHistory(subscriberEducationHistoryDto, GetSubscriberGuid());
+            return StatusCode(201, educationHistoryGuid);
         }
 
         [HttpPut]
@@ -176,7 +176,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> AddWorkHistory([FromBody] SubscriberWorkHistoryDto subscriberEducationHistoryDto)
         {
             var workHistoryGuid = await _subscriberWorkHistoryService.AddWorkHistory(subscriberEducationHistoryDto, GetSubscriberGuid());
-            return Ok(workHistoryGuid);
+            return StatusCode(201, workHistoryGuid);
         }
 
         [HttpPut]
@@ -234,7 +234,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> UploadResume([FromBody] UpDiddyLib.Domain.Models.FileDto fileDto)
         {
             var resumeParseGuid = await _resumeService.UploadResume(GetSubscriberGuid(), fileDto);
-            return Ok(resumeParseGuid);
+            return StatusCode(201, resumeParseGuid);
         }
 
         [HttpGet]
@@ -261,7 +261,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> ResolveProfileMerge([FromBody] List<string> mergeInfo, Guid resumeParseGuid)
         {
             await _resumeService.ResolveProfileMerge(mergeInfo, GetSubscriberGuid(), resumeParseGuid);
-            return StatusCode(201);
+            return StatusCode(204);
         }
 
         #endregion
