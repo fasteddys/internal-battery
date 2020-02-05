@@ -32,7 +32,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new NotFoundException("Subscriber not found");
             if (string.IsNullOrEmpty(subscriber.AvatarUrl))
                 throw new NotFoundException("Subscriber avatar does not exist");
-            return _configuration["StorageAccount:AssetBaseUrl"] + subscriber.AvatarUrl + "?" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+            // return _configuration["StorageAccount:AssetBaseUrl"] + subscriber.AvatarUrl + "?" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+
+            return subscriber.AvatarUrl + "?" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
         }
 
         public async Task UploadAvatar(Guid subscriberGuid, FileDto fileDto)
@@ -57,7 +59,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             AzureBlobStorage abs = new AzureBlobStorage(_configuration);
             string blobFilePath = subscriberGuid + _configuration["CareerCircle:AvatarName"];
             await abs.UploadBlobAsync(blobFilePath, bytes);
-            subscriber.AvatarUrl = blobFilePath;
+            subscriber.AvatarUrl = _configuration["StorageAccount:AssetBaseUrl"]  +  blobFilePath;
             subscriber.ModifyDate = DateTime.UtcNow;
             await _repository.SaveAsync();
         }

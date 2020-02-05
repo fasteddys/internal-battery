@@ -123,10 +123,17 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
         
         private async Task<bool> SendSearchRequest(string indexName, string jsonDocs )
         {
+  
             string SearchBaseUrl = _configuration["AzureSearch:SearchServiceBaseUrl"];
             string SearchIndexVersion = _configuration["AzureSearch:SearchServiceAdminVersion"];
             string SearchApiKey = _configuration["AzureSearch:SearchServiceAdminApiKey"];            
+
             string Url = $"{SearchBaseUrl}/indexes/{indexName}/docs/index?api-version={SearchIndexVersion}";
+
+
+            _logger.LogInformation($"AzureSearchService:SendSearchRequest: url = {Url}");
+
+
 
             HttpClient client = _httpClientFactory.CreateClient(Constants.HttpPostClientName);
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, Url)
@@ -139,8 +146,8 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
             HttpResponseMessage SearchResponse = AsyncHelper.RunSync<HttpResponseMessage>(() => client.SendAsync(request));
             string ResponseJson = AsyncHelper.RunSync<string>(() => SearchResponse.Content.ReadAsStringAsync());
     
-            _logger.LogInformation($"AzureSearchService:SendSearchRequiest: json = {jsonDocs}");
-            _logger.LogInformation($"AzureSearchService:SendSearchRequiest: response = {ResponseJson}");
+            _logger.LogInformation($"AzureSearchService:SendSearchRequest: json = {jsonDocs}");
+            _logger.LogInformation($"AzureSearchService:SendSearchRequest: response = {ResponseJson}");
 
             if ( SearchResponse.StatusCode == System.Net.HttpStatusCode.OK)
                 return true;
