@@ -9,6 +9,11 @@ using UpDiddyApi.Authorization;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Dto.User;
 using Microsoft.AspNetCore.Authorization;
+using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyLib.Domain.AzureSearchDocuments;
+using UpDiddyLib.Domain.AzureSearch;
+using UpDiddyApi.Models;
+
 namespace UpDiddyApi.Controllers.V2
 {
     [Route("/V2/[controller]/")]
@@ -16,11 +21,12 @@ namespace UpDiddyApi.Controllers.V2
     {
         private readonly IConfiguration _configuration;
         private readonly ISubscriberService _subscriberService;
-
+        private readonly IAzureSearchService _azureSearchService;
         public SubscribersController(IServiceProvider services)
         {
             _configuration = services.GetService<IConfiguration>();
             _subscriberService = services.GetService<ISubscriberService>();
+            _azureSearchService = services.GetService<IAzureSearchService>();
         }
 
         [HttpPost]
@@ -39,6 +45,23 @@ namespace UpDiddyApi.Controllers.V2
             return Ok(new { subscriberGuid = newSubscriberGuid });
         }
 
+        [HttpPut]
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
+        [Route("sync-auth0-userid")]
+        public async Task<IActionResult> SyncAuth0UserId([FromBody] SubscriberDto subscriberDto)
+        {
+            await _subscriberService.SyncAuth0UserId(subscriberDto.SubscriberGuid, subscriberDto.Auth0UserId);
+            return StatusCode(200);
+        }
+                
+        [HttpPut]
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
+        [Route("{subscriber:guid}/track-sign-in")]
+        public async Task<IActionResult> TrackSignIn(Guid subscriber)
+        {
+            await _subscriberService.TrackSubscriberSignIn(subscriber);
+            return StatusCode(200);
+        }
 
         [HttpPost]
         [Authorize]
@@ -48,6 +71,16 @@ namespace UpDiddyApi.Controllers.V2
             createUserDto.SubscriberGuid = GetSubscriberGuid();
             await _subscriberService.ExistingSubscriberSignUp(createUserDto);
             return StatusCode(201);
+        }
+
+
+        [HttpGet]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("query")]
+        public async Task<IActionResult> SearchSubscribers(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*")
+        {         
+            var rVal = await _subscriberService.SearchSubscribersAsync(limit, offset, sort, order, keyword);
+            return Ok(rVal);
         }
     }
 }

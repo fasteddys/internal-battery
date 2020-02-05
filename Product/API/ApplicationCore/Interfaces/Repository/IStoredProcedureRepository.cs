@@ -5,6 +5,7 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Domain.Models;
+using UpDiddyLib.Domain.Models.Reports;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
@@ -63,7 +64,13 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<JobCrudDto>> GetSubscriberJobPostingCruds(Guid subscriberGuid, int limit, int offset, string sort, string order);
         Task<List<UpDiddyLib.Domain.Models.PartnerDto>> GetPartners(int limit, int offset, string sort, string order);
         Task<int> UpdateNotificationCoursesAsync(Guid subscriberGuid, Guid notificationGuid, List<Guid> groups);
-        Task<List<GroupInfoDto>> GetGroups(int limit, int offset, string sort, string order);
         Task UpdateEntitySkills(Guid entityGuid, string entityType, List<Guid> skillGuids);
+        Task<List<GroupInfoDto>> GetGroups(int limit, int offset, string sort, string order);
+        Task<List<RecruiterInfoDto>> GetRecruiters(int limit, int offset, string sort, string order);
+        Task<List<UpDiddyLib.Domain.Models.JobSiteScrapeStatisticDto>> GetJobSiteScrapeStatistics(int limit, int offset, string sort, string order);
+        Task<List<UsersDto>> GetNewUsers();
+        Task<List<UsersDetailDto>> GetAllUsersDetail();
+        Task<List<UsersDetailDto>> GetUsersByPartnerDetail(Guid partner, DateTime startDate, DateTime endDate);
+        Task<List<PartnerUsers>> GetUsersByPartner(DateTime startDate, DateTime endDate);
     }
 }

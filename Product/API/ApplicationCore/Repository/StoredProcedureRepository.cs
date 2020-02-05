@@ -9,6 +9,7 @@ using System.Data;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Domain.Models;
+using UpDiddyLib.Domain.Models.Reports;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -869,12 +870,78 @@ namespace UpDiddyApi.ApplicationCore.Repository
             skillsParam.TypeName = "dbo.GuidList";
 
             var spParams = new object[] { entityParam, entityTypeParam, skillsParam };
-            
+
             var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"
                 EXEC [dbo].[System_Update_EntitySkills] 
                     @EntityGuid,
                     @EntityType,
 	                @SkillGuids", spParams);
+        }
+        public async Task<List<RecruiterInfoDto>> GetRecruiters(int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+
+            List<RecruiterInfoDto> rval = null;
+            rval = await _dbContext.Recruiters.FromSql<RecruiterInfoDto>("[System_Get_Recruiters]  @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
+
+        public async Task<List<UpDiddyLib.Domain.Models.JobSiteScrapeStatisticDto>> GetJobSiteScrapeStatistics(int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+
+            List<UpDiddyLib.Domain.Models.JobSiteScrapeStatisticDto> rval = null;
+            rval = await _dbContext.JobSiteScrapeStatistics.FromSql<UpDiddyLib.Domain.Models.JobSiteScrapeStatisticDto>("System_Get_JobSiteScrapeStatistics @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return rval;
+        }
+
+        public async Task<List<UsersDto>> GetNewUsers()
+        {
+            List<UsersDto> rval = null;
+            rval = await _dbContext.Users.FromSql<UsersDto>("[System_Report_NewUsers]").ToListAsync();
+            return rval;
+        }
+
+        public async Task<List<UsersDetailDto>> GetAllUsersDetail()
+        {
+            List<UsersDetailDto> rval = null;
+            rval = await _dbContext.UsersDetail.FromSql<UsersDetailDto>("[System_Report_AllUsersDetail]").ToListAsync();
+            return rval;
+        }
+
+        public async Task<List<UsersDetailDto>> GetUsersByPartnerDetail(Guid partner, DateTime startDate, DateTime endDate)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@Partner", partner),
+                new SqlParameter("@StartDate", startDate),
+                new SqlParameter("@EndDate", endDate)
+                };
+
+            List<UsersDetailDto> rval = null;
+            rval = await _dbContext.UsersDetail.FromSql<UsersDetailDto>("[System_Report_UsersByPartnerDetail] @Partner, @StartDate, @EndDate", spParams).ToListAsync();
+            return rval;
+        }
+
+        public async Task<List<PartnerUsers>> GetUsersByPartner(DateTime startDate, DateTime endDate)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@StartDate", startDate),
+                new SqlParameter("@EndDate", endDate)
+                };
+
+            List<PartnerUsers> rval = null;
+            rval = await _dbContext.PartnerUsers.FromSql<PartnerUsers>("[System_Report_UsersByPartner] @StartDate, @EndDate", spParams).ToListAsync();
+            return rval;
         }
     }
 }

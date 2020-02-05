@@ -291,8 +291,9 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> CreateJob([FromBody] JobCrudDto jobPostingDto)
         {
 
-            await _jobPostingService.CreateJobPosting(GetSubscriberGuid(), jobPostingDto);
-            return StatusCode(201);
+            Guid newJobGuid =  await _jobPostingService.CreateJobPosting(GetSubscriberGuid(), jobPostingDto);
+            Response.StatusCode = 201;
+            return StatusCode(201, newJobGuid);
         }
 
 
@@ -328,7 +329,6 @@ namespace UpDiddyApi.Controllers
             JobCrudDto jobPostingDto =  await _jobPostingService.GetJobPostingCrud(GetSubscriberGuid(), jobGuid);
             return Ok(jobPostingDto);
         }
-
   
         [HttpGet]
         [Route("admin")]
@@ -340,8 +340,6 @@ namespace UpDiddyApi.Controllers
             return Ok(postings);
         }
 
-
-
         [HttpPut]
         [Route("admin/{jobGuid:guid}/skills")]
         [Authorize(Policy = "IsRecruiterPolicy")]
@@ -350,6 +348,16 @@ namespace UpDiddyApi.Controllers
 
            await _jobPostingService.UpdateJobPostingSkills(GetSubscriberGuid(), jobGuid, skills);
             return StatusCode(204);
+        }
+
+
+        [HttpGet]
+        [Route("admin/{jobGuid:guid}/skills")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        public async Task<IActionResult> GetJobSkills( Guid jobGuid)
+        { 
+            return Ok (await _jobPostingService.GetJobPostingSkills(GetSubscriberGuid(), jobGuid) );
+            
         }
 
 
@@ -430,7 +438,17 @@ namespace UpDiddyApi.Controllers
 
         #endregion
 
+        #region Job Data Mining
+        
+        [HttpGet]
+        [Route("job-site-scrape-statistics")]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        public async Task<IActionResult> GetJobSiteScrapeStatistics(int limit = 10, int offset = 0, string sort = "endDate", string order = "descending")
+        {
+            JobSiteScrapeStatisticsListDto jobSiteScrapeStatistics = await _jobPostingService.GetJobSiteScrapeStatistics(limit, offset, sort, order);
+            return Ok(jobSiteScrapeStatistics);
+        }
 
-
+        #endregion
     }
 }

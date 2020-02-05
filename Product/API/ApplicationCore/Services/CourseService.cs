@@ -229,10 +229,10 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         #region Course Search 
  
-        public async Task<CourseSearchResult> SearchCoursesAsync(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", string level = "", string topic = "" )
+        public async Task<CourseSearchResultDto> SearchCoursesAsync(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", string level = "", string topic = "" )
         { 
             DateTime startSearch = DateTime.Now;
-            CourseSearchResult searchResults = new CourseSearchResult();
+            CourseSearchResultDto searchResults = new CourseSearchResultDto();
      
             string searchServiceName =  _config["AzureSearch:SearchServiceName"];
             string adminApiKey = _config["AzureSearch:SearchServiceQueryApiKey"];

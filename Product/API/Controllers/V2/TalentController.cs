@@ -27,6 +27,7 @@ namespace UpDiddyApi.Controllers
         private readonly ITalentService _talentService = null;
         private IAuthorizationService _authorizationService;
         private readonly ITalentNoteService _talentNoteService = null;
+        private readonly IResumeService _resumeService;
 
         public TalentController(UpDiddyDbContext db
         , IMapper mapper
@@ -37,7 +38,8 @@ namespace UpDiddyApi.Controllers
         , ITalentFavoriteService talentFavoriteService
         , ITalentService talentService
         , IAuthorizationService authorizationService 
-        , ITalentNoteService talentNoteService)
+        , ITalentNoteService talentNoteService
+        , IResumeService resumeService)
         {
             _db = db;
             _mapper = mapper;
@@ -47,6 +49,7 @@ namespace UpDiddyApi.Controllers
             _talentService = talentService;
             _authorizationService = authorizationService;
             _talentNoteService = talentNoteService;
+            _resumeService = resumeService;
         }
 
 
@@ -98,6 +101,17 @@ namespace UpDiddyApi.Controllers
  
             return Ok(rVal);
         }
+
+        [HttpGet]
+        [Authorize]
+        [Route("search/{talent:guid}/resume")]
+        public async Task<IActionResult> TalentResume(Guid talent)
+        {
+            var resume = await _resumeService.DownloadResume(talent);
+            return Ok(resume);
+        }
+
+
 
         #endregion
 

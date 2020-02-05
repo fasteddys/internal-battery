@@ -51,11 +51,14 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<List<Skill>> GetByTopicGuid(Guid topicGuid)
         {
-            return await (from t in _dbContext.Topic
-                          join c in _dbContext.Course on t.TopicId equals c.TopicId
+            return await (from tc in _dbContext.TagCourse
+                          join ta in _dbContext.Tag on tc.TagId equals ta.TagId
+                          join tt in _dbContext.TagTopic on ta.TagId equals tt.TagId
+                          join topic in _dbContext.Topic on tt.TopicId equals topic.TopicId
+                          join c in _dbContext.Course on tc.CourseId equals c.CourseId
                           join cs in _dbContext.CourseSkill on c.CourseId equals cs.CourseId
                           join s in _dbContext.Skill on cs.SkillId equals s.SkillId
-                          where t.TopicGuid == topicGuid && t.IsDeleted == 0 && c.IsDeleted == 0 && cs.IsDeleted == 0
+                          where topic.TopicGuid == topicGuid && topic.IsDeleted == 0 && c.IsDeleted == 0 && cs.IsDeleted == 0
                           select s).Distinct().ToListAsync();
         }
 
@@ -70,8 +73,5 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             return skills;
         }
-
-
-
     }
 }

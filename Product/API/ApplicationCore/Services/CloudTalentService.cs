@@ -32,6 +32,8 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using Microsoft.EntityFrameworkCore;
+using UpDiddyApi.Workflow;
+
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class CloudTalentService : BusinessVendorBase, ICloudTalentService
@@ -43,11 +45,22 @@ namespace UpDiddyApi.ApplicationCore.Services
         private GoogleProfileService _profileApi = null;
         private GoogleProfileService _googleProfile = null;
         private ISubscriberService _subscriberService;
-
+        private IHangfireService _hangfireService;
+        private  IAzureSearchService _azureSearchService;
         //  private RepositoryWrapper repositoryWrapper;
 
         #region Constructor
-        public CloudTalentService(IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<CloudTalentService> sysLog, IHttpClientFactory httpClientFactory, IRepositoryWrapper repositoryWrapper, ISubscriberService ISubscriberService)
+        public CloudTalentService(
+            IMapper mapper, 
+            Microsoft.Extensions.Configuration.IConfiguration configuration, 
+            ILogger<CloudTalentService> sysLog, 
+            IHttpClientFactory httpClientFactory, 
+            IRepositoryWrapper repositoryWrapper, 
+            ISubscriberService ISubscriberService, 
+            IHangfireService hangfireService,
+            IAzureSearchService azureSearchService
+        )
+ 
         {
             _mapper = mapper;
             _apiBaseUri = configuration["SysEmail:ApiUrl"];
@@ -57,7 +70,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _httpClientFactory = httpClientFactory;
             _repositoryWrapper = repositoryWrapper;
             _subscriberService = ISubscriberService;
-
+            _hangfireService = hangfireService;
             // cloud talent configuration
             _projectId = configuration["CloudTalent:Project"];
             _projectPath = configuration["CloudTalent:ProjectPath"];
@@ -65,6 +78,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             // in GOOGLE_APPLICATION_CREDENTIALS environmental variable
             _credential = GoogleCredential.GetApplicationDefaultAsync().Result;
             _profileApi = new GoogleProfileService(configuration, sysLog, httpClientFactory);
+            _azureSearchService = azureSearchService;
 
             // Specify the Service scope.
             if (_credential.IsCreateScopedRequired)
@@ -179,6 +193,18 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (subscriber == null)
                     return false;
 
+                // Add the subscriber to the azure subscriber index in addition to google profiles 
+                try
+                {
+                    _azureSearchService.AddOrUpdateSubscriber(subscriber);
+                }
+                catch (Exception ex)
+                {
+                    _syslog.LogError($"CloudTalentService:AddOrUpdateProfileToCloudTalent error {ex.Message} adding profile from azure search");
+                }
+
+
+
                 IList<SubscriberSkill> skills = await SubscriberFactory.GetSubscriberSkillsById(_repositoryWrapper, subscriber.SubscriberId);
                 // index the job to google 
                 if (string.IsNullOrEmpty(subscriber.CloudTalentUri))
@@ -271,6 +297,16 @@ namespace UpDiddyApi.ApplicationCore.Services
             int step = 0;
             try
             {
+                // Add the subscriebr to the azure subscriber index in addition to google profiles 
+                try
+                {
+                    _azureSearchService.DeleteSubscriber(subscriber);
+                }
+                catch ( Exception ex )
+                {
+                    _syslog.LogError($"CloudTalentService:RemoveProfileFromIndex error {ex.Message} deleting profile from azure search");
+                }
+                
                 BasicResponseDto deleteStatus = null;
                 step = 1;
                 if (subscriber.CloudTalentUri != null && string.IsNullOrEmpty(subscriber.CloudTalentUri.Trim()) == false)
@@ -459,7 +495,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
         /// <summary>
-        /// Search the cloud talent solution for jobs 
+        /// Search the cloud talent solution for jobs. 
         /// </summary>
         /// <param name="jobQuery"></param>
         /// <param name="isJobPostingAlertSearch">If specified and set to TRUE, the search query is optimized for email alerts. For details, 
@@ -495,6 +531,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                 rVal = ProfileMappingHelper.MapSearchResults(_syslog, _mapper, _configuration, searchProfileResponse, profileQuery);
                 // pass back any information returned from google 
                 rVal.Info = searchResults.Description;
+
+                // invoke the Hangfire job that purges orphaned subscribers from search results                
+                _hangfireService.Enqueue<ScheduledJobs>(x => x.PurgeOrphanedSubscribersFromCloudTalent(rVal.Profiles));
             }
             catch (Exception ex)
             {
