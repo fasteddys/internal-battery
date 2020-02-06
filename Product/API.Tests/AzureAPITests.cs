@@ -49,9 +49,9 @@ namespace API.Tests.AzureApi
             }
         }
 
-        [Theory(DisplayName = "{0}")]
+        [Theory]
         [MemberData(nameof(AzureApiDataProvider.ExtractApiOperationsFromAllApis), MemberType = typeof(AzureApiDataProvider))]
-        public void Validate_All_Api_Endpoints_Conform_To_Specifications(MemberDataSerializer<ApiOperationTest> apiOperationTest)
+        public void Validate_Api_Endpoint_Conforms_To_Specification(MemberDataSerializer<ApiOperationTest> apiOperationTest)
         {
             // set up variables that will be used for the assertion
             bool isActualStatusCodeMatchesExpectedStatusCode = false;
@@ -82,10 +82,11 @@ namespace API.Tests.AzureApi
                     request.Content = new StringContent(apiOperationTest.Object.RequestBody, Encoding.UTF8, "application/json");
                 }
 
+                // make the http request to the azure api gateway
                 try
                 {
                     var response = client.SendAsync(request).Result;
-                    apiOperationTest.Object.ResponseBody = response.Content.ReadAsAsync<string>().Result;
+                    apiOperationTest.Object.ResponseBody = response.Content.ReadAsAsync<JToken>().Result;
                     apiOperationTest.Object.ActualStatusCode = (int)response.StatusCode;
                     isActualStatusCodeMatchesExpectedStatusCode = apiOperationTest.Object.ActualStatusCode == apiOperationTest.Object.ExpectedStatusCode;
                 }
@@ -102,8 +103,7 @@ namespace API.Tests.AzureApi
                 {
                     try
                     {
-                        var bodyContent = JObject.Parse(apiOperationTest.Object.ResponseBody);
-                        isResponseBodyMatchesResponseSchema = bodyContent.IsValid(apiOperationTest.Object.ResponseSchema);
+                        isResponseBodyMatchesResponseSchema = apiOperationTest.Object.ResponseBody.IsValid(apiOperationTest.Object.ResponseSchema);
                     }
                     catch (Exception e)
                     {
@@ -118,11 +118,14 @@ namespace API.Tests.AzureApi
                 {
                     switch (apiOperationTest.Object.HttpMethod)
                     {
+                        case HttpMethod m when m == HttpMethod.Post && apiOperationTest.Object.ActualStatusCode == 401:
+                            // do nothing (unauthorized response means no data update occurred)
+                            break;
                         case HttpMethod m when m == HttpMethod.Post && apiOperationTest.Object.ActualStatusCode == 201:
                             // physically delete the entity that was created by referencing the object guid in the http response body
                             try
                             {
-                                Guid entityIdentifier = Guid.Parse(apiOperationTest.Object.ResponseBody);
+                                Guid entityIdentifier = Guid.Parse(apiOperationTest.Object.ResponseBody.Value<string>());
                                 this.DeleteObjectByGuid(entityIdentifier);
                             }
                             catch (Exception e)
@@ -133,6 +136,9 @@ namespace API.Tests.AzureApi
                             break;
                         case HttpMethod m when m == HttpMethod.Put:
                             // do nothing (entity used for testing will always have test values with an updated modifyDate)
+                            break;
+                        case HttpMethod m when m == HttpMethod.Delete && apiOperationTest.Object.ActualStatusCode == 401:
+                            // do nothing (unauthorized response means no data update occurred)
                             break;
                         case HttpMethod m when m == HttpMethod.Delete && apiOperationTest.Object.ActualStatusCode == 204 && apiOperationTest.Object.TargetedObjectIds.Count > 0:
                             // remove the logical delete flag from the entities that were deleted by referencing the object guids in the http request

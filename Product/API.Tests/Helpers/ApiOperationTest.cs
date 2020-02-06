@@ -149,7 +149,7 @@ namespace API.Tests.Helpers
         public HttpMethod HttpMethod { get; set; }
         public Dictionary<string, string> Headers { get; set; } = new Dictionary<string, string>();
         public string RequestBody { get; set; }
-        public string ResponseBody { get; set; }
+        public JToken ResponseBody { get; set; }
         public JSchema ResponseSchema { get; set; }
         public int ExpectedStatusCode { get; set; }
         public int? ActualStatusCode { get; set; }
