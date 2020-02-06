@@ -17,7 +17,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> CreateNewMessage([FromBody] ContactUsDto contactUsDto)
         {
             await _contactService.CreateNewMessage(contactUsDto);
-            return StatusCode(201);
+            return StatusCode(202);
         }
 
         [HttpPost]
@@ -25,7 +25,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> HireTalentMessage([FromBody] HireTalentDto hireTalentDto)
         {
             await _contactService.CreateHireTalentMessage(hireTalentDto);
-            return StatusCode(201);
+            return StatusCode(202);
         }        
     }
 }

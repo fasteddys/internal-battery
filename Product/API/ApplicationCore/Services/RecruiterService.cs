@@ -194,7 +194,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
-        public async Task<bool> AddRecruiterAsync(RecruiterInfoDto recruiterDto)
+        public async Task<Guid> AddRecruiterAsync(RecruiterInfoDto recruiterDto)
         {
 
             // Do validations             
@@ -215,11 +215,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             //check if recruiter exist
             var queryableRecruiter = _repositoryWrapper.RecruiterRepository.GetAllRecruiters();
             var existingRecruiter = await queryableRecruiter.Where(r => r.SubscriberId == subscriber.SubscriberId).FirstOrDefaultAsync();
-
+            Guid recruiterGuid;
             if (existingRecruiter != null)
             {
                 if (existingRecruiter.IsDeleted == 1)
                 {
+                    recruiterGuid = existingRecruiter.RecruiterGuid;
                     existingRecruiter.FirstName = recruiterDto.FirstName;
                     existingRecruiter.LastName = recruiterDto.LastName;
                     existingRecruiter.PhoneNumber = recruiterDto.PhoneNumber;
@@ -235,13 +236,15 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             else
             {
+                recruiterGuid = Guid.NewGuid();
                 var newRecruiter = new Recruiter()
                 {
+
                     FirstName = recruiterDto.FirstName,
                     LastName = recruiterDto.LastName,
                     PhoneNumber = recruiterDto.PhoneNumber,
                     Email = recruiterDto.Email,
-                    RecruiterGuid = Guid.NewGuid(),
+                    RecruiterGuid = recruiterGuid,
                     SubscriberId = subscriber.SubscriberId,
                     CompanyId = company.CompanyId
                 };
@@ -256,7 +259,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (recruiterDto.IsInAuth0RecruiterGroup != null && recruiterDto.IsInAuth0RecruiterGroup.Value == true)
                 await AssignRecruiterPermissionsAsync(recruiterDto.SubscriberGuid.Value);
 
-            return true;
+            return recruiterGuid;
         }
 
 
