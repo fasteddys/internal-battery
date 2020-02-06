@@ -29,6 +29,8 @@ namespace API.Tests.Helpers
             JToken response,
             KeyValuePair<string, string> apiVersion)
         {
+            this.Name = $"{operationName}";
+
             // if the url contains parameters, set them using test values from the config file
             var replacements = urlParameterReplacementValues
                 .Where(rv => urlTemplate.Contains(rv.Key))
@@ -136,8 +138,6 @@ namespace API.Tests.Helpers
             {
                 this.DefinitionErrors.Add($"An error occurred while attempting to set the response schema; message: {e.Message}, stack trace: {e.StackTrace}");
             }
-
-            this.Name = $"{operationName} ({statusCode})";
         }
 
         #endregion
@@ -152,9 +152,20 @@ namespace API.Tests.Helpers
         public string ResponseBody { get; set; }
         public JSchema ResponseSchema { get; set; }
         public int ExpectedStatusCode { get; set; }
+        public int? ActualStatusCode { get; set; }
         public KeyValuePair<string, string> ApiVersion { get; set; }
         public List<string> DefinitionErrors { get; set; } = new List<string>();
+        public List<string> IntegrationErrors { get; set; } = new List<string>();
         public List<Guid> TargetedObjectIds { get; private set; } = new List<Guid>();
+
+        #endregion
+
+        #region Methods
+
+        public override string ToString()
+        {
+            return $"{this.Name} ({this.ExpectedStatusCode})";
+        }
 
         #endregion
     }
