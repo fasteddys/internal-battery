@@ -16,8 +16,6 @@ namespace API.Tests.AzureApi
     public class DataDrivenApiEndpointTests
     {
         private readonly ITestOutputHelper _output;
-        // todo: make this data-driven and pull it from a secure location
-        private readonly string CONNECTION_STRING = @"Server=tcp:careercircle.database.windows.net,1433;Initial Catalog=careercirclestaging;Persist Security Info=False;User ID=CareerCircleSa;Password=j3LswgvT!!2tR#dz@eFTaqrjEdByCKD9m63Jan%B;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
         private readonly string SQL_DELETE_OBJECT_BY_GUID = @"[dbo].[System_Delete_ObjectByGuid]";
         private readonly string SQL_UNDELETE_OBJECT_BY_GUID = @"[dbo].[System_Undelete_ObjectByGuid]";
 
@@ -26,9 +24,9 @@ namespace API.Tests.AzureApi
             this._output = output;
         }
 
-        private void DeleteObjectByGuid(Guid objectIdentifier)
+        private void DeleteObjectByGuid(Guid objectIdentifier, string connectionString)
         {
-            using (var connection = new SqlConnection(CONNECTION_STRING))
+            using (var connection = new SqlConnection(connectionString))
             {
                 var command = new SqlCommand(SQL_DELETE_OBJECT_BY_GUID, connection);
                 command.CommandType = CommandType.StoredProcedure;
@@ -37,9 +35,9 @@ namespace API.Tests.AzureApi
                 command.ExecuteNonQuery();
             }
         }
-        private void UndeleteObjectByGuid(Guid objectIdentifier)
+        private void UndeleteObjectByGuid(Guid objectIdentifier, string connectionString)
         {
-            using (var connection = new SqlConnection(CONNECTION_STRING))
+            using (var connection = new SqlConnection(connectionString))
             {
                 var command = new SqlCommand(SQL_UNDELETE_OBJECT_BY_GUID, connection);
                 command.CommandType = CommandType.StoredProcedure;
@@ -144,7 +142,7 @@ namespace API.Tests.AzureApi
                             try
                             {
                                 Guid entityIdentifier = Guid.Parse(apiOperationTest.Object.ResponseBody.Value<string>());
-                                this.DeleteObjectByGuid(entityIdentifier);
+                                this.DeleteObjectByGuid(entityIdentifier, apiOperationTest.Object.ConnectionString);
                             }
                             catch (Exception e)
                             {
@@ -165,7 +163,7 @@ namespace API.Tests.AzureApi
                                 // it's okay if we "undelete" multiple objects (e.g. country & state present in the url to delete an entity, it is okay to "undelete" the country and state)
                                 foreach (Guid entityIdentifier in apiOperationTest.Object.TargetedObjectIds)
                                 {
-                                    this.UndeleteObjectByGuid(entityIdentifier);
+                                    this.UndeleteObjectByGuid(entityIdentifier, apiOperationTest.Object.ConnectionString);
                                 }
                             }
                             catch (Exception e)

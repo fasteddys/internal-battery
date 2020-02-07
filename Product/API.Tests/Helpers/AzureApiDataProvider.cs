@@ -95,6 +95,17 @@ namespace API.Tests.Helpers
 
             return result.AccessToken;
         }
+
+        /// <summary>
+        /// Retrieves the CareerCircle database connection string from app settings. This is used to clean up after tests that manipulate data.
+        /// </summary>
+        /// <returns></returns>
+        public static string GetDatabaseConnectionString()
+        {
+            var configuration = ConfigurationHelper.GetConfiguration(Directory.GetCurrentDirectory());
+            return configuration["ConnectionString"];
+        }
+
         /// <summary>
         /// Submits a web request for an Azure Api using Azure Resource Management and returns the response as JSON
         /// </summary>
@@ -208,7 +219,7 @@ namespace API.Tests.Helpers
                     // construct tests based on the responses defined in each api operation
                     foreach (var response in operation.SelectTokens("$.responses").Children())
                     {
-                        ApiOperationTest apiOperationTest = new ApiOperationTest(isRequiresSubscriberJwtForSuccessfulResponse, httpMethod, urlTemplate, operationName, schemas, urlParameterReplacementValues, baseUrl, subscriptionKeyParameterKey, subscriptionKeyParameterValue, subscriberJwt, request, response, apiVersion);
+                        ApiOperationTest apiOperationTest = new ApiOperationTest(isRequiresSubscriberJwtForSuccessfulResponse, httpMethod, urlTemplate, operationName, schemas, urlParameterReplacementValues, baseUrl, subscriptionKeyParameterKey, subscriptionKeyParameterValue, subscriberJwt, request, response, apiVersion, GetDatabaseConnectionString());
                         yield return new object[] { new MemberDataSerializer<ApiOperationTest>(apiOperationTest) };
                     }
                 }

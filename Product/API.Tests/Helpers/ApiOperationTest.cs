@@ -27,9 +27,12 @@ namespace API.Tests.Helpers
             string subscriberJwt,
             JToken request,
             JToken response,
-            KeyValuePair<string, string> apiVersion)
+            KeyValuePair<string, string> apiVersion,
+            string connectionString)
         {
             this.Name = $"{operationName}";
+
+            this.ConnectionString = connectionString;
 
             // if the url contains parameters, set them using test values from the config file
             var replacements = urlParameterReplacementValues
@@ -157,6 +160,7 @@ namespace API.Tests.Helpers
         public List<string> DefinitionErrors { get; set; } = new List<string>();
         public List<string> IntegrationErrors { get; set; } = new List<string>();
         public List<Guid> TargetedObjectIds { get; private set; } = new List<Guid>();
+        public string ConnectionString { get; private set; }
 
         #endregion
 
