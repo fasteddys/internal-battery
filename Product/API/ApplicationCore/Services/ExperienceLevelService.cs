@@ -41,7 +41,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _mapper.Map<ExperienceLevelListDto>(experienceLevels);
         }
 
-        public async Task CreateExperienceLevel(ExperienceLevelDto experienceLevelDto)
+        public async Task<Guid> CreateExperienceLevel(ExperienceLevelDto experienceLevelDto)
         {
             if (experienceLevelDto == null)
                 throw new NullReferenceException("ExperienceLevelDto cannot be null");
@@ -50,6 +50,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             experienceLevel.ExperienceLevelGuid = Guid.NewGuid();
             await _repositoryWrapper.ExperienceLevelRepository.Create(experienceLevel);
             await _repositoryWrapper.SaveAsync();
+            return experienceLevel.ExperienceLevelGuid;
         }
 
         public async Task UpdateExperienceLevel(Guid experienceLevelGuid, ExperienceLevelDto experienceLevelDto)

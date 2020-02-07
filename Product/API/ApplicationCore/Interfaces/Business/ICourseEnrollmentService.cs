@@ -11,6 +11,5 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     {
         Task<CourseCheckoutInfoDto> GetCourseCheckoutInfo(Guid subscriberGuid, Guid courseGuid);
         Task<Guid> Enroll(Guid subscriberGuid, CourseEnrollmentDto courseEnrollmentDto, Guid courseGuid);
-
     }
 }

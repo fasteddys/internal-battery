@@ -19,6 +19,9 @@ using Microsoft.Extensions.Configuration;
 using UpDiddyLib.Domain;
 using UpDiddyLib.Domain.Models.Reports;
 
+using UpDiddyLib.Domain.AzureSearch;
+using UpDiddyLib.Domain.AzureSearchDocuments;
+
 namespace UpDiddyApi.Helpers
 {
     public class AutoMapperConfiguration
@@ -700,6 +703,34 @@ namespace UpDiddyApi.Helpers
                   })
                 .ForMember(dest => dest.NewUsers, opt => opt.MapFrom(src => src.ToList()))
                 .ReverseMap();
-        }
+
+
+            CreateMap<Subscriber, SubscriberSDOC>()
+            .ForMember(c => c.SubscriberGuid, opt => opt.MapFrom(src => src.SubscriberGuid))
+            .ForMember(c => c.FirstName, opt => opt.MapFrom(src => src.FirstName))
+            .ForMember(c => c.LastName, opt => opt.MapFrom(src => src.LastName))
+            .ForMember(c => c.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+            .ForMember(c => c.Email, opt => opt.MapFrom(src => src.Email))
+            .ForAllOtherMembers(opt => opt.Ignore());
+
+
+
+
+            CreateMap<Recruiter, RecruiterSDOC>()
+            .ForMember(c => c.SubscriberGuid, opt => opt.MapFrom(src => src.Subscriber.SubscriberGuid))
+            .ForMember(c => c.FirstName, opt => opt.MapFrom(src => src.FirstName))
+            .ForMember(c => c.LastName, opt => opt.MapFrom(src => src.LastName))
+            .ForMember(c => c.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+            .ForMember(c => c.Email, opt => opt.MapFrom(src => src.Email))
+            .ForMember(c => c.RecruiterGuid, opt => opt.MapFrom(src => src.RecruiterGuid))
+            .ForMember(c => c.CompanyGuid, opt => opt.MapFrom(src => src.Company.CompanyGuid))
+            .ForMember(c => c.CompanyName, opt => opt.MapFrom(src => src.Company.CompanyName))
+            .ForAllOtherMembers(opt => opt.Ignore());
+
+ 
+
+
+
+    }
     }
 }

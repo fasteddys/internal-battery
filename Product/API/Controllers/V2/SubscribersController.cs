@@ -9,6 +9,11 @@ using UpDiddyApi.Authorization;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Dto.User;
 using Microsoft.AspNetCore.Authorization;
+using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyLib.Domain.AzureSearchDocuments;
+using UpDiddyLib.Domain.AzureSearch;
+using UpDiddyApi.Models;
+
 namespace UpDiddyApi.Controllers.V2
 {
     [Route("/V2/[controller]/")]
@@ -16,11 +21,12 @@ namespace UpDiddyApi.Controllers.V2
     {
         private readonly IConfiguration _configuration;
         private readonly ISubscriberService _subscriberService;
-
+        private readonly IAzureSearchService _azureSearchService;
         public SubscribersController(IServiceProvider services)
         {
             _configuration = services.GetService<IConfiguration>();
             _subscriberService = services.GetService<ISubscriberService>();
+            _azureSearchService = services.GetService<IAzureSearchService>();
         }
 
         [HttpPost]
@@ -36,7 +42,7 @@ namespace UpDiddyApi.Controllers.V2
                 return Conflict();
 
             var newSubscriberGuid = await _subscriberService.CreateSubscriberAsync(subscriberDto);
-            return Ok(new { subscriberGuid = newSubscriberGuid });
+            return StatusCode(201, newSubscriberGuid);
         }
 
         [HttpPut]
@@ -64,7 +70,17 @@ namespace UpDiddyApi.Controllers.V2
         {
             createUserDto.SubscriberGuid = GetSubscriberGuid();
             await _subscriberService.ExistingSubscriberSignUp(createUserDto);
-            return StatusCode(201);
+            return StatusCode(204);
+        }
+
+
+        [HttpGet]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("query")]
+        public async Task<IActionResult> SearchSubscribers(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*")
+        {         
+            var rVal = await _subscriberService.SearchSubscribersAsync(limit, offset, sort, order, keyword);
+            return Ok(rVal);
         }
     }
 }

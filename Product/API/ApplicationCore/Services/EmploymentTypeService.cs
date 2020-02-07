@@ -36,7 +36,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _mapper.Map<EmploymentTypeListDto>(employmentTypes);
         }
 
-        public async Task CreateEmploymentType(EmploymentTypeDto employmentTypeDto)
+        public async Task<Guid> CreateEmploymentType(EmploymentTypeDto employmentTypeDto)
         {
             if (employmentTypeDto == null)
                 throw new NullReferenceException("EmploymentTypeDto cannot be null");
@@ -45,6 +45,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             employmentType.EmploymentTypeGuid = Guid.NewGuid();
             await _repositoryWrapper.EmploymentTypeRepository.Create(employmentType);
             await _repositoryWrapper.SaveAsync();
+            return employmentType.EmploymentTypeGuid;
         }
 
         public async Task UpdateEmploymentType(Guid employmentTypeGuid, EmploymentTypeDto employmentTypeDto)

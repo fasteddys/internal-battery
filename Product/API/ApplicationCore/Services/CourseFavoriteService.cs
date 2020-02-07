@@ -27,7 +27,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _config = configuration;
         }
 
-        public async Task AddToFavorite(Guid subscriberGuid, Guid courseGuid)
+        public async Task<Guid> AddToFavorite(Guid subscriberGuid, Guid courseGuid)
         {
             if (subscriberGuid == null || subscriberGuid == Guid.Empty)
                 throw new NullReferenceException("SubscriberGuid cannot be null");
@@ -44,6 +44,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 courseFavorite = new CourseFavorite()
                 {
+                    CourseFavoriteGuid = Guid.NewGuid(),
                     Course = course,
                     CourseId = course.CourseId,
                     CreateDate = DateTime.UtcNow,
@@ -65,6 +66,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     await _repositoryWrapper.SaveAsync();
                 }
             }
+            return courseFavorite.CourseFavoriteGuid;
         }
 
         public async Task RemoveFromFavorite(Guid subscriberGuid, Guid courseGuid)

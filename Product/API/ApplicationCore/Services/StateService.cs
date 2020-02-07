@@ -44,7 +44,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _mapper.Map<StateDetailListDto>(states);
         }
 
-        public async Task CreateState(Guid countryGuid, StateDetailDto stateDetailDto)
+        public async Task<Guid> CreateState(Guid countryGuid, StateDetailDto stateDetailDto)
         {
             if (countryGuid == null || countryGuid == Guid.Empty || stateDetailDto == null)
                 throw new NullReferenceException("StateDetailDto and CountryGuid cannot be null");
@@ -57,6 +57,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             state.CountryId = country.CountryId;
             await _repositoryWrapper.State.Create(state);
             await _repositoryWrapper.SaveAsync();
+            return state.StateGuid.Value;
         }
 
         public async Task UpdateState(Guid countryGuid, Guid stateGuid, StateDetailDto stateDetailDto)

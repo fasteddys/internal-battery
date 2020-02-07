@@ -72,8 +72,8 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateRecruiter([FromBody] RecruiterInfoDto recruiterInfoDto)
         {
-            await _recruiterService.AddRecruiterAsync(recruiterInfoDto);
-            return StatusCode(201);
+            var recruiterGuid = await _recruiterService.AddRecruiterAsync(recruiterInfoDto);
+            return StatusCode(201, recruiterGuid);
         }
 
     
@@ -82,7 +82,6 @@ namespace UpDiddyApi.Controllers.V2
         [Route("{recruiter:guid}")]
         public async Task<IActionResult> UpdateRecruiter([FromBody] RecruiterInfoDto recruiterInfoDto, Guid Recruiter)
         {
-
             await _recruiterService.EditRecruiterAsync(recruiterInfoDto, Recruiter);
             return StatusCode(204);
         }
@@ -114,7 +113,7 @@ namespace UpDiddyApi.Controllers.V2
         [HttpGet]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("subscribers/{SubscriberGuid}")]
-        public async Task<IActionResult> GetRecruiteBySubscriber(Guid SubscriberGuid)
+        public async Task<IActionResult> GetRecruiterBySubscriber(Guid SubscriberGuid)
         {
 
             RecruiterInfoDto rVal = await _recruiterService.GetRecruiterBySubscriberAsync(SubscriberGuid);
@@ -123,9 +122,9 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet]
         [Route("query")]
-        public async Task<IActionResult> SearchCourses(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", string companyName = "")
+        public async Task<IActionResult> SearchRecruiters(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", string companyName = "")
         {
-           // Startup here, call this from postman
+           
             var rVal = await _recruiterService.SearchRecruitersAsync(limit, offset, sort, order, keyword, companyName);
             return Ok(rVal);
         }

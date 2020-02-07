@@ -8,7 +8,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<PartnerDto> GetPartner(Guid partnerGuid);
         Task<PartnerListDto> GetPartners(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending");
         Task UpdatePartner(Guid partnerGuid, PartnerDto partnerDto);
-        Task CreatePartner(PartnerDto partnerDto);
+        Task<Guid> CreatePartner(PartnerDto partnerDto);
         Task DeletePartner(Guid partnerGuid);
     }
 }

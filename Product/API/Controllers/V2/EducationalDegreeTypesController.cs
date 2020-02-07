@@ -61,8 +61,8 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateEducationalDegreeType([FromBody] EducationalDegreeTypeDto educationalDegreeTypeDto)
         {
-            await _educationalDegreeTypeService.CreateEducationalDegreeType(educationalDegreeTypeDto);
-            return StatusCode(201);
+            var educationalDegreeTypeGuid = await _educationalDegreeTypeService.CreateEducationalDegreeType(educationalDegreeTypeDto);
+            return StatusCode(201, educationalDegreeTypeGuid);
         }
     }
 }

@@ -53,9 +53,8 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateCourseLevel([FromBody] CourseLevelDto courseLevelDto)
         {
-            await _courseLevelService.CreateCourseLevel(courseLevelDto);
-            return StatusCode(201);
-        }
-       
+            var courseLevelGuid = await _courseLevelService.CreateCourseLevel(courseLevelDto);
+            return StatusCode(201, courseLevelGuid);
+        }       
     }
 }

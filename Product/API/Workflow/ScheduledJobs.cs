@@ -331,7 +331,7 @@ namespace UpDiddyApi.Workflow
                     return false;
 
                 Vendor woz = _db.Vendor
-                    .Where(v => v.IsDeleted == 0 && v.Name == Constants.WozVendorName)
+                    .Where(v => v.IsDeleted == 0 && v.VendorGuid == Constants.WozVendorGuid)
                     .FirstOrDefault();
 
                 if (woz == null)

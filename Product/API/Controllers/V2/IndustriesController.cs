@@ -53,9 +53,8 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateIndustry([FromBody] IndustryDto industryDto)
         {
-            await _industryService.CreateIndustry(industryDto);
-            return StatusCode(201);
+            var industryGuid = await _industryService.CreateIndustry(industryDto);
+            return StatusCode(201, industryGuid);
         }
-
     }
 }

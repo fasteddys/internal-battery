@@ -9,7 +9,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<SecurityClearanceDto> GetSecurityClearance(Guid securityClearanceGuid);
         Task<SecurityClearanceListDto> GetSecurityClearances(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending");
         Task UpdateSecurityClearance(Guid securityClearanceGuid, SecurityClearanceDto securityClearanceDto);
-        Task CreateSecurityClearance(SecurityClearanceDto securityClearanceDto);
+        Task<Guid> CreateSecurityClearance(SecurityClearanceDto securityClearanceDto);
         Task DeleteSecurityClearance(Guid securityClearanceGuid);
     }
 }

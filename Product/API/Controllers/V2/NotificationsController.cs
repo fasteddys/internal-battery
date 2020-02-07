@@ -52,8 +52,8 @@ namespace UpDiddyApi.Controllers.V2
         [Route("{notificationGuid}/subscribers/{subscriberGuid}")]
         public async Task<IActionResult> CreateSubscriberNotification(Guid NotificationGuid, Guid subscriberGuid)
         {
-            Guid rval = await _subscriberNotificationService.CreateSubscriberNotification(GetSubscriberGuid(), NotificationGuid, subscriberGuid);
-            return StatusCode(201);
+            var subscriberNotificationGuid = await _subscriberNotificationService.CreateSubscriberNotification(GetSubscriberGuid(), NotificationGuid, subscriberGuid);
+            return StatusCode(201, subscriberNotificationGuid);
         }
 
         [HttpDelete]
@@ -93,8 +93,8 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateNotification([FromBody] NotificationCreateDto newNotification)
         {
-            Guid rval = await _notificationService.CreateNotification(GetSubscriberGuid(), newNotification);
-            return Ok(rval);
+            var notificationGuid = await _notificationService.CreateNotification(GetSubscriberGuid(), newNotification);
+            return StatusCode(201, notificationGuid);
         }
 
         [HttpDelete("{notificationGuid}")]
@@ -104,7 +104,7 @@ namespace UpDiddyApi.Controllers.V2
             await _notificationService.DeleteNotification(GetSubscriberGuid(), notificationGuid);
             return StatusCode(204);
         }
- 
+
         [HttpPut("{notificationGuid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> UpdateNotification([FromBody] NotificationCreateDto notification, Guid notificationGuid)
@@ -117,7 +117,7 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> GetNotifications(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            NotificationListDto rVal = _mapper.Map<NotificationListDto>( await _notificationService.GetNotifications(limit, offset, sort, order));
+            NotificationListDto rVal = _mapper.Map<NotificationListDto>(await _notificationService.GetNotifications(limit, offset, sort, order));
             return Ok(rVal);
         }
 
@@ -137,7 +137,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> SendNotification(Guid notificationGuid)
         {
             await _notificationService.SendNotifcation(GetSubscriberGuid(), notificationGuid);
-            return StatusCode(201);
+            return StatusCode(202);
         }
 
 

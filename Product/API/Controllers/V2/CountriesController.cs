@@ -55,8 +55,8 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateCountry([FromBody] CountryDetailDto countryDetailDto)
         {
-            await _countryService.CreateCountry(countryDetailDto);
-            return StatusCode(201);
+            var countryGuid = await _countryService.CreateCountry(countryDetailDto);
+            return StatusCode(201, countryGuid);
         }
 
         [HttpGet]
@@ -98,8 +98,8 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateState(Guid country, [FromBody] StateDetailDto StateDetailDto)
         {
-            await _stateService.CreateState(country, StateDetailDto);
-            return StatusCode(201);
+            var stateGuid = await _stateService.CreateState(country, StateDetailDto);
+            return StatusCode(201, stateGuid);
         }
     }
 }

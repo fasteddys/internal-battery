@@ -27,7 +27,7 @@ namespace UpDiddyApi.Controllers
         [Route("{experienceLevel:guid}")]
         public async Task<IActionResult> GetExperienceLevel(Guid experienceLevel)
         {
-            var result  = await _experienceLevelService.GetExperienceLevel(experienceLevel);
+            var result = await _experienceLevelService.GetExperienceLevel(experienceLevel);
             return Ok(result);
         }
 
@@ -53,9 +53,8 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateExperienceLevel([FromBody] ExperienceLevelDto experienceLevelDto)
         {
-            await _experienceLevelService.CreateExperienceLevel(experienceLevelDto);
-            return StatusCode(201);
+            var experienceLevelGuid = await _experienceLevelService.CreateExperienceLevel(experienceLevelDto);
+            return StatusCode(201, experienceLevelGuid);
         }
-       
     }
 }
