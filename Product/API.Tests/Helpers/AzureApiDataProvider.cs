@@ -189,6 +189,9 @@ namespace API.Tests.Helpers
 
                 // schemas contain definitions for all operations (use these to compare responses from service requests)
                 var schemas = openApiSpecification.Root.SelectToken("$.schemas.value[0].document.definitions");
+                // the above path works for swagger openapi definitions but not azure api definitions - check to ensure we got something
+                if (schemas == null)
+                    schemas = openApiSpecification.Root.SelectToken("$.schemas.value[0].document.components.schemas");
 
                 // iterate over all operations for the api 
                 foreach (var operation in operations.Children<JToken>())

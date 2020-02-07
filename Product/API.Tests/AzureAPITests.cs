@@ -83,16 +83,34 @@ namespace API.Tests.AzureApi
                 }
 
                 // make the http request to the azure api gateway
+                HttpResponseMessage response = null;
                 try
                 {
-                    var response = client.SendAsync(request).Result;
+                    response = client.SendAsync(request).Result;
                     apiOperationTest.Object.ResponseBody = response.Content.ReadAsAsync<JToken>().Result;
                     apiOperationTest.Object.ActualStatusCode = (int)response.StatusCode;
                     isActualStatusCodeMatchesExpectedStatusCode = apiOperationTest.Object.ActualStatusCode == apiOperationTest.Object.ExpectedStatusCode;
                 }
                 catch (Exception e)
                 {
-                    apiOperationTest.Object.IntegrationErrors.Add($"An error occurred while calling the Api operation: {e.Message}");
+                    if (response != null)
+                    {
+                        try
+                        {
+                            var rawMessage = response.Content.ReadAsStringAsync().Result;
+                            apiOperationTest.Object.IntegrationErrors.Add($"An unexpected response was returned from the Api: {rawMessage}");
+                            apiOperationTest.Object.ActualStatusCode = (int)response.StatusCode;
+                            isActualStatusCodeMatchesExpectedStatusCode = apiOperationTest.Object.ActualStatusCode == apiOperationTest.Object.ExpectedStatusCode;
+                        }
+                        catch (Exception e1)
+                        {
+                            apiOperationTest.Object.IntegrationErrors.Add($"An error occurred while calling the Api operation: {e1.Message}");
+                        }
+                    }
+                    else
+                    {
+                        apiOperationTest.Object.IntegrationErrors.Add($"An error occurred while calling the Api operation: {e.Message}");
+                    }
                 }
 
                 // output information about the response received
@@ -145,7 +163,7 @@ namespace API.Tests.AzureApi
                             try
                             {
                                 // it's okay if we "undelete" multiple objects (e.g. country & state present in the url to delete an entity, it is okay to "undelete" the country and state)
-                                foreach(Guid entityIdentifier in apiOperationTest.Object.TargetedObjectIds)
+                                foreach (Guid entityIdentifier in apiOperationTest.Object.TargetedObjectIds)
                                 {
                                     this.UndeleteObjectByGuid(entityIdentifier);
                                 }
