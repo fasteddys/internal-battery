@@ -1097,6 +1097,10 @@ namespace UpDiddyApi.Workflow
                 // Import the subscriber resume 
                 ResumeParse resumeParse = await _ImportSubscriberResume(_subscriberService, resume, parsedDocument);
 
+
+                // TODO JAB Call HiringSolved Parser here 
+
+
                 // Callback to client to let them know upload is complete
                 ClientHubHelper hubHelper = new ClientHubHelper(_hub, _cache);
                 DefaultContractResolver contractResolver = new DefaultContractResolver

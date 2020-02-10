@@ -23,6 +23,9 @@ namespace UpDiddyApi.Helpers
             String parsedDocument = await sovrenApi.SubmitResumeAsync(base64EncodedString);
             await SubscriberProfileStagingStoreFactory.Save(repositoryWrapper, resume.Subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
             ResumeParse resumeParse = await _ImportSubscriberResume(repositoryWrapper, subscriberService, resume, parsedDocument);
+
+            // TODO JAB Call HiringSolved Parser here 
+
             return resumeParse.ResumeParseGuid;
         }
 
