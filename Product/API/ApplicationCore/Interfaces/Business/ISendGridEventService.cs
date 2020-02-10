@@ -12,5 +12,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         Task<bool> AddSendGridEvents(List<SendGridEventDto> sendGridEvent);
 
+        Task<bool> PurgeSendGridEvents(int lookbackDays);
+
     }
 }

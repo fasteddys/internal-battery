@@ -47,6 +47,10 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 
         Task<bool> InsertSendGridEvents(string sendGridJson);
 
+        Task<bool> PurgeSendGridEvents(int LookbackDays);
+
+        Task<List<SubscriberEmailStatisticDto>> GetSubscriberEmailStatistics(string email);
+
 
 
     }

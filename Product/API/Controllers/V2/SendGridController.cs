@@ -11,6 +11,8 @@ using UpDiddyLib.Dto.User;
 using Microsoft.AspNetCore.Authorization;
 using System.Collections.Generic;
 using UpDiddyLib.Helpers;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.Controllers.V2
 {
@@ -21,6 +23,8 @@ namespace UpDiddyApi.Controllers.V2
         private readonly IConfiguration _configuration;
         private readonly ISubscriberService _subscriberService;
         private readonly ISendGridEventService _sendGridEventService;
+        private readonly IRepositoryWrapper _repositoryWrapper;
+        private readonly ISubscriberEmailService _subscriberEmailService;
         private ISysEmail _sysEmail;
 
         public SendGridController(IServiceProvider services)
@@ -29,34 +33,51 @@ namespace UpDiddyApi.Controllers.V2
             _subscriberService = services.GetService<ISubscriberService>();
             _sendGridEventService = services.GetService<ISendGridEventService>();
             _sysEmail = services.GetService<ISysEmail>();
+            _repositoryWrapper = services.GetService<IRepositoryWrapper>();
+            _subscriberEmailService = services.GetService<ISubscriberEmailService>();
         }
 
         [HttpPost]
         [Route("LogEvent")]
         public async Task<IActionResult> LogEvent([FromBody] List<SendGridEventDto> events)       
         {
-            //todo jab discuss this approach with Brent if this approach is secure enough 
-            // validate the event log to be from sendgrid, if not return not found 
+            // Use secret key to authorize sendgrid event logging.  The documentation found here https://sendgrid.com/docs/for-developers/tracking-events/event/ 
+            // does not adquately document how to secure the implemented webhook authorization.  Stackoverflow suggests two approaches here
+            // https://stackoverflow.com/questions/20865673/sendgrid-incoming-mail-webhook-how-do-i-secure-my-endpoint
             if ( Request.Query["key"].ToString() == null || Request.Query["key"].ToString() != _configuration["SysEmail:EventHookApiKey"])
                 return StatusCode(404);
-
 
             _sendGridEventService.AddSendGridEvents(events);
             return Ok();
         }
+ 
 
-
-
-        [HttpGet] 
-        public async Task<IActionResult> test()
+        [HttpPut]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("PurgeAuditRecords")]
+        public async Task<IActionResult> PurgeAuditRecords(int lookbackDays)
         {
+            
+            if ( lookbackDays == 0 )            
+                lookbackDays =  int.Parse(_configuration["CareerCircle:SendGridAuditPurgeLookBackDays"]);
 
 
-           await  _sysEmail.SendEmailAsync("jibrazil@populusgroup.com", "Test Email From SendGridController", "Hello World!", Constants.SendGridAccount.Transactional);
-
-
-            return Ok("Hello World");
+            var rval = _sendGridEventService.PurgeSendGridEvents(lookbackDays);
+            return Ok(rval);
         }
+
+        [HttpGet]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("Statistics/{SubscriberGuid}")]
+        public async Task<IActionResult> GetSUbscriberStatistics(Guid subscriberGuid)
+        {            
+            var rval = await _subscriberEmailService.GetEmailStatistics(subscriberGuid);
+            return Ok(rval);
+        }
+
+
+
+
 
     }
 

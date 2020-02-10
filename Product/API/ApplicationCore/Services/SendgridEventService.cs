@@ -50,7 +50,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
-        // todo jab add stored procedure migration 
+  
         public async Task<bool> AddSendGridEvents( List<SendGridEventDto> sendGridEvents)
         {
 
@@ -60,6 +60,13 @@ namespace UpDiddyApi.ApplicationCore.Services
             
            return true;
         }
+
+        public async Task<bool> PurgeSendGridEvents(int lookbackDays)
+        {
+            var rval = await _repositoryWrapper.StoredProcedureRepository.PurgeSendGridEvents(lookbackDays);
+            return true;
+        }
+
 
 
 

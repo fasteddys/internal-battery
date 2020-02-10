@@ -235,7 +235,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             if (errorLine.Value != DBNull.Value && errorMessage.Value != DBNull.Value && errorProcedure.Value != DBNull.Value)
                 throw new ApplicationException($"An error occurred in {errorProcedure.Value.ToString()} at line {errorLine.Value.ToString()}: {errorMessage.Value.ToString()}");
         }
-        
+
         public async Task<List<CourseDetailDto>> GetCoursesRandom(int NumCourses)
         {
             var spParams = new object[] {
@@ -455,7 +455,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             rval = await _dbContext.SubscriberNoteQuery.FromSql<SubscriberNotesDto>("System_Get_SubscriberNotes @SubscriberGuid, @TalentGuid, @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
             return rval;
         }
- 
+
         public async Task<List<SubscriberCourseDto>> GetSubscriberCourses(Guid subscriberGuid, int excludeCompleted, int excludeActive)
 
         {
@@ -537,16 +537,38 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             var spParams = new object[] {
                 new SqlParameter("@SendGridJson", sendGridJson),
- 
+
                 };
 
             List<JobCrudDto> rval = null;
-           _dbContext.Database.ExecuteSqlCommand("[System_Insert_SendGridEvents]  @SendGridJson", spParams);
+            _dbContext.Database.ExecuteSqlCommand("[System_Insert_SendGridEvents]  @SendGridJson", spParams);
             return true;
         }
 
 
+        public async Task<bool> PurgeSendGridEvents(int LookbackDays)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@LookbackDays", LookbackDays),
 
+                };
+
+            _dbContext.Database.ExecuteSqlCommand("[System_Purge_SendGridEvents]  @LookbackDays", spParams);
+            return true;
+        }
+
+
+        public async Task<List<SubscriberEmailStatisticDto>> GetSubscriberEmailStatistics(string email)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@EmailAddress", email)
+             };
+
+            List<SubscriberEmailStatisticDto> rval = null;
+            rval = await _dbContext.SubscriberEmailStatistics.FromSql<SubscriberEmailStatisticDto>("[System_Get_SubscriberEmailStatistics] @EmailAddress", spParams).ToListAsync();
+            return rval;
+
+        }
 
 
 
