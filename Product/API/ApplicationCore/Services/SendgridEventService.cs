@@ -17,7 +17,7 @@ using Skill = UpDiddyApi.Models.Skill;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
-
+using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -29,7 +29,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         private IHangfireService _hangfireService;
         private ISysEmail _sysEmail;
         private readonly IServiceProvider _services;
-        public SendgridEventService(IServiceProvider services, IRepositoryWrapper repositoryWrapper, IMapper mapper, IHangfireService hangfireService, IConfiguration configuration)
+        private ILogger _logger { get; set; }
+        public SendgridEventService(IServiceProvider services, IRepositoryWrapper repositoryWrapper, IMapper mapper, IHangfireService hangfireService, IConfiguration configuration, ILogger<SendgridEventService> logger)
         {
             _services = services;
             _repositoryWrapper = repositoryWrapper;
@@ -37,14 +38,19 @@ namespace UpDiddyApi.ApplicationCore.Services
             _config = configuration;
             _hangfireService = hangfireService;
             _sysEmail = _services.GetService<ISysEmail>();
+            _logger = logger;
+      
         }
 
 
         public async Task<bool> AddSendGridEvent(SendGridEventDto sendGridEvent)
         {
+            _logger.LogInformation($"SendGridEventService:AddSendGridEvent  Starting");
+
             SendGridEvent sge = _mapper.Map<SendGridEvent>(sendGridEvent);
             await _repositoryWrapper.SendGridEventRepository.Create(sge);
             await _repositoryWrapper.SaveAsync();
+            _logger.LogInformation($"SendGridEventService:AddSendGridEvent  Complete");
 
             return true;
         }
@@ -54,16 +60,19 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<bool> AddSendGridEvents( List<SendGridEventDto> sendGridEvents)
         {
 
+            _logger.LogInformation($"SendGridEventService:AddSendGridEvents  Starting");
             string json = Newtonsoft.Json.JsonConvert.SerializeObject(sendGridEvents);
             _repositoryWrapper.StoredProcedureRepository.InsertSendGridEvents(json);
+            _logger.LogInformation($"SendGridEventService:AddSendGridEvents  Complete");
 
-            
-           return true;
+            return true;
         }
 
         public async Task<bool> PurgeSendGridEvents(int lookbackDays)
         {
+            _logger.LogInformation($"SendGridEventService:PurgeSendGridEvents  Starting lookbackDays = {lookbackDays}");
             var rval = await _repositoryWrapper.StoredProcedureRepository.PurgeSendGridEvents(lookbackDays);
+            _logger.LogInformation($"SendGridEventService:PurgeSendGridEvents  Complete");
             return true;
         }
 
