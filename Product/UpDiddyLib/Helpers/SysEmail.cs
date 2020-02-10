@@ -21,18 +21,32 @@ namespace UpDiddyLib.Helpers
 
         public async Task<bool> SendEmailAsync(string email, string subject, string htmlContent, Constants.SendGridAccount SendGridAccount)
         {
+            bool isDebugMode = _configuration[$"SysEmail:DebugMode"] == "true";
             string SendGridAccountType = Enum.GetName(typeof(Constants.SendGridAccount), SendGridAccount);
             var client = new SendGridClient(_configuration[$"SysEmail:{SendGridAccountType}:ApiKey"]);
+
             SendGrid.Helpers.Mail.EmailAddress from = new EmailAddress(_configuration[$"SysEmail:{SendGridAccountType}:FromEmailAddress"], "CareerCircle Support");
-            SendGrid.Helpers.Mail.EmailAddress to = new EmailAddress(email);
+            SendGrid.Helpers.Mail.EmailAddress to = null;
+            // check debug mode to only send emails to actual users in the system is not in debug mode 
+            if ( isDebugMode == false )
+                to = new EmailAddress(email);
+            else 
+                to = new EmailAddress(_configuration[$"SysEmail:SystemDebugEmailAddress"]);
+
             var plainTextContent = Regex.Replace(htmlContent, "<[^>]*>", "");
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
+            // Add custom subject property that will be sent to the webhook            
+            msg.CustomArgs = new Dictionary<string, string>()
+            {
+                { "Subject", "this is the subject" }
+            };
             var response = await client.SendEmailAsync(msg);
             return true;
         }
 
         public async Task<bool> SendTemplatedEmailAsync(string email, string templateId, dynamic templateData, Constants.SendGridAccount SendGridAccount, string subject = null, List<Attachment> attachments = null, DateTime? sendAt = null, int? unsubscribeGroupId = null)
         {
+            bool isDebugMode = _configuration[$"SysEmail:DebugMode"] == "true";
             string SendGridAccountType = Enum.GetName(typeof(Constants.SendGridAccount), SendGridAccount);
 
             var client = new SendGridClient(_configuration[$"SysEmail:{SendGridAccountType}:ApiKey"]);
@@ -41,7 +55,13 @@ namespace UpDiddyLib.Helpers
                 message.SendAt = Utils.ToUnixTimeInSeconds(sendAt.Value);
             message.SetFrom(new EmailAddress(_configuration[$"SysEmail:{SendGridAccountType}:FromEmailAddress"], "CareerCircle"));
             message.SetReplyTo(new EmailAddress(_configuration[$"SysEmail:{SendGridAccountType}:ReplyToEmailAddress"]));
-            message.AddTo(new EmailAddress(email));
+
+            // check debug mode to only send emails to actual users in the system is not in debug mode 
+            if (isDebugMode == false)
+                message.AddTo(new EmailAddress(email));
+            else
+                message.AddTo(new EmailAddress(_configuration[$"SysEmail:SystemDebugEmailAddress"]));
+
             message.SetTemplateId(templateId);
             message.SetTemplateData(templateData);
 
@@ -55,6 +75,17 @@ namespace UpDiddyLib.Helpers
                 message.AddAttachments(attachments);
             if (subject != null)
                 message.SetSubject(subject);
+
+            // Add custom property that will be sent to the webhook. For templated emails, we will use the templated ID as the subject since the actual
+            // subject of the template is not readily available 
+            string webhookSubject = $"CC Template: {templateData}";
+            if (subject != null)
+                webhookSubject += $" with a subject of {subject}";
+
+            message.CustomArgs = new Dictionary<string, string>()
+            {
+                { "Subject", webhookSubject }
+            };
 
             var response = await client.SendEmailAsync(message);
             int statusCode = (int)response.StatusCode;

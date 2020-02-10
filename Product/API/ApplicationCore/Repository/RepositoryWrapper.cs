@@ -95,6 +95,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         private readonly IConfiguration _configuration;
 
+        private ISendGridEventRepository _sendGridEventRepository;
+
+
+
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
@@ -1069,6 +1073,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _courseReferralRepository = new CourseReferralRepository(_dbContext);
                 }
                 return _courseReferralRepository;
+            }
+        }
+
+        public ISendGridEventRepository SendGridEventRepository
+        {
+            get
+            {
+                if (_sendGridEventRepository == null)
+                {
+                    _sendGridEventRepository = new SendGridEventRepository(_dbContext);
+                }
+                return _sendGridEventRepository;
             }
         }
 

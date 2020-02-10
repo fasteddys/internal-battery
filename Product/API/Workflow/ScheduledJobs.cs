@@ -1934,5 +1934,26 @@ namespace UpDiddyApi.Workflow
         }
 
         #endregion
+
+        #region SendGrid jobs
+
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        public async Task PurgeSendGridAuditRecords()
+        {
+            try
+            {
+                int PurgeLookBackDays = int.Parse(_configuration["CareerCircle:SendGridAuditPurgeLookBackDays"]);
+                await _repositoryWrapper.StoredProcedureRepository.PurgeSendGridEvents(PurgeLookBackDays);
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.PurgeSendGridAuditRecords encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+            }
+        }
+
+        #endregion
+
+
+
     }
 }

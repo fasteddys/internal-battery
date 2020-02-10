@@ -252,6 +252,14 @@ namespace UpDiddyApi
             if (_currentEnvironment.IsProduction())
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.GenerateSiteMapAndSaveToBlobStorage(), Cron.Daily(5));
 
+            // kick sendgrid audit cleanup
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.PurgeSendGridAuditRecords(), Cron.Daily());
+
+
+ 
+
+
+
             #endregion
 
             services.AddHttpClient(Constants.HttpGetClientName);
@@ -332,6 +340,9 @@ namespace UpDiddyApi
             services.AddScoped<IPartnerService, PartnerService>();
             services.AddScoped<IAzureSearchService, AzureSearchService>();
             services.AddScoped<IReportsService, ReportsService>();
+
+            services.AddScoped<ISendGridEventService, SendgridEventService>();
+            services.AddScoped<ISubscriberEmailService, SubscriberEmailService>();
 
             #endregion
 

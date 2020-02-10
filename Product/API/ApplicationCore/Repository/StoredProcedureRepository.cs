@@ -582,6 +582,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return rval;
         }
 
+
         public async Task<List<UpDiddyLib.Domain.Models.CompensationTypeDto>> GetCompensationTypes(int limit, int offset, string sort, string order)
         {
             var spParams = new object[] {
@@ -595,6 +596,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             rval = await _dbContext.CompensationTypes.FromSql<UpDiddyLib.Domain.Models.CompensationTypeDto>("System_Get_CompensationTypes @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
             return rval;
         }
+
 
         public async Task<List<CountryDetailDto>> GetCountries(int limit, int offset, string sort, string order)
         {
@@ -943,5 +945,44 @@ namespace UpDiddyApi.ApplicationCore.Repository
             rval = await _dbContext.PartnerUsers.FromSql<PartnerUsers>("[System_Report_UsersByPartner] @StartDate, @EndDate", spParams).ToListAsync();
             return rval;
         }
-    }
+
+            public async Task<bool> InsertSendGridEvents(string sendGridJson)
+            {
+                var spParams = new object[] {
+                new SqlParameter("@SendGridJson", sendGridJson),
+
+                };
+
+                List<JobCrudDto> rval = null;
+                _dbContext.Database.ExecuteSqlCommand("[System_Insert_SendGridEvents]  @SendGridJson", spParams);
+                return true;
+            }
+
+
+            public async Task<bool> PurgeSendGridEvents(int LookbackDays)
+            {
+                var spParams = new object[] {
+                new SqlParameter("@LookbackDays", LookbackDays),
+
+                };
+
+                _dbContext.Database.ExecuteSqlCommand("[System_Purge_SendGridEvents]  @LookbackDays", spParams);
+                return true;
+            }
+
+
+            public async Task<List<SubscriberEmailStatisticDto>> GetSubscriberEmailStatistics(string email)
+            {
+                var spParams = new object[] {
+                new SqlParameter("@EmailAddress", email)
+             };
+
+                List<SubscriberEmailStatisticDto> rval = null;
+                rval = await _dbContext.SubscriberEmailStatistics.FromSql<SubscriberEmailStatisticDto>("[System_Get_SubscriberEmailStatistics] @EmailAddress", spParams).ToListAsync();
+                return rval;
+
+            }
+
+
+        }
 }

@@ -3,19 +3,21 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200116132400_adding additional sendgrid event columns")]
+    partial class addingadditionalsendgrideventcolumns
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
+                .HasAnnotation("ProductVersion", "2.2.3-servicing-35854")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -2240,49 +2242,12 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("NotificationGuid");
 
-                    b.Property<DateTime?>("SentDate");
-
                     b.Property<string>("Title")
                         .IsRequired();
 
                     b.HasKey("NotificationId");
 
                     b.ToTable("Notification");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.NotificationGroup", b =>
-                {
-                    b.Property<int>("NotificationGroupId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("GroupId");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<Guid>("NotificationGroupGuid");
-
-                    b.Property<int>("NotificationId");
-
-                    b.HasKey("NotificationGroupId");
-
-                    b.HasIndex("GroupId");
-
-                    b.HasIndex("NotificationId");
-
-                    b.HasIndex("NotificationGroupId", "GroupId")
-                        .IsUnique()
-                        .HasName("UIX_NotificationGroup_Group");
-
-                    b.ToTable("NotificationGroup");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Offer", b =>
@@ -3267,10 +3232,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsDeleted");
 
-                    b.Property<string>("Marketing_campaign_id");
-
-                    b.Property<string>("Marketing_campaign_name");
-
                     b.Property<DateTime?>("ModifyDate");
 
                     b.Property<Guid?>("ModifyGuid");
@@ -3288,8 +3249,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<string>("Smtp_id");
 
                     b.Property<string>("Status");
-
-                    b.Property<string>("Subject");
 
                     b.Property<long>("Timestamp");
 
@@ -3930,57 +3889,6 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("SubscriberPromoCodeId");
 
                     b.ToTable("SubscriberPromoCode");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.SubscriberSendGridEvent", b =>
-                {
-                    b.Property<int>("SubscriberSendGridEventId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Attempt");
-
-                    b.Property<string>("Category");
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<string>("Email");
-
-                    b.Property<string>("Event");
-
-                    b.Property<int>("EventStatus");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<string>("Marketing_campaign_id");
-
-                    b.Property<string>("Marketing_campaign_name");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<string>("Reason");
-
-                    b.Property<string>("Response");
-
-                    b.Property<string>("Sg_message_id");
-
-                    b.Property<string>("Status");
-
-                    b.Property<string>("Subject");
-
-                    b.Property<int?>("SubscriberId");
-
-                    b.Property<Guid>("SubscriberSendGridEventGuid");
-
-                    b.Property<string>("Type");
-
-                    b.HasKey("SubscriberSendGridEventId");
-
-                    b.ToTable("SubscriberSendGridEvent");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberSkill", b =>
@@ -4925,19 +4833,6 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany()
                         .HasForeignKey("SubscriberId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.NotificationGroup", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.Group", "Group")
-                        .WithMany()
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UpDiddyApi.Models.Notification", "Notification")
-                        .WithMany()
-                        .HasForeignKey("NotificationId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
