@@ -22,7 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="TestFiles\AzureApi-OpenApi.json" />
     <EmbeddedResource Include="TestFiles\example-hrxml_bad_xml.xml" />
     <EmbeddedResource Include="TestFiles\example-hrxml_48_skills.xml" />
   </ItemGroup>
