@@ -33,11 +33,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             _hangfireService = hangfireService;
         }
 
-        public async Task<List<OfferDto>> GetAllOffers(int limit = 5, int offset = 0)
+        public async Task<OfferListDto> GetOffers(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var offers = await _repositoryWrapper.Offer.GetAllOffers(limit, offset);
-            var offerDto = _mapper.Map<List<OfferDto>>(offers);
-            return offerDto;
+            var offers = await _repositoryWrapper.StoredProcedureRepository.GetOffers(limit, offset, sort, order);
+            return _mapper.Map<OfferListDto>(offers);
         }
 
         public async Task<OfferDto> GetOffer(Guid offerGuid)
@@ -48,7 +47,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _mapper.Map<OfferDto>(offer);
         }
 
-        public async Task ClaimOffer(Guid subscriberGuid, Guid offerGuid)
+        public async Task<Guid> ClaimOffer(Guid subscriberGuid, Guid offerGuid)
         {
             var subscriber = await _repositoryWrapper.SubscriberRepository.GetByGuid(subscriberGuid);
             if (subscriber == null)
@@ -65,11 +64,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             var action = await GetAction();
 
             var entityType = await GetEntityType();
-
+            Guid subscriberActionGuid = Guid.NewGuid();
             await _repositoryWrapper.SubscriberActionRepository.Create(
                  new SubscriberAction()
                  {
-                     SubscriberActionGuid = Guid.NewGuid(),
+                     SubscriberActionGuid = subscriberActionGuid,
                      CreateDate = DateTime.UtcNow,
                      CreateGuid = Guid.Empty,
                      ActionId = action.ActionId,
@@ -83,6 +82,8 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             _hangfireService.Enqueue(() =>
                 _sysEmail.SendTemplatedEmailAsync(subscriber.Email, _configuration["SysEmail:Transactional:TemplateIds:SubscriberOffer-Redemption"], offer, Constants.SendGridAccount.Transactional, null, null, null, null));
+
+            return subscriberActionGuid;
         }
 
         public async Task<bool> HasSubscriberClaimedOffer(Guid subscriberGuid, Guid offerGuid)
@@ -103,22 +104,23 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
-        public async Task CreateOffer(OfferDto offerDto)
+        public async Task<Guid> CreateOffer(OfferDto offerDto)
         {
-            if(offerDto == null)
+            if (offerDto == null)
                 throw new NullReferenceException("OfferDto cannot be null.");
-            if(offerDto.PartnerGuid == null)
+            if (offerDto.PartnerGuid == null)
                 throw new NullReferenceException("PartnerGuid cannot be null.");
             var partner = await _repositoryWrapper.PartnerRepository.GetByGuid(offerDto.PartnerGuid.Value);
             if (partner == null)
                 throw new NotFoundException("Partner not found");
             var offer = _mapper.Map<Offer>(offerDto);
             offer.PartnerId = partner.PartnerId;
-            offer.OfferGuid = Guid.NewGuid();            
+            offer.OfferGuid = Guid.NewGuid();
             await _repositoryWrapper.Offer.Create(offer);
             await _repositoryWrapper.SaveAsync();
+            return offer.OfferGuid;
         }
-        
+
 
         public async Task UpdateOffer(Guid offerGuid, OfferDto offerDto)
         {

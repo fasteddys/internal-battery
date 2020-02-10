@@ -80,7 +80,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult GetJobsForSubscriber(int numRecords)
         {
             var stats = _repositoryWrapper.JobSiteScrapeStatistic.GetJobScrapeStatisticsAsync(numRecords).Result;
-            return Ok(_mapper.Map<IList<JobSiteScrapeStatisticDto>>(stats));
+            return Ok(_mapper.Map<List<JobSiteScrapeStatisticDto>>(stats));
         }
 
 
@@ -273,7 +273,7 @@ namespace UpDiddyApi.Controllers
                 _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
                 // update the job posting 
                 string ErrorMsg = string.Empty;
-                bool UpdateOk = JobPostingFactory.UpdateJobPosting(_repositoryWrapper, jobPostingDto.JobPostingGuid.Value, jobPostingDto, ref ErrorMsg, _hangfireService);
+                bool UpdateOk = JobPostingFactory.UpdateJobPosting(_repositoryWrapper, jobPostingDto.JobPostingGuid.Value, jobPostingDto, ref ErrorMsg, _hangfireService,_configuration);
                 _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
                 if (UpdateOk)
                     return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{jobPostingDto.JobPostingGuid.Value}" });

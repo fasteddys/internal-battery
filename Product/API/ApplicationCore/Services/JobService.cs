@@ -339,7 +339,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
-        public async Task ShareJob(Guid job, Guid subscriber, ShareJobDto shareJobDto)
+        public async Task<Guid> ShareJob(Guid job, Guid subscriber, ShareJobDto shareJobDto)
         {
             if (string.IsNullOrEmpty(shareJobDto.Email))
             {
@@ -375,6 +375,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             //update jobReferralGuid only if Referee is new subscriber, for old subscriber we do not jobReferralCode
             await _repositoryWrapper.JobReferralRepository.AddJobReferralAsync(jobReferral);
+            return jobReferral.JobReferralGuid;
         }
 
 

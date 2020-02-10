@@ -33,7 +33,7 @@ namespace UpDiddy.Controllers
             _env = env;
             _butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
         }
-        
+        /*
         [Route("/campaign/{LandingPageSlug}")]
         public async Task<IActionResult> ShowCampaignLandingPage(string LandingPageSlug)
         {
@@ -118,5 +118,8 @@ namespace UpDiddy.Controllers
             PageResponse<CampaignLandingPageViewModel> landingPage = await butterClient.RetrievePageAsync<CampaignLandingPageViewModel>("*", landingPageSlug, QueryParams);
             return landingPage;
         }
+
+
+    */
     }
 }

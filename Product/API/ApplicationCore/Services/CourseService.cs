@@ -82,21 +82,21 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
-        public async Task<List<CourseDetailDto>> GetCourses(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<CourseDetailListDto> GetCourses(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCourses(limit, offset, sort, order);
             if (courses == null)
                 throw new NotFoundException("Courses not found");
-            return (courses);
+            return _mapper.Map<CourseDetailListDto>(courses);
         }
 
 
-        public async Task<List<CourseDetailDto>> GetCoursesByTopic(string topic, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<CourseDetailListDto> GetCoursesByTopic(Guid topic, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetCoursesByTopic(topic, limit, offset, sort, order);
             if (courses == null)
                 throw new NotFoundException("Courses not found");
-            return (courses);
+            return _mapper.Map<CourseDetailListDto>(courses);
         }
 
 
@@ -229,10 +229,10 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         #region Course Search 
  
-        public async Task<CourseSearchResult> SearchCoursesAsync(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", string level = "", string topic = "" )
+        public async Task<CourseSearchResultDto> SearchCoursesAsync(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", string level = "", string topic = "" )
         { 
             DateTime startSearch = DateTime.Now;
-            CourseSearchResult searchResults = new CourseSearchResult();
+            CourseSearchResultDto searchResults = new CourseSearchResultDto();
      
             string searchServiceName =  _config["AzureSearch:SearchServiceName"];
             string adminApiKey = _config["AzureSearch:SearchServiceQueryApiKey"];

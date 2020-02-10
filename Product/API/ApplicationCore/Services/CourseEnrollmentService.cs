@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -10,7 +9,6 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyApi.ApplicationCore.Exceptions;
-using UpDiddyApi.Helpers;
 using UpDiddyLib.Domain.Models;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -19,8 +17,7 @@ using SkillDto = UpDiddyLib.Domain.Models.SkillDto;
 using UpDiddyApi.ApplicationCore.Factory;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.Workflow;
-using EnrollmentStatus = UpDiddyApi.Models.EnrollmentStatus;
-
+using UpDiddyLib.Helpers;
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class CourseEnrollmentService : ICourseEnrollmentService
@@ -127,7 +124,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 Enrollment.CourseVariantId = EnrollmentDto.CampaignCourseVariant.CourseVariant.CourseVariantId;
                 Enrollment.CampaignCourseVariant = null;
             }
-            _repositoryWrapper.EnrollmentRepository.Create(Enrollment);
+            await _repositoryWrapper.EnrollmentRepository.Create(Enrollment);
 
             /* todo: need to revisit the enrollment log for a number of reasons: 
              *      mismatch for "required" between properties of this and related entities (e.g. SubscriberGuid)
@@ -156,7 +153,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             int paymentMonth = 0;
             int paymentYear = 0;
 
-            if (vendor == null || vendor.Name == "WozU")
+            if (vendor == null || vendor.VendorGuid == Constants.WozVendorGuid)
             {
                 // calculate vendor invoice payment month and year
                 paymentMonth = currentDate.AddDays(30).Month;
@@ -240,7 +237,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             // if this is a woz course, get the terms of service and course schedule. 
             // todo: replace this logic with factory pattern when we add more vendors?
             List<DateTime> startDateUTCs = null;
-            if (course.Vendor.Name == "WozU")
+            if (course.Vendor.VendorGuid == Constants.WozVendorGuid)
             {
                 // get the terms of service from WozU
                 var tos = _wozInterface.GetTermsOfService();

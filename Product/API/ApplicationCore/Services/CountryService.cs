@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
-using UpDiddyApi.ApplicationCore.Interfaces;
 using AutoMapper;
 using UpDiddyLib.Domain.Models;
 using UpDiddyApi.Models;
@@ -14,12 +11,10 @@ namespace UpDiddyApi.ApplicationCore.Services
     public class CountryService : ICountryService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
-        private readonly IMemoryCacheService _memoryCacheService;
         private readonly IMapper _mapper;
-        public CountryService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IMemoryCacheService memoryCacheService)
+        public CountryService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
         {
             _repositoryWrapper = repositoryWrapper;
-            _memoryCacheService = memoryCacheService;
             _mapper = mapper;
         }
 
@@ -27,28 +22,21 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (countryGuid == null || countryGuid == Guid.Empty)
                 throw new NullReferenceException("countryGuid cannot be null");
-            string cacheKey = $"GetCountryDetail";
-            IList<CountryDetailDto> rval = (IList<CountryDetailDto>)_memoryCacheService.GetCacheValue(cacheKey);
-            if (rval == null)
-            {
-                var countries = await _repositoryWrapper.Country.GetAllCountries();
-                if (countries == null)
-                    throw new NotFoundException("country not found");
-                rval = _mapper.Map<List<CountryDetailDto>>(countries);
-                _memoryCacheService.SetCacheValue(cacheKey, rval);
-            }
-            return rval?.Where(x => x.CountryGuid == countryGuid).FirstOrDefault();
-        }
-
-        public async Task<List<CountryDetailDto>> GetAllCountries(int limit = 100, int offset = 0, string sort = "modifyDate", string order = "descending")
-        {
-            var country = await _repositoryWrapper.Country.GetByConditionWithSorting(x => x.IsDeleted == 0, limit, offset, sort, order);
+            var country = await  _repositoryWrapper.Country.GetByGuid(countryGuid);
             if (country == null)
-                throw new NotFoundException("Country not found");
-            return _mapper.Map<List<CountryDetailDto>>(country);
+                throw new NotFoundException($"Country with guid: {countryGuid} does not exist");
+            return _mapper.Map<CountryDetailDto>(country);
         }
 
-        public async Task CreateCountry(CountryDetailDto countryDetailDto)
+        public async Task<CountryDetailListDto> GetAllCountries(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        {
+            var countries = await _repositoryWrapper.StoredProcedureRepository.GetCountries(limit, offset, sort, order);
+            if (countries == null)
+                throw new NotFoundException("Countries not found");
+            return _mapper.Map<CountryDetailListDto>(countries);
+        }
+
+        public async Task<Guid> CreateCountry(CountryDetailDto countryDetailDto)
         {
             if (countryDetailDto == null)
                 throw new NullReferenceException("countryDetailDto cannot be null");
@@ -57,6 +45,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             country.CountryGuid = Guid.NewGuid();
             await _repositoryWrapper.Country.Create(country);
             await _repositoryWrapper.SaveAsync();
+            return country.CountryGuid.Value;
         }
 
         public async Task UpdateCountry(Guid countryGuid, CountryDetailDto countryDetailDto)

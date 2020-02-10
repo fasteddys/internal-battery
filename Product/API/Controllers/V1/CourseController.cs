@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Http;
@@ -9,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-using UpDiddyLib.MessageQueue;
 using Microsoft.EntityFrameworkCore;
 using UpDiddyApi.ApplicationCore;
 using UpDiddyLib.Helpers;
@@ -18,10 +16,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
-using Hangfire;
 using UpDiddyApi.Workflow;
 using UpDiddyApi.ApplicationCore.Interfaces;
-
 namespace UpDiddyApi.Controllers
 {
 
@@ -142,7 +138,7 @@ namespace UpDiddyApi.Controllers
 
             // if this is a woz course, get the terms of service and course schedule. 
             // todo: replace this logic with factory pattern when we add more vendors?
-            if (course.Vendor.Name == "WozU")
+            if (course.Vendor.VendorGuid == Constants.WozVendorGuid)
             {
                 // get the terms of service from WozU
                 var tos = _wozInterface.GetTermsOfService();

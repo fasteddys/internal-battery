@@ -14,12 +14,10 @@ namespace UpDiddyApi.ApplicationCore.Services
     public class CourseLevelService : ICourseLevelService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
-        private readonly IMemoryCacheService _memoryCacheService;
         private readonly IMapper _mapper;
-        public CourseLevelService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IMemoryCacheService memoryCacheService)
+        public CourseLevelService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
         {
             _repositoryWrapper = repositoryWrapper;
-            _memoryCacheService = memoryCacheService;
             _mapper = mapper;
         }
 
@@ -27,28 +25,21 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (courseLevelGuid == null || courseLevelGuid == Guid.Empty)
                 throw new NullReferenceException("CourseLevelGuid cannot be null");
-            string cacheKey = $"GetCourseLevel";
-            IList<CourseLevelDto> rval = (IList<CourseLevelDto>)_memoryCacheService.GetCacheValue(cacheKey);
-            if (rval == null)
-            {
-                var courseLevels = await _repositoryWrapper.CourseLevelRepository.GetAllCourseLevels();
-                if (courseLevels == null)
-                    throw new NotFoundException("CourseLevelGuid not found");
-                rval = _mapper.Map<List<CourseLevelDto>>(courseLevels);
-                _memoryCacheService.SetCacheValue(cacheKey, rval);
-            }
-            return rval?.Where(x => x.CourseLevelGuid == courseLevelGuid).FirstOrDefault();
+            var courseLevel = await  _repositoryWrapper.CourseLevelRepository.GetByGuid(courseLevelGuid);
+            if (courseLevel == null)
+                throw new NotFoundException($"CourseLevel with guid: {courseLevelGuid} does not exist");
+            return _mapper.Map<CourseLevelDto>(courseLevel);
         }
 
-        public async Task<List<CourseLevelDto>> GetCourseLevels(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<CourseLevelListDto> GetCourseLevels(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var courseLevels = await _repositoryWrapper.CourseLevelRepository.GetByConditionWithSorting(x => x.IsDeleted == 0, limit, offset, sort, order);
+            var courseLevels = await _repositoryWrapper.StoredProcedureRepository.GetCourseLevels(limit, offset, sort, order);
             if (courseLevels == null)
                 throw new NotFoundException("CourseLevels not found");
-            return _mapper.Map<List<CourseLevelDto>>(courseLevels);
+            return _mapper.Map<CourseLevelListDto>(courseLevels);
         }
 
-        public async Task CreateCourseLevel(CourseLevelDto courseLevelDto)
+        public async Task<Guid> CreateCourseLevel(CourseLevelDto courseLevelDto)
         {
             if (courseLevelDto == null)
                 throw new NullReferenceException("CourseLevelDto cannot be null");
@@ -56,6 +47,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             courseLevel.CourseLevelGuid = Guid.NewGuid();
             await _repositoryWrapper.CourseLevelRepository.Create(courseLevel);
             await _repositoryWrapper.SaveAsync();
+            return courseLevel.CourseLevelGuid;
         }
 
         public async Task UpdateCourseLevel(Guid courseLevelGuid, CourseLevelDto courseLevelDto)

@@ -19,7 +19,6 @@ namespace UpDiddyApi.Controllers
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly ISkillService _skillservice;
 
-
         public SkillsController(IMapper mapper
         , IConfiguration configuration
         , IHangfireService hangfireService
@@ -31,9 +30,17 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetSkills(int limit, int offset, string sort, string order)
+        public async Task<IActionResult> GetSkills(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var skills = await _skillservice.GetSkills(limit, offset, sort, order);
+            return Ok(skills);
+        }
+
+        [HttpGet]
+        [Route("keyword")]
+        public async Task<IActionResult> GetSkillsByKeyword([FromQuery] string value)
+        {
+            var skills = await _skillservice.GetSkillsByKeyword(value);
             return Ok(skills);
         }
 
@@ -48,40 +55,37 @@ namespace UpDiddyApi.Controllers
         [HttpPut]
         [Route("{skill:guid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<IActionResult> UpdateSkill(Guid skill, SkillDto skillDto)
+        public async Task<IActionResult> UpdateSkill(Guid skill, [FromBody] SkillDto skillDto)
         {
             await _skillservice.UpdateSkill(skill, skillDto);
-            return StatusCode(200);
+            return StatusCode(204);
         }
 
         [HttpDelete]
         [Route("{skill:guid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<IActionResult> DeleteSkill(Guid skill, SkillDto skillDto)
+        public async Task<IActionResult> DeleteSkill(Guid skill)
         {
-            await _skillservice.UpdateSkill(skill, skillDto);
+            await _skillservice.DeleteSkill(skill);
             return StatusCode(204);
         }
 
         [HttpPost]
         [Route("{skill:guid}")]
         [Authorize]
-        public async Task<IActionResult> CreateSkill(Guid skill, SkillDto skillDto)
+        public async Task<IActionResult> CreateSkill(Guid skill, [FromBody] SkillDto skillDto)
         {
-            await _skillservice.CreateSkill(skillDto);
-            return StatusCode(201);
+            var skillGuid = await _skillservice.CreateSkill(skillDto);
+            return StatusCode(201, skillGuid);
         }
 
-
-
+        [Obsolete("Remove this once the React app is using the route in the CoursesController.", false)]
         [HttpGet]
         [Route("courses/{course:guid}")]
         public async Task<IActionResult> GetSkillForCourse(Guid course)
         {
             var result = await _skillservice.GetSkillsByCourseGuid(course);
-            return Ok(result);            
+            return Ok(result);
         }
-
-
     }
 }

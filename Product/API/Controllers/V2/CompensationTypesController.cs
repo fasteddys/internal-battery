@@ -53,9 +53,8 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateCompensationType([FromBody] CompensationTypeDto compensationTypeDto)
         {
-            await _compensationTypeService.CreateCompensationType(compensationTypeDto);
-            return StatusCode(201);
+            var compensationTypeGuid = await _compensationTypeService.CreateCompensationType(compensationTypeDto);
+            return StatusCode(201, compensationTypeGuid);
         }
-
     }
 }

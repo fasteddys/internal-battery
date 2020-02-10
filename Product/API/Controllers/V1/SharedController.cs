@@ -21,14 +21,12 @@ namespace UpDiddyApi.Controllers
         private readonly IMapper _mapper;
 
         private readonly IRepositoryWrapper _repositoryWrapper;
-        private readonly IMemoryCacheService _memoryCacheService;
         private readonly ILogger _syslog;
 
-        public SharedController(IRepositoryWrapper repositoryWrapper,IMapper mapper, IMemoryCacheService memoryCacheService, ILogger<TopicController> sysLog)
+        public SharedController(IRepositoryWrapper repositoryWrapper, IMapper mapper, ILogger<TopicController> sysLog)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
-            _memoryCacheService=memoryCacheService;
             _syslog=sysLog;
         }
 
@@ -59,32 +57,6 @@ namespace UpDiddyApi.Controllers
             var states = await _repositoryWrapper.State.GetStatesForDefaultCountry();
 
             return Ok(_mapper.Map<List<StateDto>>(states));
-        }
-
-        [HttpGet]
-        [Route("api/cache")]
-        public IActionResult GetCacheValue([FromQuery]string cacheKey)
-        {
-            try
-            {
-                object cacheValue;
-                if(ModelState.IsValid && !string.IsNullOrEmpty(cacheKey) && !string.IsNullOrWhiteSpace(cacheKey))
-                {
-                    cacheValue = _memoryCacheService.GetCacheValue(cacheKey);
-                    return Ok(cacheValue);
-                }
-                else
-                {
-                    _syslog.Log(LogLevel.Information, $"Invalid Cache Key={cacheKey}");
-                    return BadRequest();
-                }
-            }
-            catch(Exception ex)
-            {
-                _syslog.Log(LogLevel.Error, $"Invalid Cache Key={cacheKey}",ex.StackTrace);
-                return StatusCode(500, $"Exception occured on getting cache value. {ex.Message}");
-            }
-           
         }
     }
 }

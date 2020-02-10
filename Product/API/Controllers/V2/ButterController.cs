@@ -1,25 +1,13 @@
 ﻿using System;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using UpDiddyApi.ApplicationCore.Services;
-using UpDiddyApi.Models;
-using UpDiddyLib.Dto;
 using AutoMapper;
-using System.Security.Claims;
-using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using Microsoft.Extensions.DependencyInjection;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
-using Microsoft.AspNetCore.Http;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyLib.Domain.Models;
-using UpDiddyApi.ApplicationCore.Exceptions;
-using UpDiddyLib.Shared.GoogleJobs;
-using System.Collections.Generic;
-using System.IO;
-using Newtonsoft.Json.Linq;
 
 namespace UpDiddyApi.Controllers.V2
 {
@@ -78,7 +66,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> ClearPageCache(string slug)
         {
             var rVal = await _butterCMSService.ClearCachedPageAsync(slug);
-            return Ok();
+            return StatusCode(204);
         }
 
         [HttpPut]
@@ -87,15 +75,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> ClearCache(string key)
         {
             var rVal = await _butterCMSService.ClearCachedKeyAsync(key);
-            return Ok();
+            return StatusCode(204);
         }
-
-
-
-
     }
-
-
-
-
 }

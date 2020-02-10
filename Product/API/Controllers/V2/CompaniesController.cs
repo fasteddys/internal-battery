@@ -17,7 +17,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCompanies(int limit, int offset, string sort, string order)
+        public async Task<IActionResult> GetCompanies(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var companies = await _companyService.GetCompanies(limit, offset, sort, order);
             return Ok(companies);
@@ -62,8 +62,8 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateCompany([FromBody] CompanyDto companyDto)
         {
-            await _companyService.AddCompanyAsync(companyDto);
-            return StatusCode(201);
+            var companyGuid = await _companyService.AddCompanyAsync(companyDto);
+            return StatusCode(201, companyGuid);
         }
     }
 }

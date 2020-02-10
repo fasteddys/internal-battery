@@ -4,7 +4,7 @@ using System.Text;
 
 namespace UpDiddyLib.Domain.Models
 {
-    public class CourseSearchResult
+    public class CourseSearchResultDto
     {
         public int PageSize { get; set; }
         public int PageNum { get; set; }

@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
-using UpDiddyApi.ApplicationCore.Interfaces;
 using AutoMapper;
 using UpDiddyLib.Domain.Models;
 using UpDiddyApi.Models;
@@ -14,12 +12,10 @@ namespace UpDiddyApi.ApplicationCore.Services
     public class CompensationTypeService : ICompensationTypeService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
-        private readonly IMemoryCacheService _memoryCacheService;
         private readonly IMapper _mapper;
-        public CompensationTypeService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IMemoryCacheService memoryCacheService)
+        public CompensationTypeService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
         {
             _repositoryWrapper = repositoryWrapper;
-            _memoryCacheService = memoryCacheService;
             _mapper = mapper;
         }
 
@@ -27,28 +23,21 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (compensationTypeGuid == null || compensationTypeGuid == Guid.Empty)
                 throw new NullReferenceException("CompensationTypeGuid cannot be null");
-            string cacheKey = $"GetCompensationType";
-            IList<CompensationTypeDto> rval = (IList<CompensationTypeDto>)_memoryCacheService.GetCacheValue(cacheKey);
-            if (rval == null)
-            {
-                var compensationTypes = await _repositoryWrapper.CompensationTypeRepository.GetAllCompensationTypes();
-                if (compensationTypes == null)
-                    throw new NotFoundException("CompensationTypeGuid not found");
-                rval = _mapper.Map<List<CompensationTypeDto>>(compensationTypes);
-                _memoryCacheService.SetCacheValue(cacheKey, rval);
-            }
-            return rval?.Where(x => x.CompensationTypeGuid == compensationTypeGuid).FirstOrDefault();
+            var compensationType = await _repositoryWrapper.CompensationTypeRepository.GetByGuid(compensationTypeGuid);
+            if( compensationType == null)
+                throw new NotFoundException($"CompensationType with guid: {compensationTypeGuid} does not exist");
+            return _mapper.Map<CompensationTypeDto>(compensationType);
         }
 
-        public async Task<List<CompensationTypeDto>> GetCompensationTypes(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<CompensationTypeListDto> GetCompensationTypes(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var compensationTypes = await _repositoryWrapper.CompensationTypeRepository.GetByConditionWithSorting(x => x.IsDeleted == 0, limit, offset, sort, order);
+            var compensationTypes = await _repositoryWrapper.StoredProcedureRepository.GetCompensationTypes(limit, offset, sort, order);
             if (compensationTypes == null)
                 throw new NotFoundException("CompensationTypes not found");
-            return _mapper.Map<List<CompensationTypeDto>>(compensationTypes);
+            return _mapper.Map<CompensationTypeListDto>(compensationTypes);
         }
 
-        public async Task CreateCompensationType(CompensationTypeDto compensationTypeDto)
+        public async Task<Guid> CreateCompensationType(CompensationTypeDto compensationTypeDto)
         {
             if (compensationTypeDto == null)
                 throw new NullReferenceException("CompensationTypeDto cannot be null");
@@ -57,6 +46,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             compensationType.CompensationTypeGuid = Guid.NewGuid();
             await _repositoryWrapper.CompensationTypeRepository.Create(compensationType);
             await _repositoryWrapper.SaveAsync();
+            return compensationType.CompensationTypeGuid;
         }
 
         public async Task UpdateCompensationType(Guid compensationTypeGuid, CompensationTypeDto compensationTypeDto)

@@ -175,7 +175,7 @@ namespace UpDiddyApi.Workflow
 
                     _sysLog.LogInformation($"BraintreePaymentFlow:PaymentWorkItem Email template for variant type {courseVariant.CourseVariantType.Name} has Id =   {templateId}");
 
-                    string profileUrl = _configuration["Environment:BaseUrl"] + "Home/Profile"; // todo: once we aren't using register links from profile page, generate link to Woz course
+                    string profileUrl = _configuration["Environment:BaseUrl"] + "my-profile"; // todo: once we aren't using register links from profile page, generate link to Woz course
                     string courseType = courseVariant.CourseVariantType.Name;
 
                     // check to see if the enrollment was part of a campaign

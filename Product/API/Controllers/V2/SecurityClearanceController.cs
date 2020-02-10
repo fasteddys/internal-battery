@@ -17,7 +17,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetSecurityClearances(int limit, int offset, string sort, string order)
+        public async Task<IActionResult> GetSecurityClearances(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var securityClearances = await _securityClearanceService.GetSecurityClearances(limit, offset, sort, order);
             return Ok(securityClearances);
@@ -53,9 +53,8 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateSecurityClearance([FromBody] SecurityClearanceDto securityClearanceDto)
         {
-            await _securityClearanceService.CreateSecurityClearance(securityClearanceDto);
-            return StatusCode(201);
-        }
-       
+            var securityClearanceGuid = await _securityClearanceService.CreateSecurityClearance(securityClearanceDto);
+            return StatusCode(201, securityClearanceGuid);
+        }       
     }
 }

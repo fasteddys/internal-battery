@@ -17,8 +17,11 @@ using UpDiddyApi.ApplicationCore.ActionFilter;
 
 namespace UpDiddyApi.Controllers.V2
 {
+    [ApiController]
+    [ApiVersion("2.0")]
+    [ApiVersion("2.1")]
+    [Route("/v{version:apiVersion}/[controller]/")]
     [ServiceFilter(typeof(ActionFilter))]
-    [Route("/V2/[controller]/")]
     public class ProfilesController : BaseApiController
     {
         private readonly UpDiddyDbContext _db = null;
@@ -44,9 +47,9 @@ namespace UpDiddyApi.Controllers.V2
         private readonly ISubscriberCourseService _subscriberCourseService;
         private IAuthorizationService _authorizationService;
 
-
         #region constructor 
-        public ProfilesController(IServiceProvider services, IHangfireService hangfireService, ICloudTalentService cloudTalentService, IResumeService resumeService, ISkillService skillservice, IAvatarService avatarService, IAuthorizationService authorizationService)
+
+        public ProfilesController(IServiceProvider services)
         {
             _services = services;
             _db = _services.GetService<UpDiddyDbContext>();
@@ -59,17 +62,16 @@ namespace UpDiddyApi.Controllers.V2
             _subscriberWorkHistoryService = _services.GetService<ISubscriberWorkHistoryService>();
             _subscriberEducationalHistoryService = _services.GetService<ISubscriberEducationalHistoryService>();
             _postingTTL = int.Parse(_configuration["JobPosting:PostingTTLInDays"]);
-            _cloudTalentService = cloudTalentService;
-            //job Service to perform all business logic related to jobs
+            _cloudTalentService = _services.GetService<ICloudTalentService>();
             _jobService = _services.GetService<IJobService>();
             _jobPostingService = _services.GetService<IJobPostingService>();
-            _hangfireService = hangfireService;
+            _hangfireService = _services.GetService<IHangfireService>();
             _profileService = _services.GetService<IProfileService>();
-            _resumeService = resumeService;
-            _skillservice = skillservice;
-            _avatarService = avatarService;
+            _resumeService = _services.GetService<IResumeService>();
+            _skillservice = _services.GetService<ISkillService>();
+            _avatarService = _services.GetService<IAvatarService>();
             _subscriberCourseService = _services.GetService<ISubscriberCourseService>();
-            _authorizationService = authorizationService;
+            _authorizationService = _services.GetService<IAuthorizationService>();
         }
 
         #endregion
@@ -102,7 +104,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> AddProfile([FromBody] SubscribeProfileBasicDto subscribeProfileBasicDto)
         {
             await _profileService.CreateNewSubscriberAsync(subscribeProfileBasicDto);
-            return StatusCode(201);
+            return StatusCode(204);
         }
 
 
@@ -133,8 +135,8 @@ namespace UpDiddyApi.Controllers.V2
         [Route("education-histories")]
         public async Task<IActionResult> AddProfileEducationHistory([FromBody] SubscriberEducationHistoryDto subscriberEducationHistoryDto)
         {
-            var educationGuid = await _subscriberEducationalHistoryService.CreateEducationalHistory(subscriberEducationHistoryDto, GetSubscriberGuid());
-            return Ok(educationGuid);
+            var educationHistoryGuid = await _subscriberEducationalHistoryService.CreateEducationalHistory(subscriberEducationHistoryDto, GetSubscriberGuid());
+            return StatusCode(201, educationHistoryGuid);
         }
 
         [HttpPut]
@@ -174,7 +176,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> AddWorkHistory([FromBody] SubscriberWorkHistoryDto subscriberEducationHistoryDto)
         {
             var workHistoryGuid = await _subscriberWorkHistoryService.AddWorkHistory(subscriberEducationHistoryDto, GetSubscriberGuid());
-            return Ok(workHistoryGuid);
+            return StatusCode(201, workHistoryGuid);
         }
 
         [HttpPut]
@@ -232,7 +234,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> UploadResume([FromBody] UpDiddyLib.Domain.Models.FileDto fileDto)
         {
             var resumeParseGuid = await _resumeService.UploadResume(GetSubscriberGuid(), fileDto);
-            return Ok(resumeParseGuid);
+            return StatusCode(201, resumeParseGuid);
         }
 
         [HttpGet]
@@ -259,7 +261,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> ResolveProfileMerge([FromBody] List<string> mergeInfo, Guid resumeParseGuid)
         {
             await _resumeService.ResolveProfileMerge(mergeInfo, GetSubscriberGuid(), resumeParseGuid);
-            return StatusCode(201);
+            return StatusCode(204);
         }
 
         #endregion
@@ -275,7 +277,8 @@ namespace UpDiddyApi.Controllers.V2
             return Ok(skills);
         }
 
-        [HttpPut]
+        [Obsolete("Remove this once the React app has been transitioned to use the new version.", false)]
+        [HttpPut, MapToApiVersion("2.0")]
         [Route("skills")]
         [Authorize]
         public async Task<IActionResult> UpdateSubscriberSkills([FromBody] List<string> skills)
@@ -284,11 +287,18 @@ namespace UpDiddyApi.Controllers.V2
             return StatusCode(204);
         }
 
+        [HttpPut, MapToApiVersion("2.1")]
+        [Route("skills")]
+        [Authorize]
+        public async Task<IActionResult> UpdateSubscriberSkillsByGuids([FromBody] List<Guid> skills)
+        {
+            await _skillservice.UpdateSubscriberSkillsByGuid(GetSubscriberGuid(), skills);
+            return StatusCode(204);
+        }
+
         #endregion
 
         #region courses 
-
-
 
         //todo 
         [HttpGet]
@@ -298,10 +308,9 @@ namespace UpDiddyApi.Controllers.V2
         {
             var isAuth = await _authorizationService.AuthorizeAsync(User, "IsRecruiterPolicy");
 
-            var rVal = await _subscriberCourseService.GetSubscriberCourses(GetSubscriberGuid(), SubscriberGuid, excludeActive, excludeCompleted, isAuth.Succeeded);            
+            var rVal = await _subscriberCourseService.GetSubscriberCourses(GetSubscriberGuid(), SubscriberGuid, excludeActive, excludeCompleted, isAuth.Succeeded);
             return Ok(rVal);
         }
-
 
         #endregion
 
@@ -351,7 +360,7 @@ namespace UpDiddyApi.Controllers.V2
             }
             else
             {
-                return StatusCode(204);
+                return StatusCode(404);
             }
         }
 

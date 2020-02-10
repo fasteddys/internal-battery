@@ -25,7 +25,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _config = config;
         }
 
-        public async Task AddCompanyAsync(CompanyDto companyDto)
+        public async Task<Guid> AddCompanyAsync(CompanyDto companyDto)
         {
             //TODO Address company logo URL in the future. Possibly a byte array represending the image which will be uploaded to azure blob storage 
             if (companyDto == null)
@@ -36,6 +36,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             company.LogoUrl = string.Empty;
             BaseModelFactory.SetDefaultsForAddNew(company);
             await _repositoryWrapper.Company.AddCompany(company);
+            return company.CompanyGuid;
         }
 
         public async Task EditCompanyAsync(CompanyDto companyDto)
@@ -77,13 +78,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _mapper.Map<List<CompanyDto>>(await queryableCompanies.Where(c => c.IsDeleted == 0 && c.CompanyGuid != Guid.Empty).ToListAsync());
         }
 
-        public async Task<List<CompanyDto>> GetCompanies(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        public async Task<CompanyListDto> GetCompanies(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var companies = await _repositoryWrapper.Company.GetByConditionWithSorting(x => x.IsDeleted == 0, limit, offset, sort, order);
+            var companies = await _repositoryWrapper.StoredProcedureRepository.GetCompanies(limit, offset, sort, order);
             if (companies == null)
                 throw new NotFoundException("Companies not found");
-    
-            return _mapper.Map<List<CompanyDto>>(companies);
+            return _mapper.Map<CompanyListDto>(companies);
         }
 
         public async Task<CompanyDto> GetById(int id)

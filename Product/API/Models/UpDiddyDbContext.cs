@@ -8,6 +8,7 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Domain.Models;
 using System.Collections.Generic;
+using UpDiddyLib.Domain.Models.Reports;
 
 namespace UpDiddyApi.Models
 {
@@ -183,6 +184,7 @@ namespace UpDiddyApi.Models
         public DbSet<TalentFavorite> TalentFavorite { get; set; }
         public DbSet<CourseLevel> CourseLevel { get; set; }
         public DbSet<CourseReferral> CourseReferral { get; set; }
+        public DbSet<NotificationGroup> NotificationGroup { get; set; }
         public DbSet<SendGridEvent> SendGridEvent { get; set; }
 
         public DbSet<SubscriberSendGridEvent> SubscriberSendGridEvent { get; set; }
@@ -216,8 +218,34 @@ namespace UpDiddyApi.Models
         public DbQuery<SubscriberNotesDto> SubscriberNoteQuery { get; set; }
         public DbQuery<SubscriberCourseDto> SubscriberCourses { get; set; }
         public DbQuery<JobSitemapDto> JobSitemap {get;set;}
-        public DbQuery<NotificationDto> Notifications { get; set; }
-        public DbQuery<JobCrudDto>  JobCruds { get; set; }
+        public DbQuery<UpDiddyLib.Dto.NotificationDto> LegacyNotifications { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.NotificationDto> Notifications { get; set; }
+        public DbQuery<CompanyDto> Companies { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.TopicDto> Topics { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.CompensationTypeDto> CompensationTypes { get; set; }
+        public DbQuery<CountryDetailDto> Countries { get; set; }
+        public DbQuery<CourseLevelDto> CourseLevels { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.EducationLevelDto> EducationLevels { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.EducationalDegreeTypeDto> EducationalDegreeTypes { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.EmploymentTypeDto> EmploymentTypes { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.ExperienceLevelDto> ExperienceLevels { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.IndustryDto> Industries { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.OfferDto> Offers { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.SecurityClearanceDto> SecurityClearances { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.SkillDto> Skills { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.StateDetailDto> States { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.TalentFavoriteDto> TalentFavorites { get; set; }
+        public DbQuery<SubscriberNotesDto> SubscriberNotesDto { get; set; }
+        public DbQuery<JobCrudDto> JobCruds { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.PartnerDto> Partners { get; set; }
+        public DbQuery<GroupInfoDto> Groups { get; set; }
+        public DbQuery<RecruiterInfoDto> Recruiters { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.JobSiteScrapeStatisticDto> JobSiteScrapeStatistics { get; set; }
+        public DbQuery<UsersDto> Users { get; set; }
+        public DbQuery<UsersDetailDto> UsersDetail { get; set; }
+        public DbQuery<PartnerUsers> PartnerUsers { get; set; }
+ 
+    
         public DbQuery<SubscriberEmailStatisticDto> SubscriberEmailStatistics { get; set; }
 
 
@@ -536,6 +564,14 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<Subscriber>()
                 .Property(s => s.NotificationEmailsEnabled)
                 .HasDefaultValue(true);
+
+
+            modelBuilder.Entity <NotificationGroup>()
+               .HasIndex(p => new {  p.NotificationGroupId, p.GroupId })
+               .HasName("UIX_NotificationGroup_Group")
+               .IsUnique(true);
+
+
         }
     }
 }

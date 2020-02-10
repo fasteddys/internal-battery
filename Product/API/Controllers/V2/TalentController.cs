@@ -27,17 +27,19 @@ namespace UpDiddyApi.Controllers
         private readonly ITalentService _talentService = null;
         private IAuthorizationService _authorizationService;
         private readonly ITalentNoteService _talentNoteService = null;
+        private readonly IResumeService _resumeService;
 
         public TalentController(UpDiddyDbContext db
         , IMapper mapper
         , Microsoft.Extensions.Configuration.IConfiguration configuration
         , ILogger<ProfileController> sysLog
         , ISubscriberService subscriberService
-        , IRepositoryWrapper repositoryWrapper  
+        , IRepositoryWrapper repositoryWrapper
         , ITalentFavoriteService talentFavoriteService
         , ITalentService talentService
-        , IAuthorizationService authorizationService 
-        , ITalentNoteService talentNoteService)
+        , IAuthorizationService authorizationService
+        , ITalentNoteService talentNoteService
+        , IResumeService resumeService)
         {
             _db = db;
             _mapper = mapper;
@@ -47,6 +49,7 @@ namespace UpDiddyApi.Controllers
             _talentService = talentService;
             _authorizationService = authorizationService;
             _talentNoteService = talentNoteService;
+            _resumeService = resumeService;
         }
 
 
@@ -57,7 +60,7 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsRecruiterPolicy")]
         public async Task<IActionResult> GetOrderBy()
         {
-            List<TalentSearchOrderByDto> rVal = await _talentService.GetTalentSearchOrderBy(); 
+            List<TalentSearchOrderByDto> rVal = await _talentService.GetTalentSearchOrderBy();
             return Ok(rVal);
         }
 
@@ -78,7 +81,7 @@ namespace UpDiddyApi.Controllers
 
         #region talent query
 
-        [HttpGet] 
+        [HttpGet]
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("search")]
         public async Task<IActionResult> TalentQuery(int limit, int offset, string orderBy, string keyword, string location, string partner)
@@ -92,12 +95,23 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         [Route("search/{talent:guid}")]
         public async Task<IActionResult> TalentDetail(Guid talent)
-        { 
+        {
             var isAuth = await _authorizationService.AuthorizeAsync(User, "IsRecruiterPolicy");
             var rVal = await _talentService.TalentDetails(GetSubscriberGuid(), talent, isAuth.Succeeded);
- 
+
             return Ok(rVal);
         }
+
+        [HttpGet]
+        [Authorize]
+        [Route("search/{talent:guid}/resume")]
+        public async Task<IActionResult> TalentResume(Guid talent)
+        {
+            var resume = await _resumeService.DownloadResume(talent);
+            return Ok(resume);
+        }
+
+
 
         #endregion
 
@@ -106,20 +120,19 @@ namespace UpDiddyApi.Controllers
         [HttpGet]
         [Route("favorites")]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        public async Task<IActionResult> GetFavoriteTalent(int limit, int offset, string sort, string order)
+        public async Task<IActionResult> GetFavoriteTalent(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var isFavorite = await _talentFavoriteService.GetFavoriteTalent(GetSubscriberGuid(), limit, offset, sort, order);
             return Ok(isFavorite);
         }
-
 
         [HttpPost]
         [Route("{talent:guid}/favorites")]
         [Authorize(Policy = "IsRecruiterPolicy")]
         public async Task<IActionResult> AddTalentFavorite(Guid talent)
         {
-            await _talentFavoriteService.AddToFavorite(GetSubscriberGuid(), talent);
-            return StatusCode(201);
+            var talentFavoriteGuid = await _talentFavoriteService.AddToFavorite(GetSubscriberGuid(), talent);
+            return StatusCode(201, talentFavoriteGuid);
         }
 
         [HttpDelete]
@@ -142,8 +155,8 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsRecruiterPolicy")]
         public async Task<IActionResult> AddTalentNote([FromBody] SubscriberNotesDto subscriberNotesDto, Guid talent)
         {
-            await _talentNoteService.CreateNote(GetSubscriberGuid(), talent, subscriberNotesDto);
-            return StatusCode(201);
+            var subscriberNoteGuid = await _talentNoteService.CreateNote(GetSubscriberGuid(), talent, subscriberNotesDto);
+            return StatusCode(201, subscriberNoteGuid);
         }
 
         [HttpPut]
@@ -152,7 +165,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> AddTalentNote([FromBody] SubscriberNotesDto subscriberNotesDto, Guid talent, Guid note)
         {
             await _talentNoteService.UpdateNote(GetSubscriberGuid(), talent, note, subscriberNotesDto);
-            return StatusCode(204);
+            return StatusCode(200);
         }
 
 
@@ -179,13 +192,13 @@ namespace UpDiddyApi.Controllers
         [HttpGet]
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("{talent:guid}/notes")]
-        public async Task<IActionResult> TalentNoteList(Guid talent, int limit = 30, int offset = 0, string sort = "CreateDate", string order = "descending")
+        public async Task<IActionResult> TalentNoteList(Guid talent, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
 
-            var rVal = await _talentNoteService.GetNotesForSubscriber(GetSubscriberGuid(), talent,limit, offset, sort, order);
+            var rVal = await _talentNoteService.GetNotesForSubscriber(GetSubscriberGuid(), talent, limit, offset, sort, order);
             return Ok(rVal);
         }
-        
+
         #endregion
 
 

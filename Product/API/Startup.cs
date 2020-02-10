@@ -40,6 +40,9 @@ using UpDiddyApi.ApplicationCore.Services.CourseCrawling;
 using UpDiddyApi.ApplicationCore.Services.Identity.Interfaces;
 using UpDiddyApi.ApplicationCore.Services.Identity;
 using UpDiddyApi.ApplicationCore.ActionFilter;
+using Microsoft.AspNetCore.Mvc.Versioning;
+using UpDiddyApi.ApplicationCore.Services.AzureSearch;
+
 namespace UpDiddyApi
 {
     public class Startup
@@ -100,6 +103,12 @@ namespace UpDiddyApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddApiVersioning(options =>
+            {
+                options.ReportApiVersions = true;
+                options.DefaultApiVersion = new ApiVersion(2, 0);
+                options.AssumeDefaultVersionWhenUnspecified = true;
+            });
 
             string domain = $"https://{Configuration["Auth0:Domain"]}/";
             services.AddSingleton<Serilog.ILogger>(Logger);
@@ -152,7 +161,11 @@ namespace UpDiddyApi
             // Add framework services.
             // the 'ignore' option for reference loop handling was implemented to prevent circular errors during serialization 
             // (e.g. SubscriberDto contains a collection of EnrollmentDto objects, and the EnrollmentDto object has a reference to a SubscriberDto)
-            services.AddMvc().AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+            services.AddMvc(o =>
+            {
+                o.EnableEndpointRouting = true;
+            })
+            .AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
             // Add SignalR
             services.AddSignalR();
@@ -305,7 +318,7 @@ namespace UpDiddyApi
             services.AddScoped<IContactService, ContactService>();
             services.AddScoped<ICourseFavoriteService, CourseFavoriteService>();
             services.AddScoped<IAvatarService, AvatarService>();
-            services.AddScoped<ITraitifyServiceV2,TraitifyServiceV2>();
+            services.AddScoped<ITraitifyServiceV2, TraitifyServiceV2>();
             services.AddScoped<ActionFilter>();
             services.AddScoped<ITalentService, TalentService>();
             services.AddScoped<ITalentFavoriteService, TalentFavoriteService>();
@@ -320,6 +333,14 @@ namespace UpDiddyApi
             services.AddScoped<ISitemapService, SitemapService>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IEducationalDegreeTypeService, EducationalDegreeTypeService>();
+            services.AddScoped<IEducationLevelService, EducationLevelService>();
+            services.AddScoped<IIndustryService, IndustryService>();
+            services.AddScoped<IPartnerService, PartnerService>();
+            services.AddScoped<IGroupService, GroupService>();
+            services.AddScoped<IPartnerService, PartnerService>();
+            services.AddScoped<IAzureSearchService, AzureSearchService>();
+            services.AddScoped<IReportsService, ReportsService>();
+
             services.AddScoped<ISendGridEventService, SendgridEventService>();
             services.AddScoped<ISubscriberEmailService, SubscriberEmailService>();
 

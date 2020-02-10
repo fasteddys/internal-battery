@@ -27,7 +27,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _config = configuration;
         }
 
-        public async Task AddToFavorite(Guid subscriberGuid, Guid courseGuid)
+        public async Task<Guid> AddToFavorite(Guid subscriberGuid, Guid courseGuid)
         {
             if (subscriberGuid == null || subscriberGuid == Guid.Empty)
                 throw new NullReferenceException("SubscriberGuid cannot be null");
@@ -44,6 +44,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 courseFavorite = new CourseFavorite()
                 {
+                    CourseFavoriteGuid = Guid.NewGuid(),
                     Course = course,
                     CourseId = course.CourseId,
                     CreateDate = DateTime.UtcNow,
@@ -65,6 +66,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     await _repositoryWrapper.SaveAsync();
                 }
             }
+            return courseFavorite.CourseFavoriteGuid;
         }
 
         public async Task RemoveFromFavorite(Guid subscriberGuid, Guid courseGuid)
@@ -109,12 +111,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             return false;
         }
 
-        public async Task<List<CourseFavoriteDto>> GetFavoriteCourses(Guid subscriberGuid, int limit, int offset, string sort, string order)
+        public async Task<CourseFavoriteListDto> GetFavoriteCourses(Guid subscriberGuid, int limit, int offset, string sort, string order)
         {
             var courses = await _repositoryWrapper.StoredProcedureRepository.GetFavoriteCourses(subscriberGuid, limit, offset, sort, order);
             if (courses == null)
                 throw new NotFoundException("Courses not found");
-            return (courses);
+            return _mapper.Map<CourseFavoriteListDto>(courses);
         }
     }
 }

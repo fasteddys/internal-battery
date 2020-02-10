@@ -17,7 +17,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCourseLevels(int limit, int offset, string sort, string order)
+        public async Task<IActionResult> GetCourseLevels(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var courseLevels = await _courseLevelService.GetCourseLevels(limit, offset, sort, order);
             return Ok(courseLevels);
@@ -53,9 +53,8 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateCourseLevel([FromBody] CourseLevelDto courseLevelDto)
         {
-            await _courseLevelService.CreateCourseLevel(courseLevelDto);
-            return StatusCode(201);
-        }
-       
+            var courseLevelGuid = await _courseLevelService.CreateCourseLevel(courseLevelDto);
+            return StatusCode(201, courseLevelGuid);
+        }       
     }
 }

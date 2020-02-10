@@ -1,4 +1,4 @@
-﻿﻿using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -21,9 +21,9 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetOffers(int limit = 5, int offset = 0)
+        public async Task<IActionResult> GetOffers(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var offers = await _offerService.GetAllOffers(limit, offset);
+            var offers = await _offerService.GetOffers(limit, offset, sort, order);
             return Ok(offers);
         }
 
@@ -40,8 +40,8 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize]
         public async Task<IActionResult> ClaimOffer(Guid offer)
         {
-            await _offerService.ClaimOffer(GetSubscriberGuid(), offer);
-            return StatusCode(201);
+            var subscriberActionGuid = await _offerService.ClaimOffer(GetSubscriberGuid(), offer);
+            return StatusCode(201, subscriberActionGuid);
         }
 
         [HttpGet]
@@ -57,8 +57,8 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateOffer([FromBody] OfferDto offerDto)
         {
-            await _offerService.CreateOffer(offerDto);
-            return StatusCode(201);
+            var offerGuid = await _offerService.CreateOffer(offerDto);
+            return StatusCode(201, offerGuid);
         }
 
         [HttpPut]
