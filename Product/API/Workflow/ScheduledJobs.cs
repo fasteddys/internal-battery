@@ -51,6 +51,7 @@ namespace UpDiddyApi.Workflow
         private readonly ICourseService _courseService;
         private readonly ISitemapService _sitemapService;
         private readonly IEmploymentTypeService _employmentTypeService;
+        private readonly IHiringSolvedService _hiringSolvedService;
 
         public ScheduledJobs(
             UpDiddyDbContext context,
@@ -73,7 +74,9 @@ namespace UpDiddyApi.Workflow
             IMemoryCache memoryCache,
             ICloudTalentService cloudTalentService,
             ISitemapService sitemapService,
-            IEmploymentTypeService employmentTypeService
+            IEmploymentTypeService employmentTypeService,
+            IHiringSolvedService hiringSolvedService
+             
            )
         {
             _db = context;
@@ -99,6 +102,7 @@ namespace UpDiddyApi.Workflow
             _courseService = courseService;
             _sitemapService = sitemapService;
             _employmentTypeService = employmentTypeService;
+            _hiringSolvedService = hiringSolvedService;
         }
 
 
@@ -1091,7 +1095,7 @@ namespace UpDiddyApi.Workflow
                 }
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData: Finished downloading and encoding file at {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resume.Subscriber.SubscriberGuid}");
 
-                String parsedDocument = _sovrenApi.SubmitResumeAsync(base64EncodedString).Result;
+                String parsedDocument = _sovrenApi.SubmitResumeAsync(subscriber.SubscriberId, base64EncodedString).Result;
                 // Save profile in staging store 
                 SubscriberProfileStagingStoreFactory.Save(_db, resume.Subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
                 // Import the subscriber resume 
@@ -1099,6 +1103,7 @@ namespace UpDiddyApi.Workflow
 
 
                 // TODO JAB Call HiringSolved Parser here 
+                await _hiringSolvedService.RequestParse(subscriber.SubscriberId,resume.BlobName, base64EncodedString);
 
 
                 // Callback to client to let them know upload is complete
@@ -1954,6 +1959,34 @@ namespace UpDiddyApi.Workflow
                 _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.PurgeSendGridAuditRecords encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }
         }
+
+        #endregion
+
+
+        #region HiringSolved Resume Parsing 
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        public async Task GetHiringSolvedResumeParseUpdates()
+        {
+            try
+            {
+                int BatchSize = int.Parse(_configuration["HiringSolved:UpdateBatchSize"]);
+                var Batch = await _repositoryWrapper.HiringSolvedResumeParseRepository.GetAll()
+                    .Where(p => p.IsDeleted == 0 && p.ParseStatus == Constants.HiringSolvedStatus.Created)
+                    .Take(BatchSize)
+                    .ToListAsync();
+
+                foreach ( HiringSolvedResumeParse p in  Batch)                
+                    _hiringSolvedService.GetParseStatus(p.JobId);
+                
+                //await _repositoryWrapper.StoredProcedureRepository.PurgeSendGridEvents(PurgeLookBackDays);
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.GetHiringSolvedResumeParseUpdates encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+            }
+        }
+
+
 
         #endregion
 

@@ -26,6 +26,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IMapper _mapper;
         private readonly ILogger _syslog;
         private readonly ISovrenAPI _sovrenApi;
+        private readonly IHiringSolvedService _hiringSolvedService;
 
         public ResumeService(IHangfireService hangfireService
         , IRepositoryWrapper repositoryWrapper
@@ -33,7 +34,9 @@ namespace UpDiddyApi.ApplicationCore.Services
         , ISubscriberService subscriberService
         , IMapper mapper
         , ILogger<ResumeService> syslog
-        , ISovrenAPI sovrenApi)
+        , ISovrenAPI sovrenApi
+        , IHiringSolvedService hiringSolvedService
+           )
         {
             _repositoryWrapper = repositoryWrapper;
             _hangfireService = hangfireService;
@@ -42,6 +45,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _mapper = mapper;
             _syslog = syslog;
             _sovrenApi = sovrenApi;
+            _hiringSolvedService = hiringSolvedService;
         }
 
         public async Task<Guid> UploadResume(Guid subscriberGuid, FileDto fileDto)
@@ -81,7 +85,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             subscriber.SubscriberFile = subscriberFiles;
             await _repositoryWrapper.SubscriberFileRepository.Create(subscriberFileResume);
             await _repositoryWrapper.SaveAsync();
-            var resumeParseGuid = await ResumeHelper.ImportSubscriberProfileDataAsync(_subscriberService, _repositoryWrapper, _sovrenApi, subscriber, subscriberFileResume, fileDto.Base64EncodedData);
+            var resumeParseGuid = await ResumeHelper.ImportSubscriberProfileDataAsync(_hiringSolvedService, _subscriberService, _repositoryWrapper, _sovrenApi, subscriber, subscriberFileResume, fileDto.Base64EncodedData);
             return resumeParseGuid;
         }
 

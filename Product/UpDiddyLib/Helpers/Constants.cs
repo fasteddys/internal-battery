@@ -146,5 +146,14 @@ namespace UpDiddyLib.Helpers
             public static readonly string DownloadGatedFile = "Download Gated File";
             public static readonly string TraitifyAccountCreation = "Traitify Account Creation";
         }
+
+
+        public static class HiringSolvedStatus
+        {
+            public static readonly string Created = "created";
+            public static readonly string Queued = "queued";
+            public static readonly string Finished = "finished";
+            public static readonly string Failed = "failed";
+        }
     }
 }

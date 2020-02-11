@@ -96,7 +96,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private readonly IConfiguration _configuration;
 
         private ISendGridEventRepository _sendGridEventRepository;
-
+        private IHiringSolvedResumeParseRepository _hiringSolvedResumeParseRepository;
+        private ISovrenParseStatisticRepository _sovrenParseStatisticRepository;
 
 
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
@@ -1098,6 +1099,31 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _notificationGroupRepository = new NotificationGroupRepository(_dbContext);
                 }
                 return _notificationGroupRepository;
+            }
+        }
+
+
+        public IHiringSolvedResumeParseRepository HiringSolvedResumeParseRepository
+        {
+            get
+            {
+                if (_hiringSolvedResumeParseRepository == null)
+                {
+                    _hiringSolvedResumeParseRepository = new HiringSolvedResumeParseRepository(_dbContext);
+                }
+                return _hiringSolvedResumeParseRepository;
+            }
+        }
+
+        public ISovrenParseStatisticRepository SovrenParseStatisticRepository
+        {
+            get
+            {
+                if (_sovrenParseStatisticRepository == null)
+                {
+                    _sovrenParseStatisticRepository = new SovrenParseStatisticRepository(_dbContext);
+                }
+                return _sovrenParseStatisticRepository;
             }
         }
 

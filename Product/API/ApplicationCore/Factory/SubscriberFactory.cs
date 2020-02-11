@@ -275,7 +275,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 string base64Resume = _LinkedInResume(info.ProfileData);
 
                 // todo: submit as background job, maybe depends on onboarding flow
-                String parsedDocument = sovrenApi.SubmitResumeAsync(base64Resume).Result;
+                String parsedDocument = sovrenApi.SubmitResumeAsync(subscriber.SubscriberId, base64Resume).Result;
 
                 List<string> skills = Utils.ParseSkillsFromHrXML(parsedDocument);
                 _AddSubscriberSkills(repositoryWrapper, subscriber, skills).Wait();
