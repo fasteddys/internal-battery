@@ -291,7 +291,7 @@ namespace UpDiddyApi.Controllers
         [HttpDelete]
         [Route("admin/{jobGuid:guid}")]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        public async Task<IActionResult> DeleteJob([FromBody] UpDiddyLib.Dto.JobPostingDto jobPostingDto, Guid jobGuid)
+        public async Task<IActionResult> DeleteJob(Guid jobGuid)
         {
 
             await _jobPostingService.DeleteJobPosting(GetSubscriberGuid(), jobGuid);
