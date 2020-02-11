@@ -202,6 +202,11 @@ namespace API.Tests.AzureApi
                 }
             }
 
+            // output remaining information about the assertion to make it easier to identify issues
+            _output.WriteLine($"isActualStatusCodeMatchesExpectedStatusCode: {isActualStatusCodeMatchesExpectedStatusCode}");
+            _output.WriteLine($"isResponseBodyMatchesResponseSchema: {isResponseBodyMatchesResponseSchema}");
+            _output.WriteLine($"isPerformedCleanupIfNecessary: {isPerformedCleanupIfNecessary}");
+
             // perform assertion
             Assert.True(isActualStatusCodeMatchesExpectedStatusCode
                 && isResponseBodyMatchesResponseSchema
