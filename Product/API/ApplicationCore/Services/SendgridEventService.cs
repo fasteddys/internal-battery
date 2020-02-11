@@ -56,8 +56,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
-  
-        public async Task<bool> AddSendGridEvents( List<SendGridEventDto> sendGridEvents)
+
+        public async Task<bool> AddSendGridEvents(List<SendGridEventDto> sendGridEvents)
         {
 
             _logger.LogInformation($"SendGridEventService:AddSendGridEvents  Starting");

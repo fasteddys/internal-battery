@@ -19,7 +19,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<JobSearchSummaryResultDto> SummaryJobSearch(IQueryCollection query);
         Task<UpDiddyLib.Dto.JobPostingDto> GetJob(Guid jobPostingGuid);
         Task<JobDetailDto> GetJobDetail(Guid jobPostingGuid);
-        Task<Guid> ShareJob(Guid subscriberGuid, Guid job, ShareJobDto shareJobDto);
         Task<JobBrowseResultDto> BrowseJobsByLocation(IQueryCollection query);
     }
 }

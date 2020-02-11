@@ -157,16 +157,6 @@ namespace UpDiddyApi.Controllers
             return Ok(rVal);
         }
 
-
-        [HttpPost]
-        [Route("{job:guid}/share")]
-        [Authorize]
-        public async Task<IActionResult> Share([FromBody] ShareJobDto shareJobDto, Guid job)
-        {
-            var jobReferralGuid = await _jobService.ShareJob(GetSubscriberGuid(), job, shareJobDto);
-            return StatusCode(201, jobReferralGuid);
-        }
-
         [HttpGet]
         [Route("search")]
         public async Task<ActionResult> Search()
