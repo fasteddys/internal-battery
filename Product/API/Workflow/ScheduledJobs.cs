@@ -1101,10 +1101,8 @@ namespace UpDiddyApi.Workflow
                 // Import the subscriber resume 
                 ResumeParse resumeParse = await _ImportSubscriberResume(_subscriberService, resume, parsedDocument);
 
-
-                // TODO JAB Call HiringSolved Parser here 
+                // Request parse from hiring solved 
                 await _hiringSolvedService.RequestParse(subscriber.SubscriberId,resume.BlobName, base64EncodedString);
-
 
                 // Callback to client to let them know upload is complete
                 ClientHubHelper hubHelper = new ClientHubHelper(_hub, _cache);
@@ -1976,7 +1974,7 @@ namespace UpDiddyApi.Workflow
                     .ToListAsync();
 
                 foreach ( HiringSolvedResumeParse p in  Batch)                
-                    _hiringSolvedService.GetParseStatus(p.JobId);
+                   await _hiringSolvedService.GetParseStatus(p.JobId);
                 
                 //await _repositoryWrapper.StoredProcedureRepository.PurgeSendGridEvents(PurgeLookBackDays);
             }

@@ -26,7 +26,7 @@ namespace UpDiddyApi.Helpers
             ResumeParse resumeParse = await _ImportSubscriberResume(repositoryWrapper, subscriberService, resume, parsedDocument);
 
 
-            // TODO JAB Call HiringSolved Parser here 
+            // request parse from hiring solved 
             await hiringSolvedService.RequestParse(subscriber.SubscriberId, resume.BlobName, base64EncodedString);
             
             return resumeParse.ResumeParseGuid;

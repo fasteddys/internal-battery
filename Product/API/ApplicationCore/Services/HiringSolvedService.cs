@@ -118,7 +118,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                 string Json = Newtonsoft.Json.JsonConvert.SerializeObject(payload);                
                 HttpContent content = new StringContent(Json, Encoding.UTF8, "application/json");
                 HttpResponseMessage response = await Client.PostAsync(_configuration["HiringSolved:BaseUrl"], content);
-                var responseStream = await response.Content.ReadAsStreamAsync();
+
+                var ResponseJson =  await response.Content.ReadAsStringAsync();
+                var responseStream =  await new StreamReader(await response.Content.ReadAsStreamAsync()).ReadToEndAsync();
 
                 // create parse record 
                 HiringSolvedResumeParse newParse = new HiringSolvedResumeParse()
@@ -133,13 +135,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                     ResumeText = resume64Encoded                                                
                 };
 
-                // todo jab  Need JobId, ParseStatus from value returned from hiringSolved
-
-
-                // var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
-               //; Rval.DocumentId = ResponseObject.termsOfServiceDocumentId.ToObject<int>();
-                // Rval.WozTermsOfServiceId = ResponseObject.termsOfServiceDocumentId.ToObject<int>();
-
+                // get parse status and job id from hiringSolved
+                 var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+                newParse.ParseStatus = ResponseObject.status.ToObject<string>();
+                newParse.JobId = ResponseObject.job_id.ToObject<string>();
+ 
                 await _repository.HiringSolvedResumeParseRepository.Create(newParse);
                 await _repository.HiringSolvedResumeParseRepository.SaveAsync();
                 _logger.LogInformation($"HiringSolvedService:RequestParse Done with status of {response.StatusCode}");
@@ -169,9 +169,32 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // Get status from hiring solved 
                 string requestUrl = $"{_configuration["HiringSolved:BaseUrl"]}/{JobId}"; 
                 HttpResponseMessage response = await Client.GetAsync(requestUrl);
-          
-                // todo jab update and save hiring solved parse record 
- 
+                string parseStatus = string.Empty;
+                var ResponseJson = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation($"HiringSolvedService:RequestParse ResponseJson = {ResponseJson}");
+                if ( response.StatusCode == System.Net.HttpStatusCode.OK )
+                {
+                    var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+
+                    parseStatus = ResponseObject.status.ToObject<string>();
+                    if (parseStatus == Constants.HiringSolvedStatus.Finished)
+                    {
+                        JObject resultsJObject = ResponseObject.results.ToObject<JObject>();
+                        string results = resultsJObject.ToString(Formatting.None);
+                        parseRequest.ParsedResume = results;
+                        DateTime parseCompletedTime = DateTime.UtcNow;
+                        parseRequest.ParseCompleted = parseCompletedTime;
+                        parseRequest.ParseStatus = parseStatus;
+                        TimeSpan ts = parseCompletedTime - parseRequest.ParseRequested.Value;
+                        parseRequest.NumTicks = ts.Ticks;
+                    }                          
+                }
+                else
+                {
+                    parseStatus = $"Failed response = {ResponseJson}";
+                }
+                       
+                await _repository.HiringSolvedResumeParseRepository.SaveAsync();
                 _logger.LogInformation($"HiringSolvedService:RequestParse Done with status of {response.StatusCode}");
             }
             catch (Exception ex)
