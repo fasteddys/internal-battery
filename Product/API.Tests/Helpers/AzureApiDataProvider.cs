@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Text;
 using System.Net.Http;
 using System.Security.Authentication;
+using System.Linq;
+using System.Linq.Expressions;
 
 namespace API.Tests.Helpers
 {
@@ -49,6 +51,24 @@ namespace API.Tests.Helpers
             url.Append(configuration["AzureResourceManagement:ServiceId"]);
             url.Append("/apis?api-version=2019-01-01");
             return new Uri(url.ToString(), UriKind.Absolute);
+        }
+
+        public static List<string> GetApiNameFilters()
+        {
+            List<string> apiNameFilters = null;
+            var configuration = ConfigurationHelper.GetConfiguration(Directory.GetCurrentDirectory());
+            // todo: use array in json rather than parsing a string (not sure why but i had difficulty getting this to work)
+            var rawFilters = configuration["ApiNameFilters"];
+            if (!string.IsNullOrWhiteSpace(rawFilters))
+            {
+                apiNameFilters = new List<string>();
+                string[] apiNameFiltersArray = rawFilters.Split(",");
+                foreach (string apiNameFilter in apiNameFiltersArray)
+                {
+                    apiNameFilters.Add(apiNameFilter);
+                }
+            }
+            return apiNameFilters;
         }
 
         /// <summary>
@@ -127,7 +147,7 @@ namespace API.Tests.Helpers
         /// </summary>
         /// <param name="azureApimResourceRequestUri"></param>
         /// <returns></returns>
-        public static List<Uri> DiscoverActiveApiEndpoints(Uri azureApimResourceRequestUri)
+        public static List<Uri> DiscoverActiveApiEndpoints(Uri azureApimResourceRequestUri, List<string> apiNameFilters = null)
         {
             var apiVersionSetIds = new List<Uri>();
             HttpClient client = new HttpClient(new HttpClientHandler() { SslProtocols = SslProtocols.Tls12 });
@@ -142,7 +162,13 @@ namespace API.Tests.Helpers
                 var isCurrent = service.SelectToken("$.properties.isCurrent").Value<bool?>();
                 if (isCurrent.HasValue && isCurrent.Value)
                 {
-                    apiVersionSetIds.Add(GetAzureServiceApiUri(service["name"].Value<string>()));
+                    if (apiNameFilters != null)
+                    {
+                        if (apiNameFilters.Contains(service.SelectToken("$.properties.displayName").Value<string>()))
+                            apiVersionSetIds.Add(GetAzureServiceApiUri(service["name"].Value<string>()));
+                    }
+                    else
+                        apiVersionSetIds.Add(GetAzureServiceApiUri(service["name"].Value<string>()));
                 }
             }
             return apiVersionSetIds;
@@ -170,8 +196,11 @@ namespace API.Tests.Helpers
             // construct the environment-specific url for the azure service which contains the apis to be tested
             Uri azureServiceRequest = GetAzureServiceUri();
 
+            // determine which Apis should be included in the test based on display name
+            List<string> apiNameFilters = GetApiNameFilters();
+
             // discover all active Apis in the target service
-            List<Uri> apiUris = DiscoverActiveApiEndpoints(azureServiceRequest);
+            List<Uri> apiUris = DiscoverActiveApiEndpoints(azureServiceRequest, apiNameFilters);
 
             // get all url replacement values from app settings for testing entity-specific endpoints
             Dictionary<string, string> urlParameterReplacementValues = GetUrlParameterReplacementValues();
@@ -207,20 +236,24 @@ namespace API.Tests.Helpers
                 // iterate over all operations for the api 
                 foreach (var operation in operations.Children<JToken>())
                 {
-                    var httpMethod = operation.SelectToken("$.method").Value<string>();
-                    var urlTemplate = operation.SelectToken("$.urlTemplate").Value<string>();
-                    var operationName = operation.SelectToken("$.name").Value<string>();
-
-                    var request = operation.SelectToken("$.request");
-
-                    // if the operation contains a 401 response, this indicates that we must provide a valid JWT in order to get a positive test result for the operation (and not provide a JWT in order to get a negative test result)
-                    bool isRequiresSubscriberJwtForSuccessfulResponse = (operation.SelectToken("$.responses[?(@.statusCode == 401)]") != null);
-
-                    // construct tests based on the responses defined in each api operation
-                    foreach (var response in operation.SelectTokens("$.responses").Children())
+                    // do not create an integration test if the "Skip Test" tag has been applied to an operation
+                    if (!operation.SelectTokens("$.tags[?(@.name=='Skip Test')]").Any())
                     {
-                        ApiOperationTest apiOperationTest = new ApiOperationTest(isRequiresSubscriberJwtForSuccessfulResponse, httpMethod, urlTemplate, operationName, schemas, urlParameterReplacementValues, baseUrl, subscriptionKeyParameterKey, subscriptionKeyParameterValue, subscriberJwt, request, response, apiVersion, GetDatabaseConnectionString());
-                        yield return new object[] { new MemberDataSerializer<ApiOperationTest>(apiOperationTest) };
+                        var httpMethod = operation.SelectToken("$.method").Value<string>();
+                        var urlTemplate = operation.SelectToken("$.urlTemplate").Value<string>();
+                        var operationName = operation.SelectToken("$.name").Value<string>();
+
+                        var request = operation.SelectToken("$.request");
+
+                        // if the operation contains a 401 response, this indicates that we must provide a valid JWT in order to get a positive test result for the operation (and not provide a JWT in order to get a negative test result)
+                        bool isRequiresSubscriberJwtForSuccessfulResponse = (operation.SelectToken("$.responses[?(@.statusCode == 401)]") != null);
+
+                        // construct tests based on the responses defined in each api operation
+                        foreach (var response in operation.SelectTokens("$.responses").Children())
+                        {
+                            ApiOperationTest apiOperationTest = new ApiOperationTest(isRequiresSubscriberJwtForSuccessfulResponse, httpMethod, urlTemplate, operationName, schemas, urlParameterReplacementValues, baseUrl, subscriptionKeyParameterKey, subscriptionKeyParameterValue, subscriberJwt, request, response, apiVersion, GetDatabaseConnectionString());
+                            yield return new object[] { new MemberDataSerializer<ApiOperationTest>(apiOperationTest) };
+                        }
                     }
                 }
             }
