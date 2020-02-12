@@ -10,8 +10,15 @@
     <None Remove="appsettings.json" />
     <None Remove="appsettings.Production.json" />
     <None Remove="appsettings.Staging.json" />
+    <None Remove="TestFiles\AzureApi-OpenApi.json" />
     <None Remove="TestFiles\example-hrxml_48_skills.xml" />
     <None Remove="TestFiles\example-hrxml_bad_xml.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -20,8 +27,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="3.1.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
     <PackageReference Include="Moq" Version="4.10.0" />
+    <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.11" />
     <PackageReference Include="System.Diagnostics.Process" Version="4.3.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
