@@ -87,5 +87,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         INotificationGroupRepository NotificationGroupRepository { get; }
         ISendGridEventRepository SendGridEventRepository { get; }
 
+        IHiringSolvedResumeParseRepository HiringSolvedResumeParseRepository { get; }
+
+        ISovrenParseStatisticRepository SovrenParseStatisticRepository { get; }
     }
 }

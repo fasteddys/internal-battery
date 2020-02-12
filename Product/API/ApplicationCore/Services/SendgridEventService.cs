@@ -39,7 +39,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _hangfireService = hangfireService;
             _sysEmail = _services.GetService<ISysEmail>();
             _logger = logger;
-
+      
         }
 
 

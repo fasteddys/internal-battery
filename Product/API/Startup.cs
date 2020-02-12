@@ -255,8 +255,14 @@ namespace UpDiddyApi
             // kick sendgrid audit cleanup
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.PurgeSendGridAuditRecords(), Cron.Daily());
 
+       
+            string HiringSolvedCronExpression = $"*/{Configuration["HiringSolved:PollIntervalInSeconds"]} * * * * *";
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.GetHiringSolvedResumeParseUpdates(), HiringSolvedCronExpression);
 
- 
+
+
+
+
 
 
 
@@ -340,9 +346,10 @@ namespace UpDiddyApi
             services.AddScoped<IPartnerService, PartnerService>();
             services.AddScoped<IAzureSearchService, AzureSearchService>();
             services.AddScoped<IReportsService, ReportsService>();
-
             services.AddScoped<ISendGridEventService, SendgridEventService>();
             services.AddScoped<ISubscriberEmailService, SubscriberEmailService>();
+            services.AddScoped<IHiringSolvedService, HiringSolvedService>();
+
 
             #endregion
 

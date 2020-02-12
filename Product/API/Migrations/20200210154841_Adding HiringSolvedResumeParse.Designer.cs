@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200210154841_Adding HiringSolvedResumeParse")]
+    partial class AddingHiringSolvedResumeParse
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1598,8 +1600,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<DateTime?>("ModifyDate");
 
                     b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<long>("NumTicks");
 
                     b.Property<DateTime?>("ParseCompleted");
 
@@ -3560,35 +3560,6 @@ namespace UpDiddyApi.Migrations
                         .IsUnique();
 
                     b.ToTable("Skill");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.SovrenParseStatistic", b =>
-                {
-                    b.Property<int>("SovrenParseStatisticId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<long>("NumTicks");
-
-                    b.Property<string>("ResumeText");
-
-                    b.Property<Guid>("SovrenParseStatisticsGuid");
-
-                    b.Property<int>("SubscriberId");
-
-                    b.HasKey("SovrenParseStatisticId");
-
-                    b.ToTable("SovrenParseStatistics");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.State", b =>
