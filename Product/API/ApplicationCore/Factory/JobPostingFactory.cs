@@ -202,6 +202,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 return false;
             }
 
+            RemoveNavigationProperties(ref jobPosting);
+
             jobPosting.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.NotIndexed;
             jobPosting.JobPostingGuid = Guid.NewGuid();
             // set expiration date 
@@ -255,7 +257,22 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return true;
         }
 
-
+        /// <summary>
+        /// Set all navigation properties to null to prevent bogus lookup values from being created and associated with the job posting
+        /// </summary>
+        /// <param name="jobPosting"></param>
+        public static void RemoveNavigationProperties(ref JobPosting jobPosting)
+        {
+            jobPosting.Company = null;
+            jobPosting.CompensationType = null;
+            jobPosting.EducationLevel = null;
+            jobPosting.EmploymentType = null;
+            jobPosting.ExperienceLevel = null;
+            jobPosting.Industry = null;
+            jobPosting.JobCategory = null;
+            jobPosting.Recruiter = null;
+            jobPosting.SecurityClearance = null;
+        }
 
         public static async Task<JobPosting> GetJobPostingById(IRepositoryWrapper repositoryWrapper, int jobPostingId)
         {
@@ -415,19 +432,6 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 await JobPostingSkillFactory.Add(repositoryWrapper, jobPosting.JobPostingId, skillDto.SkillGuid.Value);
             }
             await repositoryWrapper.JobPostingSkillRepository.SaveAsync();
-        }
-
-
-        /// <summary>
-        /// Implement business rules to check the validity of an updated job posting 
-        /// </summary>
-        /// <param name="job"></param>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        public static bool ValidateUpdatedJobPosting(JobPosting job, IConfiguration config, ref string message)
-        {
-
-            return ValidateJobPosting(job, config, ref message);
         }
 
         /// <summary>
@@ -824,6 +828,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     return false;
                 }
 
+                RemoveNavigationProperties(ref jobPosting);
 
                 repositoryWrapper.SaveAsync().Wait();
 

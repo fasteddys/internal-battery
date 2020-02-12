@@ -338,6 +338,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 return rVal;
             }
 
+            JobPostingFactory.RemoveNavigationProperties(ref jobPosting);
+
             jobPosting.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.NotIndexed;
             jobPosting.JobPostingGuid = Guid.NewGuid();
             // set expiration date 
