@@ -128,11 +128,26 @@ namespace API.Tests.Helpers
                         if (responseSchema != null)
                         {
                             JSchema jschema = JSchema.Parse(responseSchema.ToString(Formatting.None));
-                            JObject example = responseSchema["example"].Value<JObject>();
-                            if (!example.IsValid(jschema))
-                                this.DefinitionErrors.Add("The response example is not valid according to the schema definition.");
+                            Type responseExampleType = responseSchema["example"].GetType();
+                            if (responseExampleType == typeof(JObject))
+                            {
+                                JObject example = responseSchema["example"].Value<JObject>();
+                                if (!example.IsValid(jschema))
+                                    this.DefinitionErrors.Add("The response example is not valid according to the schema definition.");
+                                else
+                                    this.ResponseSchema = jschema;
+                            }
+                            else if(responseExampleType == typeof(JArray)){
+                                JArray example = responseSchema["example"].Value<JArray>();
+                                if (!example.IsValid(jschema))
+                                    this.DefinitionErrors.Add("The response example is not valid according to the schema definition.");
+                                else
+                                    this.ResponseSchema = jschema;
+                            }
                             else
-                                this.ResponseSchema = jschema;
+                            {
+                                throw new ApplicationException($"Unsupported type in response example: {responseExampleType.ToString()}");
+                            }
                         }
                     }
                 }
