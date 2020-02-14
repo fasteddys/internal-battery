@@ -50,7 +50,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<List<RelatedJobDto>> GetJobsByCourse(Guid courseGuid, int limit, int offset, Guid? subscriberGuid = null)
         {
-            return await _repositoryWrapper.StoredProcedureRepository.GetJobsByCourse(courseGuid, limit, offset, subscriberGuid);            
+            return await _repositoryWrapper.StoredProcedureRepository.GetJobsByCourse(courseGuid, limit, offset, subscriberGuid);
         }
 
         public async Task<List<CareerPathJobDto>> GetCareerPathRecommendations(int limit, int offset, Guid subscriberGuid)
@@ -61,7 +61,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 var topic = await _repositoryWrapper.Topic.GetById(subscriber.TopicId.Value);
                 var jobs = await _repositoryWrapper.StoredProcedureRepository.GetJobsByTopic(topic.TopicGuid.Value, limit, offset, subscriberGuid);
-                jobDto = _mapper.Map<List<CareerPathJobDto>>(jobs);                
+                jobDto = _mapper.Map<List<CareerPathJobDto>>(jobs);
             }
             return jobDto;
         }
@@ -129,44 +129,27 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await _repositoryWrapper.StoredProcedureRepository.GetSubscriberJobFavorites(SubscriberId);
         }
 
-
-        
-        public async Task<Guid> CreateJobPosting(Guid subscriberGuid,JobCrudDto jobCrudDto)
+        public async Task<Guid> CreateJobPosting(Guid subscriberGuid, JobCrudDto jobCrudDto)
         {
-
-
             if (jobCrudDto == null)
                 throw new NotFoundException("JobPostingService.CreateJobPosting: No jobCrudDto was passed");
 
-            if (jobCrudDto.RecruiterGuid == null)
-                throw new NotFoundException("JobPostingService.CreateJobPosting: Recruiter Guid not specified for job posting");
+            Tuple<Guid?, string> createJobPostingResult = null;
 
-            Recruiter recruiter = await _repositoryWrapper.RecruiterRepository.GetByGuid(jobCrudDto.RecruiterGuid);
+            try
+            {
+                createJobPostingResult = await _repositoryWrapper.StoredProcedureRepository.CreateJobPosting(jobCrudDto);
+            }
+            catch (Exception e)
+            {
+                _syslog.LogInformation($"JobPostingService.CreateJobPosting encountered an exception: {e.Message}");
+                throw new JobPostingCreation("An unexpected error occurred while attempting to create the job posting");
+            }
 
-            if (recruiter == null)
-                throw new NotFoundException($"JobPostingService.CreateJobPosting: The specified recruiter {jobCrudDto.RecruiterGuid} does not exist.");
-
-
-            if (jobCrudDto.CompanyGuid == null)
-                throw new FailedValidationException("Company must be specified");
-
-
-            UpDiddyLib.Dto.JobPostingDto jobPostingDto = await MapPostingCrudToJobPosting(subscriberGuid, jobCrudDto,recruiter);
-      
-            string errorMsg = string.Empty;
-            Guid newPostingGuid = Guid.Empty;
-            // associate the create guid to the subscriber 
-            jobPostingDto.CreateGuid = subscriberGuid;
-            // mark the jobposting modify guid to empty to signify un-modified 
-            jobPostingDto.ModifyGuid = Guid.Empty;
-
-            Guid jobGuid =  PostJob(_repositoryWrapper, recruiter.RecruiterId, jobPostingDto, ref newPostingGuid, ref errorMsg, _syslog, _mapper, _configuration, _hangfireService);
-
-            if (jobGuid == Guid.Empty)
-                throw new FailedValidationException(errorMsg);
-
-            return jobGuid;                            
-          
+            if (createJobPostingResult.Item1.HasValue)
+                return createJobPostingResult.Item1.Value;
+            else
+                throw new FailedValidationException(createJobPostingResult.Item2);
         }
 
 
@@ -174,6 +157,9 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (jobCrudDto.RecruiterGuid == null)
                 throw new NotFoundException("JobPostingService.CreateJobPosting: Recruiter Guid not specified for job posting");
+
+            if (jobCrudDto.JobPostingGuid != null && jobCrudDto.JobPostingGuid != jobPostingGuid)
+                throw new FailedValidationException("Jobposting guid from url does not match job posting guid specified in request body");
 
             Recruiter recruiter = _repositoryWrapper.RecruiterRepository.GetAll()
                 .Include(s => s.Subscriber)
@@ -183,42 +169,25 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (recruiter == null)
                 throw new NotFoundException("JobPostingService.CreateJobPosting: Recruiter not specified for job posting");
 
-
             // For now only allow posting to be updatded by their creator
-            if ( recruiter.Subscriber.SubscriberGuid != subscriberGuid)
+            if (recruiter.Subscriber.SubscriberGuid != subscriberGuid)
                 throw new UnauthorizedAccessException();
 
-
-            if (jobCrudDto.JobPostingGuid != null && jobCrudDto.JobPostingGuid != jobPostingGuid)
-                throw new FailedValidationException("Jobposting guid from url does not match job posting guid specified in request body");
-
-
-            UpDiddyLib.Dto.JobPostingDto jobPostingDto = await MapPostingCrudToJobPosting(subscriberGuid, jobCrudDto,recruiter);
-
-            if ( jobPostingDto == null )
-                throw new FailedValidationException("The passed job information is in an invalid format");
-
-
-   
-
-
-            _syslog.Log(LogLevel.Information, $"***** JobPostingService:UpdateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
-            // update the job posting 
-            string ErrorMsg = string.Empty;
-            bool UpdateOk = JobPostingFactory.UpdateJobPosting(_repositoryWrapper, jobPostingGuid, jobPostingDto, ref ErrorMsg, _hangfireService,_configuration);
-            
-            if (UpdateOk)
+            string updateJobPostingResult = null;
+            try
             {
-                _syslog.Log(LogLevel.Information, $"***** JobPostingService:UpdateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
-                return true;
-            }                
-            else
-            {
-                _syslog.Log(LogLevel.Information, $"***** JobPostingService:UpdateJobPosting Error {ErrorMsg} at: {DateTime.UtcNow.ToLongDateString()}");
-                throw new JobPostingUpdate(ErrorMsg);
+                updateJobPostingResult = await _repositoryWrapper.StoredProcedureRepository.UpdateJobPosting(jobCrudDto);
             }
-             
+            catch (Exception e)
+            {
+                _syslog.LogInformation($"JobPostingService.UpdateJobPosting encountered an exception: {e.Message}");
+                throw new JobPostingUpdate("An unexpected error occurred while attempting to update the job posting");
+            }
 
+            if (updateJobPostingResult != null && updateJobPostingResult.Length > 0)
+                throw new JobPostingUpdate(updateJobPostingResult);
+
+            return true;
         }
 
         public async Task<bool> DeleteJobPosting(Guid subscriberGuid, Guid jobPostingGuid)
@@ -275,7 +244,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<JobCrudListDto> GetJobPostingCrudForSubscriber(Guid subscriberGuid, int limit, int offset, string sort, string order)
         {
-            return _mapper.Map<JobCrudListDto> (await _repositoryWrapper.StoredProcedureRepository.GetSubscriberJobPostingCruds(subscriberGuid, limit, offset, sort, order)) ;
+            return _mapper.Map<JobCrudListDto>(await _repositoryWrapper.StoredProcedureRepository.GetSubscriberJobPostingCruds(subscriberGuid, limit, offset, sort, order));
         }
 
         public async Task<JobCrudDto> GetJobPostingCrud(Guid subscriberGuid, Guid jobPostingGuid)
@@ -300,7 +269,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         #region Helper functions 
 
-        private  Guid PostJob(IRepositoryWrapper repositoryWrapper, int recruiterId, UpDiddyLib.Dto.JobPostingDto jobPostingDto, ref Guid newPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, IHangfireService _hangfireService)
+        private Guid PostJob(IRepositoryWrapper repositoryWrapper, int recruiterId, UpDiddyLib.Dto.JobPostingDto jobPostingDto, ref Guid newPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, IHangfireService _hangfireService)
         {
             Guid rVal = Guid.Empty;
             int postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
@@ -337,8 +306,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                 syslog.Log(LogLevel.Warning, "JobPostingController.CreateJobPosting:: Bad Request {Description} {JobPosting}", msg, jobPostingDto);
                 return rVal;
             }
-
-            JobPostingFactory.RemoveNavigationProperties(ref jobPosting);
 
             jobPosting.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.NotIndexed;
             jobPosting.JobPostingGuid = Guid.NewGuid();
@@ -408,7 +375,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 LastName = recruiter.LastName,
                 PhoneNumber = recruiter.PhoneNumber,
                 Email = recruiter.Email,
-                 
+
                 Subscriber = new UpDiddyLib.Dto.SubscriberDto()
                 {
                     SubscriberGuid = subscriberGuid
@@ -506,7 +473,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-     
+
         public async Task<bool> UpdateJobPostingSkills(int jobPostingId, List<UpDiddyLib.Domain.Models.SkillDto> jobPostingSkills)
         {
             var jobPostingIdParam = new SqlParameter("@JobPostingId", jobPostingId);
@@ -540,9 +507,9 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-        public async Task<List<UpDiddyLib.Domain.Models.SkillDto>> GetJobPostingSkills(Guid subscriberGuid, Guid jobPostingGuid )
+        public async Task<List<UpDiddyLib.Domain.Models.SkillDto>> GetJobPostingSkills(Guid subscriberGuid, Guid jobPostingGuid)
         {
-       
+
             Recruiter recruiter = _repositoryWrapper.RecruiterRepository.GetAll()
                 .Include(s => s.Subscriber)
                 .Where(r => r.IsDeleted == 0 && r.Subscriber.SubscriberGuid == subscriberGuid)

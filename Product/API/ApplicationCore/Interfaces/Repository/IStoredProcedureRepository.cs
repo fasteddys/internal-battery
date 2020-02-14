@@ -72,14 +72,10 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<UsersDetailDto>> GetAllUsersDetail();
         Task<List<UsersDetailDto>> GetUsersByPartnerDetail(Guid partner, DateTime startDate, DateTime endDate);
         Task<List<PartnerUsers>> GetUsersByPartner(DateTime startDate, DateTime endDate);
-
         Task<bool> InsertSendGridEvents(string sendGridJson);
-
         Task<bool> PurgeSendGridEvents(int LookbackDays);
-
         Task<List<SubscriberEmailStatisticDto>> GetSubscriberEmailStatistics(string email);
-
-
-
+        Task<Tuple<Guid?,string>> CreateJobPosting(JobCrudDto jobCrudDto);
+        Task<string> UpdateJobPosting(JobCrudDto jobCrudDto);
     }
 }
