@@ -144,6 +144,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return true;
         }
 
+        [Obsolete("Use JobPostingService for job updates moving forward", true)]
         public static bool PostJob(IRepositoryWrapper repositoryWrapper, int recruiterId, JobPostingDto jobPostingDto, ref Guid newPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, bool isAcceptsNewSkills, IHangfireService _hangfireService)
         {
             if (isAcceptsNewSkills && jobPostingDto?.JobPostingSkills != null)
@@ -165,6 +166,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return PostJob(repositoryWrapper, recruiterId, jobPostingDto, ref newPostingGuid, ref ErrorMsg, syslog, mapper, configuration, _hangfireService);
         }
 
+        [Obsolete("Use JobPostingService for job updates moving forward", true)]
         public static bool PostJob(IRepositoryWrapper repositoryWrapper, int recruiterId, JobPostingDto jobPostingDto, ref Guid newPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, IHangfireService _hangfireService)
         {
             int postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
@@ -601,6 +603,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         }
 
+        [Obsolete("Use JobPostingService for job updates moving forward", true)]
         public static async Task<JobPosting> CopyJobPosting(IRepositoryWrapper repositoryWrapper, JobPosting jobPosting, int postingTTL)
         {
             repositoryWrapper.JobPosting.GetEntry(jobPosting).State = EntityState.Detached;

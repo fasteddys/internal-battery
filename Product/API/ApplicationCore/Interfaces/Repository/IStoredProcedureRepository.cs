@@ -77,5 +77,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<SubscriberEmailStatisticDto>> GetSubscriberEmailStatistics(string email);
         Task<Tuple<Guid?,string>> CreateJobPosting(JobCrudDto jobCrudDto);
         Task<string> UpdateJobPosting(JobCrudDto jobCrudDto);
+        Task UpdateJobPostingSkills(Guid jobPostingGuid, List<Guid> skillGuids);
     }
 }
