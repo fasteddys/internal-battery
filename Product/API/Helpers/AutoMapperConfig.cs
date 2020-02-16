@@ -399,7 +399,7 @@ namespace UpDiddyApi.Helpers
                   })
                 .ForMember(dest => dest.Skills, opt => opt.MapFrom(src => src.ToList()))
                 .ReverseMap();
-                        
+
             // todo: had difficulty mapping JObject to Dictionary<string,string> via automapper for PartnerContact -> ContactDto, revisit later if time allows
             //CreateMap<Contact, ContactDto>().ReverseMap();
             //CreateMap<Contact, EmailContactDto>()
@@ -582,8 +582,17 @@ namespace UpDiddyApi.Helpers
             .ForMember(c => c.NotificationGuid, opt => opt.MapFrom(src => src.Notification.NotificationGuid))
             .ForMember(c => c.Title, opt => opt.MapFrom(src => src.Notification.Title))
             .ForAllOtherMembers(opts => opts.Ignore());
-
-
+            
+            CreateMap<UpDiddyLib.Dto.JobPostingDto, JobCrudDto>()
+                .ForMember(dest => dest.CompanyGuid, opt => opt.MapFrom(src => src.Company.CompanyGuid))
+                .ForMember(dest => dest.CompensationTypeGuid, opt => opt.MapFrom(src => src.CompensationType.CompensationTypeGuid))
+                .ForMember(dest => dest.EducationLevelGuid, opt => opt.MapFrom(src => src.EducationLevel.EducationLevelGuid))
+                .ForMember(dest => dest.EmploymentTypeGuid, opt => opt.MapFrom(src => src.EmploymentType.EmploymentTypeGuid))
+                .ForMember(dest => dest.ExperienceLevelGuid, opt => opt.MapFrom(src => src.ExperienceLevel.ExperienceLevelGuid))
+                .ForMember(dest => dest.IndustryGuid, opt => opt.MapFrom(src => src.Industry.IndustryGuid))
+                .ForMember(dest => dest.JobCategoryGuid, opt => opt.MapFrom(src => src.JobCategory.JobCategoryGuid))
+                .ForMember(dest => dest.RecruiterGuid, opt => opt.MapFrom(src => src.Recruiter.RecruiterGuid))
+                .ForMember(dest => dest.SecurityClearanceGuid, opt => opt.MapFrom(src => src.SecurityClearance.SecurityClearanceGuid));
 
             CreateMap<JobCrudDto, UpDiddyLib.Dto.JobPostingDto>()
                .ForMember(x => x.Recruiter, opt => opt.Ignore())
@@ -595,22 +604,16 @@ namespace UpDiddyApi.Helpers
                .ForMember(x => x.CompensationType, opt => opt.Ignore())
                .ForMember(x => x.SecurityClearance, opt => opt.Ignore())
                .ForMember(x => x.EmploymentType, opt => opt.Ignore())
-               .ForMember(x => x.EmploymentType, opt => opt.Ignore())
                .ForMember(x => x.CityProvince, opt => opt.Ignore())
                .ForMember(x => x.SimilarJobs, opt => opt.Ignore())
                .ForMember(x => x.EmploymentType, opt => opt.Ignore())
                .ForMember(x => x.RequestId, opt => opt.Ignore())
                .ForMember(x => x.ClientEventId, opt => opt.Ignore())
                .ForMember(x => x.CloudTalentUri, opt => opt.Ignore())
-               .ForMember(x => x.CloudTalentIndexStatus, opt => opt.Ignore())
-               .ReverseMap();
+               .ForMember(x => x.CloudTalentIndexStatus, opt => opt.Ignore());
 
-
- 
-
-
-            CreateMap< JobCrudDto,JobPosting > ()
-               .ForPath(x =>  x.Recruiter.RecruiterGuid, opt => opt.MapFrom(src => src.RecruiterGuid))
+            CreateMap<JobCrudDto, JobPosting>()
+               .ForPath(x => x.Recruiter.RecruiterGuid, opt => opt.MapFrom(src => src.RecruiterGuid))
                .ForPath(x => x.Company.CompanyGuid, opt => opt.MapFrom(src => src.CompanyGuid))
                .ForPath(x => x.Industry.IndustryGuid, opt => opt.MapFrom(src => src.IndustryGuid))
                .ForPath(x => x.JobCategory.JobCategoryGuid, opt => opt.MapFrom(src => src.JobCategoryGuid))
@@ -667,9 +670,9 @@ namespace UpDiddyApi.Helpers
             })
             .ForMember(dest => dest.Entities, opt => opt.MapFrom(src => src.ToList()))
             .ReverseMap();
- 
+
             CreateMap<Recruiter, RecruiterInfoDto>()
-               .ForPath(x => x.SubscriberGuid, opt => opt.MapFrom(src => src.Subscriber.SubscriberGuid))             
+               .ForPath(x => x.SubscriberGuid, opt => opt.MapFrom(src => src.Subscriber.SubscriberGuid))
                .ForMember(x => x.TotalRecords, opt => opt.Ignore())
                .ForMember(x => x.IsInAuth0RecruiterGroup, opt => opt.Ignore())
                .ForMember(c => c.RecruiterGuid, opt => opt.MapFrom(src => src.RecruiterGuid))
@@ -730,10 +733,10 @@ namespace UpDiddyApi.Helpers
             .ForMember(c => c.CompanyName, opt => opt.MapFrom(src => src.Company.CompanyName))
             .ForAllOtherMembers(opt => opt.Ignore());
 
- 
 
 
 
-    }
+
+        }
     }
 }

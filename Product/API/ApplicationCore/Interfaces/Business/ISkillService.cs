@@ -17,5 +17,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task UpdateCourseSkills(Guid course, List<Guid> skills);
         Task UpdateSubscriberSkills(Guid subscriber, List<string> skills);
         Task UpdateSubscriberSkillsByGuid(Guid subscriber, List<Guid> skills);
+        Task<List<SkillDto>> AddOrUpdateSkillsByName(List<string> skillNames);
+        Task UpdateJobPostingSkillsByGuid(Guid jobPostingGuid, List<Guid> skills);
     }
 }

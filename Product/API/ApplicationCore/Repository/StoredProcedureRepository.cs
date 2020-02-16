@@ -523,7 +523,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return rval;
         }
 
-
         public async Task<List<CourseDetailDto>> GetCoursesByTopic(Guid topic, int limit, int offset, string sort, string order)
         {
             var spParams = new object[] {
@@ -582,7 +581,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return rval;
         }
 
-
         public async Task<List<UpDiddyLib.Domain.Models.CompensationTypeDto>> GetCompensationTypes(int limit, int offset, string sort, string order)
         {
             var spParams = new object[] {
@@ -596,7 +594,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
             rval = await _dbContext.CompensationTypes.FromSql<UpDiddyLib.Domain.Models.CompensationTypeDto>("System_Get_CompensationTypes @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
             return rval;
         }
-
 
         public async Task<List<CountryDetailDto>> GetCountries(int limit, int offset, string sort, string order)
         {
@@ -879,6 +876,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     @EntityType,
 	                @SkillGuids", spParams);
         }
+
         public async Task<List<RecruiterInfoDto>> GetRecruiters(int limit, int offset, string sort, string order)
         {
             var spParams = new object[] {
@@ -946,43 +944,142 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return rval;
         }
 
-            public async Task<bool> InsertSendGridEvents(string sendGridJson)
-            {
-                var spParams = new object[] {
+        public async Task<bool> InsertSendGridEvents(string sendGridJson)
+        {
+            var spParams = new object[] {
                 new SqlParameter("@SendGridJson", sendGridJson),
 
                 };
 
-                List<JobCrudDto> rval = null;
-                _dbContext.Database.ExecuteSqlCommand("[System_Insert_SendGridEvents]  @SendGridJson", spParams);
-                return true;
-            }
+            List<JobCrudDto> rval = null;
+            _dbContext.Database.ExecuteSqlCommand("[System_Insert_SendGridEvents]  @SendGridJson", spParams);
+            return true;
+        }
 
-
-            public async Task<bool> PurgeSendGridEvents(int LookbackDays)
-            {
-                var spParams = new object[] {
+        public async Task<bool> PurgeSendGridEvents(int LookbackDays)
+        {
+            var spParams = new object[] {
                 new SqlParameter("@LookbackDays", LookbackDays),
 
                 };
 
-                _dbContext.Database.ExecuteSqlCommand("[System_Purge_SendGridEvents]  @LookbackDays", spParams);
-                return true;
-            }
+            _dbContext.Database.ExecuteSqlCommand("[System_Purge_SendGridEvents]  @LookbackDays", spParams);
+            return true;
+        }
 
-
-            public async Task<List<SubscriberEmailStatisticDto>> GetSubscriberEmailStatistics(string email)
-            {
-                var spParams = new object[] {
+        public async Task<List<SubscriberEmailStatisticDto>> GetSubscriberEmailStatistics(string email)
+        {
+            var spParams = new object[] {
                 new SqlParameter("@EmailAddress", email)
              };
 
-                List<SubscriberEmailStatisticDto> rval = null;
-                rval = await _dbContext.SubscriberEmailStatistics.FromSql<SubscriberEmailStatisticDto>("[System_Get_SubscriberEmailStatistics] @EmailAddress", spParams).ToListAsync();
-                return rval;
-
-            }
-
+            List<SubscriberEmailStatisticDto> rval = null;
+            rval = await _dbContext.SubscriberEmailStatistics.FromSql<SubscriberEmailStatisticDto>("[System_Get_SubscriberEmailStatistics] @EmailAddress", spParams).ToListAsync();
+            return rval;
 
         }
+
+        public async Task<Tuple<Guid?, string>> CreateJobPosting(JobCrudDto jobCrudDto)
+        {
+            var postingDateUTC = new SqlParameter { ParameterName = "@PostingDateUTC", SqlDbType = SqlDbType.DateTime, Direction = ParameterDirection.Input, Value = jobCrudDto.PostingDateUTC };
+            var postingExpirationDateUTC = new SqlParameter { ParameterName = "@PostingExpirationDateUTC", SqlDbType = SqlDbType.DateTime, Direction = ParameterDirection.Input, Value = jobCrudDto.PostingExpirationDateUTC };
+            var applicationDeadlineUTC = new SqlParameter { ParameterName = "@ApplicationDeadlineUTC", SqlDbType = SqlDbType.DateTime, Direction = ParameterDirection.Input, Value = jobCrudDto.ApplicationDeadlineUTC };
+            var title = new SqlParameter { ParameterName = "@Title", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.Title ?? DBNull.Value };
+            var description = new SqlParameter { ParameterName = "@Description", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.Description ?? DBNull.Value };
+            var h2Visa = new SqlParameter { ParameterName = "@H2Visa", SqlDbType = SqlDbType.Bit, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.H2Visa ?? false };
+            var isAgencyJobPosting = new SqlParameter { ParameterName = "@IsAgencyJobPosting", SqlDbType = SqlDbType.Bit, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.IsAgencyJobPosting ?? false };
+            var telecommutePercentage = new SqlParameter { ParameterName = "@TelecommutePercentage", SqlDbType = SqlDbType.Int, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.TelecommutePercentage ?? 0 };
+            var compensation = new SqlParameter { ParameterName = "@Compensation", SqlDbType = SqlDbType.Decimal, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.Compensation ?? 0 };
+            var thirdPartyApply = new SqlParameter { ParameterName = "@ThirdPartyApply", SqlDbType = SqlDbType.Bit, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.ThirdPartyApply ?? false };
+            var thirdPartyApplicationUrl = new SqlParameter { ParameterName = "@ThirdPartyApplicationUrl", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.ThirdPartyApplicationUrl ?? DBNull.Value };
+            var country = new SqlParameter { ParameterName = "@Country", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.Country ?? DBNull.Value };
+            var city = new SqlParameter { ParameterName = "@City", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.City ?? DBNull.Value };
+            var province = new SqlParameter { ParameterName = "@Province", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.Province ?? DBNull.Value };
+            var postalCode = new SqlParameter { ParameterName = "@PostalCode", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.PostalCode ?? DBNull.Value };
+            var streetAddress = new SqlParameter { ParameterName = "@StreetAddress", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.StreetAddress ?? DBNull.Value };
+            var isPrivate = new SqlParameter { ParameterName = "@IsPrivate", SqlDbType = SqlDbType.Int, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.IsPrivate ?? 0 };
+            var jobStatus = new SqlParameter { ParameterName = "@JobStatus", SqlDbType = SqlDbType.Int, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.JobStatus ?? 0 };
+            var thirdPartyIdentifier = new SqlParameter { ParameterName = "@ThirdPartyIdentifier", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.ThirdPartyIdentifier ?? DBNull.Value };
+            var recruiterGuid = new SqlParameter { ParameterName = "@RecruiterGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = jobCrudDto.RecruiterGuid };
+            var companyGuid = new SqlParameter { ParameterName = "@CompanyGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = jobCrudDto.CompanyGuid };
+            var industryGuid = new SqlParameter { ParameterName = "@IndustryGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = jobCrudDto.IndustryGuid };
+            var jobCategoryGuid = new SqlParameter { ParameterName = "@JobCategoryGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = jobCrudDto.JobCategoryGuid };
+            var experienceLevelGuid = new SqlParameter { ParameterName = "@ExperienceLevelGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = jobCrudDto.ExperienceLevelGuid };
+            var educationLevelGuid = new SqlParameter { ParameterName = "@EducationLevelGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = jobCrudDto.EducationLevelGuid };
+            var compensationTypeGuid = new SqlParameter { ParameterName = "@CompensationTypeGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = jobCrudDto.CompensationTypeGuid };
+            var securityClearanceGuid = new SqlParameter { ParameterName = "@SecurityClearanceGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = jobCrudDto.SecurityClearanceGuid };
+            var employmentTypeGuid = new SqlParameter { ParameterName = "@EmploymentTypeGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = jobCrudDto.EmploymentTypeGuid };
+            var jobPostingGuid = new SqlParameter { ParameterName = "@JobPostingGuid", SqlDbType = SqlDbType.UniqueIdentifier, Size = -1, Direction = ParameterDirection.Output };
+            var validationErrors = new SqlParameter { ParameterName = "@ValidationErrors", SqlDbType = SqlDbType.NVarChar, Size = -1, Direction = ParameterDirection.Output };
+            var spParams = new object[] { postingDateUTC, postingExpirationDateUTC, applicationDeadlineUTC, title, description, h2Visa, isAgencyJobPosting, telecommutePercentage, compensation, thirdPartyApply, thirdPartyApplicationUrl, country, city, province, postalCode, streetAddress, isPrivate, jobStatus, thirdPartyIdentifier, recruiterGuid, companyGuid, industryGuid, jobCategoryGuid, experienceLevelGuid, educationLevelGuid, compensationTypeGuid, securityClearanceGuid, employmentTypeGuid, jobPostingGuid, validationErrors };
+
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Create_JobPosting] @PostingDateUTC, @PostingExpirationDateUTC, @ApplicationDeadlineUTC, @Title, @Description, @H2Visa, @IsAgencyJobPosting, @TelecommutePercentage, @Compensation, @ThirdPartyApply, @ThirdPartyApplicationUrl, @Country, @City, @Province, @PostalCode, @StreetAddress, @IsPrivate, @JobStatus, @ThirdPartyIdentifier, @RecruiterGuid, @CompanyGuid, @IndustryGuid, @JobCategoryGuid, @ExperienceLevelGuid, @EducationLevelGuid, @CompensationTypeGuid, @SecurityClearanceGuid, @EmploymentTypeGuid, @JobPostingGuid OUTPUT, @ValidationErrors OUTPUT", spParams);
+            Guid response;
+            if (Guid.TryParse(jobPostingGuid.Value.ToString(), out response))
+                return new Tuple<Guid?, string>(response, null);
+            else
+                return new Tuple<Guid?, string>(null, validationErrors.Value.ToString());
+        }
+
+        public async Task<string> UpdateJobPosting(JobCrudDto jobCrudDto)
+        {
+            var jobPostingGuid = new SqlParameter { ParameterName = "@JobPostingGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = jobCrudDto.JobPostingGuid };
+            var postingDateUTC = new SqlParameter { ParameterName = "@PostingDateUTC", SqlDbType = SqlDbType.DateTime, Direction = ParameterDirection.Input, Value = jobCrudDto.PostingDateUTC };
+            var postingExpirationDateUTC = new SqlParameter { ParameterName = "@PostingExpirationDateUTC", SqlDbType = SqlDbType.DateTime, Direction = ParameterDirection.Input, Value = jobCrudDto.PostingExpirationDateUTC };
+            var applicationDeadlineUTC = new SqlParameter { ParameterName = "@ApplicationDeadlineUTC", SqlDbType = SqlDbType.DateTime, Direction = ParameterDirection.Input, Value = jobCrudDto.ApplicationDeadlineUTC };
+            var title = new SqlParameter { ParameterName = "@Title", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.Title ?? DBNull.Value };
+            var description = new SqlParameter { ParameterName = "@Description", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.Description ?? DBNull.Value };
+            var h2Visa = new SqlParameter { ParameterName = "@H2Visa", SqlDbType = SqlDbType.Bit, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.H2Visa ?? false };
+            var isAgencyJobPosting = new SqlParameter { ParameterName = "@IsAgencyJobPosting", SqlDbType = SqlDbType.Bit, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.IsAgencyJobPosting ?? false };
+            var telecommutePercentage = new SqlParameter { ParameterName = "@TelecommutePercentage", SqlDbType = SqlDbType.Int, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.TelecommutePercentage ?? 0 };
+            var compensation = new SqlParameter { ParameterName = "@Compensation", SqlDbType = SqlDbType.Decimal, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.Compensation ?? 0 };
+            var thirdPartyApply = new SqlParameter { ParameterName = "@ThirdPartyApply", SqlDbType = SqlDbType.Bit, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.ThirdPartyApply ?? false };
+            var thirdPartyApplicationUrl = new SqlParameter { ParameterName = "@ThirdPartyApplicationUrl", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.ThirdPartyApplicationUrl ?? DBNull.Value };
+            var country = new SqlParameter { ParameterName = "@Country", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.Country ?? DBNull.Value };
+            var city = new SqlParameter { ParameterName = "@City", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.City ?? DBNull.Value };
+            var province = new SqlParameter { ParameterName = "@Province", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.Province ?? DBNull.Value };
+            var postalCode = new SqlParameter { ParameterName = "@PostalCode", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.PostalCode ?? DBNull.Value };
+            var streetAddress = new SqlParameter { ParameterName = "@StreetAddress", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.StreetAddress ?? DBNull.Value };
+            var isPrivate = new SqlParameter { ParameterName = "@IsPrivate", SqlDbType = SqlDbType.Int, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.IsPrivate ?? 0 };
+            var jobStatus = new SqlParameter { ParameterName = "@JobStatus", SqlDbType = SqlDbType.Int, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.JobStatus ?? 0 };
+            var thirdPartyIdentifier = new SqlParameter { ParameterName = "@ThirdPartyIdentifier", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)jobCrudDto.ThirdPartyIdentifier ?? DBNull.Value };
+            var recruiterGuid = new SqlParameter { ParameterName = "@RecruiterGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = jobCrudDto.RecruiterGuid };
+            var companyGuid = new SqlParameter { ParameterName = "@CompanyGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = jobCrudDto.CompanyGuid };
+            var industryGuid = new SqlParameter { ParameterName = "@IndustryGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = jobCrudDto.IndustryGuid };
+            var jobCategoryGuid = new SqlParameter { ParameterName = "@JobCategoryGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = jobCrudDto.JobCategoryGuid };
+            var experienceLevelGuid = new SqlParameter { ParameterName = "@ExperienceLevelGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = jobCrudDto.ExperienceLevelGuid };
+            var educationLevelGuid = new SqlParameter { ParameterName = "@EducationLevelGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = jobCrudDto.EducationLevelGuid };
+            var compensationTypeGuid = new SqlParameter { ParameterName = "@CompensationTypeGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = jobCrudDto.CompensationTypeGuid };
+            var securityClearanceGuid = new SqlParameter { ParameterName = "@SecurityClearanceGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = jobCrudDto.SecurityClearanceGuid };
+            var employmentTypeGuid = new SqlParameter { ParameterName = "@EmploymentTypeGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = jobCrudDto.EmploymentTypeGuid };
+            var validationErrors = new SqlParameter { ParameterName = "@ValidationErrors", SqlDbType = SqlDbType.NVarChar, Size = -1, Direction = ParameterDirection.Output };
+            var spParams = new object[] { jobPostingGuid, postingDateUTC, postingExpirationDateUTC, applicationDeadlineUTC, title, description, h2Visa, isAgencyJobPosting, telecommutePercentage, compensation, thirdPartyApply, thirdPartyApplicationUrl, country, city, province, postalCode, streetAddress, isPrivate, jobStatus, thirdPartyIdentifier, recruiterGuid, companyGuid, industryGuid, jobCategoryGuid, experienceLevelGuid, educationLevelGuid, compensationTypeGuid, securityClearanceGuid, employmentTypeGuid, validationErrors };
+
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Update_JobPosting] @JobPostingGuid, @PostingDateUTC, @PostingExpirationDateUTC, @ApplicationDeadlineUTC, @Title, @Description, @H2Visa, @IsAgencyJobPosting, @TelecommutePercentage, @Compensation, @ThirdPartyApply, @ThirdPartyApplicationUrl, @Country, @City, @Province, @PostalCode, @StreetAddress, @IsPrivate, @JobStatus, @ThirdPartyIdentifier, @RecruiterGuid, @CompanyGuid, @IndustryGuid, @JobCategoryGuid, @ExperienceLevelGuid, @EducationLevelGuid, @CompensationTypeGuid, @SecurityClearanceGuid, @EmploymentTypeGuid, @ValidationErrors OUTPUT", spParams);
+            return validationErrors.Value.ToString();
+        }
+
+        public async Task UpdateJobPostingSkills( Guid jobPostingGuid, List<Guid> skillGuids)
+        {
+            var jobPostingGuidParam = new SqlParameter { ParameterName = "@JobPostingGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = jobPostingGuid };
+
+            DataTable table = new DataTable();
+            table.Columns.Add("Guid", typeof(Guid));
+            if (skillGuids != null)
+            {
+                foreach (var skillGuid in skillGuids)
+                {
+                    table.Rows.Add(skillGuid);
+                }
+            }
+
+            var skillGuidsParam = new SqlParameter("@SkillGuids", table);
+            skillGuidsParam.SqlDbType = SqlDbType.Structured;
+            skillGuidsParam.TypeName = "dbo.GuidList";
+
+            var spParams = new object[] { jobPostingGuidParam, skillGuidsParam };
+
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Update_JobPostingSkillsByGuid] @JobPostingGuid, @SkillGuids", spParams);
+        }
+    }
 }

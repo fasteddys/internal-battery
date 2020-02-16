@@ -34,6 +34,7 @@ using UpDiddyApi.ApplicationCore.Services.CourseCrawling.Common;
 using System.Collections.Concurrent;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Caching.Memory;
+using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.Workflow
 {
@@ -52,6 +53,7 @@ namespace UpDiddyApi.Workflow
         private readonly ISitemapService _sitemapService;
         private readonly IEmploymentTypeService _employmentTypeService;
         private readonly IHiringSolvedService _hiringSolvedService;
+        private readonly ISkillService _skillService;
 
         public ScheduledJobs(
             UpDiddyDbContext context,
@@ -75,9 +77,8 @@ namespace UpDiddyApi.Workflow
             ICloudTalentService cloudTalentService,
             ISitemapService sitemapService,
             IEmploymentTypeService employmentTypeService,
-            IHiringSolvedService hiringSolvedService
-             
-           )
+            IHiringSolvedService hiringSolvedService,
+            ISkillService skillService)
         {
             _db = context;
             _mapper = mapper;
@@ -103,6 +104,7 @@ namespace UpDiddyApi.Workflow
             _sitemapService = sitemapService;
             _employmentTypeService = employmentTypeService;
             _hiringSolvedService = hiringSolvedService;
+            _skillService = skillService;
         }
 
 
@@ -925,8 +927,16 @@ namespace UpDiddyApi.Workflow
                             jobPostingGuid = JobPostingFactory.GetJobPostingById(_repositoryWrapper, jobPage.JobPostingId.Value).Result.JobPostingGuid;
                             // the factory method uses the guid property of the dto for GetJobPostingByGuidWithRelatedObjects - need to set that too
                             jobPostingDto.JobPostingGuid = jobPostingGuid;
+
                             // attempt to update job posting
-                            isJobPostingOperationSuccessful = JobPostingFactory.UpdateJobPosting(_repositoryWrapper, jobPostingGuid, jobPostingDto, ref errorMessage, true, _hangfireService, _configuration);
+                            JobCrudDto jobCrudDto = _mapper.Map<JobCrudDto>(jobPostingDto);
+                            if (jobPostingDto.JobPostingSkills != null && jobPostingDto.JobPostingSkills.Any())
+                            {
+                                var jobPostingSkills = await _skillService.AddOrUpdateSkillsByName(jobPostingDto.JobPostingSkills.Select(jps => jps.SkillName).ToList());
+                                await _skillService.UpdateJobPostingSkillsByGuid(jobPostingGuid, jobPostingSkills.Select(jps => jps.SkillGuid).ToList());
+                            }
+                            isJobPostingOperationSuccessful = await _jobPostingService.UpdateJobPosting(jobCrudDto);
+
                             // increment updated count in stats
                             if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
                                 jobDataMiningStats.NumJobsUpdated += 1;
@@ -939,7 +949,13 @@ namespace UpDiddyApi.Workflow
                             await RecruiterCompanyFactory.GetOrAdd(_repositoryWrapper, recruiter.RecruiterId, company.CompanyId, true);
 
                             // attempt to create job posting
-                            isJobPostingOperationSuccessful = JobPostingFactory.PostJob(_repositoryWrapper, recruiter.RecruiterId, jobPostingDto, ref jobPostingGuid, ref errorMessage, _syslog, _mapper, _configuration, true, _hangfireService);
+                            JobCrudDto jobCrudDto = _mapper.Map<JobCrudDto>(jobPostingDto);
+                            jobPostingGuid = await _jobPostingService.CreateJobPosting(jobCrudDto); if (jobPostingDto.JobPostingSkills != null && jobPostingDto.JobPostingSkills.Any())
+                            {
+                                var jobPostingSkills = await _skillService.AddOrUpdateSkillsByName(jobPostingDto.JobPostingSkills.Select(jps => jps.SkillName).ToList());
+                                await _skillService.UpdateJobPostingSkillsByGuid(jobPostingGuid, jobPostingSkills.Select(jps => jps.SkillGuid).ToList());
+                            }
+                            isJobPostingOperationSuccessful = jobPostingGuid != null && jobPostingGuid != Guid.Empty;
 
                             // increment added count in stats
                             if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
@@ -1102,7 +1118,7 @@ namespace UpDiddyApi.Workflow
                 ResumeParse resumeParse = await _ImportSubscriberResume(_subscriberService, resume, parsedDocument);
 
                 // Request parse from hiring solved 
-                await _hiringSolvedService.RequestParse(subscriber.SubscriberId,resume.BlobName, base64EncodedString);
+                await _hiringSolvedService.RequestParse(subscriber.SubscriberId, resume.BlobName, base64EncodedString);
 
                 // Callback to client to let them know upload is complete
                 ClientHubHelper hubHelper = new ClientHubHelper(_hub, _cache);
@@ -1110,7 +1126,7 @@ namespace UpDiddyApi.Workflow
                 {
                     NamingStrategy = new CamelCaseNamingStrategy()
                 };
-                SubscriberDto subscriberDto = await SubscriberFactory.GetSubscriber(_repositoryWrapper, (Guid)resume.Subscriber.SubscriberGuid, _syslog, _mapper);
+                UpDiddyLib.Dto.SubscriberDto subscriberDto = await SubscriberFactory.GetSubscriber(_repositoryWrapper, (Guid)resume.Subscriber.SubscriberGuid, _syslog, _mapper);
                 hubHelper.CallClient(resume.Subscriber.SubscriberGuid,
                     Constants.SignalR.ResumeUpLoadVerb,
                     JsonConvert.SerializeObject(
@@ -1973,9 +1989,9 @@ namespace UpDiddyApi.Workflow
                     .Take(BatchSize)
                     .ToListAsync();
 
-                foreach ( HiringSolvedResumeParse p in  Batch)                
-                   await _hiringSolvedService.GetParseStatus(p.JobId);
-                
+                foreach (HiringSolvedResumeParse p in Batch)
+                    await _hiringSolvedService.GetParseStatus(p.JobId);
+
                 //await _repositoryWrapper.StoredProcedureRepository.PurgeSendGridEvents(PurgeLookBackDays);
             }
             catch (Exception e)
