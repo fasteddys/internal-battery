@@ -58,6 +58,7 @@ namespace API.Tests.AzureApi
 
             // emit some basic information about the test
             _output.WriteLine($"Operation Name: {apiOperationTest.Object.Name}");
+            _output.WriteLine($"Operation Url: {apiOperationTest.Object.Uri}");
             _output.WriteLine($"Api Version: {apiOperationTest.Object.ApiVersion}");
             _output.WriteLine($"Http Verb: {apiOperationTest.Object.HttpMethod.Method}");
             _output.WriteLine($"Expected Status Code: {apiOperationTest.Object.ExpectedStatusCode}");
