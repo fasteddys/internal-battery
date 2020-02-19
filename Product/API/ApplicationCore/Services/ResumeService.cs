@@ -48,6 +48,22 @@ namespace UpDiddyApi.ApplicationCore.Services
             _hiringSolvedService = hiringSolvedService;
         }
 
+        public async Task<bool> HasSubscriberUploadedResume(Guid subscriberGuid)
+        {
+            var subscriber = await _subscriberService.GetBySubscriberGuid(subscriberGuid);
+            if (subscriber == null)
+                throw new NotFoundException("Subscriber is not found");
+            SubscriberFile file = await _repositoryWrapper.SubscriberFileRepository.GetMostRecentBySubscriberGuid(subscriberGuid);
+            if (file == null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
         public async Task<Guid> UploadResume(Guid subscriberGuid, FileDto fileDto)
         {
             var subscriber = await _subscriberService.GetBySubscriberGuid(subscriberGuid);
