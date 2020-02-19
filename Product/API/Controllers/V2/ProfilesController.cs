@@ -212,6 +212,16 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet]
         [Authorize]
+        [Route("resume/is-exists")]
+        public async Task<IActionResult> HasSubscriberUploadedResume()
+        {
+            var resume = await _resumeService.HasSubscriberUploadedResume(GetSubscriberGuid());
+            return Ok(resume);
+        }
+
+
+        [HttpGet]
+        [Authorize]
         [Route("resume")]
         public async Task<IActionResult> DownloadResume()
         {
