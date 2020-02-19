@@ -1672,9 +1672,11 @@ namespace UpDiddyApi.Workflow
                     _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: Subscriber {profile.Email} has a subscriber guid of {profile.SubscriberGuid.Value.ToString()}.");
                     subscriber = await _repositoryWrapper.SubscriberRepository.GetByGuid(profile.SubscriberGuid.Value, false);
 
-                    if (subscriber == null && !string.IsNullOrWhiteSpace(profile.CloudTalentUri))
+                    // Purge profiles from google that have no related subscriber record or have a deleted subscriber record
+                    if ((subscriber == null || subscriber.IsDeleted == 1)  && !string.IsNullOrWhiteSpace(profile.CloudTalentUri))
                     {
                         try
+
                         {
                             _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: Subscriber {profile.Email} does not exist in the database, the cloud talent uri to be purged is: {profile.CloudTalentUri}");
                             var response = _cloudTalentService.DeleteProfileFromCloudTalentByUri(profile.CloudTalentUri);
