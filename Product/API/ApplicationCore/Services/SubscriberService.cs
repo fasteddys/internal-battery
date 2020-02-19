@@ -329,16 +329,20 @@ namespace UpDiddyApi.ApplicationCore.Services
                     }
                     step = 5;
                     group = await _taggingService.CreateGroup(subscriberDto.ReferrerUrl, partnerGuid, subscriber.SubscriberId);
-
-                    if (butterPage.Data.Fields.isgateddownload && !string.IsNullOrEmpty(gatedDownloadFileUrl))
+                    
+                    step = 6;
+                    if (butterPage != null)
                     {
-                        int? groupId = null;
-                        if (group != null)
-                            groupId = group.GroupId;
-                        int? maxAllowedInt = null;
-                        if (maxFileDownloadAttemptsPermitted.HasValue)
-                            maxAllowedInt = Decimal.ToInt16(maxFileDownloadAttemptsPermitted.Value);
-                        await HandleGatedFileDownload(maxAllowedInt, gatedDownloadFileUrl, groupId, subscriber.SubscriberId, subscriber.Email);
+                        if (butterPage.Data.Fields.isgateddownload && !string.IsNullOrEmpty(gatedDownloadFileUrl))
+                        {
+                            int? groupId = null;
+                            if (group != null)
+                                groupId = group.GroupId;
+                            int? maxAllowedInt = null;
+                            if (maxFileDownloadAttemptsPermitted.HasValue)
+                                maxAllowedInt = Decimal.ToInt16(maxFileDownloadAttemptsPermitted.Value);
+                            await HandleGatedFileDownload(maxAllowedInt, gatedDownloadFileUrl, groupId, subscriber.SubscriberId, subscriber.Email);
+                        }
                     }
 
                     if (!string.IsNullOrEmpty(subscriberDto.AssessmentId))
@@ -456,12 +460,12 @@ namespace UpDiddyApi.ApplicationCore.Services
                         isGatedDownload = butterPage.Data.Fields.isgateddownload;
                         gatedDownloadFileUrl = butterPage.Data.Fields.gatedfiledownloadfile;
                         maxFileDownloadAttemptsPermitted = butterPage.Data.Fields.gatedfiledownloadmaxattemptsallowed;
-                       if(butterPage.Data.Fields.partner != null)
+                        if (butterPage.Data.Fields.partner != null)
                         {
-                            if(butterPage.Data.Fields.partner.PartnerGuid != Guid.Empty)
+                            if (butterPage.Data.Fields.partner.PartnerGuid != Guid.Empty)
                             {
                                 partnerGuid = butterPage.Data.Fields.partner.PartnerGuid;
-                               _logger.LogInformation($"SubscriberService:CreateSubscriberAsync This campaign slug '{pageName}' does contain Partner with Guid {partnerGuid.ToString()}");
+                                _logger.LogInformation($"SubscriberService:CreateSubscriberAsync This campaign slug '{pageName}' does contain Partner with Guid {partnerGuid.ToString()}");
                             }
                         }
                         else
