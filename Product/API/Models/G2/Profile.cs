@@ -31,7 +31,7 @@ namespace UpDiddyApi.Models.G2
         public string StreetAddress { get; set; }
         public int? CityId { get; set; }
         public virtual City City { get; set; }
-        public int StateId { get; set; }
+        public int? StateId { get; set; }
         public virtual State State { get; set; }
         public int? PostalId { get; set; }
         public virtual Postal Postal { get; set; }

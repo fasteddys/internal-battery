@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200224200122_g2 updates")]
+    partial class g2updates
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1777,9 +1779,7 @@ namespace UpDiddyApi.Migrations
 
                     b.HasIndex("ProfileId");
 
-                    b.HasIndex("TagId", "ProfileId")
-                        .IsUnique()
-                        .HasName("UIX_ProfileTag_Profile_Tag");
+                    b.HasIndex("TagId");
 
                     b.ToTable("ProfileTags","G2");
                 });
@@ -1808,11 +1808,9 @@ namespace UpDiddyApi.Migrations
 
                     b.HasKey("ProfileWishlistId");
 
-                    b.HasIndex("WishlistId");
+                    b.HasIndex("ProfileId");
 
-                    b.HasIndex("ProfileId", "WishlistId")
-                        .IsUnique()
-                        .HasName("UIX_ProfileWishlist_Profile_Wishlist");
+                    b.HasIndex("WishlistId");
 
                     b.ToTable("ProfileWishlists","G2");
                 });
@@ -1846,9 +1844,7 @@ namespace UpDiddyApi.Migrations
 
                     b.HasKey("WishlistId");
 
-                    b.HasIndex("RecruiterId", "Name")
-                        .IsUnique()
-                        .HasName("UIX_Wishlist_Recruiter_Name");
+                    b.HasIndex("RecruiterId");
 
                     b.ToTable("Wishlists","G2");
                 });

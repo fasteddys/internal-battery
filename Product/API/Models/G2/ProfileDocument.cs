@@ -12,6 +12,8 @@ namespace UpDiddyApi.Models.G2
     {
         public int ProfileDocumentId { get; set; }
         public Guid ProfileDocumentGuid { get; set; }
+        public int ProfileId { get; set; }
+        public virtual Profile Profile { get; set; }
         [Required]
         [StringLength(100)]
         public string BlobStorageUrl { get; set; }

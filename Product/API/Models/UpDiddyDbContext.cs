@@ -199,6 +199,9 @@ namespace UpDiddyApi.Models
         public DbSet<ProfileDocument> ProfileDocument { get; set; }
         public DbSet<ProfileSearchLocation> ProfileSearchLocation { get; set; }
         public DbSet<ProfileSkill> ProfileSkill { get; set; }
+        public DbSet<ProfileTag> ProfileTag { get; set; }
+        public DbSet<Wishlist> Wishlist { get; set; }
+        public DbSet<ProfileWishlist> ProfileWishlist { get; set; }
 
         #endregion
 
@@ -269,9 +272,24 @@ namespace UpDiddyApi.Models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
+            modelBuilder.Entity<ProfileTag>()
+                .HasIndex(pt => new { pt.TagId, pt.ProfileId })
+                .HasName("UIX_ProfileTag_Profile_Tag")
+                .IsUnique(true);
+
+            modelBuilder.Entity<ProfileWishlist>()
+                .HasIndex(pw => new { pw.ProfileId, pw.WishlistId })
+                .HasName("UIX_ProfileWishlist_Profile_Wishlist")
+                .IsUnique(true);
+
+            modelBuilder.Entity<Wishlist>()
+                .HasIndex(w => new { w.RecruiterId, w.Name })
+                .HasName("UIX_Wishlist_Recruiter_Name")
+                .IsUnique(true);
+
             modelBuilder
                 .Query<v_ProfileAzureSearch>()
-                .ToView("v_ProfileAzureSearch");
+                .ToView("v_ProfileAzureSearch", "G2");
 
             modelBuilder.Entity<Profile>()
                 .HasIndex(p => new { p.SubscriberId, p.CompanyId })

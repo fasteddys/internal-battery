@@ -31,5 +31,6 @@ namespace UpDiddyApi.Models.Views
         public decimal? DesiredRate { get; set; }
         public string PrivateSkills { get; set; }
         public string PublicSkills { get; set; }
+        public string Tags { get; set; }
     }
 }
