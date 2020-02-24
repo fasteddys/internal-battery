@@ -98,6 +98,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ISendGridEventRepository _sendGridEventRepository;
         private IHiringSolvedResumeParseRepository _hiringSolvedResumeParseRepository;
         private ISovrenParseStatisticRepository _sovrenParseStatisticRepository;
+        private ICityRepository _cityRepository;
+        private IPostalRepository _postalRepository;
 
 
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
@@ -1127,6 +1129,31 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
+        public ICityRepository CityRepository
+        {
+            get
+            {
+                if (_cityRepository == null)
+                {
+                    _cityRepository = new CityRepository(_dbContext);
+                }
+                return _cityRepository;
+            }
+        }
+
+
+        public IPostalRepository PostalRepository
+        {
+            get
+            {
+                if (_postalRepository== null)
+                {
+                    _postalRepository = new PostalRepository(_dbContext);
+                }
+                return _postalRepository;
+            }
+        }
+
 
 
         public async Task SaveAsync()
@@ -1141,6 +1168,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
             await this._dbContext.SaveChangesAsync();
         }
+
+    
 
     }
 }

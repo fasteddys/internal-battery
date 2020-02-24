@@ -41,8 +41,52 @@ namespace UpDiddyApi.ApplicationCore.Services
             _mapper = mapper;
             _azureSearchService = azureSearchService;
         }
-        
-        public async Task<G2SearchResultDto> SearchG2Async(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0, double lat = 0, double lng = 0)
+
+
+        public async Task<G2SearchResultDto> SearchG2Async(int cityId, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0 )
+        {
+                        
+            Postal postal = _repository.PostalRepository.GetAll()
+                .Where(p => p.CityId == cityId && p.IsDeleted == 0)
+                .FirstOrDefault();
+
+            if (postal == null)
+                throw new NotFoundException($"{cityId} is not a valid city id");
+
+            return await SearchG2Async(limit, offset, sort, order, keyword, radius, (double)postal.Latitude, (double)postal.Longitude);
+        }
+
+
+
+
+
+
+
+        public async Task<bool> CreateG2Async(G2Dto g2)
+        {
+
+
+            // todo jab map 
+            G2 theG2 = new G2()
+            {
+                City = g2.City,
+                Id = g2.Id,
+                Lat = g2.Lat,
+                Lng = g2.Lng
+            };
+
+
+            _azureSearchService.AddOrUpdateG2(theG2);
+
+            return true;
+        }
+
+
+
+
+        #region private helper functions 
+
+        private async Task<G2SearchResultDto> SearchG2Async(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0, double lat = 0, double lng = 0)
         {
             DateTime startSearch = DateTime.Now;
             G2SearchResultDto searchResults = new G2SearchResultDto();
@@ -75,8 +119,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                     IncludeTotalResultCount = true,
                 };
 
-            // todo jab fiture out out to deal with geo specifications 
-            if ( radius > 0 )
+            // check to see if radius is in play
+            if (radius > 0)
             {
 
                 double radiusKm = radius * 1.60934;
@@ -85,15 +129,10 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 if (lng == 0)
                     throw new FailedValidationException("Longitude must be specified for radius searching");
-               
+
                 parameters.Filter = $"geo.distance(Location, geography'POINT({lng} {lat})') le {radiusKm}";
             }
-              
-
-          
-
-
-
+            
             results = indexClient.Documents.Search<G2InfoDto>(keyword, parameters);
 
             DateTime startMap = DateTime.Now;
@@ -122,26 +161,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return searchResults;
         }
 
-
-        public async Task<bool> CreateG2Async(G2Dto g2)
-        {
-
-
-            // todo jab map 
-            G2 theG2 = new G2()
-            {
-                City = g2.City,
-                Id = g2.Id,
-                Lat = g2.Lat,
-                Lng = g2.Lng
-            };
-
-
-            _azureSearchService.AddOrUpdateG2(theG2);
-
-            return true;
-        }
-
+        #endregion
 
 
     }
