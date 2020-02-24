@@ -12,9 +12,11 @@
 
   <ItemGroup>
     <PackageReference Include="Braintree" Version="4.7.0" />
+    <PackageReference Include="GeoJSON.Net" Version="1.2.14" />
     <PackageReference Include="Google.Protobuf" Version="3.7.0" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.4" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.5.1" />
+    <PackageReference Include="Microsoft.Azure.Search" Version="10.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.1" />

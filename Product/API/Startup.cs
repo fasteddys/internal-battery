@@ -349,7 +349,7 @@ namespace UpDiddyApi
             services.AddScoped<ISendGridEventService, SendgridEventService>();
             services.AddScoped<ISubscriberEmailService, SubscriberEmailService>();
             services.AddScoped<IHiringSolvedService, HiringSolvedService>();
-
+            services.AddScoped<IG2Service, G2Service>();
 
             #endregion
 
