@@ -1,7 +1,9 @@
 ﻿
 using AutoMapper;
+using GeoJSON.Net.Geometry;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Spatial;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,6 +56,27 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
             _sysEmail = sysEmail;            
         }
 
+
+
+        #region G2
+
+        // TODO JAB Implement 
+        public async Task<bool> AddOrUpdateG2(G2 g2)
+        {
+            SendG2Request(g2, "upload");
+            return true;
+        }
+
+        public async Task<bool> DeleteG2(G2 g2)
+        {
+            SendG2Request(g2, "delete");
+            return true;
+        }
+
+
+        #endregion
+
+
         #region subscriber index 
         public async Task<bool> AddOrUpdateSubscriber(Subscriber subscriber)
         {
@@ -88,6 +111,35 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
 
 
         #region helper functions 
+
+
+        private async Task<bool> SendG2Request(G2 g2, string cmd)
+        {
+            // fire and forget 
+            Task.Run(() =>
+            {
+                string index = _configuration["AzureSearch:G2IndexName"];
+                SDOCRequest<G2SDOC> docs = new SDOCRequest<G2SDOC>();
+                // TODO JAB Use Mapper if possible 
+                // RecruiterSDOC doc = _mapper.Map<RecruiterSDOC>(recruiter);
+                G2SDOC doc = new G2SDOC()
+                {
+                    City = g2.City,
+                    Id = g2.Id
+                };
+
+                Position position = new Position(g2.Lat, g2.Lng);      
+                doc.Location = new Point(position);
+                doc.SearchAction = cmd;
+                docs.value.Add(doc);
+                string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs);
+                SendSearchRequest(index, Json);
+            });
+            return true;
+        }
+
+
+ 
 
         private async Task<bool> SendRecruiterRequest(Recruiter recruiter, string cmd)
         {
