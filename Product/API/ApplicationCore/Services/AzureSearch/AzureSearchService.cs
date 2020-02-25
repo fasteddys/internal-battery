@@ -61,13 +61,13 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
         #region G2
 
         // TODO JAB Implement 
-        public async Task<bool> AddOrUpdateG2(G2 g2)
+        public async Task<bool> AddOrUpdateG2(G2Test g2)
         {
             SendG2Request(g2, "upload");
             return true;
         }
 
-        public async Task<bool> DeleteG2(G2 g2)
+        public async Task<bool> DeleteG2(G2Test g2)
         {
             SendG2Request(g2, "delete");
             return true;
@@ -113,7 +113,7 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
         #region helper functions 
 
 
-        private async Task<bool> SendG2Request(G2 g2, string cmd)
+        private async Task<bool> SendG2Request(G2Test g2, string cmd)
         {
             // fire and forget 
             Task.Run(() =>

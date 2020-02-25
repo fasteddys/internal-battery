@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace UpDiddyApi.Models
 {
-    public class G2
+    public class G2Test
     {
         public string City { get; set; }
         public string Id { get; set; }

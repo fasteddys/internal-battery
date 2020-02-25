@@ -18,8 +18,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
         Task<bool> DeleteRecruiter(Recruiter recruiter);
 
 
-        Task<bool> AddOrUpdateG2(G2 recruiter);
-        Task<bool> DeleteG2(G2 recruiter);
+        Task<bool> AddOrUpdateG2(G2Test recruiter);
+        Task<bool> DeleteG2(G2Test recruiter);
 
 
     }

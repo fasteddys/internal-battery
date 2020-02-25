@@ -67,7 +67,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
             // todo jab map 
-            G2 theG2 = new G2()
+            G2Test theG2 = new G2Test()
             {
                 City = g2.City,
                 Id = g2.Id,
