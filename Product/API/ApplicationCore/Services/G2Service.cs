@@ -12,6 +12,7 @@ using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
+using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.ApplicationCore.Services
@@ -43,41 +44,44 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
-        public async Task<G2SearchResultDto> SearchG2Async(int cityId, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0 )
+        public async Task<G2SearchResultDto> SearchG2Async(Guid subscriberGuid, int cityId,   int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0 )
         {
-                        
+
+            // validate the the user provides a city if they also provided a radius
+            if (cityId == 0 && radius != 0)
+                throw new FailedValidationException("A cityId must be provided if a radius is specifed");
+
+            Recruiter recruiter = await _repository.RecruiterRepository.GetRecruiterBySubscriberGuid(subscriberGuid);
+
+            // validate that the subscriber is a recruiter 
+            if (recruiter == null)
+                throw new NotFoundException($"Subscriber {subscriberGuid} is not a recruiter");
+            // validate that the recruiter is asscociated with a company
+            if (recruiter.CompanyId == null)
+                throw new FailedValidationException($"Recruiter {recruiter.RecruiterGuid} is not associated with a company");
+
+            // get company id for the recruiter 
+            int companyId = recruiter.CompanyId.Value;
+            // handle case of non geo search 
+            if ( cityId == 0 )
+                return await SearchG2Async(companyId, limit, offset, sort, order, keyword, 0, 0, 0 );
+
+            // pick a random postal code for the city to get the last and long 
             Postal postal = _repository.PostalRepository.GetAll()
                 .Where(p => p.CityId == cityId && p.IsDeleted == 0)
                 .FirstOrDefault();
 
+            // validate that the city has a postal code 
             if (postal == null)
-                throw new NotFoundException($"{cityId} is not a valid city id");
+                throw new NotFoundException($"A city with an Id of {cityId} cannot be found.");
 
-            return await SearchG2Async(limit, offset, sort, order, keyword, radius, (double)postal.Latitude, (double)postal.Longitude);
+            return await SearchG2Async(companyId, limit, offset, sort, order, keyword, radius, (double)postal.Latitude, (double)postal.Longitude);
         }
 
-
-
-
-
-
-
-        public async Task<bool> CreateG2Async(G2Dto g2)
+      
+        public async Task<bool> CreateG2Async(G2SDOC g2)
         {
-
-
-            // todo jab map 
-            G2Test theG2 = new G2Test()
-            {
-                City = g2.City,
-                Id = g2.Id,
-                Lat = g2.Lat,
-                Lng = g2.Lng
-            };
-
-
-            _azureSearchService.AddOrUpdateG2(theG2);
-
+            _azureSearchService.AddOrUpdateG2(g2);
             return true;
         }
 
@@ -86,7 +90,8 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         #region private helper functions 
 
-        private async Task<G2SearchResultDto> SearchG2Async(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0, double lat = 0, double lng = 0)
+ 
+        private async Task<G2SearchResultDto> SearchG2Async(int companyId, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0, double lat = 0, double lng = 0)
         {
             DateTime startSearch = DateTime.Now;
             G2SearchResultDto searchResults = new G2SearchResultDto();
@@ -119,18 +124,33 @@ namespace UpDiddyApi.ApplicationCore.Services
                     IncludeTotalResultCount = true,
                 };
 
+
+            // todo jab pass company in as parameter 
+
+            // IMPORTANT!!!!   Filter quereies to be withing the specified company id for security reasons 
+            parameters.Filter = $"CompanyId eq {companyId}";
+
+            double radiusKm = 0;
             // check to see if radius is in play
             if (radius > 0)
             {
 
-                double radiusKm = radius * 1.60934;
+                radiusKm = radius * 1.60934;
                 if (lat == 0)
                     throw new FailedValidationException("Lattitude must be specified for radius searching");
 
                 if (lng == 0)
                     throw new FailedValidationException("Longitude must be specified for radius searching");
 
-                parameters.Filter = $"geo.distance(Location, geography'POINT({lng} {lat})') le {radiusKm}";
+                // start this clause with "and" since the companyfilter MUST be specified above 
+                parameters.Filter += $" and geo.distance(Location, geography'POINT({lng} {lat})') le {radiusKm}";
+            }
+            else if ( radius == 0 && lat != 0 && lng != 0)
+            {
+                // search for a single city with no radius
+                radiusKm = 0;
+                parameters.Filter += $" and geo.distance(Location, geography'POINT({lng} {lat})') le {radiusKm}";
+ 
             }
             
             results = indexClient.Documents.Search<G2InfoDto>(keyword, parameters);

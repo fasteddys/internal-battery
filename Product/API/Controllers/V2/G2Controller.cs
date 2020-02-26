@@ -18,7 +18,7 @@ namespace UpDiddyApi.Controllers.V2
 {
     [Route("/V2/[controller]/")]
     [ApiController]
-    public class G2Controller : ControllerBase
+    public class G2Controller :  BaseApiController
     {
         private readonly IConfiguration _configuration;
         private readonly IG2Service _g2Service;
@@ -37,7 +37,7 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpPost]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        public async Task<IActionResult> SearchSubscribers([FromBody] G2Dto g2)
+        public async Task<IActionResult> SearchSubscribers([FromBody] G2SDOC g2)
         {
             var rVal = await _g2Service.CreateG2Async(g2);
             return Ok(rVal);
@@ -45,13 +45,14 @@ namespace UpDiddyApi.Controllers.V2
 
 
 
-
         [HttpGet]
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("query")]
-        public async Task<IActionResult> SearchG2(int cityId, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0 )
-        {
-            var rVal = await _g2Service.SearchG2Async(cityId, limit, offset, sort, order, keyword,radius);
+        public async Task<IActionResult> SearchG2(int cityId,  int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0 )
+        { 
+
+
+            var rVal = await _g2Service.SearchG2Async( GetSubscriberGuid() , cityId, limit, offset, sort, order, keyword,radius);
             return Ok(rVal);
         }
 

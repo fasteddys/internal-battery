@@ -4,6 +4,7 @@ using GeoJSON.Net.Geometry;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Spatial;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,7 +53,7 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
             _repository = repository;
             _logger = logger;
             _mapper = mapper;            
-            _hangfireService = hangfireService;            
+            _hangfireService = hangfireService;             
             _sysEmail = sysEmail;            
         }
 
@@ -61,13 +62,13 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
         #region G2
 
         // TODO JAB Implement 
-        public async Task<bool> AddOrUpdateG2(G2Test g2)
+        public async Task<bool> AddOrUpdateG2(G2SDOC g2)
         {
             SendG2Request(g2, "upload");
             return true;
         }
 
-        public async Task<bool> DeleteG2(G2Test g2)
+        public async Task<bool> DeleteG2(G2SDOC g2)
         {
             SendG2Request(g2, "delete");
             return true;
@@ -113,28 +114,31 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
         #region helper functions 
 
 
-        private async Task<bool> SendG2Request(G2Test g2, string cmd)
+        private async Task<bool> SendG2Request(G2SDOC g2, string cmd)
         {
             // fire and forget 
-            Task.Run(() =>
-            {
+            // todo jab run as task 
+            //Task.Run(() =>
+            //{
                 string index = _configuration["AzureSearch:G2IndexName"];
                 SDOCRequest<G2SDOC> docs = new SDOCRequest<G2SDOC>();
-                // TODO JAB Use Mapper if possible 
-                // RecruiterSDOC doc = _mapper.Map<RecruiterSDOC>(recruiter);
-                G2SDOC doc = new G2SDOC()
-                {
-                    City = g2.City,
-                    Id = g2.Id
-                };
 
-                Position position = new Position(g2.Lat, g2.Lng);      
-                doc.Location = new Point(position);
-                doc.SearchAction = cmd;
-                docs.value.Add(doc);
-                string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs);
-                SendSearchRequest(index, Json);
-            });
+                string [] locations = g2.SearchLocations.Split(';');
+                if ( locations.Length > 0 )
+                {
+                    string [] locationInfo = locations[0].Split('|');
+                    double lat = double.Parse(locationInfo[0]);
+                    double lng = double.Parse(locationInfo[1]);
+                    Position position = new Position(lat, lng);
+                    g2.Location = new Point(position);
+                }
+                
+                g2.SearchAction = cmd;
+                docs.value.Add(g2);
+ 
+               string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffZ" });
+               SendSearchRequest(index, Json);
+            //});
             return true;
         }
 
