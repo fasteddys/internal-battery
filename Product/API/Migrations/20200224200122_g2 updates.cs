@@ -202,6 +202,11 @@ namespace UpDiddyApi.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DeleteData(
+                table: "Company",
+                keyColumn: "CompanyGuid",
+                keyValue: new Guid("25166261-ABA6-43A4-8084-57EEB2D6FF3E"));
+
             migrationBuilder.DropForeignKey(
                 name: "FK_ProfileDocuments_Profiles_ProfileId",
                 schema: "G2",

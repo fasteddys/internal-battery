@@ -27,10 +27,12 @@ namespace UpDiddyApi.Models.Views
         public bool? IsActiveJobSeeker { get; set; }
         public bool? IsCurrentlyEmployed { get; set; }
         public bool? IsWillingToWorkProBono { get; set; }
-        public decimal? CurrentRate { get; set; }
-        public decimal? DesiredRate { get; set; }
-        public string PrivateSkills { get; set; }
-        public string PublicSkills { get; set; }
+        public float? CurrentRate { get; set; }
+        public float? DesiredRate { get; set; }
         public string Tags { get; set; }
+        public string PublicSkills { get; set; }
+        public string PrivateSkills { get; set; }
+        public string Location { get; set; }
+        public DateTime ModifyDate { get; set; }
     }
 }
