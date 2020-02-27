@@ -121,18 +121,7 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
             //Task.Run(() =>
             //{
                 string index = _configuration["AzureSearch:G2IndexName"];
-                SDOCRequest<G2SDOC> docs = new SDOCRequest<G2SDOC>();
-
-                string [] locations = g2.SearchLocations.Split(';');
-                if ( locations.Length > 0 )
-                {
-                    string [] locationInfo = locations[0].Split('|');
-                    double lat = double.Parse(locationInfo[0]);
-                    double lng = double.Parse(locationInfo[1]);
-                    Position position = new Position(lat, lng);
-                    g2.Location = new Point(position);
-                }
-                
+                SDOCRequest<G2SDOC> docs = new SDOCRequest<G2SDOC>();                            
                 g2.SearchAction = cmd;
                 docs.value.Add(g2);
  

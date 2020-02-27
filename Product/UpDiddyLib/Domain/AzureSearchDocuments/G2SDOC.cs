@@ -58,15 +58,18 @@ namespace UpDiddyLib.Domain.AzureSearchDocuments
 
         public string Tags { get; set; }
 
-        public string Skills { get; set; }
-        public string SearchLocations { get; set; }
+        public string PublicSkills { get; set; }
 
+        public string PrivateSkills { get; set; }
+ 
    
         public Point Location { get; set; }
 
-        public int CompanyId { get; set; }
+        public Guid CompanyGuid { get; set; }
 
         public DateTime ModifyDate { get; set; }
- 
+
+        public Guid SubscriberGuid { get; set; }
+
     }
 }

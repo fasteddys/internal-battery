@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.SqlServer.Types;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -9,8 +10,9 @@ namespace UpDiddyApi.Models.Views
     [NotMapped]
     public class v_ProfileAzureSearch
     {
-        public Guid ProfileGuid { get; set; }
-        public Guid CompanyGuid { get; set; }
+        public Guid? ProfileGuid { get; set; }
+        public Guid? CompanyGuid { get; set; }
+        public Guid SubscriberGuid { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
@@ -27,12 +29,12 @@ namespace UpDiddyApi.Models.Views
         public bool? IsActiveJobSeeker { get; set; }
         public bool? IsCurrentlyEmployed { get; set; }
         public bool? IsWillingToWorkProBono { get; set; }
-        public float? CurrentRate { get; set; }
-        public float? DesiredRate { get; set; }
+        public double? CurrentRate { get; set; }
+        public double? DesiredRate { get; set; }
         public string Tags { get; set; }
         public string PublicSkills { get; set; }
         public string PrivateSkills { get; set; }
-        public string Location { get; set; }
+        public SqlGeography Location { get; set; }
         public DateTime ModifyDate { get; set; }
     }
 }

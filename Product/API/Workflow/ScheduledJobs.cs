@@ -35,6 +35,7 @@ using System.Collections.Concurrent;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Caching.Memory;
 using UpDiddyLib.Domain.Models;
+using UpDiddyLib.Domain.AzureSearchDocuments;
 
 namespace UpDiddyApi.Workflow
 {
@@ -54,6 +55,11 @@ namespace UpDiddyApi.Workflow
         private readonly IEmploymentTypeService _employmentTypeService;
         private readonly IHiringSolvedService _hiringSolvedService;
         private readonly ISkillService _skillService;
+        private readonly IG2Service _g2Service;
+        private readonly IAzureSearchService _azureSearchService;
+
+
+
 
         public ScheduledJobs(
             UpDiddyDbContext context,
@@ -78,7 +84,9 @@ namespace UpDiddyApi.Workflow
             ISitemapService sitemapService,
             IEmploymentTypeService employmentTypeService,
             IHiringSolvedService hiringSolvedService,
-            ISkillService skillService)
+            ISkillService skillService,
+            IG2Service g2Service,
+            IAzureSearchService azureSearchService)
         {
             _db = context;
             _mapper = mapper;
@@ -105,8 +113,12 @@ namespace UpDiddyApi.Workflow
             _employmentTypeService = employmentTypeService;
             _hiringSolvedService = hiringSolvedService;
             _skillService = skillService;
+            _g2Service = g2Service;
+            _azureSearchService = azureSearchService;
         }
 
+
+        #region Sitemap
 
         [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task GenerateSiteMapAndSaveToBlobStorage()
@@ -130,6 +142,8 @@ namespace UpDiddyApi.Workflow
 
             _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.GenerateSiteMapAndSaveToBlobStorage completed at: {DateTime.UtcNow.ToLongDateString()}");
         }
+
+        #endregion
 
         #region Marketing
 
@@ -1978,7 +1992,6 @@ namespace UpDiddyApi.Workflow
 
         #endregion
 
-
         #region HiringSolved Resume Parsing 
         [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public async Task GetHiringSolvedResumeParseUpdates()
@@ -1998,13 +2011,35 @@ namespace UpDiddyApi.Workflow
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.GetHiringSolvedResumeParseUpdates encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                _syslog.Log(LogLevel.Error, $"ScheduledJobs.GetHiringSolvedResumeParseUpdates encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }
         }
 
 
 
         #endregion
+
+        #region G2
+
+
+    /// <summary>
+    /// Add or update the G2 into the azure search index 
+    /// </summary>
+    /// <param name="g2"></param>
+    /// <returns></returns>
+        public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2Index starting index for g2 {g2.ProfileGuid}");
+            await _azureSearchService.AddOrUpdateG2(g2);
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2Index done index for g2 {g2.ProfileGuid}");
+            return true;
+        }
+
+
+
+        #endregion
+
+
 
 
 

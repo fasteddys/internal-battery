@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using GeoJSON.Net.Geometry;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using Microsoft.Extensions.Configuration;
@@ -12,6 +13,8 @@ using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
+using UpDiddyApi.Models.Views;
+using UpDiddyApi.Workflow;
 using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyLib.Domain.Models;
 
@@ -25,6 +28,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IRepositoryWrapper _repository;
         private readonly IMapper _mapper;
         private readonly IAzureSearchService _azureSearchService;
+        private readonly IHangfireService _hangfireService;
 
         public G2Service(
             UpDiddyDbContext context,
@@ -32,7 +36,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             IRepositoryWrapper repository,
             ILogger<SubscriberService> logger,
             IMapper mapper,
-            IAzureSearchService azureSearchService
+            IAzureSearchService azureSearchService,
+            IHangfireService hangfireService
             )
         {
             _db = context;
@@ -41,6 +46,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _logger = logger;
             _mapper = mapper;
             _azureSearchService = azureSearchService;
+            _hangfireService = hangfireService;
         }
 
 
@@ -51,7 +57,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (cityId == 0 && radius != 0)
                 throw new FailedValidationException("A cityId must be provided if a radius is specifed");
 
-            Recruiter recruiter = await _repository.RecruiterRepository.GetRecruiterBySubscriberGuid(subscriberGuid);
+            Recruiter recruiter = await _repository.RecruiterRepository.GetRecruiterAndCompanyBySubscriberGuid(subscriberGuid);
 
             // validate that the subscriber is a recruiter 
             if (recruiter == null)
@@ -64,7 +70,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             int companyId = recruiter.CompanyId.Value;
             // handle case of non geo search 
             if ( cityId == 0 )
-                return await SearchG2Async(companyId, limit, offset, sort, order, keyword, 0, 0, 0 );
+                return await SearchG2Async(recruiter.Company.CompanyGuid, limit, offset, sort, order, keyword, 0, 0, 0 );
 
             // pick a random postal code for the city to get the last and long 
             Postal postal = _repository.PostalRepository.GetAll()
@@ -75,10 +81,60 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (postal == null)
                 throw new NotFoundException($"A city with an Id of {cityId} cannot be found.");
 
-            return await SearchG2Async(companyId, limit, offset, sort, order, keyword, radius, (double)postal.Latitude, (double)postal.Longitude);
+            return await SearchG2Async(recruiter.Company.CompanyGuid, limit, offset, sort, order, keyword, radius, (double)postal.Latitude, (double)postal.Longitude);
         }
 
-      
+        // todo jab background job for creating azure record for for every  subscriber for bootstrapping 
+        // todo jab background job for onboarding new company
+        // todo jab background job for onboarding new subscriber 
+        // todo jab figure out how to update G2 when self-curated or public data changess 
+        // todo jab background job for deleting a subcriber 
+
+
+        public async Task<bool> ReindexSubscriber(Guid subscriberGuid)
+        {
+            // Get the public company guid for 
+            Guid publicDataCompanyGuid = Guid.Parse(_configuration["CareerCircle:PublicDataCompanyGuid"]);
+            // todo jab remove  try catach 
+            try
+            {
+                // Get all non-public G2s for subscriber 
+                List<v_ProfileAzureSearch> g2Profiles = _db.ProfileAzureSearch
+                .Where( p => p.SubscriberGuid == subscriberGuid && p.CompanyGuid != publicDataCompanyGuid )
+                .ToList();
+
+                foreach (v_ProfileAzureSearch g2 in g2Profiles )
+                {                   
+                    if ( g2.CompanyGuid != null  )
+                    {
+                        G2SDOC indexDoc = _mapper.Map<G2SDOC>(g2);
+
+                        // manually map the location.  todo find a way for automapper to do this 
+                        Double lat = (double)g2.Location.Lat;
+                        Double lng = (double)g2.Location.Long;
+                        Position p = new Position(lat, lng);
+                        indexDoc.Location = new Point(p);
+                        // fire off as background job 
+                        _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexAddOrUpdate(indexDoc));
+
+                        string x = indexDoc.FirstName;
+                    }
+
+
+                };
+
+            }
+            catch (Exception ex )
+            {
+                var test = ex.Message;
+            }
+            
+
+            return true;
+        }
+
+
+
         public async Task<bool> CreateG2Async(G2SDOC g2)
         {
             _azureSearchService.AddOrUpdateG2(g2);
@@ -91,7 +147,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         #region private helper functions 
 
  
-        private async Task<G2SearchResultDto> SearchG2Async(int companyId, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0, double lat = 0, double lng = 0)
+        private async Task<G2SearchResultDto> SearchG2Async(Guid companyGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0, double lat = 0, double lng = 0)
         {
             DateTime startSearch = DateTime.Now;
             G2SearchResultDto searchResults = new G2SearchResultDto();
@@ -125,10 +181,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 };
 
 
-            // todo jab pass company in as parameter 
-
             // IMPORTANT!!!!   Filter quereies to be withing the specified company id for security reasons 
-            parameters.Filter = $"CompanyId eq {companyId}";
+            parameters.Filter = $"CompanyGuid eq '{companyGuid}'";
 
             double radiusKm = 0;
             // check to see if radius is in play
@@ -147,8 +201,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             else if ( radius == 0 && lat != 0 && lng != 0)
             {
-                // search for a single city with no radius
-                radiusKm = 0;
+                // In the case of searching for a single city with no radius, set the default radius to 1 mile since most larger
+                // cities have more than one postal records, each of which contains varying lat/lng data
+                radiusKm = 1 * 1.60934; ;
                 parameters.Filter += $" and geo.distance(Location, geography'POINT({lng} {lat})') le {radiusKm}";
  
             }

@@ -735,6 +735,12 @@ namespace UpDiddyApi.Helpers
 
 
 
+            CreateMap<v_ProfileAzureSearch, G2SDOC>()
+              .ForMember(x => x.Location, opt => opt.Ignore())
+              .ReverseMap();
+
+
+
 
 
         }

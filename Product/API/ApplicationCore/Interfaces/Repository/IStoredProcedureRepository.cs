@@ -6,6 +6,7 @@ using UpDiddyLib.Dto.User;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.Reports;
+using UpDiddyLib.Domain.AzureSearchDocuments;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
@@ -78,5 +79,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<Tuple<Guid?,string>> CreateJobPosting(JobCrudDto jobCrudDto);
         Task<string> UpdateJobPosting(JobCrudDto jobCrudDto);
         Task UpdateJobPostingSkills(Guid jobPostingGuid, List<Guid> skillGuids);
+ 
+
     }
 }

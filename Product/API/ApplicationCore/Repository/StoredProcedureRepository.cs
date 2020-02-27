@@ -10,6 +10,7 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.Reports;
+using UpDiddyLib.Domain.AzureSearchDocuments;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -1081,5 +1082,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Update_JobPostingSkillsByGuid] @JobPostingGuid, @SkillGuids", spParams);
         }
+
+
+
+ 
     }
 }

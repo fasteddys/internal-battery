@@ -35,6 +35,19 @@ namespace UpDiddyApi.Controllers.V2
 
 
 
+
+        [HttpPut]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("{subscriberGuid}")]
+        public async Task<IActionResult> ReindexSubscriber(Guid subscriberGuid)
+        {
+            _g2Service.ReindexSubscriber(subscriberGuid);
+            return StatusCode(200);
+        }
+
+
+
+
         [HttpPost]
         [Authorize(Policy = "IsRecruiterPolicy")]
         public async Task<IActionResult> SearchSubscribers([FromBody] G2SDOC g2)
@@ -49,9 +62,7 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("query")]
         public async Task<IActionResult> SearchG2(int cityId,  int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0 )
-        { 
-
-
+        {          
             var rVal = await _g2Service.SearchG2Async( GetSubscriberGuid() , cityId, limit, offset, sort, order, keyword,radius);
             return Ok(rVal);
         }
