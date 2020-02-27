@@ -53,5 +53,9 @@ namespace UpDiddyApi.Models.G2
         public string Goals { get; set; }
         [StringLength(500)]
         public string Preferences { get; set; }
+        public int? AzureIndexStatusId { get; set; }
+        public AzureIndexStatus AzureIndexStatus { get; set; }
+        [StringLength(100)]
+        public string AzureSearchIndexInfo { get; set; }
     }
 }
