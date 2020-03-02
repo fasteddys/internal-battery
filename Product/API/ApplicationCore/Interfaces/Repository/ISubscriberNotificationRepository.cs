@@ -14,7 +14,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         /// <param name="subscriberGuid"></param>
         /// <param name="notificationGuid"></param>
         /// <returns></returns>
-        Task<SubscriberNotification> GetSubscriberNotificationByIdentifiersAsync(Guid subscriberGuid, Guid notificationGuid);
+        Task<SubscriberNotification> GetSubscriberNotificationByIdentifiersAsync(Guid subscriberGuid, Guid subscriberNotificationGuid);
     }
 }
 

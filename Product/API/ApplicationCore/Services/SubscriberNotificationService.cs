@@ -26,14 +26,14 @@ namespace UpDiddyApi.ApplicationCore.Services
             _mapper = mapper;
         }
 
-        public async Task<bool> DeleteSubscriberNotification(Guid subscriberGuid, Guid notificationGuid)
+        public async Task<bool> DeleteSubscriberNotification(Guid subscriberGuid, Guid subscriberNotificationGuid)
         {
             bool isOperationSuccessful = false;
             try
             {
-                var subscriberNotification = await _repository.SubscriberNotificationRepository.GetSubscriberNotificationByIdentifiersAsync(subscriberGuid, notificationGuid);
+                var subscriberNotification = await _repository.SubscriberNotificationRepository.GetSubscriberNotificationByIdentifiersAsync(subscriberGuid, subscriberNotificationGuid);
                 if (subscriberNotification == null)
-                    throw new NotFoundException($"Unrecognized subscriber notification; subscriberGuid: {subscriberGuid}, notificationGuid: {notificationGuid}");
+                    throw new NotFoundException($"Unrecognized subscriber notification; subscriberGuid: {subscriberGuid}, subscriberNotificationGuid: {subscriberNotificationGuid}");
                 subscriberNotification.IsDeleted = 1;
                 subscriberNotification.ModifyDate = DateTime.UtcNow;
                 subscriberNotification.ModifyGuid = Guid.Empty;
@@ -45,28 +45,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                 _logger.Log(LogLevel.Error, $"SubscriberNotificationService.DeleteSubscriberNotification: An error occured while attempting to delete the subscriber notification. Message: {e.Message}", e);
             }
             return isOperationSuccessful;
-        }
-
-        public async Task<bool> DeleteSubscriberNotification(bool isAdmin, Guid subscriberGuid, Guid notificationGuid, Guid recipientGuid)
-        {
-            var subscriberNotification = await _repository.SubscriberNotificationRepository.GetSubscriberNotificationByIdentifiersAsync(subscriberGuid, notificationGuid);
-            if (subscriberNotification == null || subscriberNotification.IsDeleted == 1)
-                throw new NotFoundException($"Unrecognized subscriber notification; subscriberGuid: {subscriberGuid}, notificationGuid: {notificationGuid}");
-
-            var subscriber = await _repository.SubscriberRepository.GetByGuid(recipientGuid);
-            if (subscriber == null)
-                throw new NotFoundException("Cannot find subscriber");
-            
-            // Validate that the user is either the owner of the notifcation or an admin 
-            if (isAdmin == false && subscriber.SubscriberId != subscriberNotification.SubscriberId)
-                throw new UnauthorizedAccessException("User is not authorized to delete notification");
-            
-            subscriberNotification.IsDeleted = 1;
-            subscriberNotification.ModifyDate = DateTime.UtcNow;
-            subscriberNotification.ModifyGuid = subscriberGuid;
-            await _repository.SubscriberNotificationRepository.SaveAsync();
-
-            return true;
         }
 
         public async Task<NotificationListDto> GetNotifications(Guid subscriberGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
@@ -126,22 +104,18 @@ namespace UpDiddyApi.ApplicationCore.Services
             return newNotification.SubscriberNotificationGuid;
         }
 
-        public async Task<bool> UpdateSubscriberNotification(Guid subscriberGuid, Guid notificationGuid, Guid recipientGuid, NotificationDto notificationUpdate)
+        public async Task<bool> UpdateSubscriberNotification(Guid subscriberGuid, Guid subscriberNotificationGuid, NotificationDto notificationUpdate)
         {
             if (notificationUpdate == null)
                 throw new FailedValidationException("Update notification is required");
 
-            // make sure the logged in user = recipient 
-            if (recipientGuid != subscriberGuid)
-                throw new UnauthorizedAccessException("Not owner of notifcation");
-
             // Locate the subscriber 
-            Subscriber subscriber = await _repository.SubscriberRepository.GetByGuid(recipientGuid);
+            Subscriber subscriber = await _repository.SubscriberRepository.GetByGuid(subscriberGuid);
             if (subscriber == null)
                 throw new NotFoundException("Cannot find subscriber");
 
             SubscriberNotification subscriberNotification = 
-                await _repository.SubscriberNotificationRepository.GetSubscriberNotificationByIdentifiersAsync(subscriberGuid, notificationGuid);
+                await _repository.SubscriberNotificationRepository.GetSubscriberNotificationByIdentifiersAsync(subscriberGuid, subscriberNotificationGuid);
 
             if (subscriberNotification == null)
                 throw new NotFoundException("Cannot find notification");

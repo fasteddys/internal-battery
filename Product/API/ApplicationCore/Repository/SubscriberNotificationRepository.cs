@@ -16,10 +16,10 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
             _dbContext = dbContext;
         }
 
-        public async Task<SubscriberNotification> GetSubscriberNotificationByIdentifiersAsync(Guid subscriberGuid, Guid notificationGuid)
+        public async Task<SubscriberNotification> GetSubscriberNotificationByIdentifiersAsync(Guid subscriberGuid, Guid subscriberNotificationGuid)
         {
             return await _dbContext.SubscriberNotification.IgnoreQueryFilters()
-                .Where(sn => sn.Subscriber.SubscriberGuid == subscriberGuid && sn.Notification.NotificationGuid == notificationGuid)
+                .Where(sn => sn.Subscriber.SubscriberGuid == subscriberGuid && sn.SubscriberNotificationGuid == subscriberNotificationGuid)
                 .FirstOrDefaultAsync();
         }
     }

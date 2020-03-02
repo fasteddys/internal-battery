@@ -57,22 +57,30 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         [HttpDelete]
-        [Authorize]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("{notificationGuid}/subscribers/{subscriberGuid}")]
         public async Task<IActionResult> DeleteSubscriberNotification(Guid NotificationGuid, Guid subscriberGuid)
         {
-            var isAuth = await _authorizationService.AuthorizeAsync(User, "IsCareerCircleAdmin");
-
-            bool rval = await _subscriberNotificationService.DeleteSubscriberNotification(isAuth.Succeeded, GetSubscriberGuid(), NotificationGuid, subscriberGuid);
+            bool rval = await _subscriberNotificationService.DeleteSubscriberNotification(subscriberGuid, NotificationGuid);
             return StatusCode(204);
         }
 
+        [HttpDelete]
+        [Authorize]
+        [Route("{notificationGuid}/subscribers/")]
+        public async Task<IActionResult> DeleteSubscriberNotification(Guid NotificationGuid)
+        {
+            bool rval = await _subscriberNotificationService.DeleteSubscriberNotification(GetSubscriberGuid(), NotificationGuid);
+            return StatusCode(204);
+        }
+
+
         [HttpPut]
         [Authorize]
-        [Route("{notificationGuid}/subscribers/{subscriberGuid}")]
-        public async Task<IActionResult> UpdateSubscriberNotification([FromBody] NotificationDto notification, Guid NotificationGuid, Guid subscriberGuid)
+        [Route("{notificationGuid}/subscribers/")]
+        public async Task<IActionResult> UpdateSubscriberNotification([FromBody] NotificationDto notification, Guid NotificationGuid)
         {
-            bool rval = await _subscriberNotificationService.UpdateSubscriberNotification(GetSubscriberGuid(), NotificationGuid, subscriberGuid, notification);
+            bool rval = await _subscriberNotificationService.UpdateSubscriberNotification(GetSubscriberGuid(), NotificationGuid, notification);
             return StatusCode(200);
         }
 
