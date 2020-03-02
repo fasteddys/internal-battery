@@ -1084,7 +1084,38 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
 
+        /// <summary>
+        /// Invoke stored procedure to create g2 records for the specified subscriber.  1 record per active company will be created.  If an existing record for the
+        /// subscriber/company combination already exists, it will NOT be duplicated.
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        public async Task<int> CreateSubscriberG2Profiles(Guid subscriberGuid)
+        {
+            var subscriber = new SqlParameter("@SubscriberGuid", SqlDbType.UniqueIdentifier);
+            subscriber.Value = subscriberGuid; 
+            subscriber.Direction = ParameterDirection.Input;
+        
+            var spParams = new object[] { subscriber };
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Create_SubscriberG2Profiles] @SubscriberGuid", spParams);
+            return rowsAffected;          
+            
+        }
 
- 
+        public async Task<int> DeleteSubscriberG2Profiles(Guid subscriberGuid)
+        {
+            var subscriber = new SqlParameter("@SubscriberGuid", SqlDbType.UniqueIdentifier);
+            subscriber.Value = subscriberGuid;
+            subscriber.Direction = ParameterDirection.Input;
+
+            var spParams = new object[] { subscriber };
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Delete_SubscriberG2Profiles] @SubscriberGuid", spParams);
+            return rowsAffected;
+
+        }
+
+
+
+
     }
 }

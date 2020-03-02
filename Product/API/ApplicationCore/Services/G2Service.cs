@@ -29,6 +29,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IMapper _mapper;
         private readonly IAzureSearchService _azureSearchService;
         private readonly IHangfireService _hangfireService;
+        private readonly int MaxAzureSearchQueryResults = 1000;
 
         public G2Service(
             UpDiddyDbContext context,
@@ -49,6 +50,15 @@ namespace UpDiddyApi.ApplicationCore.Services
             _hangfireService = hangfireService;
         }
 
+
+
+        // todo jab background job for creating azure record for for every  subscriber for bootstrapping Task1750
+        // todo jab background job for onboarding new company  Task1750
+
+        // todo jab figure out how to update G2 when self-curated or public data changes 
+
+
+        #region G2 Searching 
 
         public async Task<G2SearchResultDto> SearchG2Async(Guid subscriberGuid, int cityId,   int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0 )
         {
@@ -84,58 +94,88 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await SearchG2Async(recruiter.Company.CompanyGuid, limit, offset, sort, order, keyword, radius, (double)postal.Latitude, (double)postal.Longitude);
         }
 
-        // todo jab background job for creating azure record for for every  subscriber for bootstrapping 
-        // todo jab background job for onboarding new company
-        // todo jab background job for onboarding new subscriber 
-        // todo jab figure out how to update G2 when self-curated or public data changess 
-        // todo jab background job for deleting a subcriber 
 
 
-        public async Task<bool> ReindexSubscriber(Guid subscriberGuid)
+
+  
+
+
+
+        #endregion
+
+
+        #region G2 Azure Indexing 
+
+
+        /// <summary>
+        /// For the given subscriber, update or add their profile to the G2 azure index 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        public async Task<bool> IndexSubscriber(Guid subscriberGuid)
         {
             // Get the public company guid for 
             Guid publicDataCompanyGuid = Guid.Parse(_configuration["CareerCircle:PublicDataCompanyGuid"]);
-            // todo jab remove  try catach 
-            try
-            {
-                // Get all non-public G2s for subscriber 
-                List<v_ProfileAzureSearch> g2Profiles = _db.ProfileAzureSearch
-                .Where( p => p.SubscriberGuid == subscriberGuid && p.CompanyGuid != publicDataCompanyGuid )
-                .ToList();
+ 
+             // Get all non-public G2s for subscriber 
+             List<v_ProfileAzureSearch> g2Profiles = _db.ProfileAzureSearch
+             .Where( p => p.SubscriberGuid == subscriberGuid && p.CompanyGuid != publicDataCompanyGuid )
+             .ToList();
 
-                foreach (v_ProfileAzureSearch g2 in g2Profiles )
-                {                   
-                    if ( g2.CompanyGuid != null  )
-                    {
-                        G2SDOC indexDoc = _mapper.Map<G2SDOC>(g2);
-
-                        // manually map the location.  todo find a way for automapper to do this 
-                        Double lat = (double)g2.Location.Lat;
-                        Double lng = (double)g2.Location.Long;
-                        Position p = new Position(lat, lng);
-                        indexDoc.Location = new Point(p);
-                        // fire off as background job 
-                        _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexAddOrUpdate(indexDoc));
-
-                        string x = indexDoc.FirstName;
-                    }
-
-
-                };
-
-            }
-            catch (Exception ex )
-            {
-                var test = ex.Message;
-            }
+             foreach (v_ProfileAzureSearch g2 in g2Profiles )
+             {                   
+                 if ( g2.CompanyGuid != null  )
+                 {
+                    G2SDOC indexDoc = await MapToG2SDOC(g2);   
+                     // fire off as background job 
+                    _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexAddOrUpdate(indexDoc));                     
+                 }
+             };
             
+            return true;
+        }
+
+
+        /// <summary>
+        /// For the given subscriber, remove all instances of their profiles from the G2 azure index 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        public async Task<bool> RemoveSubscriberFromIndex(Guid subscriberGuid)
+        {
+
+
+            G2SearchResultDto subscriberDocs = await SearchG2ForSubscriberAsync(subscriberGuid);
+
+            foreach ( G2InfoDto g2  in subscriberDocs.G2s)
+            {
+                G2SDOC delDoc = new G2SDOC()
+                {
+                    ProfileGuid = g2.ProfileGuid,                                      
+                };
+                // Call background job to delete the user 
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexDelete(delDoc));
+            };
+
+
+
+            // If for some reason the total number of records for the given subscriber is more the number 
+            // retreived, recursivley call this routine again 
+            int DeleteSubscriberG2RecurseDelayInMinutes = int.Parse(_configuration["AzureSearch:DeleteSubscriberG2RecurseDelayInMinutes"]);
+            if ( subscriberDocs.TotalHits > subscriberDocs.SubscriberCount)
+                _hangfireService.Schedule<ScheduledJobs>(j => j.G2DeleteSubscriber(subscriberGuid), TimeSpan.FromMinutes(DeleteSubscriberG2RecurseDelayInMinutes) );
+ 
 
             return true;
         }
 
 
-
-        public async Task<bool> CreateG2Async(G2SDOC g2)
+        /// <summary>
+        /// Index the specified g2 document into azure search 
+        /// </summary>
+        /// <param name="g2"></param>
+        /// <returns></returns>
+        public async Task<bool> IndexG2Async(G2SDOC g2)
         {
             _azureSearchService.AddOrUpdateG2(g2);
             return true;
@@ -143,9 +183,155 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
+        #endregion
+
+
+
+        #region G2 Backing Store Operations 
+
+        /// <summary>
+        /// Add a new subscriber G2 Profile record for every company to which they do not already have
+        /// a g2 profile.
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns> The number of new g2 profile records added </returns>
+        public async Task<int> AddSubscriberProfiles(Guid subscriberGuid)
+        {
+            // call stored procedure to create a g2 recordsfor the specified subscriber.  1 record per 
+            // active company will be created and return the number of records created 
+            int rVal = await _repository.StoredProcedureRepository.CreateSubscriberG2Profiles(subscriberGuid);
+        
+            return rVal;
+        }
+
+        /// <summary>
+        /// Remove subscriber profile records 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        public async Task<int> DeleteSubscriberProfiles(Guid subscriberGuid)
+        {
+            // call stored procedure to create a g2 recordsfor the specified subscriber.  1 record per 
+            // active company will be created and return the number of records created 
+            int rVal = await _repository.StoredProcedureRepository.DeleteSubscriberG2Profiles(subscriberGuid);
+
+            return rVal;
+        }
+
+        #endregion
+
+
+        #region   G2 Operations (backing store and indexing)
+
+        /// <summary>
+        /// Adds a new subsriber by creating a g2.profile record for every active company for the subscriber.
+        /// Also indexes the subscriber into azure search
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        public async Task<bool> AddSubscriber(Guid subscriberGuid)
+        {
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.G2AddNewSubscriber(subscriberGuid));
+            return true;
+        }
+    
+        /// <summary>
+        /// Removes  all of the subscribers g2.profile information in sql/server  and removes them from the azure search
+        /// // index
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        public async Task<bool> DeleteSubscriber(Guid subscriberGuid)
+        {
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.G2DeleteSubscriber(subscriberGuid));    
+            return true;
+        }
+
+        #endregion
+
 
         #region private helper functions 
 
+        /// <summary>
+        ///  return all records for the specified subscriber 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        private async Task<G2SearchResultDto> SearchG2ForSubscriberAsync(Guid subscriberGuid)
+        {
+            DateTime startSearch = DateTime.Now;
+            G2SearchResultDto searchResults = new G2SearchResultDto();
+
+            string searchServiceName = _configuration["AzureSearch:SearchServiceName"];
+            string adminApiKey = _configuration["AzureSearch:SearchServiceQueryApiKey"];
+            string g2IndexName = _configuration["AzureSearch:G2IndexName"];
+
+ 
+
+            SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(adminApiKey));
+
+            // Create an index named hotels
+            ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(g2IndexName);
+
+            SearchParameters parameters;
+            DocumentSearchResult<G2InfoDto> results;
+
+            parameters =
+                new SearchParameters()
+                {
+                    IncludeTotalResultCount = true,
+                    Top = MaxAzureSearchQueryResults
+                };
+ 
+
+            results = indexClient.Documents.Search<G2InfoDto>("*", parameters);
+
+            DateTime startMap = DateTime.Now;
+            searchResults.G2s = results?.Results?
+                .Select(s => (G2InfoDto)s.Document)
+                .ToList();
+
+            searchResults.TotalHits = results.Count.Value;
+            searchResults.PageSize =  (int) results.Count.Value;
+            searchResults.NumPages = searchResults.PageSize != 0 ? (int)Math.Ceiling((double)searchResults.TotalHits / searchResults.PageSize) : 0;
+            searchResults.SubscriberCount = searchResults.G2s.Count;
+            searchResults.PageNum =  1;
+
+            DateTime stopMap = DateTime.Now;
+
+            // calculate search timing metrics 
+            TimeSpan intervalTotalSearch = stopMap - startSearch;
+            TimeSpan intervalSearchTime = startMap - startSearch;
+            TimeSpan intervalMapTime = stopMap - startMap;
+
+            // assign search metrics to search results 
+            searchResults.SearchTimeInMilliseconds = intervalTotalSearch.TotalMilliseconds;
+            searchResults.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
+            searchResults.SearchMappingTimeInTicks = intervalMapTime.Ticks;
+
+            return searchResults;
+        }
+
+
+
+        private async Task<G2SDOC> MapToG2SDOC(v_ProfileAzureSearch g2)
+        {
+            try
+            {
+                G2SDOC indexDoc = _mapper.Map<G2SDOC>(g2);
+                // manually map the location.  todo find a way for automapper to do this 
+                Double lat = (double)g2.Location.Lat;
+                Double lng = (double)g2.Location.Long;
+                Position p = new Position(lat, lng);
+                indexDoc.Location = new Point(p);
+                return indexDoc;
+            }
+            catch ( Exception ex )
+            {
+                _logger.LogError($"G2Service:MapToG2SDOC Exception for {g2.ProfileGuid} error = {ex.Message}");
+                throw ex;
+            }
+        }
  
         private async Task<G2SearchResultDto> SearchG2Async(Guid companyGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0, double lat = 0, double lng = 0)
         {

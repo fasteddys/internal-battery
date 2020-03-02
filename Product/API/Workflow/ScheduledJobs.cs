@@ -2037,6 +2037,54 @@ namespace UpDiddyApi.Workflow
 
 
 
+        /// <summary>
+        /// Add or update the G2 into the azure search index 
+        /// </summary>
+        /// <param name="g2"></param>
+        /// <returns></returns>
+        public async Task<bool> G2IndexDelete(G2SDOC g2)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2IndexDelete starting index for g2 {g2.ProfileGuid}");
+            await _azureSearchService.DeleteG2(g2);
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2IndexDelete done index for g2 {g2.ProfileGuid}");
+            return true;
+        }
+
+
+
+        /// <summary>
+        /// Adds a new subscriber to the sql server g2 profile backing store for any subscriber/company commbination that 
+        /// does not currently exist.  If profiles are added, they subscriber's g2 information will be indexed into azure 
+        /// search.
+        /// </summary>
+        /// <param name="g2"></param>
+        /// <returns></returns>
+        public async Task<bool> G2AddNewSubscriber(Guid subscriberGuid)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2AddSubscriber add of subscriber {subscriberGuid}");
+            // call the g2 service to create a new g2 record for the subscriber for every active company
+            int numG2sCreated =  await _g2Service.AddSubscriberProfiles(subscriberGuid);
+            if (numG2sCreated > 0)
+                await _g2Service.IndexSubscriber(subscriberGuid);
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2AddSubscriber done index for g2 {subscriberGuid}");
+            return true;
+        }
+
+
+        public async Task<bool> G2DeleteSubscriber(Guid subscriberGuid)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2DeleteSubscriber add of subscriber {subscriberGuid}");
+            // call the g2 service to remove all g2 profile information for subscriber 
+            int numG2sCreated = await _g2Service.DeleteSubscriberProfiles(subscriberGuid);
+            // delete subscriber information from azure search index
+            _g2Service.RemoveSubscriberFromIndex(subscriberGuid);   
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2DeleteSubscriber done index for g2 {subscriberGuid}");
+            return true;
+        }
+
+
+
+
         #endregion
 
 

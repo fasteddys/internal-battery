@@ -32,7 +32,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<int> AddOrUpdateCourseAsync(CourseParams courseParams);
         Task<List<SubscriberInitialSourceDto>> GetNewSubscribers();
         Task<List<CourseDetailDto>> GetCoursesRandom(int NumCourses);
-        Task<List<CourseDetailDto>> GetCourses(int limit, int offset, string sort, string order);    
+        Task<List<CourseDetailDto>> GetCourses(int limit, int offset, string sort, string order);
         Task<CourseDetailDto> GetCourse(Guid courseGuid);
         Task<List<CourseFavoriteDto>> GetFavoriteCourses(Guid subscriberGuid, int limit, int offset, string sort, string order);
         Task<List<SubscriberNotesDto>> GetSubscriberNotes(Guid subscriberGuid, Guid talentGuid, int limit, int offset, string sort, string order);
@@ -76,10 +76,10 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<bool> InsertSendGridEvents(string sendGridJson);
         Task<bool> PurgeSendGridEvents(int LookbackDays);
         Task<List<SubscriberEmailStatisticDto>> GetSubscriberEmailStatistics(string email);
-        Task<Tuple<Guid?,string>> CreateJobPosting(JobCrudDto jobCrudDto);
+        Task<Tuple<Guid?, string>> CreateJobPosting(JobCrudDto jobCrudDto);
         Task<string> UpdateJobPosting(JobCrudDto jobCrudDto);
         Task UpdateJobPostingSkills(Guid jobPostingGuid, List<Guid> skillGuids);
- 
-
-    }
+        Task<int> CreateSubscriberG2Profiles(Guid subscriberGuid);
+        Task<int> DeleteSubscriberG2Profiles(Guid subscriberGuid);
+    }  
 }

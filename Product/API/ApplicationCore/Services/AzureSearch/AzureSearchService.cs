@@ -60,16 +60,17 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
 
 
         #region G2
-
-        // TODO JAB Implement 
+ 
         public async Task<bool> AddOrUpdateG2(G2SDOC g2)
         {
             SendG2Request(g2, "upload");
+            // todo jab update profile with index status
             return true;
         }
 
         public async Task<bool> DeleteG2(G2SDOC g2)
         {
+            // todo jab update profile with index status
             SendG2Request(g2, "delete");
             return true;
         }
@@ -115,20 +116,15 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
 
 
         private async Task<bool> SendG2Request(G2SDOC g2, string cmd)
-        {
-            // fire and forget 
-            // todo jab run as task 
-            //Task.Run(() =>
-            //{
-                string index = _configuration["AzureSearch:G2IndexName"];
-                SDOCRequest<G2SDOC> docs = new SDOCRequest<G2SDOC>();                            
-                g2.SearchAction = cmd;
-                docs.value.Add(g2);
+        {            
+            string index = _configuration["AzureSearch:G2IndexName"];
+            SDOCRequest<G2SDOC> docs = new SDOCRequest<G2SDOC>();                            
+            g2.SearchAction = cmd;
+            docs.value.Add(g2);
  
-               string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffZ" });
-               SendSearchRequest(index, Json);
-            //});
-            return true;
+            string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffZ" });
+            bool rval = await   SendSearchRequest(index, Json);
+            return rval;            
         }
 
 

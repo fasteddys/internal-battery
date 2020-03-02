@@ -13,6 +13,7 @@ using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyLib.Domain.AzureSearch;
 using UpDiddyApi.Models;
+using UpDiddyApi.Workflow;
 
 namespace UpDiddyApi.Controllers.V2
 {
@@ -23,25 +24,58 @@ namespace UpDiddyApi.Controllers.V2
         private readonly IConfiguration _configuration;
         private readonly IG2Service _g2Service;
         private readonly IAzureSearchService _azureSearchService;
+        private readonly IHangfireService _hangfireService;
 
         public G2Controller(IServiceProvider services)
         {
             _configuration = services.GetService<IConfiguration>();
             _g2Service = services.GetService<IG2Service>();
             _azureSearchService = services.GetService<IAzureSearchService>();
+            _hangfireService = services.GetService<IHangfireService>();
         }
 
 
 
 
+        [HttpDelete]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("{subscriberGuid}")]
+        public async Task<IActionResult> DeleteSubscriberFromIndex(Guid subscriberGuid)
+        {
+ 
+            _g2Service.DeleteSubscriber(subscriberGuid);
+            return StatusCode(204);
+        }
+
+ 
+        /// <summary>
+        /// Add new subscriber 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("{subscriberGuid}")]
+        public async Task<IActionResult> AddNewSubscriber(Guid subscriberGuid)
+        {
+            _g2Service.AddSubscriber(subscriberGuid);
+            return StatusCode(200);
+        }
 
 
+
+        /// <summary>
+        /// Re-index subsriber.  This operation will update as well as create documents in the 
+        /// azure g2 index 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
         [HttpPut]
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("{subscriberGuid}")]
         public async Task<IActionResult> ReindexSubscriber(Guid subscriberGuid)
         {
-            _g2Service.ReindexSubscriber(subscriberGuid);
+            _g2Service.IndexSubscriber(subscriberGuid);
             return StatusCode(200);
         }
 
@@ -50,9 +84,10 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpPost]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        public async Task<IActionResult> SearchSubscribers([FromBody] G2SDOC g2)
+        [Route("index")]
+        public async Task<IActionResult> IndexSubscribers([FromBody] G2SDOC g2)
         {
-            var rVal = await _g2Service.CreateG2Async(g2);
+            var rVal = await _g2Service.IndexG2Async(g2);
             return Ok(rVal);
         }
 
