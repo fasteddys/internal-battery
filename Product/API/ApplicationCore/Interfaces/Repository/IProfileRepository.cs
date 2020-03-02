@@ -9,6 +9,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface IProfileRepository : IUpDiddyRepositoryBase<Profile>
     {
-
+        Task<Profile> GetProfileForRecruiter(Guid profileGuid, Guid subscriberGuid);
+        Task UpdateProfileForRecruiter(ProfileDto profileDto, Guid subscriberGuid);
+        Task DeleteProfile(Guid profileGuid);
+        Task<Guid> CreateProfile(ProfileDto profileDto);
     }
 }

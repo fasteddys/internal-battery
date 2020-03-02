@@ -100,6 +100,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ISovrenParseStatisticRepository _sovrenParseStatisticRepository;
         private ICityRepository _cityRepository;
         private IPostalRepository _postalRepository;
+        private IProfileRepository _profileRepository;
 
 
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
@@ -1154,7 +1155,17 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
-
+        public IProfileRepository ProfileRepository
+        {
+            get
+            {
+                if (_profileRepository == null)
+                {
+                    _profileRepository = new ProfileRepository(_dbContext);
+                }
+                return _profileRepository;
+            }
+        }
 
         public async Task SaveAsync()
         {

@@ -42,6 +42,8 @@ using UpDiddyApi.ApplicationCore.Services.Identity;
 using UpDiddyApi.ApplicationCore.ActionFilter;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using UpDiddyApi.ApplicationCore.Services.AzureSearch;
+using G2Services = UpDiddyApi.ApplicationCore.Services.G2;
+using G2Interfaces = UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
 
 namespace UpDiddyApi
 {
@@ -350,6 +352,7 @@ namespace UpDiddyApi
             services.AddScoped<ISubscriberEmailService, SubscriberEmailService>();
             services.AddScoped<IHiringSolvedService, HiringSolvedService>();
             services.AddScoped<IG2Service, G2Service>();
+            services.AddScoped<G2Interfaces.IProfileService, G2Services.ProfileService>();
 
             #endregion
 

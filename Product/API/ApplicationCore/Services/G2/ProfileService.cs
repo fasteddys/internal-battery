@@ -1,32 +1,54 @@
-﻿using System;
+﻿using AutoMapper;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyLib.Domain.Models.G2;
 
 namespace UpDiddyApi.ApplicationCore.Services.G2
 {
     public class ProfileService : IProfileService
     {
-        public Task<Guid> CreateProfile(ProfileDto profile)
+        private readonly IRepositoryWrapper _repositoryWrapper;
+        private readonly IMapper _mapper;
+
+        public ProfileService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
         {
-            throw new NotImplementedException();
+            _repositoryWrapper = repositoryWrapper;
+            _mapper = mapper;
         }
 
-        public Task DeleteProfile(Guid profileGuid)
+        public async Task<Guid> CreateProfile(ProfileDto profileDto)
         {
-            throw new NotImplementedException();
+            return await _repositoryWrapper.ProfileRepository.CreateProfile(profileDto);
         }
 
-        public Task<ProfileDto> GetProfile(Guid profileGuid)
+        public async Task DeleteProfile(Guid profileGuid)
         {
-            throw new NotImplementedException();
+            await _repositoryWrapper.ProfileRepository.DeleteProfile(profileGuid);
         }
 
-        public Task UpdateProfile(ProfileDto profile)
+        public async Task<ProfileDto> GetProfileForRecruiter(Guid profileGuid, Guid subscriberGuid)
         {
-            throw new NotImplementedException();
+            if (profileGuid == null || profileGuid == Guid.Empty)
+                throw new NotFoundException("profileGuid cannot be null");
+
+            ProfileDto profileDto;
+            var profile = await _repositoryWrapper.ProfileRepository.GetProfileForRecruiter(profileGuid, subscriberGuid);
+            if (profile == null)
+                throw new NotFoundException("profile not found");
+            
+            return _mapper.Map<ProfileDto>(profile);
+        }
+
+        public async Task UpdateProfileForRecruiter(ProfileDto profileDto, Guid subscriberGuid)
+        {
+            if (profileDto == null)
+                throw new NotFoundException("profileDto cannot be null");
+            await _repositoryWrapper.ProfileRepository.UpdateProfileForRecruiter(profileDto, subscriberGuid);            
         }
     }
 }
