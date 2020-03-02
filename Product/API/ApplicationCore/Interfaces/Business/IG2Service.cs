@@ -28,6 +28,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         #region   G2 Operations (backing store and indexing)
         Task<bool> AddSubscriber(Guid subscriberGuid);
         Task<bool> DeleteSubscriber(Guid subscriberGuid);
+        Task<bool> AddCompany(Guid companyGuid);
+        Task<bool> DeleteCompany(Guid companyGuid);
+
         #endregion
 
 

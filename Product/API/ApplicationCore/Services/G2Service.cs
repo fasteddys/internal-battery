@@ -53,7 +53,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
         // todo jab background job for creating azure record for for every  subscriber for bootstrapping Task1750
-        // todo jab background job for onboarding new company  Task1750
+
 
         // todo jab figure out how to update G2 when self-curated or public data changes 
 
@@ -246,6 +246,34 @@ namespace UpDiddyApi.ApplicationCore.Services
             _hangfireService.Enqueue<ScheduledJobs>(j => j.G2DeleteSubscriber(subscriberGuid));    
             return true;
         }
+
+
+        /// <summary>
+        /// Adds a new company by creating a g2.profile record for every active subscriber for the given company.
+        /// Also indexes the subscriber into azure search
+        /// </summary>
+        /// <param name="companyGuid"></param>
+        /// <returns></returns>
+        public async Task<bool> AddCompany(Guid companyGuid)
+        {
+
+            // todo jab implement _hangfireService.Enqueue<ScheduledJobs>(j => j.G2AddNewSubscriber(subscriberGuid));
+            return true;
+        }
+
+        /// <summary>
+        /// Removes  all of the company's g2.profile information in sql/server  and removes then from the azure search
+        /// // index
+        /// </summary>
+        /// <param name="companyGuid"></param>
+        /// <returns></returns>
+        public async Task<bool> DeleteCompany(Guid compmapnyGuid)
+        {
+
+            // todo jab implement _hangfireService.Enqueue<ScheduledJobs>(j => j.G2DeleteSubscriber(subscriberGuid));
+            return true;
+        }
+
 
         #endregion
 
