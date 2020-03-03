@@ -70,7 +70,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             else
             {
-                IEnumerable<Subscriber> subscribers = await _repositoryWrapper.SubscriberRepository.GetByConditionAsync(x => x.IsDeleted == 0 && x.IsVerified == true && x.NotificationEmailsEnabled == true);
+                IEnumerable<Subscriber> subscribers = await _repositoryWrapper.SubscriberRepository.GetByConditionAsync(x => x.IsDeleted == 0 && x.NotificationEmailsEnabled == true);
                 if (subscribers != null && subscribers.Count() > 0)
                     _hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(notification, subscribers.ToList()));
             }
