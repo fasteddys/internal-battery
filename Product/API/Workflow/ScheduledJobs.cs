@@ -173,7 +173,7 @@ namespace UpDiddyApi.Workflow
                                  notificationsUrl = _configuration["Environment:BaseUrl"].ToString() + "dashboard",
                                  disableNotificationEmailReminders = _configuration["Environment:BaseUrl"].ToString() + "Home/DisableEmailReminders/" + reminder.SubscriberGuid
                              },
-                             SendGridAccount.Transactional,
+                             SendGridAccount.NotifySystem,
                              null,
                              null,
                              executionTime))
@@ -1217,7 +1217,7 @@ namespace UpDiddyApi.Workflow
                         jobPostingAlert.Subscriber.Email,
                         _configuration["SysEmail:Transactional:TemplateIds:JobPosting-SubscriberAlert"],
                         templateData,
-                        SendGridAccount.Transactional,
+                        SendGridAccount.NotifySystem,
                         null,
                         null);
                 }
@@ -1521,7 +1521,7 @@ namespace UpDiddyApi.Workflow
                                   entry.Key.Email,
                                   _configuration["SysEmail:Transactional:TemplateIds:JobApplication-AbandonmentAlert"],
                                   SendGridHelper.GenerateJobAbandonmentEmailTemplate(entry, similarJobSearchResults.Jobs, jobPostingUrl),
-                                  SendGridAccount.Transactional,
+                                  SendGridAccount.NotifySystem,
                                   null,
                                   null);
                     }
@@ -1534,7 +1534,7 @@ namespace UpDiddyApi.Workflow
                               email,
                               _configuration["SysEmail:Transactional:TemplateIds:JobApplication-AbandonmentAlert-Recruiter"],
                               SendGridHelper.GenerateJobAbandonmentRecruiterTemplate(subscribersToJobPostingMapping, jobPostingUrl),
-                              SendGridAccount.Transactional,
+                              SendGridAccount.NotifySystem,
                               null,
                               null);
                     }
