@@ -97,7 +97,8 @@ namespace UpDiddyLib.Helpers
             Transactional,
             Marketing,
             Leads,
-            InternalLeads
+            InternalLeads,
+            NotifySystem
         }
 
         public static class CMS
