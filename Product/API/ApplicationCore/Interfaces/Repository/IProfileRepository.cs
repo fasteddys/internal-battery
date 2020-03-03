@@ -13,5 +13,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task UpdateProfileForRecruiter(ProfileDto profileDto, Guid subscriberGuid);
         Task DeleteProfile(Guid profileGuid);
         Task<Guid> CreateProfile(ProfileDto profileDto);
+        Task UpdateAzureIndexStatus(Guid profileGuid, Guid azureIndexStatusGuid, string azureSearchIndexInfo);
     }
 }

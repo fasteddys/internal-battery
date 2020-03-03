@@ -123,5 +123,17 @@ namespace UpDiddyApi.ApplicationCore.Repository
             if (!string.IsNullOrWhiteSpace(validationErrors.Value.ToString()))
                 throw new FailedValidationException(validationErrors.Value.ToString());
         }
+
+        public async Task UpdateAzureIndexStatus(Guid profileGuid, Guid azureIndexStatusGuid, string azureSearchIndexInfo)
+        {
+            var profile = _dbContext.Profile.Where(p => p.ProfileGuid == profileGuid).FirstOrDefault();
+            var azureIndexStatus = _dbContext.AzureIndexStatus.Where(a => a.AzureIndexStatusGuid == azureIndexStatusGuid).FirstOrDefault();
+            profile.AzureIndexStatusId = azureIndexStatus.AzureIndexStatusId;
+            profile.AzureSearchIndexInfo = azureSearchIndexInfo;
+            profile.ModifyDate = DateTime.UtcNow;
+            profile.ModifyGuid = Guid.Empty;
+            _dbContext.Update(profile);
+            await _dbContext.SaveChangesAsync();
+        }
     }
 }

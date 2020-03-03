@@ -12,5 +12,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business.G2
         Task UpdateProfileForRecruiter(ProfileDto profileDto, Guid subscriberGuid);
         Task<Guid> CreateProfile(ProfileDto profileDto);
         Task DeleteProfile(Guid profileGuid);
+        Task UpdateAzureIndexStatus(Guid profileGuid, string azureIndexStatusName, string azureSearchIndexInfo);
     }
 }

@@ -101,6 +101,14 @@ namespace UpDiddyApi.Controllers.V2
             return StatusCode(204);
         }
 
+        //todo: delete this
+        [HttpPut]
+        [Route("testing")]
+        public async Task<IActionResult> test()
+        {
+            await _profileService.UpdateAzureIndexStatus(Guid.Parse("11A1418F-6A70-4655-9BA4-509C1D210F37"), "Error", "Some shit went wrong!");
+            return StatusCode(204);
+        }
         #endregion
     }
 }

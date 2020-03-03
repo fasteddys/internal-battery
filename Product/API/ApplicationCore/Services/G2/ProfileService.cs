@@ -34,7 +34,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         public async Task<ProfileDto> GetProfileForRecruiter(Guid profileGuid, Guid subscriberGuid)
         {
             if (profileGuid == null || profileGuid == Guid.Empty)
-                throw new NotFoundException("profileGuid cannot be null");
+                throw new NotFoundException("profileGuid cannot be null or empty");
 
             ProfileDto profileDto;
             var profile = await _repositoryWrapper.ProfileRepository.GetProfileForRecruiter(profileGuid, subscriberGuid);
@@ -49,6 +49,19 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             if (profileDto == null)
                 throw new NotFoundException("profileDto cannot be null");
             await _repositoryWrapper.ProfileRepository.UpdateProfileForRecruiter(profileDto, subscriberGuid);            
+        }
+
+        public async Task UpdateAzureIndexStatus(Guid profileGuid, string azureIndexStatusName, string azureSearchIndexInfo)
+        {
+            if (profileGuid == null || profileGuid == Guid.Empty)
+                throw new NotFoundException("profileGuid cannot be null or empty");
+
+            var azureIndexStatusQuery = await _repositoryWrapper.AzureIndexStatusRepository.GetByConditionAsync(ais => ais.Name == azureIndexStatusName);
+            var azureIndexStatus = azureIndexStatusQuery.FirstOrDefault();
+            if (azureIndexStatus == null)
+                throw new NotFoundException($"unrecognized azure index status: {azureIndexStatusName}");
+
+            await _repositoryWrapper.ProfileRepository.UpdateAzureIndexStatus(profileGuid, azureIndexStatus.AzureIndexStatusGuid, azureSearchIndexInfo);
         }
     }
 }

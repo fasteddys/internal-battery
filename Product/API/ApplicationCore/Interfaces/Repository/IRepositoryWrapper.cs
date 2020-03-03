@@ -91,5 +91,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         ICityRepository CityRepository { get; }
         IPostalRepository PostalRepository { get; }
         IProfileRepository ProfileRepository { get; }
+        IAzureIndexStatusRepository AzureIndexStatusRepository { get; }
     }
 }
