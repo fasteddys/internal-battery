@@ -165,7 +165,7 @@ namespace UpDiddyApi.Workflow
                         if (await _sysEmail.SendTemplatedEmailAsync(
                              _syslog,
                              reminder.Email,
-                             _configuration["SysEmail:Transactional:TemplateIds:SubscriberNotification-Reminder"].ToString(),
+                             _configuration["SysEmail:NotifySystem:TemplateIds:SubscriberNotification-Reminder"].ToString(),
                              new
                              {
                                  firstName = reminder.FirstName,
@@ -251,7 +251,7 @@ namespace UpDiddyApi.Workflow
                         }
 
                         bool isMailSentSuccessfully =
-                        _sysEmail.SendTemplatedEmailAsync(
+                         _sysEmail.SendTemplatedEmailAsync(
                             _syslog,
                             leadEmail.Email,
                             leadEmail.EmailTemplateId,
@@ -1216,14 +1216,15 @@ namespace UpDiddyApi.Workflow
                         posted = j.PostingDateUTC.ToShortDateString(),
                         url = _configuration["CareerCircle:ViewJobPostingUrl"] + j.JobPostingGuid
                     }).ToList());
-                    _sysEmail.SendTemplatedEmailAsync(
-                        _syslog,
-                        jobPostingAlert.Subscriber.Email,
-                        _configuration["SysEmail:Transactional:TemplateIds:JobPosting-SubscriberAlert"],
-                        templateData,
-                        SendGridAccount.NotifySystem,
-                        null,
-                        null);
+
+                    var result = _sysEmail.SendTemplatedEmailAsync(
+                       _syslog,
+                       jobPostingAlert.Subscriber.Email,
+                       _configuration["SysEmail:NotifySystem:TemplateIds:JobPosting-SubscriberAlert"],
+                       templateData,
+                       SendGridAccount.NotifySystem,
+                       null,
+                       null).Result;
                 }
             }
             catch (Exception e)
@@ -1524,7 +1525,7 @@ namespace UpDiddyApi.Workflow
                         bool result = await _sysEmail.SendTemplatedEmailAsync(
                                    _syslog,
                                   entry.Key.Email,
-                                  _configuration["SysEmail:Transactional:TemplateIds:JobApplication-AbandonmentAlert"],
+                                  _configuration["SysEmail:NotifySystem:TemplateIds:JobApplication-AbandonmentAlert"],
                                   SendGridHelper.GenerateJobAbandonmentEmailTemplate(entry, similarJobSearchResults.Jobs, jobPostingUrl),
                                   SendGridAccount.NotifySystem,
                                   null,
@@ -1538,7 +1539,7 @@ namespace UpDiddyApi.Workflow
                         await _sysEmail.SendTemplatedEmailAsync(
                                 _syslog,
                               email,
-                              _configuration["SysEmail:Transactional:TemplateIds:JobApplication-AbandonmentAlert-Recruiter"],
+                              _configuration["SysEmail:NotifySystem:TemplateIds:JobApplication-AbandonmentAlert-Recruiter"],
                               SendGridHelper.GenerateJobAbandonmentRecruiterTemplate(subscribersToJobPostingMapping, jobPostingUrl),
                               SendGridAccount.NotifySystem,
                               null,
@@ -1679,7 +1680,7 @@ namespace UpDiddyApi.Workflow
                     subscriber = await _repositoryWrapper.SubscriberRepository.GetByGuid(profile.SubscriberGuid.Value, false);
 
                     // Purge profiles from google that have no related subscriber record or have a deleted subscriber record
-                    if ((subscriber == null || subscriber.IsDeleted == 1)  && !string.IsNullOrWhiteSpace(profile.CloudTalentUri))
+                    if ((subscriber == null || subscriber.IsDeleted == 1) && !string.IsNullOrWhiteSpace(profile.CloudTalentUri))
                     {
                         try
 

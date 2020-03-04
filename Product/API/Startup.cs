@@ -92,7 +92,7 @@ namespace UpDiddyApi
                 .ReadFrom.Configuration(Configuration)
                 .WriteTo.ApplicationInsightsTraces(Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"])
                 .WriteTo
-                    .SendGrid(LogEventLevel.Fatal, Configuration["SysEmail:Transactional:ApiKey"], Configuration["SysEmail:SystemErrorEmailAddress"])
+                    .SendGrid(LogEventLevel.Fatal, Configuration["SysEmail:NotifySystem:ApiKey"], Configuration["SysEmail:SystemErrorEmailAddress"])
                 .Enrich.FromLogContext()
                 .CreateLogger();
 

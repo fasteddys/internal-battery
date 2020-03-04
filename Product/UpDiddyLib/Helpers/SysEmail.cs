@@ -18,7 +18,7 @@ namespace UpDiddyLib.Helpers
 {
     public class SysEmail : ISysEmail
     {
-        private IConfiguration _configuration;   
+        private IConfiguration _configuration;
 
         public SysEmail(IConfiguration Configuration)
         {
@@ -30,11 +30,11 @@ namespace UpDiddyLib.Helpers
             return await SendEmailAsync(null, email, subject, htmlContent, SendGridAccount);
         }
 
-  
+
         public async Task<bool> SendEmailAsync(ILogger syslog, string email, string subject, string htmlContent, Constants.SendGridAccount SendGridAccount)
-        { 
+        {
             bool isDebugMode = _configuration[$"SysEmail:DebugMode"] == "true";
-            LogInformation(syslog,$"SysEmail.SendEmailAsync Starting Debug Mode = {isDebugMode}");
+            LogInformation(syslog, $"SysEmail.SendEmailAsync Starting Debug Mode = {isDebugMode}");
             string SendGridAccountType = Enum.GetName(typeof(Constants.SendGridAccount), SendGridAccount);
             var client = new SendGridClient(_configuration[$"SysEmail:{SendGridAccountType}:ApiKey"]);
 
@@ -46,7 +46,7 @@ namespace UpDiddyLib.Helpers
             else
                 to = new EmailAddress(_configuration[$"SysEmail:SystemDebugEmailAddress"]);
 
-            LogInformation(syslog,$"SysEmail.SendEmailAsync Sending To = {to.Email} From = {from.Email}  APIKey =  {_configuration[$"SysEmail:{SendGridAccountType}:ApiKey"].Substring(0, 5) }");
+            LogInformation(syslog, $"SysEmail.SendEmailAsync Sending To = {to.Email} From = {from.Email}  APIKey =  {_configuration[$"SysEmail:{SendGridAccountType}:ApiKey"].Substring(0, 5) }");
 
             var plainTextContent = Regex.Replace(htmlContent, "<[^>]*>", "");
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
@@ -57,7 +57,7 @@ namespace UpDiddyLib.Helpers
             };
             var response = await client.SendEmailAsync(msg);
 
-            LogInformation(syslog,$"SysEmail.SendEmailAsync Done Response.Status = {response.StatusCode}");
+            LogInformation(syslog, $"SysEmail.SendEmailAsync Done Response.Status = {response.StatusCode}");
             return true;
         }
 
@@ -69,7 +69,7 @@ namespace UpDiddyLib.Helpers
         public async Task<bool> SendTemplatedEmailAsync(ILogger syslog, string email, string templateId, dynamic templateData, Constants.SendGridAccount SendGridAccount, string subject = null, List<Attachment> attachments = null, DateTime? sendAt = null, int? unsubscribeGroupId = null)
         {
             bool isDebugMode = _configuration[$"SysEmail:DebugMode"] == "true";
-            LogInformation(syslog,$"SysEmail.SendTemplatedEmailAsync Starting Debug Mode = {isDebugMode}");
+            LogInformation(syslog, $"SysEmail.SendTemplatedEmailAsync Starting Debug Mode = {isDebugMode}");
             string SendGridAccountType = Enum.GetName(typeof(Constants.SendGridAccount), SendGridAccount);
 
             var client = new SendGridClient(_configuration[$"SysEmail:{SendGridAccountType}:ApiKey"]);
@@ -83,13 +83,13 @@ namespace UpDiddyLib.Helpers
             if (isDebugMode == false)
             {
                 message.AddTo(new EmailAddress(email));
-                LogInformation(syslog,$"SysEmail.SendTemplatedEmailAsync Sending To = {email} From = {_configuration[$"SysEmail:{SendGridAccountType}:FromEmailAddress"]} ReplyTo = {_configuration[$"SysEmail:{SendGridAccountType}:ReplyToEmailAddress"]} APIKey =  {_configuration[$"SysEmail:{SendGridAccountType}:ApiKey"].Substring(0,5) }");
+                LogInformation(syslog, $"SysEmail.SendTemplatedEmailAsync Sending To = {email} From = {_configuration[$"SysEmail:{SendGridAccountType}:FromEmailAddress"]} ReplyTo = {_configuration[$"SysEmail:{SendGridAccountType}:ReplyToEmailAddress"]} APIKey =  {_configuration[$"SysEmail:{SendGridAccountType}:ApiKey"].Substring(0, 5) }");
             }
 
             else
             {
                 message.AddTo(new EmailAddress(_configuration[$"SysEmail:SystemDebugEmailAddress"]));
-                LogInformation(syslog,$"SysEmail.SendTemplatedEmailAsync Sending To = {_configuration[$"SysEmail:SystemDebugEmailAddress"]} From = {_configuration[$"SysEmail:{SendGridAccountType}:FromEmailAddress"]}  ReplyTo = {_configuration[$"SysEmail:{SendGridAccountType}:ReplyToEmailAddress"]} APIKey =  {_configuration[$"SysEmail:{SendGridAccountType}:ApiKey"].Substring(0, 5) }");
+                LogInformation(syslog, $"SysEmail.SendTemplatedEmailAsync Sending To = {_configuration[$"SysEmail:SystemDebugEmailAddress"]} From = {_configuration[$"SysEmail:{SendGridAccountType}:FromEmailAddress"]}  ReplyTo = {_configuration[$"SysEmail:{SendGridAccountType}:ReplyToEmailAddress"]} APIKey =  {_configuration[$"SysEmail:{SendGridAccountType}:ApiKey"].Substring(0, 5) }");
             }
 
             message.SetTemplateId(templateId);
@@ -120,7 +120,7 @@ namespace UpDiddyLib.Helpers
             var response = await client.SendEmailAsync(message);
             int statusCode = (int)response.StatusCode;
 
-            LogInformation(syslog,$"SysEmail.SendTemplatedEmailAsync Done Response.Status = {response.StatusCode} ");
+            LogInformation(syslog, $"SysEmail.SendTemplatedEmailAsync Done Response.Status = {response.StatusCode} ");
             return statusCode >= 200 && statusCode <= 299;
         }
 
