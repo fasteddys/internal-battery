@@ -141,7 +141,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private void SendPasswordResetEmail(string email, int expirationInHours, Guid passwordResetRequestGuid)
         {
             _hangfireService.Enqueue(() =>
-                _sysEmail.SendTemplatedEmailAsync(
+                _sysEmail.SendTemplatedEmailAsync(             
                     email,
                     _configuration["SysEmail:Transactional:TemplateIds:PasswordResetRequest-LinkEmail"],
                     new

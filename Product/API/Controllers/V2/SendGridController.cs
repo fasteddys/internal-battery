@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.Controllers.V2
 {
@@ -26,8 +27,9 @@ namespace UpDiddyApi.Controllers.V2
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly ISubscriberEmailService _subscriberEmailService;
         private ISysEmail _sysEmail;
+        private readonly ILogger _syslog;
 
-        public SendGridController(IServiceProvider services)
+        public SendGridController(IServiceProvider services, ILogger<SendGridController> syslog)
         {
             _configuration = services.GetService<IConfiguration>();
             _subscriberService = services.GetService<ISubscriberService>();
@@ -35,6 +37,7 @@ namespace UpDiddyApi.Controllers.V2
             _sysEmail = services.GetService<ISysEmail>();
             _repositoryWrapper = services.GetService<IRepositoryWrapper>();
             _subscriberEmailService = services.GetService<ISubscriberEmailService>();
+            _syslog = syslog;
         }
 
         [HttpPost]
@@ -76,6 +79,22 @@ namespace UpDiddyApi.Controllers.V2
         }
 
 
+        [HttpPost]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("Test")]
+        public async Task<IActionResult> test()
+        {
+
+            string debugEmail = _configuration[$"SysEmail:SystemDebugEmailAddress"];
+
+            _sysEmail.SendEmailAsync(_syslog,debugEmail, "Test for InternalLeads SendGrid Account", "test", Constants.SendGridAccount.InternalLeads); 
+            _sysEmail.SendEmailAsync(_syslog,debugEmail, "Test for Leads SendGrid Account", "test", Constants.SendGridAccount.Leads);
+            _sysEmail.SendEmailAsync(_syslog,debugEmail, "Test for Marketing SendGrid Account", "test", Constants.SendGridAccount.Marketing);
+            _sysEmail.SendEmailAsync(_syslog,debugEmail, "Test for NotifySystem SendGrid Account", "test", Constants.SendGridAccount.NotifySystem);
+            _sysEmail.SendEmailAsync(_syslog, debugEmail, "Test for Transactional SendGrid Account", "test", Constants.SendGridAccount.Transactional);
+ 
+            return Ok();
+        }
 
 
 

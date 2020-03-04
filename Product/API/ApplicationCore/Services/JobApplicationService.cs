@@ -115,6 +115,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync
                     (
+                        _syslog,
                         Email,
                         _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter" +
                             (EmailAddressesToSend[Email] == true ? "-External" : string.Empty)],

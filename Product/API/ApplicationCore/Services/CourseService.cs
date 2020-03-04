@@ -523,7 +523,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
 
             var referralUrl = $"{_config["Environment:BaseUrl"].TrimEnd('/')}/course/{courseReferralDto.CourseGuid}";
-            _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(
+            _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync( 
                 courseReferralDto.ReferralEmail,
                 _config["SysEmail:Transactional:TemplateIds:CourseReferral-ReferAFriend"],
                 new

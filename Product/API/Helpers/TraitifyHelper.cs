@@ -54,6 +54,7 @@ namespace UpDiddyApi.Helpers
             if (isEmailValid != null && isEmailValid.Value == true)
             {
                 await sysEmail.SendTemplatedEmailAsync(
+                    
                                  sendTo,
                                  config["SysEmail:Transactional:TemplateIds:PersonalityAssessment-ResultsSummary"],
                                  payload,
