@@ -1102,6 +1102,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
             
         }
 
+        /// <summary>
+        /// Invoke stored procedure to delete g2 records for the specified subscriber  
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
         public async Task<int> DeleteSubscriberG2Profiles(Guid subscriberGuid)
         {
             var subscriber = new SqlParameter("@SubscriberGuid", SqlDbType.UniqueIdentifier);
@@ -1113,6 +1118,47 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return rowsAffected;
 
         }
+
+
+        // todo jab add migration for System_Create_CompanyG2Profiles
+        // todo jab add migration for System_Delete_CompanyG2Profiles
+ 
+
+        /// <summary>
+        /// Invoke stored procedure to create g2 records for the specified company.  1 record per active subscriber will be created.  If an existing record for the
+        /// subscriber/company combination already exists, it will NOT be duplicated.
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        public async Task<int> CreateCompanyG2Profiles(Guid companyGuid)
+        {
+            var subscriber = new SqlParameter("@CompanyGuid", SqlDbType.UniqueIdentifier);
+            subscriber.Value = companyGuid;
+            subscriber.Direction = ParameterDirection.Input;
+
+            var spParams = new object[] { subscriber };
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Create_CompanyG2Profiles] @CompanyGuid", spParams);
+            return rowsAffected;
+
+        }
+
+        /// <summary>
+        /// Invoke stored procedure to delete g2 records for the specified company.
+        /// </summary>
+        /// <param name="companyGuid"></param>
+        /// <returns></returns>
+        public async Task<int> DeleteCompanyG2Profiles(Guid companyGuid)
+        {
+            var company = new SqlParameter("@CompanyGuid", SqlDbType.UniqueIdentifier);
+            company.Value = companyGuid;
+            company.Direction = ParameterDirection.Input;
+
+            var spParams = new object[] { company };
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Delete_CompanyG2Profiles] @CompanyGuid", spParams);
+            return rowsAffected;
+
+        }
+
 
 
 

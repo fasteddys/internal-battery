@@ -70,7 +70,7 @@ BEGIN
 	,null as Preferences
 FROM Company c
 LEFT JOIN subscriber s on s.SubscriberGuid = @SubscriberGuid
-WHERE C.CompanyId NOT IN ( Select CompanyId from g2.Profiles where SubscriberGuid = @SubscriberGuid)
+WHERE C.CompanyId NOT IN ( Select CompanyId from g2.Profiles where SubscriberGuid = @SubscriberGuid) and c.IsDeleted = 0
 )
 INSERT INTO g2.Profiles   
 (

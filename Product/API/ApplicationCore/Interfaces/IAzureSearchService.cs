@@ -19,6 +19,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
 
         Task<bool> AddOrUpdateG2(G2SDOC g2);
         Task<bool> DeleteG2(G2SDOC g2);
+        Task<bool> DeleteG2Bulk(List<G2SDOC> g2);
+        Task<bool> AddOrUpdateG2Bulk(List<G2SDOC> g2);
 
 
     }

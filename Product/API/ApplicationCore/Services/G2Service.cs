@@ -53,8 +53,6 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
         // todo jab background job for creating azure record for for every  subscriber for bootstrapping Task1750
-
-
         // todo jab figure out how to update G2 when self-curated or public data changes 
 
 
@@ -104,7 +102,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         #endregion
 
 
-        #region G2 Azure Indexing 
+        #region G2 Azure Indexing Operations By Subscriber 
 
 
         /// <summary>
@@ -181,9 +179,99 @@ namespace UpDiddyApi.ApplicationCore.Services
             return true;
         }
 
+        /// <summary>
+        /// For the given company, remove all instances of their profiles from the G2 index 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        public async Task<bool> RemoveCompanyFromIndex(Guid companyGuid)
+        {
+
+
+            G2SearchResultDto companyDocs = await SearchG2ForCompanyAsync(companyGuid);
+
+            List<G2SDOC> Docs = new List<G2SDOC>();
+            foreach (G2InfoDto g2 in companyDocs.G2s)
+            {
+                G2SDOC delDoc = new G2SDOC()
+                {
+                    ProfileGuid = g2.ProfileGuid,
+                };
+                Docs.Add(delDoc);
+                // Call background job to delete the user 
+               // _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexDelete(delDoc));
+            };
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexDeleteBulk(Docs));
+
+            // If for some reason the total number of records for the given subscriber is more the number 
+            // retreived, recursivley call this routine again 
+
+            //TODO JAB Get another variable for recurse delay 
+
+            int DeleteSubscriberG2RecurseDelayInMinutes = int.Parse(_configuration["AzureSearch:DeleteSubscriberG2RecurseDelayInMinutes"]);
+            if (companyDocs.TotalHits > companyDocs.SubscriberCount)
+                _hangfireService.Schedule<ScheduledJobs>(j => j.G2DeleteCompany(companyGuid), TimeSpan.FromMinutes(DeleteSubscriberG2RecurseDelayInMinutes));
+
+
+            return true;
+        }
+
+
 
 
         #endregion
+
+
+        #region G2 Azure Indexing Operations By Company
+
+        /// <summary>
+        /// For the given subscriber, update or add their profile to the G2 azure index 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        public async Task<bool> IndexCompany(Guid companyGuid)
+        {
+            try
+            {
+                // Get the public company guid for 
+                Guid publicDataCompanyGuid = Guid.Parse(_configuration["CareerCircle:PublicDataCompanyGuid"]);
+
+                // Get all non-public G2s for subscriber 
+                List<v_ProfileAzureSearch> g2Profiles = _db.ProfileAzureSearch
+                .Where(p => p.CompanyGuid == companyGuid && p.CompanyGuid != publicDataCompanyGuid)
+                .ToList();
+
+                List<G2SDOC> Docs = new List<G2SDOC>();
+
+                int counter = 0;
+                foreach (v_ProfileAzureSearch g2 in g2Profiles)
+                {
+                    if (g2.CompanyGuid != null)
+                    {
+                        ++counter;
+                        G2SDOC indexDoc = await MapToG2SDOC(g2);
+                        Docs.Add(indexDoc);
+                        // fire off as background job 
+                     //   _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexAddOrUpdate(indexDoc));
+                    }
+                    
+                };
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexAddOrUpdateBulk(Docs));
+
+
+                return true;
+            }
+            catch( Exception ex )
+            {
+                _logger.LogError($"G2Service:IndexCompany Error: {ex.Message} ");
+                return false;
+            }
+       
+        }
+
+
+        #endregion
+
 
 
 
@@ -217,6 +305,38 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             return rVal;
         }
+
+        /// <summary>
+        /// Adds a new subscriber G2 profile record for the specified company for every active subscriber 
+        /// </summary>
+        /// <param name="companyGuid"></param>
+        /// <returns></returns>
+        public async Task<int> AddCompanyProfiles(Guid companyGuid)
+        {
+            // call stored procedure to create a g2 recordsfor the specified subscriber.  1 record per 
+            // active company will be created and return the number of records created 
+            int rVal = await _repository.StoredProcedureRepository.CreateCompanyG2Profiles(companyGuid);
+
+            return rVal;
+        }
+
+
+
+        /// <summary>
+        /// Remove company profile records 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        public async Task<int> DeleteCompanyProfiles(Guid comanyGuid)
+        {
+            // call stored procedure to create a g2 recordsfor the specified subscriber.  1 record per 
+            // active company will be created and return the number of records created 
+            int rVal = await _repository.StoredProcedureRepository.DeleteCompanyG2Profiles(comanyGuid);
+
+            return rVal;
+        }
+
+
 
         #endregion
 
@@ -257,7 +377,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<bool> AddCompany(Guid companyGuid)
         {
 
-            // todo jab implement _hangfireService.Enqueue<ScheduledJobs>(j => j.G2AddNewSubscriber(subscriberGuid));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.G2AddNewCompany(companyGuid));
             return true;
         }
 
@@ -270,7 +390,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<bool> DeleteCompany(Guid compmapnyGuid)
         {
 
-            // todo jab implement _hangfireService.Enqueue<ScheduledJobs>(j => j.G2DeleteSubscriber(subscriberGuid));
+           _hangfireService.Enqueue<ScheduledJobs>(j => j.G2DeleteCompany(compmapnyGuid));
             return true;
         }
 
@@ -279,6 +399,71 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
         #region private helper functions 
+
+
+        /// <summary>
+        ///  return all records for the specified subscriber 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        private async Task<G2SearchResultDto> SearchG2ForCompanyAsync(Guid companyGuid)
+        {
+            DateTime startSearch = DateTime.Now;
+            G2SearchResultDto searchResults = new G2SearchResultDto();
+
+            string searchServiceName = _configuration["AzureSearch:SearchServiceName"];
+            string adminApiKey = _configuration["AzureSearch:SearchServiceQueryApiKey"];
+            string g2IndexName = _configuration["AzureSearch:G2IndexName"];
+
+
+
+            SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(adminApiKey));
+
+            // Create an index named hotels
+            ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(g2IndexName);
+
+            SearchParameters parameters;
+            DocumentSearchResult<G2InfoDto> results;
+
+            parameters =
+                new SearchParameters()
+                {
+                    IncludeTotalResultCount = true,
+                    Top = MaxAzureSearchQueryResults
+                };
+
+            parameters.Filter = $"CompanyGuid eq '{companyGuid}'";
+
+            results = indexClient.Documents.Search<G2InfoDto>("*", parameters);
+
+            DateTime startMap = DateTime.Now;
+            searchResults.G2s = results?.Results?
+                .Select(s => (G2InfoDto)s.Document)
+                .ToList();
+
+            searchResults.TotalHits = results.Count.Value;
+            searchResults.PageSize = (int)results.Count.Value;
+            searchResults.NumPages = searchResults.PageSize != 0 ? (int)Math.Ceiling((double)searchResults.TotalHits / searchResults.PageSize) : 0;
+            searchResults.SubscriberCount = searchResults.G2s.Count;
+            searchResults.PageNum = 1;
+
+            DateTime stopMap = DateTime.Now;
+
+            // calculate search timing metrics 
+            TimeSpan intervalTotalSearch = stopMap - startSearch;
+            TimeSpan intervalSearchTime = startMap - startSearch;
+            TimeSpan intervalMapTime = stopMap - startMap;
+
+            // assign search metrics to search results 
+            searchResults.SearchTimeInMilliseconds = intervalTotalSearch.TotalMilliseconds;
+            searchResults.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
+            searchResults.SearchMappingTimeInTicks = intervalMapTime.Ticks;
+
+            return searchResults;
+        }
+
+
+
 
         /// <summary>
         ///  return all records for the specified subscriber 
@@ -310,7 +495,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                     IncludeTotalResultCount = true,
                     Top = MaxAzureSearchQueryResults
                 };
- 
+
+            parameters.Filter = $"SubscriberGuid eq '{subscriberGuid}'";
 
             results = indexClient.Documents.Search<G2InfoDto>("*", parameters);
 
@@ -347,11 +533,15 @@ namespace UpDiddyApi.ApplicationCore.Services
             try
             {
                 G2SDOC indexDoc = _mapper.Map<G2SDOC>(g2);
+                if ( g2.Location != null )
+                {
+                    Double lat = (double)g2.Location.Lat;
+                    Double lng = (double)g2.Location.Long;
+                    Position p = new Position(lat, lng);
+                    indexDoc.Location = new Point(p);
+
+                }
                 // manually map the location.  todo find a way for automapper to do this 
-                Double lat = (double)g2.Location.Lat;
-                Double lng = (double)g2.Location.Long;
-                Position p = new Position(lat, lng);
-                indexDoc.Location = new Point(p);
                 return indexDoc;
             }
             catch ( Exception ex )

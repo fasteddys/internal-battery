@@ -18,11 +18,18 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<bool> IndexG2Async(G2SDOC g2);
         Task<bool> IndexSubscriber(Guid subscriberGuid);
         Task<bool> RemoveSubscriberFromIndex(Guid subscriberGuid);
+        Task<bool> IndexCompany(Guid companyuGuid);
+        Task<bool> RemoveCompanyFromIndex(Guid companyGuid);
+
         #endregion
 
         #region G2 Backing Store Operations 
         Task<int> AddSubscriberProfiles(Guid subscriberGuid);
         Task<int> DeleteSubscriberProfiles(Guid subscriberGuid);
+        Task<int> AddCompanyProfiles(Guid companyGuid);
+        Task<int> DeleteCompanyProfiles(Guid companyGuid);
+
+
         #endregion
 
         #region   G2 Operations (backing store and indexing)

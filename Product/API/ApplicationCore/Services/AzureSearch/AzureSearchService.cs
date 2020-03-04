@@ -75,6 +75,21 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
             return true;
         }
 
+        public async Task<bool> DeleteG2Bulk(List<G2SDOC> g2s)
+        {
+
+            // todo jab update profile with index status
+            SendG2RequestBulk(g2s, "delete");
+            return true;
+        }
+
+
+        public async Task<bool> AddOrUpdateG2Bulk(List<G2SDOC> g2s)
+        {
+            SendG2RequestBulk(g2s, "upload");
+            // todo jab update profile with index status
+            return true;
+        }
 
         #endregion
 
@@ -113,6 +128,22 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
 
 
         #region helper functions 
+
+
+        private async Task<bool> SendG2RequestBulk(List<G2SDOC> g2s, string cmd)
+        {
+            string index = _configuration["AzureSearch:G2IndexName"];
+            SDOCRequest<G2SDOC> docs = new SDOCRequest<G2SDOC>();
+            foreach ( G2SDOC g2 in g2s)
+            {
+                g2.SearchAction = cmd;
+                docs.value.Add(g2);
+            }                       
+
+            string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffZ" });
+            bool rval = await SendSearchRequest(index, Json);
+            return rval;
+        }
 
 
         private async Task<bool> SendG2Request(G2SDOC g2, string cmd)
@@ -164,36 +195,45 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
         
         private async Task<bool> SendSearchRequest(string indexName, string jsonDocs )
         {
-  
-            string SearchBaseUrl = _configuration["AzureSearch:SearchServiceBaseUrl"];
-            string SearchIndexVersion = _configuration["AzureSearch:SearchServiceAdminVersion"];
-            string SearchApiKey = _configuration["AzureSearch:SearchServiceAdminApiKey"];            
-
-            string Url = $"{SearchBaseUrl}/indexes/{indexName}/docs/index?api-version={SearchIndexVersion}";
-
-
-            _logger.LogInformation($"AzureSearchService:SendSearchRequest: url = {Url}");
-
-
-
-            HttpClient client = _httpClientFactory.CreateClient(Constants.HttpPostClientName);
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, Url)
+            string ResponseJson = string.Empty;
+            try
             {
-                Content = new StringContent(jsonDocs)
-            };
-            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            request.Headers.Add("api-key", SearchApiKey);
+                string SearchBaseUrl = _configuration["AzureSearch:SearchServiceBaseUrl"];
+                string SearchIndexVersion = _configuration["AzureSearch:SearchServiceAdminVersion"];
+                string SearchApiKey = _configuration["AzureSearch:SearchServiceAdminApiKey"];
 
-            HttpResponseMessage SearchResponse = AsyncHelper.RunSync<HttpResponseMessage>(() => client.SendAsync(request));
-            string ResponseJson = AsyncHelper.RunSync<string>(() => SearchResponse.Content.ReadAsStringAsync());
-    
-            _logger.LogInformation($"AzureSearchService:SendSearchRequest: json = {jsonDocs}");
-            _logger.LogInformation($"AzureSearchService:SendSearchRequest: response = {ResponseJson}");
+                string Url = $"{SearchBaseUrl}/indexes/{indexName}/docs/index?api-version={SearchIndexVersion}";
 
-            if ( SearchResponse.StatusCode == System.Net.HttpStatusCode.OK)
-                return true;
-            else
+                _logger.LogInformation($"AzureSearchService:SendSearchRequest: url = {Url}");
+
+
+
+                HttpClient client = _httpClientFactory.CreateClient(Constants.HttpPostClientName);
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, Url)
+                {
+                    Content = new StringContent(jsonDocs)
+                };
+                request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                request.Headers.Add("api-key", SearchApiKey);
+
+                HttpResponseMessage SearchResponse = AsyncHelper.RunSync<HttpResponseMessage>(() => client.SendAsync(request));
+                ResponseJson = AsyncHelper.RunSync<string>(() => SearchResponse.Content.ReadAsStringAsync());
+
+                _logger.LogInformation($"AzureSearchService:SendSearchRequest: json = {jsonDocs}");
+                _logger.LogInformation($"AzureSearchService:SendSearchRequest: response = {ResponseJson}");
+
+                if (SearchResponse.StatusCode == System.Net.HttpStatusCode.OK)
+                    return true;
+                else
+                    return false;
+            }
+            catch ( Exception ex )
+            {
+                _logger.LogError($"AzureSearchService:SendSearchRequest: Error: {ex.Message}  response = {ResponseJson}");
                 return false;
+
+            }
+            
           
         }
 

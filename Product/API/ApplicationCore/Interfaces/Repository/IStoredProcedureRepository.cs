@@ -81,5 +81,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task UpdateJobPostingSkills(Guid jobPostingGuid, List<Guid> skillGuids);
         Task<int> CreateSubscriberG2Profiles(Guid subscriberGuid);
         Task<int> DeleteSubscriberG2Profiles(Guid subscriberGuid);
+        Task<int> CreateCompanyG2Profiles(Guid companyGuid);
+        Task<int> DeleteCompanyG2Profiles(Guid companyGuid);
+
+
     }  
 }

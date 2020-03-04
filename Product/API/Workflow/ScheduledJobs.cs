@@ -2022,6 +2022,10 @@ namespace UpDiddyApi.Workflow
         #region G2
 
 
+
+
+
+
     /// <summary>
     /// Add or update the G2 into the azure search index 
     /// </summary>
@@ -2034,6 +2038,34 @@ namespace UpDiddyApi.Workflow
             _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2Index done index for g2 {g2.ProfileGuid}");
             return true;
         }
+
+
+        public async Task<bool> G2IndexAddOrUpdateBulk(List<G2SDOC> g2List)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2IndexAddOrUpdateBulk starting index for g2");
+            await _azureSearchService.AddOrUpdateG2Bulk(g2List);
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2IndexAddOrUpdateBulk done index for g2");
+            return true;
+        }
+
+
+
+
+
+        /// <summary>
+        /// Add or update the G2 into the azure search index 
+        /// </summary>
+        /// <param name="g2"></param>
+        /// <returns></returns>
+        public async Task<bool> G2IndexDeleteBulk(List<G2SDOC> g2List)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2IndexDeleteBulk starting index delete");
+            await _azureSearchService.DeleteG2Bulk(g2List);
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2IndexDeleteBulk done index delete");
+            return true;
+        }
+
+
 
 
 
@@ -2070,7 +2102,12 @@ namespace UpDiddyApi.Workflow
             return true;
         }
 
-
+        /// <summary>
+        /// Logically deletes all records in the G2 sql server backing store for the specified subscriber.  Also will
+        /// remove every document in the Azure search index that references the subscriber 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
         public async Task<bool> G2DeleteSubscriber(Guid subscriberGuid)
         {
             _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2DeleteSubscriber add of subscriber {subscriberGuid}");
@@ -2081,6 +2118,45 @@ namespace UpDiddyApi.Workflow
             _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2DeleteSubscriber done index for g2 {subscriberGuid}");
             return true;
         }
+
+
+        /// <summary>
+        /// Add a G2 for every active subscriber for the new company 
+        /// </summary>
+        /// <param name="companyGuid"></param>
+        /// <returns></returns>
+        public async Task<bool> G2AddNewCompany(Guid companyGuid)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2AddNewCompany add of subscriber {companyGuid}");
+            // call the g2 service to create a new g2 record for the subscriber for every active company
+            int numG2sCreated = await _g2Service.AddCompanyProfiles(companyGuid);
+            if (numG2sCreated > 0)
+                await _g2Service.IndexCompany(companyGuid);
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2AddNewCompany done index for g2 {companyGuid}");
+            return true;
+        }
+
+
+        /// <summary>
+        /// Logically deletes all records in the G2 sql server backing store for the specified subscriber.  Also will
+        /// remove every document in the Azure search index that references the subscriber 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        public async Task<bool> G2DeleteCompany(Guid companyGuid)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2DeleteCompany add of subscriber {companyGuid}");
+            // call the g2 service to remove all g2 profile information for subscriber 
+            
+             int numG2sCreated = await _g2Service.DeleteCompanyProfiles(companyGuid);
+            
+            
+            // delete company information from azure search index
+            _g2Service.RemoveCompanyFromIndex(companyGuid);
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2DeleteCompany done index for g2 {companyGuid}");
+            return true;
+        }
+
 
 
 
