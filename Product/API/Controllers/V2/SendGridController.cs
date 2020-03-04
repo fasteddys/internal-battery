@@ -19,7 +19,7 @@ namespace UpDiddyApi.Controllers.V2
 {
     [Route("/V2/[controller]/")]
     [ApiController]
-    public class SendGridController : ControllerBase
+    public class SendGridController : Controller
     {
         private readonly IConfiguration _configuration;
         private readonly ISubscriberService _subscriberService;
@@ -42,27 +42,27 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpPost]
         [Route("LogEvent")]
-        public async Task<IActionResult> LogEvent([FromBody] List<SendGridEventDto> events)       
+        public async Task<IActionResult> LogEvent([FromBody] List<SendGridEventDto> events)
         {
             // Use secret key to authorize sendgrid event logging.  The documentation found here https://sendgrid.com/docs/for-developers/tracking-events/event/ 
             // does not adquately document how to secure the implemented webhook authorization.  Stackoverflow suggests two approaches here
             // https://stackoverflow.com/questions/20865673/sendgrid-incoming-mail-webhook-how-do-i-secure-my-endpoint
-            if ( Request.Query["key"].ToString() == null || Request.Query["key"].ToString() != _configuration["SysEmail:EventHookApiKey"])
+            if (Request.Query["key"].ToString() == null || Request.Query["key"].ToString() != _configuration["SysEmail:EventHookApiKey"])
                 return StatusCode(404);
 
             _sendGridEventService.AddSendGridEvents(events);
             return Ok();
         }
- 
+
 
         [HttpPut]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("PurgeAuditRecords")]
         public async Task<IActionResult> PurgeAuditRecords(int lookbackDays)
         {
-            
-            if ( lookbackDays == 0 )            
-                lookbackDays =  int.Parse(_configuration["CareerCircle:SendGridAuditPurgeLookBackDays"]);
+
+            if (lookbackDays == 0)
+                lookbackDays = int.Parse(_configuration["CareerCircle:SendGridAuditPurgeLookBackDays"]);
 
 
             var rval = _sendGridEventService.PurgeSendGridEvents(lookbackDays);
@@ -73,7 +73,7 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("Statistics/{SubscriberGuid}")]
         public async Task<IActionResult> GetSUbscriberStatistics(Guid subscriberGuid)
-        {            
+        {
             var rval = await _subscriberEmailService.GetEmailStatistics(subscriberGuid);
             return Ok(rval);
         }
@@ -82,23 +82,14 @@ namespace UpDiddyApi.Controllers.V2
         [HttpPost]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("Test")]
-        public async Task<IActionResult> test()
+        public async Task<JsonResult> test()
         {
-
             string debugEmail = _configuration[$"SysEmail:SystemDebugEmailAddress"];
 
-            _sysEmail.SendEmailAsync(_syslog,debugEmail, "Test for InternalLeads SendGrid Account", "test", Constants.SendGridAccount.InternalLeads); 
-            _sysEmail.SendEmailAsync(_syslog,debugEmail, "Test for Leads SendGrid Account", "test", Constants.SendGridAccount.Leads);
-            _sysEmail.SendEmailAsync(_syslog,debugEmail, "Test for Marketing SendGrid Account", "test", Constants.SendGridAccount.Marketing);
-            _sysEmail.SendEmailAsync(_syslog,debugEmail, "Test for NotifySystem SendGrid Account", "test", Constants.SendGridAccount.NotifySystem);
-            _sysEmail.SendEmailAsync(_syslog, debugEmail, "Test for Transactional SendGrid Account", "test", Constants.SendGridAccount.Transactional);
- 
-            return Ok();
+            var notifySystemResult = await _sysEmail.SendEmailAsync(_syslog, debugEmail, "Test for NotifySystem SendGrid Account", "test", Constants.SendGridAccount.NotifySystem);
+            var transactionalResult = await _sysEmail.SendEmailAsync(_syslog, debugEmail, "Test for Transactional SendGrid Account", "test", Constants.SendGridAccount.Transactional);
+
+            return Json(new { NotifySystem = notifySystemResult, Transactional = transactionalResult });
         }
-
-
-
     }
-
-
 }
