@@ -163,7 +163,6 @@ namespace UpDiddyApi.Workflow
                     {
 
                         if (await _sysEmail.SendTemplatedEmailAsync(
-                             _syslog,
                              reminder.Email,
                              _configuration["SysEmail:NotifySystem:TemplateIds:SubscriberNotification-Reminder"].ToString(),
                              new
@@ -230,7 +229,6 @@ namespace UpDiddyApi.Workflow
                             if (
                                 // send the seed email using the lead email's account and template
                                 await _sysEmail.SendTemplatedEmailAsync(
-                                    _syslog,
                                     partnerContact.Metadata["Email"].ToString(),
                                     leadEmail.EmailTemplateId,
                                     new
@@ -252,7 +250,6 @@ namespace UpDiddyApi.Workflow
 
                         bool isMailSentSuccessfully =
                          _sysEmail.SendTemplatedEmailAsync(
-                            _syslog,
                             leadEmail.Email,
                             leadEmail.EmailTemplateId,
                             new
@@ -1218,7 +1215,6 @@ namespace UpDiddyApi.Workflow
                     }).ToList());
 
                     var result = _sysEmail.SendTemplatedEmailAsync(
-                       _syslog,
                        jobPostingAlert.Subscriber.Email,
                        _configuration["SysEmail:NotifySystem:TemplateIds:JobPosting-SubscriberAlert"],
                        templateData,
@@ -1523,7 +1519,6 @@ namespace UpDiddyApi.Workflow
 
                         //Send email to subscriber
                         bool result = await _sysEmail.SendTemplatedEmailAsync(
-                                   _syslog,
                                   entry.Key.Email,
                                   _configuration["SysEmail:NotifySystem:TemplateIds:JobApplication-AbandonmentAlert"],
                                   SendGridHelper.GenerateJobAbandonmentEmailTemplate(entry, similarJobSearchResults.Jobs, jobPostingUrl),
@@ -1537,7 +1532,6 @@ namespace UpDiddyApi.Workflow
                     foreach (string email in jobAbandonmentEmails)
                     {
                         await _sysEmail.SendTemplatedEmailAsync(
-                                _syslog,
                               email,
                               _configuration["SysEmail:NotifySystem:TemplateIds:JobApplication-AbandonmentAlert-Recruiter"],
                               SendGridHelper.GenerateJobAbandonmentRecruiterTemplate(subscribersToJobPostingMapping, jobPostingUrl),
