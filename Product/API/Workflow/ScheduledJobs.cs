@@ -2148,7 +2148,7 @@ namespace UpDiddyApi.Workflow
             _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2DeleteCompany add of subscriber {companyGuid}");
             // call the g2 service to remove all g2 profile information for subscriber 
             
-             int numG2sCreated = await _g2Service.DeleteCompanyProfiles(companyGuid);
+             int NumCompanyG2s = await _g2Service.DeleteCompanyProfiles(companyGuid);
             
             
             // delete company information from azure search index

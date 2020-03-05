@@ -92,15 +92,14 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ICourseLevelRepository _courseLevelRepository;
         private ICourseReferralRepository _courseReferralRepository;
         private INotificationGroupRepository _notificationGroupRepository;
-
         private readonly IConfiguration _configuration;
-
         private ISendGridEventRepository _sendGridEventRepository;
         private IHiringSolvedResumeParseRepository _hiringSolvedResumeParseRepository;
         private ISovrenParseStatisticRepository _sovrenParseStatisticRepository;
         private ICityRepository _cityRepository;
         private IPostalRepository _postalRepository;
-
+        private IProfileRepository _profileRepository;
+        private IAzureIndexStatusRepository _azureIndexStatusRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
         {
@@ -1154,7 +1153,29 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
+        public IProfileRepository ProfileRepository
+        {
+            get
+            {
+                if (_profileRepository == null)
+                {
+                    _profileRepository = new ProfileRepository(_dbContext);
+                }
+                return _profileRepository;
+            }
+        }
 
+        public IAzureIndexStatusRepository AzureIndexStatusRepository
+        {
+            get
+            {
+                if (_azureIndexStatusRepository == null)
+                {
+                    _azureIndexStatusRepository = new AzureIndexStatusRepository(_dbContext);
+                }
+                return _azureIndexStatusRepository;
+            }
+        }
 
         public async Task SaveAsync()
         {

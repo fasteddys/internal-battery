@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using G2Interfaces = UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
 using UpDiddyApi.Authorization;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Dto.User;
@@ -14,17 +15,19 @@ using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyLib.Domain.AzureSearch;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
+using UpDiddyLib.Domain.Models.G2;
 
 namespace UpDiddyApi.Controllers.V2
 {
     [Route("/V2/[controller]/")]
     [ApiController]
-    public class G2Controller :  BaseApiController
+    public class G2Controller : BaseApiController
     {
         private readonly IConfiguration _configuration;
         private readonly IG2Service _g2Service;
         private readonly IAzureSearchService _azureSearchService;
         private readonly IHangfireService _hangfireService;
+        private readonly G2Interfaces.IProfileService _profileService;
 
         public G2Controller(IServiceProvider services)
         {
@@ -32,6 +35,7 @@ namespace UpDiddyApi.Controllers.V2
             _g2Service = services.GetService<IG2Service>();
             _azureSearchService = services.GetService<IAzureSearchService>();
             _hangfireService = services.GetService<IHangfireService>();
+            _profileService = services.GetService<G2Interfaces.IProfileService>();
         }
 
 
@@ -85,11 +89,7 @@ namespace UpDiddyApi.Controllers.V2
 
         #endregion
 
-
         #region Company Operations 
-
-
-
 
         [HttpDelete]
         [Authorize(Policy = "IsRecruiterPolicy")]
@@ -121,9 +121,6 @@ namespace UpDiddyApi.Controllers.V2
 
         #endregion
 
-
-
-
         #region G2 Index functions Functions 
 
         /// <summary>
@@ -140,9 +137,50 @@ namespace UpDiddyApi.Controllers.V2
         }
 
 
+
         #endregion
 
+        #region Profiles
 
+        // todo: remove this; should not be exposed via api (should be invoked by some other internal process)
+        [HttpPost]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("profiles")]
+        public async Task<IActionResult> CreateProfile(ProfileDto profileDto)
+        {
+            var profile = await _profileService.CreateProfile(profileDto);
+            return StatusCode(201, profile);
+        }
+
+        // todo: remove this; should not be exposed via api (should be invoked by some other internal process)
+        [HttpDelete]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("profiles/{profileGuid:guid}")]
+        public async Task<IActionResult> DeleteProfile(Guid profileGuid)
+        {
+            await _profileService.DeleteProfile(profileGuid);
+            return StatusCode(204);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("profiles/{profileGuid:guid}")]
+        public async Task<IActionResult> GetProfile(Guid profileGuid)
+        {
+            var profile = await _profileService.GetProfileForRecruiter(profileGuid, GetSubscriberGuid());
+            return Ok(profile);
+        }
+
+        [HttpPut]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("profiles")]
+        public async Task<IActionResult> UpdateProfile([FromBody] ProfileDto profileDto)
+        {
+            await _profileService.UpdateProfileForRecruiter(profileDto, GetSubscriberGuid());
+            return StatusCode(204);
+        }
+
+        #endregion
 
         #region G2 Query Functions
 
@@ -155,21 +193,18 @@ namespace UpDiddyApi.Controllers.V2
             return Ok(rVal);
         }
 
-
         #endregion
 
+ 
 
-
-
-
-
-
-
-
-
-
-
-
-
+        //todo: delete this
+        [HttpPut]
+        [Route("testing")]
+        public async Task<IActionResult> test()
+        {
+            await _profileService.UpdateAzureIndexStatus(Guid.Parse("11A1418F-6A70-4655-9BA4-509C1D210F37"), "Error", "Some shit went wrong!");
+            return StatusCode(204);
+        }
+       
     }
 }

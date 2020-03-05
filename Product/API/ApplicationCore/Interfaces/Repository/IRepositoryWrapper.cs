@@ -90,5 +90,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         ISovrenParseStatisticRepository SovrenParseStatisticRepository { get; }
         ICityRepository CityRepository { get; }
         IPostalRepository PostalRepository { get; }
+        IProfileRepository ProfileRepository { get; }
+        IAzureIndexStatusRepository AzureIndexStatusRepository { get; }
     }
 }

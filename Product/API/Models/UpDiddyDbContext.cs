@@ -203,7 +203,7 @@ namespace UpDiddyApi.Models
         public DbSet<ProfileTag> ProfileTag { get; set; }
         public DbSet<Wishlist> Wishlist { get; set; }
         public DbSet<ProfileWishlist> ProfileWishlist { get; set; }
-
+        public DbSet<AzureIndexStatus> AzureIndexStatus { get; set; }
 
         #endregion
 
@@ -269,6 +269,10 @@ namespace UpDiddyApi.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<AzureIndexStatus>()
+                .HasIndex(ais => ais.Name)
+                .HasName("UIX_AzureIndexStatus_Name")
+                .IsUnique(true);
 
             modelBuilder.Entity<ProfileTag>()
                 .HasIndex(pt => new { pt.TagId, pt.ProfileId })

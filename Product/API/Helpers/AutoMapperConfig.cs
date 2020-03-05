@@ -21,6 +21,7 @@ using UpDiddyLib.Domain.Models.Reports;
 
 using UpDiddyLib.Domain.AzureSearch;
 using UpDiddyLib.Domain.AzureSearchDocuments;
+using UpDiddyLib.Domain.Models.G2;
 
 namespace UpDiddyApi.Helpers
 {
@@ -582,7 +583,7 @@ namespace UpDiddyApi.Helpers
             .ForMember(c => c.NotificationGuid, opt => opt.MapFrom(src => src.Notification.NotificationGuid))
             .ForMember(c => c.Title, opt => opt.MapFrom(src => src.Notification.Title))
             .ForAllOtherMembers(opts => opts.Ignore());
-            
+
             CreateMap<UpDiddyLib.Dto.JobPostingDto, JobCrudDto>()
                 .ForMember(dest => dest.CompanyGuid, opt => opt.MapFrom(src => src.Company.CompanyGuid))
                 .ForMember(dest => dest.CompensationTypeGuid, opt => opt.MapFrom(src => src.CompensationType.CompensationTypeGuid))
@@ -683,6 +684,7 @@ namespace UpDiddyApi.Helpers
                .ForMember(c => c.CompanyGuid, opt => opt.MapFrom(src => src.Company.CompanyGuid))
                .ForMember(c => c.CompanyName, opt => opt.MapFrom(src => src.Company.CompanyName))
                .ReverseMap();
+
             CreateMap<SendGridEventDto, SendGridEvent>()
                 .ForMember(x => x.SendGridEventGuid, opt => opt.Ignore())
                 .ReverseMap();
@@ -709,8 +711,7 @@ namespace UpDiddyApi.Helpers
                   })
                 .ForMember(dest => dest.NewUsers, opt => opt.MapFrom(src => src.ToList()))
                 .ReverseMap();
-
-
+            
             CreateMap<Subscriber, SubscriberSDOC>()
             .ForMember(c => c.SubscriberGuid, opt => opt.MapFrom(src => src.SubscriberGuid))
             .ForMember(c => c.FirstName, opt => opt.MapFrom(src => src.FirstName))
@@ -718,10 +719,7 @@ namespace UpDiddyApi.Helpers
             .ForMember(c => c.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
             .ForMember(c => c.Email, opt => opt.MapFrom(src => src.Email))
             .ForAllOtherMembers(opt => opt.Ignore());
-
-
-
-
+            
             CreateMap<Recruiter, RecruiterSDOC>()
             .ForMember(c => c.SubscriberGuid, opt => opt.MapFrom(src => src.Subscriber.SubscriberGuid))
             .ForMember(c => c.FirstName, opt => opt.MapFrom(src => src.FirstName))
@@ -732,17 +730,20 @@ namespace UpDiddyApi.Helpers
             .ForMember(c => c.CompanyGuid, opt => opt.MapFrom(src => src.Company.CompanyGuid))
             .ForMember(c => c.CompanyName, opt => opt.MapFrom(src => src.Company.CompanyName))
             .ForAllOtherMembers(opt => opt.Ignore());
-
-
-
+            
             CreateMap<v_ProfileAzureSearch, G2SDOC>()
               .ForMember(x => x.Location, opt => opt.Ignore())
               .ReverseMap();
 
-
-
-
-
+            CreateMap<Models.G2.Profile, ProfileDto>()
+                .ForMember(p => p.CityGuid, opt => opt.MapFrom(src => src.City.CityGuid))
+                .ForMember(p => p.CompanyGuid, opt => opt.MapFrom(src => src.Company.CompanyGuid))
+                .ForMember(p => p.EmploymentTypeGuid, opt => opt.MapFrom(src => src.EmploymentType.EmploymentTypeGuid))
+                .ForMember(p => p.ExperienceLevelGuid, opt => opt.MapFrom(src => src.ExperienceLevel.ExperienceLevelGuid))
+                .ForMember(p => p.PostalGuid, opt => opt.MapFrom(src => src.Postal.PostalGuid))
+                .ForMember(p => p.StateGuid, opt => opt.MapFrom(src => src.State.StateGuid))
+                .ForMember(p => p.SubscriberGuid, opt => opt.MapFrom(src => src.Subscriber.SubscriberGuid))
+                .ReverseMap();
         }
     }
 }
