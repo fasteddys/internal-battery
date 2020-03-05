@@ -1544,7 +1544,7 @@ namespace UpDiddyApi.Workflow
         {
             try
             {
-                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:_ExecuteJobAbandonmentEmailDelivery started at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs._ExecuteJobAbandonmentEmailDelivery started at: {DateTime.UtcNow.ToLongDateString()}");
                 Dictionary<Subscriber, List<JobPosting>> subscribersToJobPostingMapping = await _trackingService.GetSubscriberAbandonedJobPostingHistoryByDateAsync(DateTime.UtcNow.AddDays(-1));
                 if (subscribersToJobPostingMapping.Count > 0)
                 {
@@ -1610,7 +1610,7 @@ namespace UpDiddyApi.Workflow
         /// <returns></returns>
         private async Task<ResumeParse> _ImportSubscriberResume(ISubscriberService subscriberService, SubscriberFile resumeFile, string resume)
         {
-            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:_ImportSubscriberResume started at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs._ImportSubscriberResume started at: {DateTime.UtcNow.ToLongDateString()}");
             // Delete all existing resume parses for user
             await _repositoryWrapper.ResumeParseRepository.DeleteAllResumeParseForSubscriber(resumeFile.SubscriberId);
             // Create resume parse object 
@@ -1624,7 +1624,7 @@ namespace UpDiddyApi.Workflow
             // Save Resume Parse 
             await _repositoryWrapper.ResumeParseRepository.SaveAsync();
 
-            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:_ImportSubscriberResume completed at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs._ImportSubscriberResume completed at: {DateTime.UtcNow.ToLongDateString()}");
             return resumeParse;
         }
 
@@ -1634,7 +1634,7 @@ namespace UpDiddyApi.Workflow
             {
                 string errMsg = string.Empty;
 
-                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:_ImportSubscriberProfileData started at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs._ImportSubscriberProfileData started at: {DateTime.UtcNow.ToLongDateString()}");
 
                 foreach (SubscriberProfileStagingStore p in profiles)
                 {
@@ -1666,7 +1666,7 @@ namespace UpDiddyApi.Workflow
             }
             finally
             {
-                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:_ImportSubscriberProfileData completed at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs._ImportSubscriberProfileData completed at: {DateTime.UtcNow.ToLongDateString()}");
             }
 
             return true;
@@ -1693,7 +1693,7 @@ namespace UpDiddyApi.Workflow
         [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task<bool> CloudTalentIndexNewProfiles(int numProfilesToProcess)
         {
-            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:CloudTalentIndexNewProfiles started at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.CloudTalentIndexNewProfiles started at: {DateTime.UtcNow.ToLongDateString()}");
             //CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
             int indexVersion = int.Parse(_configuration["CloudTalent:ProfileIndexVersion"]);
             List<Subscriber> subscribers = await _subscriberService.GetSubscribersToIndexIntoGoogle(numProfilesToProcess, indexVersion);
@@ -1702,7 +1702,7 @@ namespace UpDiddyApi.Workflow
                 await _cloudTalentService.AddOrUpdateProfileToCloudTalent(s.SubscriberGuid.Value);
 
             }
-            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:CloudTalentIndexNewProfiles completed at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.CloudTalentIndexNewProfiles completed at: {DateTime.UtcNow.ToLongDateString()}");
             return true;
         }
 
@@ -1715,7 +1715,7 @@ namespace UpDiddyApi.Workflow
         [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task PurgeOrphanedSubscribersFromCloudTalent(List<ProfileViewDto> profiles)
         {
-            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:PurgeOrphanedSubscribersFromCloudTalent started at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent started at: {DateTime.UtcNow.ToLongDateString()}");
             if (profiles != null && profiles.Count() > 0)
                 _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: {profiles.Count} profiles being checked for orphaned subscribers.");
 
@@ -1745,7 +1745,7 @@ namespace UpDiddyApi.Workflow
                     }
                 }
             }
-            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:PurgeOrphanedSubscribersFromCloudTalent completed at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent completed at: {DateTime.UtcNow.ToLongDateString()}");
         }
 
         #endregion
@@ -1789,7 +1789,7 @@ namespace UpDiddyApi.Workflow
         [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task<bool> CreateSubscriberNotificationRecords(Notification notification, IList<Subscriber> Subscribers = null)
         {
-            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:CreateSubscriberNotificationRecords started at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.CreateSubscriberNotificationRecords started at: {DateTime.UtcNow.ToLongDateString()}");
             if (notification.IsTargeted == 0)
                 Subscribers = _repositoryWrapper.SubscriberRepository.GetByConditionAsync(s => s.IsDeleted == 0).Result.ToList();
             else
@@ -1816,7 +1816,7 @@ namespace UpDiddyApi.Workflow
             }
             await _repositoryWrapper.SubscriberNotificationRepository.CreateRange(SubscriberNotifications.ToArray());
             await _repositoryWrapper.SubscriberNotificationRepository.SaveAsync();
-            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:CreateSubscriberNotificationRecords completed at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.CreateSubscriberNotificationRecords completed at: {DateTime.UtcNow.ToLongDateString()}");
             return true;
         }
 
@@ -1828,7 +1828,7 @@ namespace UpDiddyApi.Workflow
         [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task<bool> DeleteSubscriberNotificationRecords(Notification Notification)
         {
-            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:DeleteSubscriberNotificationRecords started at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.DeleteSubscriberNotificationRecords started at: {DateTime.UtcNow.ToLongDateString()}");
             if (Notification == null)
                 return false;
 
@@ -1850,7 +1850,7 @@ namespace UpDiddyApi.Workflow
 
             _repositoryWrapper.SubscriberNotificationRepository.UpdateRange(SubscriberNotifications.ToArray());
             await _repositoryWrapper.SubscriberNotificationRepository.SaveAsync();
-            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:DeleteSubscriberNotificationRecords completed at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.DeleteSubscriberNotificationRecords completed at: {DateTime.UtcNow.ToLongDateString()}");
             return true;
         }
 
@@ -1861,7 +1861,7 @@ namespace UpDiddyApi.Workflow
         [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public async Task TrackSubscriberActionInformation(Guid subscriberGuid, Guid actionGuid, Guid entityTypeGuid, Guid entityGuid)
         {
-            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:TrackSubscriberActionInformation started at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.TrackSubscriberActionInformation started at: {DateTime.UtcNow.ToLongDateString()}");
             try
             {
                 // load the subscriber
@@ -1935,7 +1935,7 @@ namespace UpDiddyApi.Workflow
             }
             finally
             {
-                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:TrackSubscriberActionInformation completed at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.TrackSubscriberActionInformation completed at: {DateTime.UtcNow.ToLongDateString()}");
             }
         }
 
@@ -1949,7 +1949,7 @@ namespace UpDiddyApi.Workflow
         [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task UpdateSubscriberFilesMimeType()
         {
-            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:UpdateSubscriberFilesMimeType started at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateSubscriberFilesMimeType started at: {DateTime.UtcNow.ToLongDateString()}");
             //get all SubscriberFiles with Empty MimeType
             var queryableSubscriberFile = _repositoryWrapper.SubscriberFileRepository.GetAllSubscriberFileQueryableAsync();
             var nullMimeTypeFiles = await queryableSubscriberFile.Where(x => x.MimeType == null && x.IsDeleted == 0).ToListAsync();
@@ -1962,7 +1962,7 @@ namespace UpDiddyApi.Workflow
                     await _repositoryWrapper.SubscriberFileRepository.UpdateSubscriberFileAsync(file);
                 }
             }
-            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:UpdateSubscriberFilesMimeType completed at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateSubscriberFilesMimeType completed at: {DateTime.UtcNow.ToLongDateString()}");
         }
         #endregion
 
@@ -1975,7 +1975,7 @@ namespace UpDiddyApi.Workflow
         {
             try
             {
-                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:UpdateAllegisGroupJobPageRawDataField started at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateAllegisGroupJobPageRawDataField started at: {DateTime.UtcNow.ToLongDateString()}");
                 var jobs = _repositoryWrapper.JobPage.GetAll();
                 var allegisjobs = jobs.Where(x => x.JobSiteId == 3 && x.IsDeleted == 0 && x.JobPageStatusId == 2).ToList();
                 foreach (var job in allegisjobs)
@@ -1996,13 +1996,13 @@ namespace UpDiddyApi.Workflow
             }
             finally
             {
-                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:UpdateAllegisGroupJobPageRawDataField completed at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateAllegisGroupJobPageRawDataField completed at: {DateTime.UtcNow.ToLongDateString()}");
             }
         }
 
         public async Task SyncAuth0UserId(Guid subscriberGuid, string auth0UserId)
         {
-            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:SyncAuth0UserId started at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.SyncAuth0UserId started at: {DateTime.UtcNow.ToLongDateString()}");
             var currentUtcDateTime = DateTime.UtcNow;
             var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
             if (subscriber != null)
@@ -2012,12 +2012,12 @@ namespace UpDiddyApi.Workflow
                 subscriber.ModifyGuid = Guid.Empty;
                 await _repositoryWrapper.SubscriberRepository.SaveAsync();
             }
-            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:SyncAuth0UserId completed at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.SyncAuth0UserId completed at: {DateTime.UtcNow.ToLongDateString()}");
         }
 
         public async Task TrackSubscriberSignIn(Guid subscriberGuid)
         {
-            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:TrackSubscriberSignIn started at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.TrackSubscriberSignIn started at: {DateTime.UtcNow.ToLongDateString()}");
             var currentUtcDateTime = DateTime.UtcNow;
             var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
             if (subscriber != null)
@@ -2027,7 +2027,7 @@ namespace UpDiddyApi.Workflow
                 subscriber.ModifyGuid = Guid.Empty;
                 await _repositoryWrapper.SubscriberRepository.SaveAsync();
             }
-            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:TrackSubscriberSignIn completed at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.TrackSubscriberSignIn completed at: {DateTime.UtcNow.ToLongDateString()}");
         }
 
         #endregion
@@ -2037,7 +2037,7 @@ namespace UpDiddyApi.Workflow
         [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public async Task PurgeSendGridAuditRecords()
         {
-            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:PurgeSendGridAuditRecords started at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.PurgeSendGridAuditRecords started at: {DateTime.UtcNow.ToLongDateString()}");
             try
             {
                 int PurgeLookBackDays = int.Parse(_configuration["CareerCircle:SendGridAuditPurgeLookBackDays"]);
@@ -2049,7 +2049,7 @@ namespace UpDiddyApi.Workflow
             }
             finally
             {
-                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:PurgeSendGridAuditRecords completed at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.PurgeSendGridAuditRecords completed at: {DateTime.UtcNow.ToLongDateString()}");
             }
         }
 
@@ -2059,7 +2059,7 @@ namespace UpDiddyApi.Workflow
         [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public async Task GetHiringSolvedResumeParseUpdates()
         {
-            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:GetHiringSolvedResumeParseUpdates started at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.GetHiringSolvedResumeParseUpdates started at: {DateTime.UtcNow.ToLongDateString()}");
             try
             {
                 int BatchSize = int.Parse(_configuration["HiringSolved:UpdateBatchSize"]);
@@ -2079,7 +2079,7 @@ namespace UpDiddyApi.Workflow
             }
             finally
             {
-                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:GetHiringSolvedResumeParseUpdates completed at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.GetHiringSolvedResumeParseUpdates completed at: {DateTime.UtcNow.ToLongDateString()}");
             }
         }
 
