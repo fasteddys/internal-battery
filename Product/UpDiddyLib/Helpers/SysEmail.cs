@@ -38,7 +38,7 @@ namespace UpDiddyLib.Helpers
             // Add custom subject property that will be sent to the webhook            
             msg.CustomArgs = new Dictionary<string, string>()
             {
-                { "Subject", "this is the subject" }
+                { "Subject", subject }
             };
             var response = await client.SendEmailAsync(msg);
             return true;
