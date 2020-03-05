@@ -42,7 +42,7 @@ namespace UpDiddyApi.Controllers.V2
                 return Conflict();
 
             var newSubscriberGuid = await _subscriberService.CreateSubscriberAsync(subscriberDto);
-            return Ok(new { subscriberGuid = newSubscriberGuid });
+            return StatusCode(201, newSubscriberGuid);
         }
 
         [HttpPut]
@@ -70,7 +70,7 @@ namespace UpDiddyApi.Controllers.V2
         {
             createUserDto.SubscriberGuid = GetSubscriberGuid();
             await _subscriberService.ExistingSubscriberSignUp(createUserDto);
-            return StatusCode(201);
+            return StatusCode(204);
         }
 
 

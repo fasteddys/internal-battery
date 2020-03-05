@@ -62,8 +62,8 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateCompany([FromBody] CompanyDto companyDto)
         {
-            await _companyService.AddCompanyAsync(companyDto);
-            return StatusCode(201);
+            var companyGuid = await _companyService.AddCompanyAsync(companyDto);
+            return StatusCode(201, companyGuid);
         }
     }
 }

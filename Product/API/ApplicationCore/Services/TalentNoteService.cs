@@ -30,9 +30,8 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-        public async Task<bool> CreateNote(Guid subscriberGuid, Guid talentGuid, SubscriberNotesDto subscriberNoteDto)
+        public async Task<Guid> CreateNote(Guid subscriberGuid, Guid talentGuid, SubscriberNotesDto subscriberNoteDto)
         {
-
             if (subscriberNoteDto == null)
                 throw new NullReferenceException("Talent note cannot be null");
 
@@ -44,14 +43,14 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (recruiter == null)
                 throw new NotFoundException("Recruiter not found");
 
-            var subscriberNotes = _mapper.Map<SubscriberNotes>(subscriberNoteDto);
-            subscriberNotes.SubscriberNotesGuid = Guid.NewGuid();
-            subscriberNotes.SubscriberId = talent.SubscriberId;
-            subscriberNotes.RecruiterId = recruiter.RecruiterId;
-            subscriberNotes.CreateGuid = subscriberGuid;
-            BaseModelFactory.SetDefaultsForAddNew(subscriberNotes);
-            await _repositoryWrapper.SubscriberNotesRepository.AddNotes(subscriberNotes);
-            return true;
+            var subscriberNote = _mapper.Map<SubscriberNotes>(subscriberNoteDto);
+            subscriberNote.SubscriberNotesGuid = Guid.NewGuid();
+            subscriberNote.SubscriberId = talent.SubscriberId;
+            subscriberNote.RecruiterId = recruiter.RecruiterId;
+            subscriberNote.CreateGuid = subscriberGuid;
+            BaseModelFactory.SetDefaultsForAddNew(subscriberNote);
+            await _repositoryWrapper.SubscriberNotesRepository.AddNotes(subscriberNote);
+            return subscriberNote.SubscriberNotesGuid;
         }
 
 

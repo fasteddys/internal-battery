@@ -1577,6 +1577,49 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("GroupPartner");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.HiringSolvedResumeParse", b =>
+                {
+                    b.Property<int>("HiringSolvedResumeParseId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("FileName");
+
+                    b.Property<Guid>("HiringSolvedResumeParseGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<string>("JobId");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<long>("NumTicks");
+
+                    b.Property<DateTime?>("ParseCompleted");
+
+                    b.Property<DateTime?>("ParseRequested");
+
+                    b.Property<string>("ParseStatus");
+
+                    b.Property<string>("ParsedResume");
+
+                    b.Property<string>("ResumeText");
+
+                    b.Property<int>("SubscriberId");
+
+                    b.HasKey("HiringSolvedResumeParseId");
+
+                    b.HasIndex("SubscriberId");
+
+                    b.ToTable("HiringSolvedResumeParse");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.Industry", b =>
                 {
                     b.Property<int>("IndustryId")
@@ -3245,6 +3288,67 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("SecurityClearance");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.SendGridEvent", b =>
+                {
+                    b.Property<int>("SendGridEventId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Attempt");
+
+                    b.Property<string>("Category");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("Email");
+
+                    b.Property<string>("Event");
+
+                    b.Property<string>("Ip");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<string>("Marketing_campaign_id");
+
+                    b.Property<string>("Marketing_campaign_name");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Reason");
+
+                    b.Property<string>("Response");
+
+                    b.Property<Guid?>("SendGridEventGuid");
+
+                    b.Property<string>("Sg_event_id");
+
+                    b.Property<string>("Sg_message_id");
+
+                    b.Property<string>("Smtp_id");
+
+                    b.Property<string>("Status");
+
+                    b.Property<string>("Subject");
+
+                    b.Property<long>("Timestamp");
+
+                    b.Property<string>("Tls");
+
+                    b.Property<string>("Type");
+
+                    b.Property<string>("Url");
+
+                    b.Property<string>("UserAgent");
+
+                    b.HasKey("SendGridEventId");
+
+                    b.ToTable("SendGridEvent");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.ServiceOffering", b =>
                 {
                     b.Property<int>("ServiceOfferingId")
@@ -3456,6 +3560,35 @@ namespace UpDiddyApi.Migrations
                         .IsUnique();
 
                     b.ToTable("Skill");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.SovrenParseStatistic", b =>
+                {
+                    b.Property<int>("SovrenParseStatisticId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<long>("NumTicks");
+
+                    b.Property<string>("ResumeText");
+
+                    b.Property<Guid>("SovrenParseStatisticsGuid");
+
+                    b.Property<int>("SubscriberId");
+
+                    b.HasKey("SovrenParseStatisticId");
+
+                    b.ToTable("SovrenParseStatistics");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.State", b =>
@@ -3869,6 +4002,57 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("SubscriberPromoCodeId");
 
                     b.ToTable("SubscriberPromoCode");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.SubscriberSendGridEvent", b =>
+                {
+                    b.Property<int>("SubscriberSendGridEventId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Attempt");
+
+                    b.Property<string>("Category");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("Email");
+
+                    b.Property<string>("Event");
+
+                    b.Property<int>("EventStatus");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<string>("Marketing_campaign_id");
+
+                    b.Property<string>("Marketing_campaign_name");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Reason");
+
+                    b.Property<string>("Response");
+
+                    b.Property<string>("Sg_message_id");
+
+                    b.Property<string>("Status");
+
+                    b.Property<string>("Subject");
+
+                    b.Property<int?>("SubscriberId");
+
+                    b.Property<Guid>("SubscriberSendGridEventGuid");
+
+                    b.Property<string>("Type");
+
+                    b.HasKey("SubscriberSendGridEventId");
+
+                    b.ToTable("SubscriberSendGridEvent");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberSkill", b =>
@@ -4664,6 +4848,14 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Partner", "Partner")
                         .WithMany()
                         .HasForeignKey("PartnerId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.HiringSolvedResumeParse", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

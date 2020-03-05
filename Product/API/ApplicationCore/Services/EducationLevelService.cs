@@ -41,7 +41,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _mapper.Map<EducationLevelDto>(existingEducationLevel);
         }
 
-        public async Task CreateEducationLevel(EducationLevelDto educationLevelDto)
+        public async Task<Guid> CreateEducationLevel(EducationLevelDto educationLevelDto)
         {
             if (educationLevelDto == null)
                 throw new NullReferenceException("educationLevelDto cannot be null");
@@ -50,6 +50,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             educationLevel.EducationLevelGuid = Guid.NewGuid();
             await _repositoryWrapper.EducationLevelRepository.Create(educationLevel);
             await _repositoryWrapper.SaveAsync();
+            return educationLevel.EducationLevelGuid;
         }
 
         public async Task UpdateEducationLevel(Guid educationLevel, EducationLevelDto educationLevelDto)

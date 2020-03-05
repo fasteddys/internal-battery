@@ -28,7 +28,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _config = configuration;
         }
 
-        public async Task AddToFavorite(Guid subscriberGuid, Guid talentGuid)
+        public async Task<Guid> AddToFavorite(Guid subscriberGuid, Guid talentGuid)
         {
             if (subscriberGuid == null || subscriberGuid == Guid.Empty)
                 throw new NullReferenceException("SubscriberGuid cannot be null");
@@ -43,17 +43,18 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new NotFoundException("Subscriber not found");
 
             var talentFavorite = await _repositoryWrapper.TalentFavoriteRepository.GetBySubscriberGuidAndTalentGuid(subscriberGuid, talentGuid);
+            Guid talentFavoriteGuid;
             if (talentFavorite == null)
             {
+                talentFavoriteGuid = Guid.NewGuid();
                 talentFavorite = new TalentFavorite()
                 {
-
                     Talent = talent,
                     TalentId = talent.SubscriberId,
                     CreateDate = DateTime.UtcNow,
                     SubscriberId = subscriber.SubscriberId,
                     CreateGuid = subscriberGuid,
-                    TalentFavoriteGuid = Guid.NewGuid(),
+                    TalentFavoriteGuid = talentFavoriteGuid,
                     IsDeleted = 0
                     
                 };
@@ -68,11 +69,14 @@ namespace UpDiddyApi.ApplicationCore.Services
                 }
                 else
                 {
+                    talentFavoriteGuid = talentFavorite.TalentFavoriteGuid;
                     talentFavorite.IsDeleted = 0;
                     talentFavorite.ModifyDate = DateTime.UtcNow;
                     await _repositoryWrapper.SaveAsync();
                 }
             }
+
+            return talentFavoriteGuid;
         }
  
         public async Task RemoveFromFavorite(Guid subscriberGuid, Guid talentGuid)

@@ -100,9 +100,8 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         public async Task<IActionResult> CreateJobApplication([FromBody] ApplicationDto jobApplicationDto, Guid JobGuid)
         {
-
-            await _jobApplicationService.CreateJobApplication(GetSubscriberGuid(), JobGuid, jobApplicationDto);
-            return StatusCode(201);
+            var jobApplicationGuid = await _jobApplicationService.CreateJobApplication(GetSubscriberGuid(), JobGuid, jobApplicationDto);
+            return StatusCode(201, jobApplicationGuid);
         }
 
         [HttpGet]
@@ -144,7 +143,7 @@ namespace UpDiddyApi.Controllers
         [HttpGet]
         [Route("search/keyword")]
         public async Task<IActionResult> GetKeywordSearchTerms(string value)
-        {            
+        {
             var rVal = await _keywordService.GetKeywordSearchTerms(value);
             return Ok(rVal);
         }
@@ -156,16 +155,6 @@ namespace UpDiddyApi.Controllers
         {
             var rVal = await _keywordService.GetLocationSearchTerms(value);
             return Ok(rVal);
-        }
-
-
-        [HttpPost]
-        [Route("{job:guid}/share")]
-        [Authorize]
-        public async Task<IActionResult> Share([FromBody] ShareJobDto shareJobDto, Guid job)
-        {
-            await _jobService.ShareJob(GetSubscriberGuid(), job, shareJobDto);
-            return StatusCode(201);
         }
 
         [HttpGet]
@@ -200,7 +189,6 @@ namespace UpDiddyApi.Controllers
             return Ok(stateMapdto);
         }
 
-
         #endregion
 
         #region Job Alert
@@ -210,9 +198,8 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         public async Task<IActionResult> CreateJobAlert([FromBody] JobAlertDto jobPostingAlertDto)
         {
-
-            await _jobAlertService.CreateJobAlert(GetSubscriberGuid(), jobPostingAlertDto);
-            return StatusCode(201);
+            var jobAlertGuid = await _jobAlertService.CreateJobAlert(GetSubscriberGuid(), jobPostingAlertDto);
+            return StatusCode(201, jobAlertGuid);
         }
 
         [HttpGet]
@@ -220,7 +207,6 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         public async Task<IActionResult> GetJobAlerts()
         {
-
             var jobAlerts = await _jobAlertService.GetJobAlert(GetSubscriberGuid());
             return Ok(jobAlerts);
         }
@@ -230,7 +216,6 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateJobAlert([FromBody] JobAlertDto jobPostingAlertDto, Guid jobAlert)
         {
-
             await _jobAlertService.UpdateJobAlert(GetSubscriberGuid(), jobAlert, jobPostingAlertDto);
             return StatusCode(204);
         }
@@ -240,7 +225,6 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteJobAlert(Guid jobAlert)
         {
-
             await _jobAlertService.DeleteJobAlert(GetSubscriberGuid(), jobAlert);
             return StatusCode(204);
         }
@@ -282,42 +266,38 @@ namespace UpDiddyApi.Controllers
         #endregion
 
         #region Job crud
-
-
-
+        
         [HttpPost]
         [Route("admin")]
         [Authorize(Policy = "IsRecruiterPolicy")]
         public async Task<IActionResult> CreateJob([FromBody] JobCrudDto jobPostingDto)
         {
-
-            Guid newJobGuid =  await _jobPostingService.CreateJobPosting(GetSubscriberGuid(), jobPostingDto);
+            Guid newJobGuid = await _jobPostingService.CreateJobPostingForSubscriber(GetSubscriberGuid(), jobPostingDto);
             Response.StatusCode = 201;
             return StatusCode(201, newJobGuid);
         }
-
-
-
-
+        
         [HttpPut]
         [Route("admin/{jobGuid:guid}")]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        public async Task<IActionResult> UpdateJob([FromBody] JobCrudDto jobPostingDto, Guid jobGuid)
+        public async Task<IActionResult> UpdateJob([FromBody] JobCrudDto jobCrudDto, Guid jobGuid)
         {
+            if (jobCrudDto.JobPostingGuid == null || jobCrudDto.JobPostingGuid == Guid.Empty)
+                throw new JobPostingUpdate("jobPostingGuid in request boddy cannot be null or empty");
 
-            await _jobPostingService.UpdateJobPosting(GetSubscriberGuid(), jobGuid,jobPostingDto);
+            if (jobCrudDto.JobPostingGuid != jobGuid)
+                throw new JobPostingUpdate("job property from url does not match jobPostingGuid specified in request body");
+
+            await _jobPostingService.UpdateJobPostingForSubscriber(GetSubscriberGuid(), jobCrudDto);
             return StatusCode(204);
         }
-
-
 
         [HttpDelete]
         [Route("admin/{jobGuid:guid}")]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        public async Task<IActionResult> DeleteJob([FromBody] UpDiddyLib.Dto.JobPostingDto jobPostingDto, Guid jobGuid)
+        public async Task<IActionResult> DeleteJob(Guid jobGuid)
         {
-
-            await _jobPostingService.DeleteJobPosting(GetSubscriberGuid(), jobGuid );
+            await _jobPostingService.DeleteJobPosting(GetSubscriberGuid(), jobGuid);
             return StatusCode(204);
         }
 
@@ -326,41 +306,38 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsRecruiterPolicy")]
         public async Task<IActionResult> GetJobAdmin(Guid jobGuid)
         {
-            JobCrudDto jobPostingDto =  await _jobPostingService.GetJobPostingCrud(GetSubscriberGuid(), jobGuid);
+            JobCrudDto jobPostingDto = await _jobPostingService.GetJobPostingCrud(GetSubscriberGuid(), jobGuid);
             return Ok(jobPostingDto);
         }
-  
+
         [HttpGet]
         [Route("admin")]
         [Authorize(Policy = "IsRecruiterPolicy")]
         public async Task<IActionResult> GetJobAdminForSubscriber(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-     
-            JobCrudListDto postings = await _jobPostingService.GetJobPostingCrudForSubscriber(GetSubscriberGuid(),limit,offset,sort,order);
+
+            JobCrudListDto postings = await _jobPostingService.GetJobPostingCrudForSubscriber(GetSubscriberGuid(), limit, offset, sort, order);
             return Ok(postings);
         }
 
         [HttpPut]
         [Route("admin/{jobGuid:guid}/skills")]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        public async Task<IActionResult> UpdateJobSkills([FromBody] List<UpDiddyLib.Domain.Models.SkillDto> skills , Guid jobGuid)
+        public async Task<IActionResult> UpdateJobSkills([FromBody] List<UpDiddyLib.Domain.Models.SkillDto> skills, Guid jobGuid)
         {
 
-           await _jobPostingService.UpdateJobPostingSkills(GetSubscriberGuid(), jobGuid, skills);
+            await _jobPostingService.UpdateJobPostingSkills(GetSubscriberGuid(), jobGuid, skills);
             return StatusCode(204);
         }
-
 
         [HttpGet]
         [Route("admin/{jobGuid:guid}/skills")]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        public async Task<IActionResult> GetJobSkills( Guid jobGuid)
-        { 
-            return Ok (await _jobPostingService.GetJobPostingSkills(GetSubscriberGuid(), jobGuid) );
-            
+        public async Task<IActionResult> GetJobSkills(Guid jobGuid)
+        {
+            return Ok(await _jobPostingService.GetJobPostingSkills(GetSubscriberGuid(), jobGuid));
+
         }
-
-
 
         #endregion
 
@@ -378,7 +355,7 @@ namespace UpDiddyApi.Controllers
             else
                 relatedJobs = await _jobPostingService.GetJobsByCourses(courses, limit, offset);
 
-            return Ok(relatedJobs);
+            return StatusCode(200, relatedJobs);
         }
 
         [HttpGet]
@@ -393,8 +370,8 @@ namespace UpDiddyApi.Controllers
             else
                 relatedJobs = await _jobPostingService.GetJobsByCourse(course, limit, offset);
 
-            return Ok(relatedJobs);
-        }    
+            return StatusCode(200, relatedJobs);
+        }
 
         [HttpGet]
         [Route("subscribers/related")]
@@ -406,14 +383,14 @@ namespace UpDiddyApi.Controllers
 
             var relatedJobs = await _jobPostingService.GetJobsBySubscriber(subscriber, limit, offset);
 
-            return Ok(relatedJobs);
+            return StatusCode(200, relatedJobs);
         }
 
         #endregion
 
         #region CareerPath Recommendations
-        
-        [HttpGet] 
+
+        [HttpGet]
         [Route("recommendations")]
         [Authorize]
         public async Task<IActionResult> GetCareerPathRecommendations(int limit = 5, int offset = 0)
@@ -431,15 +408,14 @@ namespace UpDiddyApi.Controllers
         [Route("refer")]
         public async Task<IActionResult> ReferAFriend([FromBody] JobReferralDto jobReferral)
         {
-
-            var rVal = await _jobService.ReferJobToFriend(jobReferral, GetSubscriberGuid());
-            return Ok(rVal);
+            var jobReferralGuid = await _jobService.ReferJobToFriend(jobReferral, GetSubscriberGuid());
+            return StatusCode(201, jobReferralGuid);
         }
 
         #endregion
 
         #region Job Data Mining
-        
+
         [HttpGet]
         [Route("job-site-scrape-statistics")]
         [Authorize(Policy = "IsCareerCircleAdmin")]

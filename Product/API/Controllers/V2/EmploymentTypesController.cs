@@ -53,8 +53,8 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateEmploymentType([FromBody] EmploymentTypeDto employmentTypeDto)
         {
-            await _employmentTypeService.CreateEmploymentType(employmentTypeDto);
-            return StatusCode(201);
+            var employmentTypeGuid = await _employmentTypeService.CreateEmploymentType(employmentTypeDto);
+            return StatusCode(201, employmentTypeGuid);
         }
     }
 }

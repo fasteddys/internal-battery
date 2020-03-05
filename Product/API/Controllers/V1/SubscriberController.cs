@@ -180,7 +180,16 @@ public class SubscriberController : Controller
 
             // delete the Auth0 account associated with the subscriber
             var getUserResponse = _userService.GetUserByEmailAsync(subscriber.Email).Result;
-            _userService.DeleteUserAsync(getUserResponse.User.UserId);
+            // Try and delete the user from auth0, if they are not there just log and continue with the delete from local database and google profiles 
+            try
+            {
+                _userService.DeleteUserAsync(getUserResponse.User.UserId);
+            }
+            catch (Exception ex)
+            {
+                _syslog.Log(LogLevel.Information, $"SubscriberController.DeleteSubscriber:: Subscriber {subscriber.Email} was not found in Auth0.  Auth0 delete message : {ex.Message}", ex);
+            }
+            
 
             // perform logical delete on the subscriber entity only
             subscriber.IsDeleted = 1;
@@ -924,6 +933,7 @@ public class SubscriberController : Controller
     {
         _hangfireService.Enqueue(() =>
          _sysEmail.SendTemplatedEmailAsync(
+             _syslog,
              email,
              _configuration["SysEmail:Transactional:TemplateIds:GatedDownload-LinkEmail"],
              new

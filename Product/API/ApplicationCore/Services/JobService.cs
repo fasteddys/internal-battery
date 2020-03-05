@@ -269,6 +269,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var referralUrl = jobReferralGuid == Guid.Empty ? jobReferralDto.ReferUrl : $"{jobReferralDto.ReferUrl}?referrerCode={jobReferralGuid}";
 
             _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(
+                _syslog,
                 jobReferralDto.RefereeEmailId,
                 _configuration["SysEmail:Transactional:TemplateIds:JobReferral-ReferAFriend"],
                 new
@@ -338,46 +339,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
-
-        public async Task ShareJob(Guid job, Guid subscriber, ShareJobDto shareJobDto)
-        {
-            if (string.IsNullOrEmpty(shareJobDto.Email))
-            {
-                throw new NullReferenceException("Email cannot be empty");
-            }
-
-            Guid jobReferralGuid = Guid.Empty;
-
-            //get JobPostingId from JobPositngGuid
-            var jobPosting = await _repositoryWrapper.JobPosting.GetJobPostingByGuid(job);
-            if (jobPosting == null)
-                throw new NotFoundException("job posting not found");
-
-            //get ReferrerId from ReferrerGuid
-            var referrer = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriber);
-
-            //get ReferrerId from ReferrerGuid
-            var referee = await _repositoryWrapper.SubscriberRepository.GetSubscriberByEmailAsync(shareJobDto.Email);
-
-            //create JobReferral
-            JobReferral jobReferral = new JobReferral()
-            {
-                JobReferralGuid = Guid.NewGuid(),
-                JobPostingId = jobPosting.JobPostingId,
-                ReferralId = referrer.SubscriberId,
-                RefereeId = referee?.SubscriberId,
-                RefereeEmailId = shareJobDto.Email,
-                IsJobViewed = false
-            };
-
-            //set defaults
-            BaseModelFactory.SetDefaultsForAddNew(jobReferral);
-
-            //update jobReferralGuid only if Referee is new subscriber, for old subscriber we do not jobReferralCode
-            await _repositoryWrapper.JobReferralRepository.AddJobReferralAsync(jobReferral);
-        }
-
-
         #region Helper functions
         private JobBrowseResultDto CreateJobBrowseResultDto(JobSearchSummaryResultDto searchResults, int excludeJobs, int excludeFacets)
         {
@@ -443,9 +404,5 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
         #endregion
-
-
-
-
     }
 }

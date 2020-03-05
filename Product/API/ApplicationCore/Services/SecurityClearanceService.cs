@@ -39,7 +39,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _mapper.Map<SecurityClearanceListDto>(securityClearances);
         }
 
-        public async Task CreateSecurityClearance(SecurityClearanceDto securityClearanceDto)
+        public async Task<Guid> CreateSecurityClearance(SecurityClearanceDto securityClearanceDto)
         {
             if (securityClearanceDto == null)
                 throw new NullReferenceException("SecurityClearanceDto cannot be null");
@@ -48,6 +48,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             securityClearance.SecurityClearanceGuid = Guid.NewGuid();
             await _repositoryWrapper.SecurityClearanceRepository.Create(securityClearance);
             await _repositoryWrapper.SaveAsync();
+            return securityClearance.SecurityClearanceGuid;
         }
 
         public async Task UpdateSecurityClearance(Guid securityClearanceGuid, SecurityClearanceDto securityClearanceDto)

@@ -144,6 +144,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return true;
         }
 
+        [Obsolete("Use JobPostingService for job updates moving forward", true)]
         public static bool PostJob(IRepositoryWrapper repositoryWrapper, int recruiterId, JobPostingDto jobPostingDto, ref Guid newPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, bool isAcceptsNewSkills, IHangfireService _hangfireService)
         {
             if (isAcceptsNewSkills && jobPostingDto?.JobPostingSkills != null)
@@ -165,6 +166,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return PostJob(repositoryWrapper, recruiterId, jobPostingDto, ref newPostingGuid, ref ErrorMsg, syslog, mapper, configuration, _hangfireService);
         }
 
+        [Obsolete("Use JobPostingService for job updates moving forward", true)]
         public static bool PostJob(IRepositoryWrapper repositoryWrapper, int recruiterId, JobPostingDto jobPostingDto, ref Guid newPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, IHangfireService _hangfireService)
         {
             int postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
@@ -201,7 +203,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 syslog.Log(LogLevel.Warning, "JobPostingController.CreateJobPosting:: Bad Request {Description} {JobPosting}", msg, jobPostingDto);
                 return false;
             }
-
+            
             jobPosting.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.NotIndexed;
             jobPosting.JobPostingGuid = Guid.NewGuid();
             // set expiration date 
@@ -254,8 +256,6 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             return true;
         }
-
-
 
         public static async Task<JobPosting> GetJobPostingById(IRepositoryWrapper repositoryWrapper, int jobPostingId)
         {
@@ -415,19 +415,6 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 await JobPostingSkillFactory.Add(repositoryWrapper, jobPosting.JobPostingId, skillDto.SkillGuid.Value);
             }
             await repositoryWrapper.JobPostingSkillRepository.SaveAsync();
-        }
-
-
-        /// <summary>
-        /// Implement business rules to check the validity of an updated job posting 
-        /// </summary>
-        /// <param name="job"></param>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        public static bool ValidateUpdatedJobPosting(JobPosting job, IConfiguration config, ref string message)
-        {
-
-            return ValidateJobPosting(job, config, ref message);
         }
 
         /// <summary>
@@ -616,6 +603,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         }
 
+        [Obsolete("Use JobPostingService for job updates moving forward", true)]
         public static async Task<JobPosting> CopyJobPosting(IRepositoryWrapper repositoryWrapper, JobPosting jobPosting, int postingTTL)
         {
             repositoryWrapper.JobPosting.GetEntry(jobPosting).State = EntityState.Detached;
@@ -656,7 +644,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             return jobPosting;
         }
-
+        [Obsolete("Use JobPostingService for job updates moving forward", true)]
         public static bool UpdateJobPosting(IRepositoryWrapper repositoryWrapper, Guid jobPostingGuid, JobPostingDto jobPostingDto, ref string ErrorMsg, bool isAcceptsNewSkills, IHangfireService _hangfireService, IConfiguration config)
         {
             if (isAcceptsNewSkills && jobPostingDto?.JobPostingSkills != null)
@@ -674,10 +662,11 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 }
                 jobPostingDto.JobPostingSkills = updatedSkills;
             }
-
-            return UpdateJobPosting(repositoryWrapper, jobPostingGuid, jobPostingDto, ref ErrorMsg, _hangfireService, config);
+            throw new NotImplementedException("Reference to obsolete method");
+            //return UpdateJobPosting(repositoryWrapper, jobPostingGuid, jobPostingDto, ref ErrorMsg, _hangfireService, config);
         }
 
+        [Obsolete("Use JobPostingService for job updates moving forward", true)]
         public static bool UpdateJobPosting(IRepositoryWrapper repositoryWrapper, Guid jobPostingGuid, JobPostingDto jobPostingDto, ref string ErrorMsg, IHangfireService _hangfireService, IConfiguration config)
         {
 
@@ -823,7 +812,6 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     ErrorMsg = msg;
                     return false;
                 }
-
 
                 repositoryWrapper.SaveAsync().Wait();
 

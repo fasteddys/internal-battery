@@ -12,6 +12,7 @@ namespace UpDiddyApi.Helpers
     public static class ResumeHelper
     {
         public static async Task<Guid> ImportSubscriberProfileDataAsync(
+        IHiringSolvedService hiringSolvedService,
         ISubscriberService subscriberService
         , IRepositoryWrapper repositoryWrapper
         , ISovrenAPI sovrenApi
@@ -20,9 +21,14 @@ namespace UpDiddyApi.Helpers
         , string base64EncodedString)
         {
             resume.Subscriber = subscriber;
-            String parsedDocument = await sovrenApi.SubmitResumeAsync(base64EncodedString);
+            String parsedDocument = await sovrenApi.SubmitResumeAsync(subscriber.SubscriberId, base64EncodedString);
             await SubscriberProfileStagingStoreFactory.Save(repositoryWrapper, resume.Subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
             ResumeParse resumeParse = await _ImportSubscriberResume(repositoryWrapper, subscriberService, resume, parsedDocument);
+
+
+            // request parse from hiring solved 
+            await hiringSolvedService.RequestParse(subscriber.SubscriberId, resume.BlobName, base64EncodedString);
+            
             return resumeParse.ResumeParseGuid;
         }
 

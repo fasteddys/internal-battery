@@ -11,7 +11,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<EducationLevelDto> GetEducationLevel(Guid educationLevelGuid);
         Task<EducationLevelListDto> GetEducationLevels(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending");
         Task UpdateEducationLevel(Guid EducationLevelGuid, EducationLevelDto educationLevelDto);
-        Task CreateEducationLevel(EducationLevelDto educationLevelDto);
+        Task<Guid> CreateEducationLevel(EducationLevelDto educationLevelDto);
         Task DeleteEducationLevel(Guid educationLevelGuid);
     }
 }

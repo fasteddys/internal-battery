@@ -31,7 +31,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.Common
                 }
             }
             string base64 = Convert.ToBase64String(bytes);
-            var sovrenResult = sovrenApi.SubmitResumeAsync(base64).Result;
+            var sovrenResult = sovrenApi.SubmitResumeAsync(-1, base64).Result;
 
             var doc = XDocument.Parse(sovrenResult);
             XNamespace xmlns = "http://ns.hr-xml.org/2006-02-28";

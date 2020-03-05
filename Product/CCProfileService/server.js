@@ -155,16 +155,18 @@ app.put('/profile', async (req, res) => {
 
 
 // delete a profile 
-app.delete('/profile/:profileName', async (req, res) => {
+ app.delete('/profile', async (req, res) => {
 
     try {
+        let profileName = req.query.profilename
+
         let profileServiceClient = new talentAPI.ProfileServiceClient({
             projectId: process.env.ProjectId,
             keyFilename: process.env.KeyFilePath,
         });
 
         let request = {
-            name: req.params.profileName
+            name: profileName
         };
 
         await profileServiceClient.deleteProfile(request);
@@ -179,12 +181,14 @@ app.delete('/profile/:profileName', async (req, res) => {
 })
 
 // retreive a specific profile 
-app.get('/profile/:profileName', async (req, res) =>  {
+app.get('/profile', async (req, res) =>  {
 
     try {    
- 
+
+        let profileName = req.query.profilename
+
         let request = {
-            name: req.params.profileName
+            name: profileName
         };
 
         let profileServiceClient = new talentAPI.ProfileServiceClient({

@@ -330,15 +330,19 @@ namespace UpDiddyApi.ApplicationCore.Services
                     step = 5;
                     group = await _taggingService.CreateGroup(subscriberDto.ReferrerUrl, partnerGuid, subscriber.SubscriberId);
 
-                    if (butterPage.Data.Fields.isgateddownload && !string.IsNullOrEmpty(gatedDownloadFileUrl))
+                    step = 6;
+                    if (butterPage != null)
                     {
-                        int? groupId = null;
-                        if (group != null)
-                            groupId = group.GroupId;
-                        int? maxAllowedInt = null;
-                        if (maxFileDownloadAttemptsPermitted.HasValue)
-                            maxAllowedInt = Decimal.ToInt16(maxFileDownloadAttemptsPermitted.Value);
-                        await HandleGatedFileDownload(maxAllowedInt, gatedDownloadFileUrl, groupId, subscriber.SubscriberId, subscriber.Email);
+                        if (butterPage.Data.Fields.isgateddownload && !string.IsNullOrEmpty(gatedDownloadFileUrl))
+                        {
+                            int? groupId = null;
+                            if (group != null)
+                                groupId = group.GroupId;
+                            int? maxAllowedInt = null;
+                            if (maxFileDownloadAttemptsPermitted.HasValue)
+                                maxAllowedInt = Decimal.ToInt16(maxFileDownloadAttemptsPermitted.Value);
+                            await HandleGatedFileDownload(maxAllowedInt, gatedDownloadFileUrl, groupId, subscriber.SubscriberId, subscriber.Email);
+                        }
                     }
 
                     if (!string.IsNullOrEmpty(subscriberDto.AssessmentId))
@@ -511,7 +515,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             string downloadUrl = await _fileDownloadTrackerService.CreateFileDownloadLink(fileDownloadTrackerDto);
 
             _hangfireService.Enqueue(() =>
-             _sysEmail.SendTemplatedEmailAsync(
+             _sysEmail.SendTemplatedEmailAsync( 
+                 _logger,
                  email,
                  _configuration["SysEmail:Transactional:TemplateIds:GatedDownload-LinkEmail"],
                  new

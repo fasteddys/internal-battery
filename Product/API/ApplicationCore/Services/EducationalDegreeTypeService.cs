@@ -48,7 +48,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _mapper.Map<EducationalDegreeTypeListDto>(educationalDegreeTypes);
         }
 
-        public async Task CreateEducationalDegreeType(EducationalDegreeTypeDto educationalDegreeTypeDto)
+        public async Task<Guid> CreateEducationalDegreeType(EducationalDegreeTypeDto educationalDegreeTypeDto)
         {
             if (educationalDegreeTypeDto == null)
                 throw new NullReferenceException("EducationalDegreeTypeDto cannot be null");
@@ -57,6 +57,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             educationalDegreeType.EducationalDegreeTypeGuid = Guid.NewGuid();
             await _repositoryWrapper.EducationalDegreeTypeRepository.Create(educationalDegreeType);
             await _repositoryWrapper.SaveAsync();
+            return educationalDegreeType.EducationalDegreeTypeGuid;
         }
 
         public async Task UpdateEducationalDegreeType(Guid educationalDegreeTypeGuid, EducationalDegreeTypeDto educationalDegreeTypeDto)

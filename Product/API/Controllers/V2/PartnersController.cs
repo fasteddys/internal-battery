@@ -28,7 +28,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("{partner:guid}")]
         public async Task<IActionResult> GetPartner(Guid partner)
         {
-            var result  = await _partnerService.GetPartner(partner);
+            var result = await _partnerService.GetPartner(partner);
             return Ok(result);
         }
 
@@ -51,9 +51,8 @@ namespace UpDiddyApi.Controllers.V2
         [HttpPost]
         public async Task<IActionResult> CreatePartner([FromBody] PartnerDto partnerDto)
         {
-            await _partnerService.CreatePartner(partnerDto);
-            return StatusCode(201);
+            var partnerGuid = await _partnerService.CreatePartner(partnerDto);
+            return StatusCode(201, partnerGuid);
         }
-       
     }
 }

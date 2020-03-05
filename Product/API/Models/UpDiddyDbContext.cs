@@ -185,6 +185,13 @@ namespace UpDiddyApi.Models
         public DbSet<CourseLevel> CourseLevel { get; set; }
         public DbSet<CourseReferral> CourseReferral { get; set; }
         public DbSet<NotificationGroup> NotificationGroup { get; set; }
+        public DbSet<SendGridEvent> SendGridEvent { get; set; }
+        public DbSet<SubscriberSendGridEvent> SubscriberSendGridEvent { get; set; }    
+        public DbSet<HiringSolvedResumeParse> HiringSolvedResumeParse { get; set; }
+        public DbSet<SovrenParseStatistic> SovrenParseStatistics { get; set; }
+
+
+
 
 
         #region DBQueries
@@ -241,6 +248,12 @@ namespace UpDiddyApi.Models
         public DbQuery<UsersDto> Users { get; set; }
         public DbQuery<UsersDetailDto> UsersDetail { get; set; }
         public DbQuery<PartnerUsers> PartnerUsers { get; set; }
+ 
+    
+        public DbQuery<SubscriberEmailStatisticDto> SubscriberEmailStatistics { get; set; }
+
+
+
 
         #endregion
 

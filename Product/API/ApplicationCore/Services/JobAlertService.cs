@@ -30,7 +30,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _hangfireService = hangfireService;
         }
 
-        public async Task CreateJobAlert(Guid subscriberGuid, JobAlertDto jobAlertDto)
+        public async Task<Guid> CreateJobAlert(Guid subscriberGuid, JobAlertDto jobAlertDto)
         {
             try
             {
@@ -67,7 +67,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 await _repositoryWrapper.JobPostingAlertRepository.Create(jobPostingAlert);
                 await _repositoryWrapper.SaveAsync();
                 _hangfireService.AddOrUpdate<ScheduledJobs>($"jobPostingAlert:{jobPostingAlertGuid}", sj => sj.ExecuteJobPostingAlert(jobPostingAlertGuid), cronSchedule);
-
+                return jobPostingAlertGuid;
             }
             catch (Exception e)
             {

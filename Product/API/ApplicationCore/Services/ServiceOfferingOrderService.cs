@@ -117,6 +117,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
             _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(
+                _syslog,
                 SubscriberEmail,
                 _configuration["SysEmail:Transactional:TemplateIds:PurchaseReceipt-CareerServices"],
                 new
@@ -135,6 +136,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 ));
 
             _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(
+                _syslog,
                 _configuration["SysEmail:SystemSalesEmailAddress"],
                 _configuration["SysEmail:Transactional:TemplateIds:PurchaseReceipt-CareerServices"],
                 new

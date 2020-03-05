@@ -85,5 +85,10 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         ICourseLevelRepository CourseLevelRepository { get; }
         ICourseReferralRepository CourseReferralRepository { get; }
         INotificationGroupRepository NotificationGroupRepository { get; }
+        ISendGridEventRepository SendGridEventRepository { get; }
+
+        IHiringSolvedResumeParseRepository HiringSolvedResumeParseRepository { get; }
+
+        ISovrenParseStatisticRepository SovrenParseStatisticRepository { get; }
     }
 }

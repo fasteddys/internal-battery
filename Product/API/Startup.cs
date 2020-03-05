@@ -92,7 +92,7 @@ namespace UpDiddyApi
                 .ReadFrom.Configuration(Configuration)
                 .WriteTo.ApplicationInsightsTraces(Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"])
                 .WriteTo
-                    .SendGrid(LogEventLevel.Fatal, Configuration["SysEmail:Transactional:ApiKey"], Configuration["SysEmail:SystemErrorEmailAddress"])
+                    .SendGrid(LogEventLevel.Fatal, Configuration["SysEmail:NotifySystem:ApiKey"], Configuration["SysEmail:SystemErrorEmailAddress"])
                 .Enrich.FromLogContext()
                 .CreateLogger();
 
@@ -252,6 +252,20 @@ namespace UpDiddyApi
             if (_currentEnvironment.IsProduction())
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.GenerateSiteMapAndSaveToBlobStorage(), Cron.Daily(5));
 
+            // kick sendgrid audit cleanup
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.PurgeSendGridAuditRecords(), Cron.Daily());
+
+       
+            string HiringSolvedCronExpression = $"*/{Configuration["HiringSolved:PollIntervalInSeconds"]} * * * * *";
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.GetHiringSolvedResumeParseUpdates(), HiringSolvedCronExpression);
+
+
+
+
+
+
+
+
             #endregion
 
             services.AddHttpClient(Constants.HttpGetClientName);
@@ -332,6 +346,10 @@ namespace UpDiddyApi
             services.AddScoped<IPartnerService, PartnerService>();
             services.AddScoped<IAzureSearchService, AzureSearchService>();
             services.AddScoped<IReportsService, ReportsService>();
+            services.AddScoped<ISendGridEventService, SendgridEventService>();
+            services.AddScoped<ISubscriberEmailService, SubscriberEmailService>();
+            services.AddScoped<IHiringSolvedService, HiringSolvedService>();
+
 
             #endregion
 

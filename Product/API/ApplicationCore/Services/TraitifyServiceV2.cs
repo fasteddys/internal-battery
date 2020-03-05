@@ -83,8 +83,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 PublicKey = _publicKey,
                 Host = _host
             };
-            dto.AssessmentId = newAssessment.id;
-            await CreateNewAssessment(dto, subscriber);
+            dto.AssessmentId = newAssessment.id;            
+            responseDto.TraitifyGuid = await CreateNewAssessment(dto, subscriber);
             return responseDto;
         }
 
@@ -125,9 +125,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
         #region Private Functions
-        private async Task CreateNewAssessment(TraitifyRequestDto dto, Subscriber subscriber)
+        private async Task<Guid> CreateNewAssessment(TraitifyRequestDto dto, Subscriber subscriber)
         {
-
             UpDiddyApi.Models.Traitify traitify = new UpDiddyApi.Models.Traitify()
             {
                 Subscriber = subscriber != null ? subscriber : null,
@@ -142,9 +141,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             };
             await _repositoryWrapper.TraitifyRepository.Create(traitify);
             await _repositoryWrapper.TraitifyRepository.SaveAsync();
+            return traitify.TraitifyGuid;
         }
 
         #endregion
-
     }
 }
