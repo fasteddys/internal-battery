@@ -125,7 +125,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 props.Add(new KeyValuePair<string, object>("SimpleName", file.SimpleName));
                 props.Add(new KeyValuePair<string, object>("MimeType", file.MimeType));
                 _syslog.LogInformation($"An error occurred while downloading a resume for subscriber: {subscriberGuid}", props);
-                throw new NotFoundException("There was a problem downloading the resume");
+                throw new NotFoundException("There was a problem downloading the resume", e);
             }
             return resume;
         }
