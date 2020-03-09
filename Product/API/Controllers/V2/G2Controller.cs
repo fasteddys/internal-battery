@@ -155,7 +155,7 @@ namespace UpDiddyApi.Controllers.V2
 
         #endregion
 
-        #region Profiles
+        #region Recruiter Profile Operations
 
         // todo jab: remove this; should not be exposed via api (should be invoked by some other internal process)
         [HttpPost]
@@ -196,6 +196,55 @@ namespace UpDiddyApi.Controllers.V2
             await _profileService.UpdateProfileForRecruiter(profileDto, GetSubscriberGuid());
             return StatusCode(204);
         }
+
+        #endregion
+
+        #region Recruiter Wishlist Operations
+
+        [HttpPost]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("wishlists")]
+        public async Task<IActionResult> CreateWishlist([FromBody] WishlistDto wishlistDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("wishlists/{wishlistGuid:guid}")]
+        public async Task<IActionResult> GetWishlist(Guid wishlistGuid)
+        {
+            throw new NotImplementedException();
+        }
+
+        [HttpPut]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("wishlists")]
+        public async Task<IActionResult> UpdateWishlist([FromBody] WishlistDto wishlistDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        [HttpDelete]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("wishlists/{wishlistGuid:guid}")]
+        public async Task<IActionResult> DeleteWishlist(Guid wishlistGuid)
+        {
+            throw new NotImplementedException();
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("wishlists")]
+        public async Task<IActionResult> GetWishlists(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        {
+            throw new NotImplementedException();
+        }
+
+
+
+        // add person to wishlist
+        // remove person from wishlist
 
         #endregion
 
