@@ -1118,12 +1118,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return rowsAffected;
 
         }
-
-
-        // todo jab add migration for System_Create_CompanyG2Profiles
-        // todo jab add migration for System_Delete_CompanyG2Profiles
  
-
         /// <summary>
         /// Invoke stored procedure to create g2 records for the specified company.  1 record per active subscriber will be created.  If an existing record for the
         /// subscriber/company combination already exists, it will NOT be duplicated.
@@ -1160,7 +1155,32 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
 
+        public async Task<bool> UpdateG2AzureIndexStatuses(List<Guid> profileGuids, string statusName, string statusInfo)
+        {
 
+            DataTable table = new DataTable();
+            table.Columns.Add("Guid", typeof(Guid));
+            if (profileGuids != null)
+            {
+                foreach (var profileGuid in profileGuids)
+                {
+                    table.Rows.Add(profileGuid);
+                }
+            }
+
+            var profileGuidsParam = new SqlParameter("@ProfileGuids", table);
+            profileGuidsParam.SqlDbType = SqlDbType.Structured;
+            profileGuidsParam.TypeName = "dbo.GuidList";
+
+            var spParams = new object[] {
+                profileGuidsParam
+                ,new SqlParameter("@StatusName", statusName)
+                ,new SqlParameter("@IndexStatusInfo", statusInfo)
+            };
+
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [g2].[System_Update_AzureG2Status] @ProfileGuids, @StatusName, @IndexStatusInfo", spParams);
+            return true;
+        }
 
 
     }

@@ -87,6 +87,23 @@ namespace UpDiddyApi.Controllers.V2
         }
 
 
+        /// <summary>
+        /// Re-index subsriber.  This operation will update as well as create documents in the 
+        /// azure g2 index 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("subscriber/{subscriberGuid}/company/{companyGuid}")]
+        public async Task<IActionResult> ReindexSubscriberForCompany(Guid subscriberGuid,Guid companyGuid)
+        {
+            _g2Service.IndexSubscriber(subscriberGuid,companyGuid);
+            return StatusCode(200);
+        }
+
+
+
         #endregion
 
         #region Company Operations 
@@ -100,8 +117,6 @@ namespace UpDiddyApi.Controllers.V2
             _g2Service.DeleteCompany(companyGuid);
             return StatusCode(204);
         }
-
-
 
 
         /// <summary>
@@ -142,7 +157,7 @@ namespace UpDiddyApi.Controllers.V2
 
         #region Profiles
 
-        // todo: remove this; should not be exposed via api (should be invoked by some other internal process)
+        // todo jab: remove this; should not be exposed via api (should be invoked by some other internal process)
         [HttpPost]
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("profiles")]
@@ -152,7 +167,7 @@ namespace UpDiddyApi.Controllers.V2
             return StatusCode(201, profile);
         }
 
-        // todo: remove this; should not be exposed via api (should be invoked by some other internal process)
+        // todo jab: remove this; should not be exposed via api (should be invoked by some other internal process)
         [HttpDelete]
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("profiles/{profileGuid:guid}")]
@@ -176,6 +191,8 @@ namespace UpDiddyApi.Controllers.V2
         [Route("profiles")]
         public async Task<IActionResult> UpdateProfile([FromBody] ProfileDto profileDto)
         {
+
+            //todo jab call reindex for company/subscriber combonation
             await _profileService.UpdateProfileForRecruiter(profileDto, GetSubscriberGuid());
             return StatusCode(204);
         }

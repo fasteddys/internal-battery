@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
@@ -32,6 +33,7 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
         private readonly IMapper _mapper; 
         private IHangfireService _hangfireService { get; set; } 
         private ISysEmail _sysEmail;
+        private UpDiddyApi.ApplicationCore.Interfaces.Business.G2.IProfileService _profileService;
 
         public AzureSearchService(
             IHttpClientFactory httpClientFactory,
@@ -43,7 +45,8 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
             IMapper mapper,            
             IHangfireService hangfireService,            
             ISysEmail sysEmail,
-            IButterCMSService butterCMSService
+            IButterCMSService butterCMSService,
+            UpDiddyApi.ApplicationCore.Interfaces.Business.G2.IProfileService profileService
             )
         {           
             _httpClientFactory = httpClientFactory;
@@ -54,7 +57,8 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
             _logger = logger;
             _mapper = mapper;            
             _hangfireService = hangfireService;             
-            _sysEmail = sysEmail;            
+            _sysEmail = sysEmail;
+            _profileService = profileService;
         }
 
 
@@ -64,21 +68,17 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
         public async Task<bool> AddOrUpdateG2(G2SDOC g2)
         {
             SendG2Request(g2, "upload");
-            // todo jab update profile with index status
             return true;
         }
 
         public async Task<bool> DeleteG2(G2SDOC g2)
         {
-            // todo jab update profile with index status
             SendG2Request(g2, "delete");
             return true;
         }
 
         public async Task<bool> DeleteG2Bulk(List<G2SDOC> g2s)
         {
-
-            // todo jab update profile with index status
             SendG2RequestBulk(g2s, "delete");
             return true;
         }
@@ -87,7 +87,6 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
         public async Task<bool> AddOrUpdateG2Bulk(List<G2SDOC> g2s)
         {
             SendG2RequestBulk(g2s, "upload");
-            // todo jab update profile with index status
             return true;
         }
 
@@ -134,14 +133,23 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
         {
             string index = _configuration["AzureSearch:G2IndexName"];
             SDOCRequest<G2SDOC> docs = new SDOCRequest<G2SDOC>();
+            List<Guid> profileGuidList = new List<Guid>();
             foreach ( G2SDOC g2 in g2s)
             {
+                profileGuidList.Add(g2.ProfileGuid);
                 g2.SearchAction = cmd;
                 docs.value.Add(g2);
             }                       
 
             string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffZ" });
-            bool rval = await SendSearchRequest(index, Json);
+            string statusMsg = string.Empty;
+            StrongBox<string> box = new StrongBox<string>(statusMsg);
+            // use a strongbox to get the statuse msg box 
+            bool rval = await SendSearchRequest(index, cmd, Json,box);
+ 
+            // Update G2 index status for bulk operations
+            string statusName = cmd == "delete" ? Constants.G2AzureIndexStatus.Deleted : Constants.G2AzureIndexStatus.Indexed;
+            _repository.StoredProcedureRepository.UpdateG2AzureIndexStatuses(profileGuidList, statusName, box.Value);
             return rval;
         }
 
@@ -154,7 +162,24 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
             docs.value.Add(g2);
  
             string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffZ" });
-            bool rval = await   SendSearchRequest(index, Json);
+            string statusMsg = string.Empty;
+            // use a strongbox to get the statuse msg box 
+            StrongBox<string> box = new StrongBox<string>(statusMsg);
+            bool rval = await   SendSearchRequest(index, cmd, Json,box);
+
+
+            // Update the status for the item
+            if ( rval )
+            {
+                if (cmd != "delete")
+                    _profileService.UpdateAzureIndexStatus(g2.ProfileGuid, Constants.G2AzureIndexStatus.Indexed, box.Value );
+                else
+                    _profileService.UpdateAzureIndexStatus(g2.ProfileGuid, Constants.G2AzureIndexStatus.Deleted, box.Value);
+
+            }
+            else
+                _profileService.UpdateAzureIndexStatus(g2.ProfileGuid, Constants.G2AzureIndexStatus.Error, box.Value);
+
             return rval;            
         }
 
@@ -171,7 +196,10 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
                 doc.SearchAction = cmd;
                 docs.value.Add(doc);
                 string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs);
-                SendSearchRequest(index, Json);
+                string statusMsg = string.Empty;
+                // use a strongbox to get the statuse msg box 
+                StrongBox<string> box = new StrongBox<string>(statusMsg);
+                SendSearchRequest(index, cmd, Json, box);
             });
             return true;
         }
@@ -188,12 +216,15 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
                 doc.SearchAction = cmd;
                 docs.value.Add(doc);
                 string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs);
-                SendSearchRequest(index, Json);         
+                string statusMsg = string.Empty;
+                // use a strongbox to get the statuse msg box 
+                StrongBox<string> box = new StrongBox<string>(statusMsg);
+                SendSearchRequest(index, cmd, Json, box);         
             });
             return true;
         }
         
-        private async Task<bool> SendSearchRequest(string indexName, string jsonDocs )
+        private async Task<bool> SendSearchRequest(string indexName, string cmd, string jsonDocs, StrongBox<string> statusMsg )
         {
             string ResponseJson = string.Empty;
             try
@@ -222,10 +253,22 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
                 _logger.LogInformation($"AzureSearchService:SendSearchRequest: json = {jsonDocs}");
                 _logger.LogInformation($"AzureSearchService:SendSearchRequest: response = {ResponseJson}");
 
+                // return boolean for overall status and return status msg in the strong box 
                 if (SearchResponse.StatusCode == System.Net.HttpStatusCode.OK)
+                {                    
+                    if (cmd != "delete")
+                        statusMsg.Value = $"Indexed On {Utils.ISO8601DateString(DateTime.UtcNow)}";
+                    else
+                        statusMsg.Value = $"Deleted On {Utils.ISO8601DateString(DateTime.UtcNow)}"; 
                     return true;
+
+                }                    
                 else
+                {
+                    statusMsg.Value = $"StatusCode = {SearchResponse.StatusCode} ResponseJson = {ResponseJson} "; 
                     return false;
+                }
+                    
             }
             catch ( Exception ex )
             {
@@ -242,5 +285,6 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
         #endregion
 
 
+   
     }
 }

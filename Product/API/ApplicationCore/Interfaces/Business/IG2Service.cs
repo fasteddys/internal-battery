@@ -17,6 +17,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         #region G2 Azure Indexing 
         Task<bool> IndexG2Async(G2SDOC g2);
         Task<bool> IndexSubscriber(Guid subscriberGuid);
+        Task<bool> IndexSubscriber(Guid subscriberGuid, Guid companyGuid);
+
         Task<bool> RemoveSubscriberFromIndex(Guid subscriberGuid);
         Task<bool> IndexCompany(Guid companyuGuid);
         Task<bool> RemoveCompanyFromIndex(Guid companyGuid);

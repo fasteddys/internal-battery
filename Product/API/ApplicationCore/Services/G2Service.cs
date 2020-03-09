@@ -95,7 +95,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-  
+
 
 
 
@@ -103,6 +103,39 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
         #region G2 Azure Indexing Operations By Subscriber 
+
+
+ // todo jab test 
+        public async Task<bool> IndexSubscriber(Guid subscriberGuid, Guid companyGuid)
+        {
+            // Get the public company guid for 
+            Guid publicDataCompanyGuid = Guid.Parse(_configuration["CareerCircle:PublicDataCompanyGuid"]);
+
+            // Get all non-public G2s for subscriber 
+            List<v_ProfileAzureSearch> g2Profiles = _db.ProfileAzureSearch
+            .Where(p => p.SubscriberGuid == subscriberGuid && p.CompanyGuid != publicDataCompanyGuid && p.CompanyGuid == companyGuid)
+            .ToList();
+
+            if (g2Profiles.Count == 0)
+                throw new NotFoundException($"G2Service:IndexSubscriber: Could not find g2 for subscriber {subscriberGuid} for company {companyGuid}");
+
+            if (g2Profiles.Count > 1)
+                throw new FailedValidationException($"G2Service:IndexSubscriber:  SUubscriber {subscriberGuid} has {g2Profiles.Count} for  company {companyGuid}.  Only 1 profile is allowed per company.");
+
+
+            foreach (v_ProfileAzureSearch g2 in g2Profiles)
+            {
+                if (g2.CompanyGuid != null)
+                {
+                    G2SDOC indexDoc = await MapToG2SDOC(g2);
+                    // fire off as background job 
+                    _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexAddOrUpdate(indexDoc));
+                }
+            };
+
+            return true;
+        }
+
 
 
         /// <summary>
@@ -120,6 +153,8 @@ namespace UpDiddyApi.ApplicationCore.Services
              .Where( p => p.SubscriberGuid == subscriberGuid && p.CompanyGuid != publicDataCompanyGuid )
              .ToList();
 
+
+            //todo jab convert to batch 
              foreach (v_ProfileAzureSearch g2 in g2Profiles )
              {                   
                  if ( g2.CompanyGuid != null  )

@@ -155,5 +155,17 @@ namespace UpDiddyLib.Helpers
             public static readonly string Finished = "finished";
             public static readonly string Failed = "failed";
         }
+
+        public static class G2AzureIndexStatus
+        {
+            public static readonly string None = "None";
+            public static readonly string Pending = "Pending";
+            public static readonly string Indexed = "Indexed";
+            public static readonly string Deleted = "Deleted";
+            public static readonly string Error = "Error";
+        }
+
+
+ 
     }
 }
