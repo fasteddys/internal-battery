@@ -28,6 +28,7 @@ namespace UpDiddyApi.Controllers.V2
         private readonly IAzureSearchService _azureSearchService;
         private readonly IHangfireService _hangfireService;
         private readonly G2Interfaces.IProfileService _profileService;
+        private readonly G2Interfaces.IWishlistService _wishlistService;
 
         public G2Controller(IServiceProvider services)
         {
@@ -36,6 +37,7 @@ namespace UpDiddyApi.Controllers.V2
             _azureSearchService = services.GetService<IAzureSearchService>();
             _hangfireService = services.GetService<IHangfireService>();
             _profileService = services.GetService<G2Interfaces.IProfileService>();
+            _wishlistService = services.GetService<G2Interfaces.IWishlistService>();
         }
 
 
@@ -96,9 +98,9 @@ namespace UpDiddyApi.Controllers.V2
         [HttpPut]
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("subscriber/{subscriberGuid}/company/{companyGuid}")]
-        public async Task<IActionResult> ReindexSubscriberForCompany(Guid subscriberGuid,Guid companyGuid)
+        public async Task<IActionResult> ReindexSubscriberForCompany(Guid subscriberGuid, Guid companyGuid)
         {
-            _g2Service.IndexSubscriber(subscriberGuid,companyGuid);
+            _g2Service.IndexSubscriber(subscriberGuid, companyGuid);
             return StatusCode(200);
         }
 
@@ -206,7 +208,8 @@ namespace UpDiddyApi.Controllers.V2
         [Route("wishlists")]
         public async Task<IActionResult> CreateWishlist([FromBody] WishlistDto wishlistDto)
         {
-            throw new NotImplementedException();
+            Guid wishlistGuid = await _wishlistService.CreateWishlistForRecruiter(GetSubscriberGuid(), wishlistDto);
+            return StatusCode(201, wishlistGuid);
         }
 
         [HttpGet]
@@ -214,15 +217,18 @@ namespace UpDiddyApi.Controllers.V2
         [Route("wishlists/{wishlistGuid:guid}")]
         public async Task<IActionResult> GetWishlist(Guid wishlistGuid)
         {
-            throw new NotImplementedException();
+            var wishlist = await _wishlistService.GetWishlistForRecruiter(wishlistGuid, GetSubscriberGuid());
+            return Ok(wishlist);
         }
 
         [HttpPut]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        [Route("wishlists")]
-        public async Task<IActionResult> UpdateWishlist([FromBody] WishlistDto wishlistDto)
+        [Route("wishlists/{wishlistGuid:guid}")]
+        public async Task<IActionResult> UpdateWishlist(Guid wishlistGuid, [FromBody] WishlistDto wishlistDto)
         {
-            throw new NotImplementedException();
+            wishlistDto.WishlistGuid = wishlistGuid;
+            await _wishlistService.UpdateWishlistForRecruiter(GetSubscriberGuid(), wishlistDto);
+            return StatusCode(204);
         }
 
         [HttpDelete]
@@ -230,7 +236,8 @@ namespace UpDiddyApi.Controllers.V2
         [Route("wishlists/{wishlistGuid:guid}")]
         public async Task<IActionResult> DeleteWishlist(Guid wishlistGuid)
         {
-            throw new NotImplementedException();
+            await _wishlistService.DeleteWishlistForRecruiter(GetSubscriberGuid(), wishlistGuid);
+            return StatusCode(204);
         }
 
         [HttpGet]
@@ -238,13 +245,36 @@ namespace UpDiddyApi.Controllers.V2
         [Route("wishlists")]
         public async Task<IActionResult> GetWishlists(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            throw new NotImplementedException();
+            var wishlists = await _wishlistService.GetWishlistsForRecruiter(GetSubscriberGuid(), limit, offset, sort, order);
+            return Ok(wishlists);
         }
 
+        [HttpPost]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("wishlists/{wishlistGuid:guid}/profiles/{profileGuid:guid}")]
+        public async Task<IActionResult> AddProfileToWishlist(Guid wishlistGuid, Guid profileGuid)
+        {
+            Guid profileWishlistGuid = await _wishlistService.AddProfileWishlistForRecruiter(GetSubscriberGuid(), wishlistGuid, profileGuid);
+            return StatusCode(201, profileWishlistGuid);
+        }
 
+        [HttpDelete]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("wishlists/profiles/{profileWishlistGuid:guid}")]
+        public async Task<IActionResult> DeleteProfileFromWishlist(Guid profileWishlistGuid)
+        {
+            await _wishlistService.DeleteProfileWishlistForRecruiter(GetSubscriberGuid(), profileWishlistGuid);
+            return StatusCode(204);
+        }
 
-        // add person to wishlist
-        // remove person from wishlist
+        [HttpGet]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("wishlists/{wishlistGuid:guid}/profiles")]
+        public async Task<IActionResult> GetWishlistProfiles(Guid wishlistGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        {
+            var wishlistProfiles = await _wishlistService.GetProfileWishlistsForRecruiter(wishlistGuid, GetSubscriberGuid(), limit, offset, sort, order);
+            return Ok(wishlistProfiles);
+        }
 
         #endregion
 
@@ -261,8 +291,6 @@ namespace UpDiddyApi.Controllers.V2
 
         #endregion
 
- 
-
         //todo: delete this
         [HttpPut]
         [Route("testing")]
@@ -271,6 +299,5 @@ namespace UpDiddyApi.Controllers.V2
             await _profileService.UpdateAzureIndexStatus(Guid.Parse("11A1418F-6A70-4655-9BA4-509C1D210F37"), "Error", "Some shit went wrong!");
             return StatusCode(204);
         }
-       
     }
 }

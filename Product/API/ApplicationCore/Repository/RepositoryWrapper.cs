@@ -100,6 +100,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IPostalRepository _postalRepository;
         private IProfileRepository _profileRepository;
         private IAzureIndexStatusRepository _azureIndexStatusRepository;
+        private IWishlistRepository _wishlistRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
         {
@@ -1177,6 +1178,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
+        public IWishlistRepository WishlistRepository
+        {
+            get
+            {
+                if (_wishlistRepository == null)
+                {
+                    _wishlistRepository = new WishlistRepository(_dbContext);
+                }
+                return _wishlistRepository;
+            }
+        }
+
         public async Task SaveAsync()
         {
             var modifiedEntities = _dbContext.ChangeTracker.Entries()
@@ -1189,8 +1202,5 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
             await this._dbContext.SaveChangesAsync();
         }
-
-    
-
     }
 }

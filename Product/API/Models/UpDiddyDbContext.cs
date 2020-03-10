@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using UpDiddyLib.Domain.Models.Reports;
 using UpDiddyApi.Models.G2;
 using UpDiddyLib.Domain.AzureSearchDocuments;
+using UpDiddyLib.Domain.Models.G2;
 
 namespace UpDiddyApi.Models
 {
@@ -263,7 +264,8 @@ namespace UpDiddyApi.Models
         public DbQuery<UsersDetailDto> UsersDetail { get; set; }
         public DbQuery<PartnerUsers> PartnerUsers { get; set; } 
         public DbQuery<SubscriberEmailStatisticDto> SubscriberEmailStatistics { get; set; }
-
+        public DbQuery<ProfileWishlistDto> ProfileWishlists { get; set; }
+        public DbQuery<WishlistDto> Wishlists { get; set; }
 
         #endregion
 

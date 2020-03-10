@@ -744,6 +744,33 @@ namespace UpDiddyApi.Helpers
                 .ForMember(p => p.StateGuid, opt => opt.MapFrom(src => src.State.StateGuid))
                 .ForMember(p => p.SubscriberGuid, opt => opt.MapFrom(src => src.Subscriber.SubscriberGuid))
                 .ReverseMap();
+
+            CreateMap<List<WishlistDto>, WishlistListDto>()
+                .AfterMap((src, dest) =>
+                {
+                    if (src != null && src.Count() > 0)
+                        dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                    else
+                        dest.TotalRecords = 0;
+                })
+                .ForMember(dest => dest.Wishlists, opt => opt.MapFrom(src => src.ToList()))
+                .ReverseMap();
+
+            CreateMap<List<ProfileWishlistDto>, ProfileWishlistListDto>()
+                .AfterMap((src, dest) =>
+                {
+                    if (src != null && src.Count() > 0)
+                        dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                    else
+                        dest.TotalRecords = 0;
+                })
+                .ForMember(dest => dest.WishlistProfiles, opt => opt.MapFrom(src => src.ToList()))
+                .ReverseMap();
+
+            CreateMap<Models.G2.Wishlist, WishlistDto>()
+                .ForMember(w => w.RecruiterGuid, opt => opt.MapFrom(src => src.Recruiter.RecruiterGuid))
+                .ForMember(w => w.TotalRecords, opt => opt.Ignore())
+                .ReverseMap();
         }
     }
 }
