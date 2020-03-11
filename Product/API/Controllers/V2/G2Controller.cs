@@ -25,7 +25,7 @@ namespace UpDiddyApi.Controllers.V2
     {
         private readonly IConfiguration _configuration;
         private readonly IG2Service _g2Service;
-        private readonly IAzureSearchService _azureSearchService;
+ 
         private readonly IHangfireService _hangfireService;
         private readonly G2Interfaces.IProfileService _profileService;
         private readonly G2Interfaces.IWishlistService _wishlistService;
@@ -33,8 +33,7 @@ namespace UpDiddyApi.Controllers.V2
         public G2Controller(IServiceProvider services)
         {
             _configuration = services.GetService<IConfiguration>();
-            _g2Service = services.GetService<IG2Service>();
-            _azureSearchService = services.GetService<IAzureSearchService>();
+            _g2Service = services.GetService<IG2Service>(); 
             _hangfireService = services.GetService<IHangfireService>();
             _profileService = services.GetService<G2Interfaces.IProfileService>();
             _wishlistService = services.GetService<G2Interfaces.IWishlistService>();

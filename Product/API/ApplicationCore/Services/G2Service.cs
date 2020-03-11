@@ -17,6 +17,7 @@ using UpDiddyApi.Models.Views;
 using UpDiddyApi.Workflow;
 using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyLib.Domain.Models;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -245,7 +246,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <returns></returns>
         public async Task<bool> IndexG2Async(G2SDOC g2)
         {
-            _azureSearchService.AddOrUpdateG2(g2);
+            string info = await _azureSearchService.AddOrUpdateG2(g2);
+            await UpdateG2Status(g2, Constants.G2AzureIndexStatus.Indexed, info);
             return true;
         }
 
@@ -285,7 +287,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<bool> G2IndexAddOrUpdateAsync(G2SDOC g2)
         {
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexAddOrUpdateAsync starting index for g2 {g2.ProfileGuid}");
-            await _azureSearchService.AddOrUpdateG2(g2);
+            string info = await _azureSearchService.AddOrUpdateG2(g2);
+            await UpdateG2Status(g2, Constants.G2AzureIndexStatus.Indexed, info);
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexAddOrUpdateAsync done index for g2 {g2.ProfileGuid}");
             return true;
         }
@@ -527,7 +530,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<bool> IndexG2BulkAsync(List<G2SDOC> g2List)
         {
             _logger.Log(LogLevel.Information, $"G2Service.IndexG2BulkAsync starting index for g2");
-            await _azureSearchService.AddOrUpdateG2Bulk(g2List);
+            string info = await _azureSearchService.AddOrUpdateG2Bulk(g2List);            
+            await UpdateG2Status(g2List, Constants.G2AzureIndexStatus.Indexed, info);
             _logger.Log(LogLevel.Information, $"G2Service.IndexG2BulkAsync done index for g2");
             return true;
         }
@@ -542,7 +546,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<bool> G2IndexDeleteBulkAsync(List<G2SDOC> g2List)
         {
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexDeleteBulkAsync starting index delete");
-            await _azureSearchService.DeleteG2Bulk(g2List);
+            string info = await _azureSearchService.DeleteG2Bulk(g2List);
+            await UpdateG2Status(g2List, Constants.G2AzureIndexStatus.Deleted, info);
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexDeleteBulkAsync done index delete");
             return true;
         }
@@ -558,10 +563,14 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<bool> G2IndexDeleteAsync(G2SDOC g2)
         {
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexDeleteAsync starting index for g2 {g2.ProfileGuid}");
-            await _azureSearchService.DeleteG2(g2);
+            string info =  await _azureSearchService.DeleteG2(g2);
+            await UpdateG2Status(g2, Constants.G2AzureIndexStatus.Deleted, info);
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexDeleteAsync done index for g2 {g2.ProfileGuid}");
             return true;
         }
+
+ 
+
 
 
         #endregion
@@ -588,13 +597,42 @@ namespace UpDiddyApi.ApplicationCore.Services
             _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexPurge());            
             return true;
         }
-        
+
 
 
 
         #endregion
 
         #region private helper functions 
+
+        private async Task<bool> UpdateG2Status( G2SDOC g2, string cmd, string info)
+        {
+
+            List<G2SDOC> g2List = new List<G2SDOC>();
+            g2List.Add(g2);
+            await UpdateG2Status(g2List, cmd, info); 
+            return true;
+
+        }
+
+
+
+        private async Task<bool> UpdateG2Status(List<G2SDOC> g2List, string statusName, string info)
+        {
+
+            List<Guid> profileGuidList = new List<Guid>();
+            foreach (G2SDOC g2 in g2List)
+            {
+                profileGuidList.Add(g2.ProfileGuid);
+            }
+ 
+            _repository.StoredProcedureRepository.UpdateG2AzureIndexStatuses(profileGuidList, statusName, info);
+
+            return true;
+
+        }
+
+
 
 
         /// <summary>

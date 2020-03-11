@@ -32,6 +32,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<bool> IndexProfileAsync(Guid g2ProfileGuid);
 
 
+ 
+
+
 
         #endregion
 

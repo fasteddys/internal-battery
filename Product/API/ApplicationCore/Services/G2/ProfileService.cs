@@ -17,7 +17,8 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         private readonly IMapper _mapper;
         private readonly IG2Service _g2Service;
 
-        public ProfileService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IG2Service g2Service)
+        public ProfileService(IRepositoryWrapper repositoryWrapper, IMapper mapper , IG2Service g2Service)
+    
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
@@ -54,9 +55,12 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             await _repositoryWrapper.ProfileRepository.UpdateProfileForRecruiter(profileDto, subscriberGuid);
 
             // Update the profile in azure search            
+ 
             await _g2Service.IndexProfileAsync(profileDto.ProfileGuid);            
         }
 
+ 
+     
         public async Task UpdateAzureIndexStatus(Guid profileGuid, string azureIndexStatusName, string azureSearchIndexInfo)
         {
             if (profileGuid == null || profileGuid == Guid.Empty)
@@ -69,5 +73,6 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
 
             await _repositoryWrapper.ProfileRepository.UpdateAzureIndexStatus(profileGuid, azureIndexStatus.AzureIndexStatusGuid, azureSearchIndexInfo);
         }
+       
     }
 }

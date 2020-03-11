@@ -32,8 +32,7 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
         private IRepositoryWrapper _repository { get; set; }
         private readonly IMapper _mapper; 
         private IHangfireService _hangfireService { get; set; } 
-        private ISysEmail _sysEmail;
-        private UpDiddyApi.ApplicationCore.Interfaces.Business.G2.IProfileService _profileService;
+        private ISysEmail _sysEmail; 
 
         public AzureSearchService(
             IHttpClientFactory httpClientFactory,
@@ -45,8 +44,7 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
             IMapper mapper,            
             IHangfireService hangfireService,            
             ISysEmail sysEmail,
-            IButterCMSService butterCMSService,
-            UpDiddyApi.ApplicationCore.Interfaces.Business.G2.IProfileService profileService
+            IButterCMSService butterCMSService         
             )
         {           
             _httpClientFactory = httpClientFactory;
@@ -57,37 +55,34 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
             _logger = logger;
             _mapper = mapper;            
             _hangfireService = hangfireService;             
-            _sysEmail = sysEmail;
-            _profileService = profileService;
+            _sysEmail = sysEmail;          
         }
 
 
 
         #region G2
  
-        public async Task<bool> AddOrUpdateG2(G2SDOC g2)
+        public async Task<string> AddOrUpdateG2(G2SDOC g2)
         {
-            SendG2Request(g2, "upload");
-            return true;
+            return await SendG2Request(g2, "upload");
+   
         }
 
-        public async Task<bool> DeleteG2(G2SDOC g2)
+        public async Task<string> DeleteG2(G2SDOC g2)
         {
-            SendG2Request(g2, "delete");
-            return true;
+            return await SendG2Request(g2, "delete");
+ 
         }
 
-        public async Task<bool> DeleteG2Bulk(List<G2SDOC> g2s)
+        public async Task<string > DeleteG2Bulk(List<G2SDOC> g2s)
         {
-            SendG2RequestBulk(g2s, "delete");
-            return true;
+            return await SendG2RequestBulk(g2s, "delete");
         }
 
 
-        public async Task<bool> AddOrUpdateG2Bulk(List<G2SDOC> g2s)
+        public async Task<string > AddOrUpdateG2Bulk(List<G2SDOC> g2s)
         {
-            SendG2RequestBulk(g2s, "upload");
-            return true;
+            return await SendG2RequestBulk(g2s, "upload");        
         }
 
         #endregion
@@ -129,7 +124,7 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
         #region helper functions 
 
 
-        private async Task<bool> SendG2RequestBulk(List<G2SDOC> g2s, string cmd)
+        private async Task<string> SendG2RequestBulk(List<G2SDOC> g2s, string cmd)
         {
             string index = _configuration["AzureSearch:G2IndexName"];
             SDOCRequest<G2SDOC> docs = new SDOCRequest<G2SDOC>();
@@ -147,14 +142,12 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
             // use a strongbox to get the statuse msg box 
             bool rval = await SendSearchIndexRequest(index, cmd, Json,box);
  
-            // Update G2 index status for bulk operations
-            string statusName = cmd == "delete" ? Constants.G2AzureIndexStatus.Deleted : Constants.G2AzureIndexStatus.Indexed;
-            _repository.StoredProcedureRepository.UpdateG2AzureIndexStatuses(profileGuidList, statusName, box.Value);
-            return rval;
+        
+            return box.Value;
         }
 
 
-        private async Task<bool> SendG2Request(G2SDOC g2, string cmd)
+        private async Task<string> SendG2Request(G2SDOC g2, string cmd)
         {            
             string index = _configuration["AzureSearch:G2IndexName"];
             SDOCRequest<G2SDOC> docs = new SDOCRequest<G2SDOC>();                            
@@ -165,21 +158,8 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
             string statusMsg = string.Empty;
             // use a strongbox to get the statuse msg box 
             StrongBox<string> box = new StrongBox<string>(statusMsg);
-            bool rval = await SendSearchIndexRequest(index, cmd, Json,box);
-
-
-            // Update the status for the item
-            if ( rval )
-            {
-                if (cmd != "delete")
-                    _profileService.UpdateAzureIndexStatus(g2.ProfileGuid, Constants.G2AzureIndexStatus.Indexed, box.Value );
-                else
-                    _profileService.UpdateAzureIndexStatus(g2.ProfileGuid, Constants.G2AzureIndexStatus.Deleted, box.Value);
-            }
-            else
-                _profileService.UpdateAzureIndexStatus(g2.ProfileGuid, Constants.G2AzureIndexStatus.Error, box.Value);
-
-            return rval;            
+            bool rval = await SendSearchIndexRequest(index, cmd, Json,box);  
+            return box.Value;            
         }
 
 
