@@ -515,7 +515,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             string downloadUrl = await _fileDownloadTrackerService.CreateFileDownloadLink(fileDownloadTrackerDto);
 
             _hangfireService.Enqueue(() =>
-             _sysEmail.SendTemplatedEmailAsync(
+             _sysEmail.SendTemplatedEmailAsync( 
+                 _logger,
                  email,
                  _configuration["SysEmail:Transactional:TemplateIds:GatedDownload-LinkEmail"],
                  new

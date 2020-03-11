@@ -933,6 +933,7 @@ public class SubscriberController : Controller
     {
         _hangfireService.Enqueue(() =>
          _sysEmail.SendTemplatedEmailAsync(
+             _syslog,
              email,
              _configuration["SysEmail:Transactional:TemplateIds:GatedDownload-LinkEmail"],
              new

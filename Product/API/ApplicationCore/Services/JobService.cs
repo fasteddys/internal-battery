@@ -269,6 +269,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var referralUrl = jobReferralGuid == Guid.Empty ? jobReferralDto.ReferUrl : $"{jobReferralDto.ReferUrl}?referrerCode={jobReferralGuid}";
 
             _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(
+                _syslog,
                 jobReferralDto.RefereeEmailId,
                 _configuration["SysEmail:Transactional:TemplateIds:JobReferral-ReferAFriend"],
                 new

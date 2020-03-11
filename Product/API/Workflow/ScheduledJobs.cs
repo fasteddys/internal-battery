@@ -179,8 +179,9 @@ namespace UpDiddyApi.Workflow
                     {
 
                         if (await _sysEmail.SendTemplatedEmailAsync(
+                             _syslog,
                              reminder.Email,
-                             _configuration["SysEmail:Transactional:TemplateIds:SubscriberNotification-Reminder"].ToString(),
+                             _configuration["SysEmail:NotifySystem:TemplateIds:SubscriberNotification-Reminder"].ToString(),
                              new
                              {
                                  firstName = reminder.FirstName,
@@ -189,7 +190,7 @@ namespace UpDiddyApi.Workflow
                                  notificationsUrl = _configuration["Environment:BaseUrl"].ToString() + "dashboard",
                                  disableNotificationEmailReminders = _configuration["Environment:BaseUrl"].ToString() + "Home/DisableEmailReminders/" + reminder.SubscriberGuid
                              },
-                             SendGridAccount.Transactional,
+                             SendGridAccount.NotifySystem,
                              null,
                              null,
                              executionTime))
@@ -245,6 +246,7 @@ namespace UpDiddyApi.Workflow
                             if (
                                 // send the seed email using the lead email's account and template
                                 await _sysEmail.SendTemplatedEmailAsync(
+                                    _syslog,
                                     partnerContact.Metadata["Email"].ToString(),
                                     leadEmail.EmailTemplateId,
                                     new
@@ -265,7 +267,8 @@ namespace UpDiddyApi.Workflow
                         }
 
                         bool isMailSentSuccessfully =
-                        _sysEmail.SendTemplatedEmailAsync(
+                         _sysEmail.SendTemplatedEmailAsync(
+                            _syslog,
                             leadEmail.Email,
                             leadEmail.EmailTemplateId,
                             new
@@ -1229,18 +1232,20 @@ namespace UpDiddyApi.Workflow
                         posted = j.PostingDateUTC.ToShortDateString(),
                         url = _configuration["CareerCircle:ViewJobPostingUrl"] + j.JobPostingGuid
                     }).ToList());
-                    _sysEmail.SendTemplatedEmailAsync(
-                        jobPostingAlert.Subscriber.Email,
-                        _configuration["SysEmail:Transactional:TemplateIds:JobPosting-SubscriberAlert"],
-                        templateData,
-                        SendGridAccount.Transactional,
-                        null,
-                        null);
+
+                    var result = _sysEmail.SendTemplatedEmailAsync(
+                       _syslog,
+                       jobPostingAlert.Subscriber.Email,
+                       _configuration["SysEmail:NotifySystem:TemplateIds:JobPosting-SubscriberAlert"],
+                       templateData,
+                       SendGridAccount.NotifySystem,
+                       null,
+                       null).Result;
                 }
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.ExecuteJobPostingAlert encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.ExecuteJobPostingAlert encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}, jobPostingAlertGuid: {jobPostingAlertGuid.ToString()}");
             }
         }
 
@@ -1534,10 +1539,11 @@ namespace UpDiddyApi.Workflow
 
                         //Send email to subscriber
                         bool result = await _sysEmail.SendTemplatedEmailAsync(
+                                   _syslog,
                                   entry.Key.Email,
-                                  _configuration["SysEmail:Transactional:TemplateIds:JobApplication-AbandonmentAlert"],
+                                  _configuration["SysEmail:NotifySystem:TemplateIds:JobApplication-AbandonmentAlert"],
                                   SendGridHelper.GenerateJobAbandonmentEmailTemplate(entry, similarJobSearchResults.Jobs, jobPostingUrl),
-                                  SendGridAccount.Transactional,
+                                  SendGridAccount.NotifySystem,
                                   null,
                                   null);
                     }
@@ -1547,10 +1553,11 @@ namespace UpDiddyApi.Workflow
                     foreach (string email in jobAbandonmentEmails)
                     {
                         await _sysEmail.SendTemplatedEmailAsync(
+                                _syslog,
                               email,
-                              _configuration["SysEmail:Transactional:TemplateIds:JobApplication-AbandonmentAlert-Recruiter"],
+                              _configuration["SysEmail:NotifySystem:TemplateIds:JobApplication-AbandonmentAlert-Recruiter"],
                               SendGridHelper.GenerateJobAbandonmentRecruiterTemplate(subscribersToJobPostingMapping, jobPostingUrl),
-                              SendGridAccount.Transactional,
+                              SendGridAccount.NotifySystem,
                               null,
                               null);
                     }
@@ -1689,7 +1696,7 @@ namespace UpDiddyApi.Workflow
                     subscriber = await _repositoryWrapper.SubscriberRepository.GetByGuid(profile.SubscriberGuid.Value, false);
 
                     // Purge profiles from google that have no related subscriber record or have a deleted subscriber record
-                    if ((subscriber == null || subscriber.IsDeleted == 1)  && !string.IsNullOrWhiteSpace(profile.CloudTalentUri))
+                    if ((subscriber == null || subscriber.IsDeleted == 1) && !string.IsNullOrWhiteSpace(profile.CloudTalentUri))
                     {
                         try
 
