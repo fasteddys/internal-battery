@@ -733,10 +733,33 @@ namespace UpDiddyApi.Helpers
             .ForMember(c => c.CompanyName, opt => opt.MapFrom(src => src.Company.CompanyName))
             .ForAllOtherMembers(opt => opt.Ignore());
 
-
-
-
-
+            CreateMap<List<RecruiterStatDto>, RecruiterStatListDto>()
+                  .AfterMap((src, dest) =>
+                  {
+                      if (src != null && src.Count() > 0)
+                      {
+                          dest.TotalOpCoSubmittals = src.FirstOrDefault().TotalOpCoSubmittals;
+                          dest.TotalCCSubmittals = src.FirstOrDefault().TotalCCSubmittals;
+                          dest.TotalOpCoInterviews = src.FirstOrDefault().TotalOpCoInterviews;
+                          dest.TotalCCInterviews = src.FirstOrDefault().TotalCCInterviews;
+                          dest.TotalOpCoStarts = src.FirstOrDefault().TotalOpCoStarts;
+                          dest.TotalCCStarts = src.FirstOrDefault().TotalCCStarts;
+                          dest.TotalOpCoSpread = src.FirstOrDefault().TotalOpCoSpread;
+                          dest.TotalCCSpread = src.FirstOrDefault().TotalCCSpread;                      }
+                      else
+                      {
+                          dest.TotalOpCoSubmittals = 0;
+                          dest.TotalCCSubmittals = 0;
+                          dest.TotalOpCoInterviews = 0;
+                          dest.TotalCCInterviews = 0;
+                          dest.TotalOpCoStarts = 0;
+                          dest.TotalCCStarts = 0;
+                          dest.TotalOpCoSpread = 0;
+                          dest.TotalCCSpread = 0;
+                      }
+                  })
+                .ForMember(dest => dest.RecruiterStats, opt => opt.MapFrom(src => src.ToList()))
+                .ReverseMap();
         }
     }
 }
