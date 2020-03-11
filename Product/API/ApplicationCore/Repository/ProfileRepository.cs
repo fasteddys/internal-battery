@@ -36,9 +36,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
             await _dbContext.SaveChangesAsync();
         }
 
-        public Task<Profile> GetProfileForRecruiter(Guid profileGuid, Guid subscriberGuid)
+        public async Task<Profile> GetProfileForRecruiter(Guid profileGuid, Guid subscriberGuid)
         {
-            return (from p in _dbContext.Profile
+            return await (from p in _dbContext.Profile
                         .Include(c => c.Company)
                         .Include(ct => ct.ContactType)
                         .Include(c => c.City)

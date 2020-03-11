@@ -2158,11 +2158,7 @@ namespace UpDiddyApi.Workflow
             _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2DeleteCompany done index for g2 {companyGuid}");
             return true;
         }
-
-        // todo jab add migration for alter to v_ProfileAzureSearch 
-
-
-
+ 
         public async Task<bool> G2IndexUnindexedProfiles()
         {
             // Get the indexer batch size   
@@ -2218,15 +2214,6 @@ namespace UpDiddyApi.Workflow
             return true;
         }
 
-
-
-
-
- 
-
-
-
-        // todo jab make sure index status gets updated in backing store 
         public async Task<bool> G2IndexPurge()
         {
             // Get the indexer purge batch size   

@@ -353,6 +353,7 @@ namespace UpDiddyApi
             services.AddScoped<IHiringSolvedService, HiringSolvedService>();
             services.AddScoped<IG2Service, G2Service>();
             services.AddScoped<G2Interfaces.IProfileService, G2Services.ProfileService>();
+            services.AddScoped<G2Interfaces.IWishlistService, G2Services.WishlistService>();
 
             #endregion
 
