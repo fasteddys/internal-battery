@@ -38,10 +38,12 @@ namespace UpDiddyApi.Controllers.V2
             _profileService = services.GetService<G2Interfaces.IProfileService>();
         }
 
+         
 
         //todo jab review these endpoint to see if we want to keep them
         //todo jab confirm the endpoints we keep as recruiter or Admin functions 
 
+ 
         #region Subscriber Operations 
 
         [HttpDelete]
@@ -50,7 +52,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> DeleteSubscriberFromIndex(Guid subscriberGuid)
         {
 
-            _g2Service.DeleteSubscriber(subscriberGuid);
+            _g2Service.DeleteSubscriberAsync(subscriberGuid);
             return StatusCode(204);
         }
 
@@ -65,7 +67,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("subscriber/{subscriberGuid}")]
         public async Task<IActionResult> AddNewSubscriber(Guid subscriberGuid)
         {
-            _g2Service.AddSubscriber(subscriberGuid);
+            _g2Service.AddSubscriberAsync(subscriberGuid);
             return StatusCode(200);
         }
 
@@ -82,7 +84,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("subscriber/{subscriberGuid}")]
         public async Task<IActionResult> ReindexSubscriber(Guid subscriberGuid)
         {
-            _g2Service.IndexSubscriber(subscriberGuid);
+            _g2Service.IndexSubscriberAsync(subscriberGuid);
             return StatusCode(200);
         }
 
@@ -98,9 +100,11 @@ namespace UpDiddyApi.Controllers.V2
         [Route("subscriber/{subscriberGuid}/company/{companyGuid}")]
         public async Task<IActionResult> ReindexSubscriberForCompany(Guid subscriberGuid,Guid companyGuid)
         {
-            _g2Service.IndexSubscriber(subscriberGuid,companyGuid);
+            _g2Service.IndexSubscriberAsync(subscriberGuid,companyGuid);
             return StatusCode(200);
         }
+
+
 
 
 
@@ -114,7 +118,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> DeleteCompanyFromIndex(Guid companyGuid)
         {
 
-            _g2Service.DeleteCompany(companyGuid);
+            _g2Service.DeleteCompanyAsync(companyGuid);
             return StatusCode(204);
         }
 
@@ -129,7 +133,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("company/{companyGuid}")]
         public async Task<IActionResult> AddNewCompany(Guid companyGuid)
         {
-            _g2Service.AddCompany(companyGuid);
+            _g2Service.AddCompanyAsync(companyGuid);
             return StatusCode(200);
         }
 
@@ -156,27 +160,7 @@ namespace UpDiddyApi.Controllers.V2
         #endregion
 
         #region Profiles
-
-        // todo jab: remove this; should not be exposed via api (should be invoked by some other internal process)
-        [HttpPost]
-        [Authorize(Policy = "IsRecruiterPolicy")]
-        [Route("profiles")]
-        public async Task<IActionResult> CreateProfile(ProfileDto profileDto)
-        {
-            var profile = await _profileService.CreateProfile(profileDto);
-            return StatusCode(201, profile);
-        }
-
-        // todo jab: remove this; should not be exposed via api (should be invoked by some other internal process)
-        [HttpDelete]
-        [Authorize(Policy = "IsRecruiterPolicy")]
-        [Route("profiles/{profileGuid:guid}")]
-        public async Task<IActionResult> DeleteProfile(Guid profileGuid)
-        {
-            await _profileService.DeleteProfile(profileGuid);
-            return StatusCode(204);
-        }
-
+    
         [HttpGet]
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("profiles/{profileGuid:guid}")]
@@ -192,7 +176,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> UpdateProfile([FromBody] ProfileDto profileDto)
         {
 
-            //todo jab call reindex for company/subscriber combonation
+            //call reindex for company/subscriber combonation
             await _profileService.UpdateProfileForRecruiter(profileDto, GetSubscriberGuid());
             return StatusCode(204);
         }
@@ -212,7 +196,43 @@ namespace UpDiddyApi.Controllers.V2
 
         #endregion
 
- 
+        #region Admin Functions 
+
+        /// <summary>
+        /// Creates G2 profiles for all active subscriber/company combinations
+        /// </summary>
+        /// 
+        /// <returns></returns>
+        [HttpPost]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("index")]
+        public async Task<IActionResult> bootG2(Guid subscriberGuid)
+        {
+            // 
+            _g2Service.CreateG2IndexAsync();
+            return StatusCode(200);
+        }
+
+
+
+        /// <summary>
+        /// Creates G2 profiles for all active subscriber/company combinations
+        /// </summary>
+        /// 
+        /// <returns></returns>
+        [HttpDelete]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("index")]
+        public async Task<IActionResult> deleteG2(Guid subscriberGuid)
+        {
+
+            _g2Service.PurgeG2IndexAsync();
+       
+            return StatusCode(200);
+        }
+
+        #endregion
+
 
         //todo: delete this
         [HttpPut]

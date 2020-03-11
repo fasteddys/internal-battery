@@ -1183,5 +1183,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
 
+        public async Task<int>  BootG2Profiles()
+        {
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Create_G2Profiles]");
+            return rowsAffected;
+        }
+
+
     }
 }

@@ -145,7 +145,7 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
             string statusMsg = string.Empty;
             StrongBox<string> box = new StrongBox<string>(statusMsg);
             // use a strongbox to get the statuse msg box 
-            bool rval = await SendSearchRequest(index, cmd, Json,box);
+            bool rval = await SendSearchIndexRequest(index, cmd, Json,box);
  
             // Update G2 index status for bulk operations
             string statusName = cmd == "delete" ? Constants.G2AzureIndexStatus.Deleted : Constants.G2AzureIndexStatus.Indexed;
@@ -165,7 +165,7 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
             string statusMsg = string.Empty;
             // use a strongbox to get the statuse msg box 
             StrongBox<string> box = new StrongBox<string>(statusMsg);
-            bool rval = await   SendSearchRequest(index, cmd, Json,box);
+            bool rval = await SendSearchIndexRequest(index, cmd, Json,box);
 
 
             // Update the status for the item
@@ -175,7 +175,6 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
                     _profileService.UpdateAzureIndexStatus(g2.ProfileGuid, Constants.G2AzureIndexStatus.Indexed, box.Value );
                 else
                     _profileService.UpdateAzureIndexStatus(g2.ProfileGuid, Constants.G2AzureIndexStatus.Deleted, box.Value);
-
             }
             else
                 _profileService.UpdateAzureIndexStatus(g2.ProfileGuid, Constants.G2AzureIndexStatus.Error, box.Value);
@@ -199,7 +198,7 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
                 string statusMsg = string.Empty;
                 // use a strongbox to get the statuse msg box 
                 StrongBox<string> box = new StrongBox<string>(statusMsg);
-                SendSearchRequest(index, cmd, Json, box);
+                SendSearchIndexRequest(index, cmd, Json, box);
             });
             return true;
         }
@@ -219,12 +218,12 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
                 string statusMsg = string.Empty;
                 // use a strongbox to get the statuse msg box 
                 StrongBox<string> box = new StrongBox<string>(statusMsg);
-                SendSearchRequest(index, cmd, Json, box);         
+                SendSearchIndexRequest(index, cmd, Json, box);         
             });
             return true;
         }
         
-        private async Task<bool> SendSearchRequest(string indexName, string cmd, string jsonDocs, StrongBox<string> statusMsg )
+        private async Task<bool> SendSearchIndexRequest(string indexName, string cmd, string jsonDocs, StrongBox<string> statusMsg )
         {
             string ResponseJson = string.Empty;
             try

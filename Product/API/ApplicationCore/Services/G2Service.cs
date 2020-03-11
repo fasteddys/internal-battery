@@ -49,13 +49,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _azureSearchService = azureSearchService;
             _hangfireService = hangfireService;
         }
-
-
-
-        // todo jab background job for creating azure record for for every  subscriber for bootstrapping Task1750
-        // todo jab figure out how to update G2 when self-curated or public data changes 
-
-
+ 
         #region G2 Searching 
 
         public async Task<G2SearchResultDto> SearchG2Async(Guid subscriberGuid, int cityId,   int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0 )
@@ -94,9 +88,60 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
+        public async Task<G2SearchResultDto> GetTopG2sAsync(int numRecords)
+        {
+            DateTime startSearch = DateTime.Now;
+            G2SearchResultDto searchResults = new G2SearchResultDto();
+
+            string searchServiceName = _configuration["AzureSearch:SearchServiceName"];
+            string adminApiKey = _configuration["AzureSearch:SearchServiceQueryApiKey"];
+            string g2IndexName = _configuration["AzureSearch:G2IndexName"];
 
 
 
+            SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(adminApiKey));
+
+            // Create an index named hotels
+            ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(g2IndexName);
+
+            SearchParameters parameters;
+            DocumentSearchResult<G2InfoDto> results;
+
+            parameters =
+                new SearchParameters()
+                {
+                    IncludeTotalResultCount = true,
+                    Top = numRecords
+                };
+
+
+            results = indexClient.Documents.Search<G2InfoDto>("*", parameters);
+
+            DateTime startMap = DateTime.Now;
+            searchResults.G2s = results?.Results?
+                .Select(s => (G2InfoDto)s.Document)
+                .ToList();
+
+            searchResults.TotalHits = results.Count.Value;
+            searchResults.PageSize = (int)results.Count.Value;
+            searchResults.NumPages = searchResults.PageSize != 0 ? (int)Math.Ceiling((double)searchResults.TotalHits / searchResults.PageSize) : 0;
+            searchResults.SubscriberCount = searchResults.G2s.Count;
+            searchResults.PageNum = 1;
+
+            DateTime stopMap = DateTime.Now;
+
+            // calculate search timing metrics 
+            TimeSpan intervalTotalSearch = stopMap - startSearch;
+            TimeSpan intervalSearchTime = startMap - startSearch;
+            TimeSpan intervalMapTime = stopMap - startMap;
+
+            // assign search metrics to search results 
+            searchResults.SearchTimeInMilliseconds = intervalTotalSearch.TotalMilliseconds;
+            searchResults.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
+            searchResults.SearchMappingTimeInTicks = intervalMapTime.Ticks;
+
+            return searchResults;
+        }
 
 
         #endregion
@@ -105,8 +150,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         #region G2 Azure Indexing Operations By Subscriber 
 
 
- // todo jab test 
-        public async Task<bool> IndexSubscriber(Guid subscriberGuid, Guid companyGuid)
+        public async Task<bool> IndexSubscriberAsync(Guid subscriberGuid, Guid companyGuid)
         {
             // Get the public company guid for 
             Guid publicDataCompanyGuid = Guid.Parse(_configuration["CareerCircle:PublicDataCompanyGuid"]);
@@ -117,22 +161,18 @@ namespace UpDiddyApi.ApplicationCore.Services
             .ToList();
 
             if (g2Profiles.Count == 0)
-                throw new NotFoundException($"G2Service:IndexSubscriber: Could not find g2 for subscriber {subscriberGuid} for company {companyGuid}");
+                throw new NotFoundException($"G2Service:IndexSubscriberAsync: Could not find g2 for subscriber {subscriberGuid} for company {companyGuid}");
 
             if (g2Profiles.Count > 1)
-                throw new FailedValidationException($"G2Service:IndexSubscriber:  SUubscriber {subscriberGuid} has {g2Profiles.Count} for  company {companyGuid}.  Only 1 profile is allowed per company.");
+                throw new FailedValidationException($"G2Service:IndexSubscriberAsync:  SUubscriber {subscriberGuid} has {g2Profiles.Count} for  company {companyGuid}.  Only 1 profile is allowed per company.");
 
-
-            foreach (v_ProfileAzureSearch g2 in g2Profiles)
+            v_ProfileAzureSearch g2 = g2Profiles[0];
+            if (g2.CompanyGuid != null)
             {
-                if (g2.CompanyGuid != null)
-                {
-                    G2SDOC indexDoc = await MapToG2SDOC(g2);
-                    // fire off as background job 
-                    _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexAddOrUpdate(indexDoc));
-                }
-            };
-
+                G2SDOC indexDoc = await MapToG2SDOC(g2);
+                // fire off as background job 
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexAddOrUpdate(indexDoc));
+            }            
             return true;
         }
 
@@ -143,7 +183,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// </summary>
         /// <param name="subscriberGuid"></param>
         /// <returns></returns>
-        public async Task<bool> IndexSubscriber(Guid subscriberGuid)
+        public async Task<bool> IndexSubscriberAsync(Guid subscriberGuid)
         {
             // Get the public company guid for 
             Guid publicDataCompanyGuid = Guid.Parse(_configuration["CareerCircle:PublicDataCompanyGuid"]);
@@ -152,19 +192,19 @@ namespace UpDiddyApi.ApplicationCore.Services
              List<v_ProfileAzureSearch> g2Profiles = _db.ProfileAzureSearch
              .Where( p => p.SubscriberGuid == subscriberGuid && p.CompanyGuid != publicDataCompanyGuid )
              .ToList();
-
-
-            //todo jab convert to batch 
-             foreach (v_ProfileAzureSearch g2 in g2Profiles )
+ 
+            List<G2SDOC> Docs = new List<G2SDOC>();
+            foreach (v_ProfileAzureSearch g2 in g2Profiles )
              {                   
                  if ( g2.CompanyGuid != null  )
                  {
-                    G2SDOC indexDoc = await MapToG2SDOC(g2);   
-                     // fire off as background job 
-                    _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexAddOrUpdate(indexDoc));                     
+                    G2SDOC indexDoc = await MapToG2SDOC(g2);
+                    Docs.Add(indexDoc);                 
                  }
              };
-            
+            // fire off as background job 
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexAddOrUpdateBulk(Docs));
+
             return true;
         }
 
@@ -174,10 +214,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// </summary>
         /// <param name="subscriberGuid"></param>
         /// <returns></returns>
-        public async Task<bool> RemoveSubscriberFromIndex(Guid subscriberGuid)
+        public async Task<bool> RemoveSubscriberFromIndexAsync(Guid subscriberGuid)
         {
-
-
             G2SearchResultDto subscriberDocs = await SearchG2ForSubscriberAsync(subscriberGuid);
 
             foreach ( G2InfoDto g2  in subscriberDocs.G2s)
@@ -190,15 +228,12 @@ namespace UpDiddyApi.ApplicationCore.Services
                 _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexDelete(delDoc));
             };
 
-
-
             // If for some reason the total number of records for the given subscriber is more the number 
             // retreived, recursivley call this routine again 
             int DeleteSubscriberG2RecurseDelayInMinutes = int.Parse(_configuration["AzureSearch:DeleteSubscriberG2RecurseDelayInMinutes"]);
             if ( subscriberDocs.TotalHits > subscriberDocs.SubscriberCount)
                 _hangfireService.Schedule<ScheduledJobs>(j => j.G2DeleteSubscriber(subscriberGuid), TimeSpan.FromMinutes(DeleteSubscriberG2RecurseDelayInMinutes) );
  
-
             return true;
         }
 
@@ -219,10 +254,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// </summary>
         /// <param name="subscriberGuid"></param>
         /// <returns></returns>
-        public async Task<bool> RemoveCompanyFromIndex(Guid companyGuid)
+        public async Task<bool> RemoveCompanyFromIndexAsync(Guid companyGuid)
         {
-
-
             G2SearchResultDto companyDocs = await SearchG2ForCompanyAsync(companyGuid);
 
             List<G2SDOC> Docs = new List<G2SDOC>();
@@ -232,18 +265,14 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     ProfileGuid = g2.ProfileGuid,
                 };
-                Docs.Add(delDoc);
-                // Call background job to delete the user 
-               // _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexDelete(delDoc));
+                Docs.Add(delDoc);        
             };
+            // Call background job to delete the user 
             _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexDeleteBulk(Docs));
 
             // If for some reason the total number of records for the given subscriber is more the number 
             // retreived, recursivley call this routine again 
-
-            //TODO JAB Get another variable for recurse delay 
-
-            int DeleteSubscriberG2RecurseDelayInMinutes = int.Parse(_configuration["AzureSearch:DeleteSubscriberG2RecurseDelayInMinutes"]);
+            int DeleteSubscriberG2RecurseDelayInMinutes = int.Parse(_configuration["AzureSearch:DeleteCompanyG2RecurseDelayInMinutes"]);
             if (companyDocs.TotalHits > companyDocs.SubscriberCount)
                 _hangfireService.Schedule<ScheduledJobs>(j => j.G2DeleteCompany(companyGuid), TimeSpan.FromMinutes(DeleteSubscriberG2RecurseDelayInMinutes));
 
@@ -253,9 +282,16 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
+        public async Task<bool> G2IndexAddOrUpdateAsync(G2SDOC g2)
+        {
+            _logger.Log(LogLevel.Information, $"G2Service.G2IndexAddOrUpdateAsync starting index for g2 {g2.ProfileGuid}");
+            await _azureSearchService.AddOrUpdateG2(g2);
+            _logger.Log(LogLevel.Information, $"G2Service.G2IndexAddOrUpdateAsync done index for g2 {g2.ProfileGuid}");
+            return true;
+        }
+
 
         #endregion
-
 
         #region G2 Azure Indexing Operations By Company
 
@@ -264,7 +300,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// </summary>
         /// <param name="subscriberGuid"></param>
         /// <returns></returns>
-        public async Task<bool> IndexCompany(Guid companyGuid)
+        public async Task<bool> IndexCompanyAsync(Guid companyGuid)
         {
             try
             {
@@ -286,8 +322,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                         ++counter;
                         G2SDOC indexDoc = await MapToG2SDOC(g2);
                         Docs.Add(indexDoc);
-                        // fire off as background job 
-                     //   _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexAddOrUpdate(indexDoc));
+
                     }
                     
                 };
@@ -298,7 +333,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             catch( Exception ex )
             {
-                _logger.LogError($"G2Service:IndexCompany Error: {ex.Message} ");
+                _logger.LogError($"G2Service:IndexCompanyAsync Error: {ex.Message} ");
                 return false;
             }
        
@@ -306,9 +341,6 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
         #endregion
-
-
-
 
         #region G2 Backing Store Operations 
 
@@ -318,7 +350,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// </summary>
         /// <param name="subscriberGuid"></param>
         /// <returns> The number of new g2 profile records added </returns>
-        public async Task<int> AddSubscriberProfiles(Guid subscriberGuid)
+        public async Task<int> AddSubscriberProfilesAsync(Guid subscriberGuid)
         {
             // call stored procedure to create a g2 recordsfor the specified subscriber.  1 record per 
             // active company will be created and return the number of records created 
@@ -332,7 +364,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// </summary>
         /// <param name="subscriberGuid"></param>
         /// <returns></returns>
-        public async Task<int> DeleteSubscriberProfiles(Guid subscriberGuid)
+        public async Task<int> DeleteSubscriberProfilesAsync(Guid subscriberGuid)
         {
             // call stored procedure to create a g2 recordsfor the specified subscriber.  1 record per 
             // active company will be created and return the number of records created 
@@ -341,12 +373,13 @@ namespace UpDiddyApi.ApplicationCore.Services
             return rVal;
         }
 
+
         /// <summary>
         /// Adds a new subscriber G2 profile record for the specified company for every active subscriber 
         /// </summary>
         /// <param name="companyGuid"></param>
         /// <returns></returns>
-        public async Task<int> AddCompanyProfiles(Guid companyGuid)
+        public async Task<int> AddCompanyProfilesAsync(Guid companyGuid)
         {
             // call stored procedure to create a g2 recordsfor the specified subscriber.  1 record per 
             // active company will be created and return the number of records created 
@@ -362,7 +395,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// </summary>
         /// <param name="subscriberGuid"></param>
         /// <returns></returns>
-        public async Task<int> DeleteCompanyProfiles(Guid comanyGuid)
+        public async Task<int> DeleteCompanyProfilesAsync(Guid comanyGuid)
         {
             // call stored procedure to create a g2 recordsfor the specified subscriber.  1 record per 
             // active company will be created and return the number of records created 
@@ -375,7 +408,6 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         #endregion
 
-
         #region   G2 Operations (backing store and indexing)
 
         /// <summary>
@@ -384,7 +416,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// </summary>
         /// <param name="subscriberGuid"></param>
         /// <returns></returns>
-        public async Task<bool> AddSubscriber(Guid subscriberGuid)
+        public async Task<bool> AddSubscriberAsync(Guid subscriberGuid)
         {
             _hangfireService.Enqueue<ScheduledJobs>(j => j.G2AddNewSubscriber(subscriberGuid));
             return true;
@@ -396,7 +428,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// </summary>
         /// <param name="subscriberGuid"></param>
         /// <returns></returns>
-        public async Task<bool> DeleteSubscriber(Guid subscriberGuid)
+        public async Task<bool> DeleteSubscriberAsync(Guid subscriberGuid)
         {
             _hangfireService.Enqueue<ScheduledJobs>(j => j.G2DeleteSubscriber(subscriberGuid));    
             return true;
@@ -409,7 +441,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// </summary>
         /// <param name="companyGuid"></param>
         /// <returns></returns>
-        public async Task<bool> AddCompany(Guid companyGuid)
+        public async Task<bool> AddCompanyAsync(Guid companyGuid)
         {
 
             _hangfireService.Enqueue<ScheduledJobs>(j => j.G2AddNewCompany(companyGuid));
@@ -422,7 +454,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// </summary>
         /// <param name="companyGuid"></param>
         /// <returns></returns>
-        public async Task<bool> DeleteCompany(Guid compmapnyGuid)
+        public async Task<bool> DeleteCompanyAsync(Guid compmapnyGuid)
         {
 
            _hangfireService.Enqueue<ScheduledJobs>(j => j.G2DeleteCompany(compmapnyGuid));
@@ -430,8 +462,107 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
+        /// <summary>
+        /// Index a batch of g2 profiles 
+        /// </summary>
+        /// <param name="g2Profiles"></param>
+        /// <returns></returns>
+        public async Task<bool> IndexBatchAsync(List<v_ProfileAzureSearch> g2Profiles)
+        {
+            if ( g2Profiles == null || g2Profiles.Count == 0 )
+            {
+                _logger.LogInformation($"G2Service:IndexBatchAsync There are no profiles to index in the current batch, returing false");
+                return false;
+            }
+
+            _logger.LogInformation($"G2Service:IndexBatchAsync Starting with a batch of  {g2Profiles.Count} for indexing");
+            List<G2SDOC> Docs = new List<G2SDOC>();
+            foreach (v_ProfileAzureSearch g2 in g2Profiles)
+            {
+                if (g2.CompanyGuid != null)
+                {
+                    G2SDOC indexDoc = await MapToG2SDOC(g2);
+                    Docs.Add(indexDoc);
+                }
+            };
+
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexAddOrUpdateBulk(Docs));
+            _logger.LogInformation($"G2Service:IndexBatchAsync Done");
+
+            return true;
+
+
+        }
+
+        public async Task<bool> IndexG2BulkAsync(List<G2SDOC> g2List)
+        {
+            _logger.Log(LogLevel.Information, $"G2Service.IndexG2BulkAsync starting index for g2");
+            await _azureSearchService.AddOrUpdateG2Bulk(g2List);
+            _logger.Log(LogLevel.Information, $"G2Service.IndexG2BulkAsync done index for g2");
+            return true;
+        }
+
+
+
+        /// <summary>
+        /// Add or update the G2 into the azure search index 
+        /// </summary>
+        /// <param name="g2"></param>
+        /// <returns></returns>
+        public async Task<bool> G2IndexDeleteBulkAsync(List<G2SDOC> g2List)
+        {
+            _logger.Log(LogLevel.Information, $"G2Service.G2IndexDeleteBulkAsync starting index delete");
+            await _azureSearchService.DeleteG2Bulk(g2List);
+            _logger.Log(LogLevel.Information, $"G2Service.G2IndexDeleteBulkAsync done index delete");
+            return true;
+        }
+
+
+
+
+        /// <summary>
+        /// Add or update the G2 into the azure search index 
+        /// </summary>
+        /// <param name="g2"></param>
+        /// <returns></returns>
+        public async Task<bool> G2IndexDeleteAsync(G2SDOC g2)
+        {
+            _logger.Log(LogLevel.Information, $"G2Service.G2IndexDeleteAsync starting index for g2 {g2.ProfileGuid}");
+            await _azureSearchService.DeleteG2(g2);
+            _logger.Log(LogLevel.Information, $"G2Service.G2IndexDeleteAsync done index for g2 {g2.ProfileGuid}");
+            return true;
+        }
+
+
         #endregion
 
+
+        #region Admin functions
+
+        /// <summary>
+        /// Boots the CC G2 feature by adding a profile for every active subscriber for every active company.  This 
+        /// Should only be called once when the product is launched.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<bool> CreateG2IndexAsync()
+        {
+            int numNewProfiles  = await _repository.StoredProcedureRepository.BootG2Profiles();
+            // Kick off job to index any unindexed g2 profiles 
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexUnindexedProfiles());
+            return true;
+        }
+
+        public async Task<bool> PurgeG2IndexAsync()
+        {     
+            // Kick off job to index any unindexed g2 profiles 
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexPurge());            
+            return true;
+        }
+        
+
+
+
+        #endregion
 
         #region private helper functions 
 
@@ -496,6 +627,12 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             return searchResults;
         }
+
+
+
+
+ 
+
 
 
 

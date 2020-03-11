@@ -36,5 +36,6 @@ namespace UpDiddyApi.Models.Views
         public string PrivateSkills { get; set; }
         public SqlGeography Location { get; set; }
         public DateTime ModifyDate { get; set; }
+        public int? AzureIndexStatusId { get; set; }
     }
 }

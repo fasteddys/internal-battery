@@ -87,6 +87,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<bool> UpdateG2AzureIndexStatuses(List<Guid> profileGuids, string statusName, string statusInfo);
 
 
+        Task<int> BootG2Profiles();
+
 
     }  
 }
