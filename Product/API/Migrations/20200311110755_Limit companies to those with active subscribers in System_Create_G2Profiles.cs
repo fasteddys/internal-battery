@@ -6,8 +6,7 @@ namespace UpDiddyApi.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"EXEC(' 
- /*
+            migrationBuilder.Sql(@"EXEC('/*
 <remarks>
 2020.03.09 - Jab - Created
 2020.03.11 - Jab - Modified to only unclude companies with active subscribers
@@ -105,8 +104,7 @@ Select * from ProfilesToInsert
 Set @RowsAffected = @RowsAffected + @@ROWCOUNT	 
 
 return @RowsAffected
-END
-            ')");
+END')");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

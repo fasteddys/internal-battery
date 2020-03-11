@@ -6,8 +6,7 @@ namespace UpDiddyApi.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"EXEC('   
-/*
+            migrationBuilder.Sql(@"EXEC('/*
 <remarks>
 2020.03.02 - JAB - Created
 
@@ -70,9 +69,7 @@ BEGIN
 	SET IsDeleted = 1
 	WHERE ProfileId IN ( SELECT * FROM #ProfileIDs )  
 
- 
-END
-            ')");
+END')");
 
         }
 

@@ -6,8 +6,7 @@ namespace UpDiddyApi.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"EXEC(' 
- /*
+            migrationBuilder.Sql(@"EXEC('/*
 <remarks>
 2020.03.09 - JAB Created 
 
@@ -39,8 +38,7 @@ BEGIN
 	  ,ModifyDate = GETUTCDATE()
 	  
     WHERE ProfileGuid IN (SELECT * from @ProfileGuids) 
-END
-            ')");
+END')");
 
         }
 

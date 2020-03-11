@@ -7,8 +7,7 @@ namespace UpDiddyApi.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(@"
-EXEC('
- /*
+EXEC('/*
 <remarks>
 2020.03.03 - Jab - Created
 2020.03.09 - Jab - Fixed bug with ProfilesToInsert CTE.  The where condition for determining which subscribers already had a profile for the specified 
@@ -108,8 +107,7 @@ Select * from ProfilesToInsert
 Set @RowsAffected = @RowsAffected + @@ROWCOUNT	 
 
 return @RowsAffected
-END
-')");
+END')");
 
         }
 

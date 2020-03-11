@@ -6,9 +6,7 @@ namespace UpDiddyApi.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"EXEC('
-
-/*
+            migrationBuilder.Sql(@"EXEC('/*
 <remarks>
 2020-02-21 - Bill Koenig - Created
 2020-02-25 - Bill Koenig - Changed data type for current and desired rate, removed support for one to many search locations, added single location	column which returns ''geography'' data type, prioritized the selection of the geo data based on specificity (function), incorporated public and private profile into CTEs, included modify date that indicates the most recent change across all profiles for indexing operations, added code comments for readability
@@ -142,8 +140,7 @@ AS
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"EXEC('
-/*
+            migrationBuilder.Sql(@"EXEC('/*
 <remarks>
 2020-02-21 - Bill Koenig - Created
 </remarks>

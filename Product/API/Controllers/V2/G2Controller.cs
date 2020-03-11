@@ -39,128 +39,7 @@ namespace UpDiddyApi.Controllers.V2
             _profileService = services.GetService<G2Interfaces.IProfileService>();
             _wishlistService = services.GetService<G2Interfaces.IWishlistService>();
         }
-
-         
-
-        //todo jab review these endpoint to see if we want to keep them
-        //todo jab confirm the endpoints we keep as recruiter or Admin functions 
-
  
-        #region Subscriber Operations 
-
-        [HttpDelete]
-        [Authorize(Policy = "IsRecruiterPolicy")]
-        [Route("subscriber/{subscriberGuid}")]
-        public async Task<IActionResult> DeleteSubscriberFromIndex(Guid subscriberGuid)
-        {
-
-            _g2Service.DeleteSubscriberAsync(subscriberGuid);
-            return StatusCode(204);
-        }
-
-
-        /// <summary>
-        /// Add new subscriber  
-        /// </summary>
-        /// <param name="subscriberGuid"></param>
-        /// <returns></returns>
-        [HttpPost]
-        [Authorize(Policy = "IsRecruiterPolicy")]
-        [Route("subscriber/{subscriberGuid}")]
-        public async Task<IActionResult> AddNewSubscriber(Guid subscriberGuid)
-        {
-            _g2Service.AddSubscriberAsync(subscriberGuid);
-            return StatusCode(200);
-        }
-
-
-
-        /// <summary>
-        /// Re-index subsriber.  This operation will update as well as create documents in the 
-        /// azure g2 index 
-        /// </summary>
-        /// <param name="subscriberGuid"></param>
-        /// <returns></returns>
-        [HttpPut]
-        [Authorize(Policy = "IsRecruiterPolicy")]
-        [Route("subscriber/{subscriberGuid}")]
-        public async Task<IActionResult> ReindexSubscriber(Guid subscriberGuid)
-        {
-            _g2Service.IndexSubscriberAsync(subscriberGuid);
-            return StatusCode(200);
-        }
-
-
-        /// <summary>
-        /// Re-index subsriber.  This operation will update as well as create documents in the 
-        /// azure g2 index 
-        /// </summary>
-        /// <param name="subscriberGuid"></param>
-        /// <returns></returns>
-        [HttpPut]
-        [Authorize(Policy = "IsRecruiterPolicy")]
-        [Route("subscriber/{subscriberGuid}/company/{companyGuid}")]
-        public async Task<IActionResult> ReindexSubscriberForCompany(Guid subscriberGuid, Guid companyGuid)
-        {
-            _g2Service.IndexSubscriberAsync(subscriberGuid,companyGuid);
-            return StatusCode(200);
-        }
-
-
-
-
-
-        #endregion
-
-        #region Company Operations 
-
-        [HttpDelete]
-        [Authorize(Policy = "IsRecruiterPolicy")]
-        [Route("company/{companyGuid}")]
-        public async Task<IActionResult> DeleteCompanyFromIndex(Guid companyGuid)
-        {
-
-            _g2Service.DeleteCompanyAsync(companyGuid);
-            return StatusCode(204);
-        }
-
-
-        /// <summary>
-        /// Add new company.  This will create a new G2 Profile for every active subscriber for the specified company  
-        /// </summary>
-        /// <param name="subscriberGuid"></param>
-        /// <returns></returns>
-        [HttpPost]
-        [Authorize(Policy = "IsRecruiterPolicy")]
-        [Route("company/{companyGuid}")]
-        public async Task<IActionResult> AddNewCompany(Guid companyGuid)
-        {
-            _g2Service.AddCompanyAsync(companyGuid);
-            return StatusCode(200);
-        }
-
-
-        #endregion
-
-        #region G2 Index functions Functions 
-
-        /// <summary>
-        /// Index the provided G2 into the Azure Search index  
-        /// </summary>
-        /// <param name="g2"></param>
-        /// <returns></returns>
-        [HttpPost]
-        [Authorize(Policy = "IsRecruiterPolicy")]
-        public async Task<IActionResult> IndexSubscribers([FromBody] G2SDOC g2)
-        {
-            var rVal = await _g2Service.IndexG2Async(g2);
-            return Ok(rVal);
-        }
-
-
-
-        #endregion
-
         #region Profiles
     
         [HttpGet]
@@ -176,9 +55,7 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("profiles")]
         public async Task<IActionResult> UpdateProfile([FromBody] ProfileDto profileDto)
-        {
-
-            //call reindex for company/subscriber combonation
+        {                         
             await _profileService.UpdateProfileForRecruiter(profileDto, GetSubscriberGuid());
             return StatusCode(204);
         }
@@ -292,8 +169,6 @@ namespace UpDiddyApi.Controllers.V2
             return StatusCode(200);
         }
 
-
-
         /// <summary>
         /// Creates G2 profiles for all active subscriber/company combinations
         /// </summary>
@@ -310,16 +185,92 @@ namespace UpDiddyApi.Controllers.V2
             return StatusCode(200);
         }
 
-        #endregion
 
-
-        //todo: delete this
+        /// <summary>
+        /// Re-index subsriber.  This operation will update as well as create documents in the 
+        /// azure g2 index 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
         [HttpPut]
-        [Route("testing")]
-        public async Task<IActionResult> test()
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("subscriber/{subscriberGuid}")]
+        public async Task<IActionResult> ReindexSubscriber(Guid subscriberGuid)
         {
-            await _profileService.UpdateAzureIndexStatus(Guid.Parse("11A1418F-6A70-4655-9BA4-509C1D210F37"), "Error", "Some shit went wrong!");
+            _g2Service.IndexSubscriberAsync(subscriberGuid);
+            return StatusCode(200);
+        }
+
+
+        /// <summary>
+        /// Re-index subsriber.  This operation will update as well as create documents in the 
+        /// azure g2 index 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("subscriber/{subscriberGuid}/company/{companyGuid}")]
+        public async Task<IActionResult> ReindexSubscriberForCompany(Guid subscriberGuid, Guid companyGuid)
+        {
+            _g2Service.IndexSubscriberAsync(subscriberGuid, companyGuid);
+            return StatusCode(200);
+        }
+
+
+        [HttpDelete]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("company/{companyGuid}")]
+        public async Task<IActionResult> DeleteCompanyFromIndex(Guid companyGuid)
+        {
+
+            _g2Service.DeleteCompanyAsync(companyGuid);
             return StatusCode(204);
         }
+
+
+        /// <summary>
+        /// Add new company.  This will create a new G2 Profile for every active subscriber for the specified company  
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("company/{companyGuid}")]
+        public async Task<IActionResult> AddNewCompany(Guid companyGuid)
+        {
+            _g2Service.AddCompanyAsync(companyGuid);
+            return StatusCode(200);
+        }
+
+        [HttpDelete]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("subscriber/{subscriberGuid}")]
+        public async Task<IActionResult> DeleteSubscriberFromIndex(Guid subscriberGuid)
+        {
+
+            _g2Service.DeleteSubscriberAsync(subscriberGuid);
+            return StatusCode(204);
+        }
+
+
+        /// <summary>
+        /// Add new subscriber  
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("subscriber/{subscriberGuid}")]
+        public async Task<IActionResult> AddNewSubscriber(Guid subscriberGuid)
+        {
+            _g2Service.AddSubscriberAsync(subscriberGuid);
+            return StatusCode(200);
+        }
+
+
+        #endregion
+
+ 
     }
 }

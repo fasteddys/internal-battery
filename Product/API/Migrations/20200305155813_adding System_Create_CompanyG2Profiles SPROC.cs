@@ -7,8 +7,7 @@ namespace UpDiddyApi.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(@"
-EXEC('
- /*
+EXEC('/*
 <remarks>
 2020.03.03 - Jab - Created
  
@@ -106,8 +105,7 @@ Select * from ProfilesToInsert
 Set @RowsAffected = @RowsAffected + @@ROWCOUNT	 
 
 return @RowsAffected
-END
-')");
+END')");
 
         }
 

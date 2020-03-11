@@ -29,6 +29,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<bool> IndexCompanyAsync(Guid companyuGuid);
         Task<bool> RemoveCompanyFromIndexAsync(Guid companyGuid);
         Task<bool> IndexBatchAsync(List<v_ProfileAzureSearch> g2Profiles);
+        Task<bool> IndexProfileAsync(Guid g2ProfileGuid);
 
 
 

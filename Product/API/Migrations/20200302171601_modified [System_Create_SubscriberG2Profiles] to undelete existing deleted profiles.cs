@@ -7,8 +7,7 @@ namespace UpDiddyApi.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
 
-            migrationBuilder.Sql(@"EXEC('   
- /*
+            migrationBuilder.Sql(@"EXEC('/*
 <remarks>
 2020.02.28 - Jab - Created
 2020.03.02 - JAB - Modified to undelete user profile records before adding new profile records.  Also modified to return rows affected from both the update and insert statements
@@ -107,8 +106,7 @@ Select * from ProfilesToInsert
 Set @RowsAffected = @RowsAffected + @@ROWCOUNT	 
 
 return @RowsAffected
-END
-            ')");
+END')");
 
         }
 

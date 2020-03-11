@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyLib.Domain.Models.G2;
@@ -14,11 +15,13 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IMapper _mapper;
+        private readonly IG2Service _g2Service;
 
-        public ProfileService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
+        public ProfileService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IG2Service g2Service)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
+            _g2Service = g2Service;
         }
 
         public async Task<Guid> CreateProfile(ProfileDto profileDto)
@@ -48,7 +51,10 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         {
             if (profileDto == null)
                 throw new NotFoundException("profileDto cannot be null");
-            await _repositoryWrapper.ProfileRepository.UpdateProfileForRecruiter(profileDto, subscriberGuid);            
+            await _repositoryWrapper.ProfileRepository.UpdateProfileForRecruiter(profileDto, subscriberGuid);
+
+            // Update the profile in azure search            
+            await _g2Service.IndexProfileAsync(profileDto.ProfileGuid);            
         }
 
         public async Task UpdateAzureIndexStatus(Guid profileGuid, string azureIndexStatusName, string azureSearchIndexInfo)

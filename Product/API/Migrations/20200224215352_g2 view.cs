@@ -42,8 +42,7 @@ namespace UpDiddyApi.Migrations
                 columns: new[] { "TagId", "ProfileId" },
                 unique: true);
 
-            migrationBuilder.Sql(@"EXEC('
-/*
+            migrationBuilder.Sql(@"EXEC('/*
 <remarks>
 2020-02-21 - Bill Koenig - Created
 </remarks>

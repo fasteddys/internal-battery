@@ -342,6 +342,36 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         #endregion
 
+        #region Azure Indexing By G2 Profile
+        public async Task<bool> IndexProfileAsync(Guid g2ProfileGuid)
+        {
+
+            // Get all non-public G2s for subscriber 
+            List<v_ProfileAzureSearch> g2Profiles = _db.ProfileAzureSearch
+            .Where(p => p.ProfileGuid == g2ProfileGuid)
+            .ToList();
+
+            if (g2Profiles.Count == 0)
+                throw new NotFoundException($"G2Service:IndexProfileAsync: Could not find g2 for subscriber {g2ProfileGuid} ");
+
+            if (g2Profiles.Count > 1)
+                throw new FailedValidationException($"G2Service:IndexProfileAsync:  SUubscriber {g2ProfileGuid}");
+
+            v_ProfileAzureSearch g2 = g2Profiles[0];
+            if (g2.CompanyGuid != null)
+            {
+                G2SDOC indexDoc = await MapToG2SDOC(g2);
+                // fire off as background job 
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexAddOrUpdate(indexDoc));
+            }
+
+
+            return true;
+        }
+
+
+        #endregion
+
         #region G2 Backing Store Operations 
 
         /// <summary>
