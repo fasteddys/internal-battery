@@ -108,12 +108,25 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<UpDiddyLib.Domain.Models.FileDto> DownloadResume(Guid subscriberGuid)
         {
             SubscriberFile file = await _repositoryWrapper.SubscriberFileRepository.GetMostRecentBySubscriberGuid(subscriberGuid);
-            if (file == null)
+            if (file == null || file.SimpleName == null)
                 throw new NotFoundException("Resume not found");
             UpDiddyLib.Domain.Models.FileDto resume = new UpDiddyLib.Domain.Models.FileDto();
             resume.MimeType = file.MimeType;
             resume.FileName = file.SimpleName;
-            resume.Base64EncodedData = Convert.ToBase64String(Utils.StreamToByteArray(await _cloudStorage.OpenReadAsync(file.BlobName)));
+            try
+            {
+                resume.Base64EncodedData = Convert.ToBase64String(Utils.StreamToByteArray(await _cloudStorage.OpenReadAsync(file.BlobName)));
+            }
+            catch(Exception e)
+            {
+                List<KeyValuePair<string, object>> props = new List<KeyValuePair<string, object>>();
+                props.Add(new KeyValuePair<string, object>("SubscriberFileGuid", file.SubscriberFileGuid));
+                props.Add(new KeyValuePair<string, object>("BlobName", file.BlobName));
+                props.Add(new KeyValuePair<string, object>("SimpleName", file.SimpleName));
+                props.Add(new KeyValuePair<string, object>("MimeType", file.MimeType));
+                _syslog.LogInformation($"An error occurred while downloading a resume for subscriber: {subscriberGuid}", props);
+                throw new NotFoundException("There was a problem downloading the resume", e);
+            }
             return resume;
         }
 

@@ -205,6 +205,9 @@ namespace UpDiddyApi.Models
         public DbSet<Wishlist> Wishlist { get; set; }
         public DbSet<ProfileWishlist> ProfileWishlist { get; set; }
         public DbSet<AzureIndexStatus> AzureIndexStatus { get; set; }
+        public DbSet<RecruiterStat> RecruiterStat { get; set; }
+
+
 
         #endregion
 
@@ -266,6 +269,9 @@ namespace UpDiddyApi.Models
         public DbQuery<SubscriberEmailStatisticDto> SubscriberEmailStatistics { get; set; }
         public DbQuery<ProfileWishlistDto> ProfileWishlists { get; set; }
         public DbQuery<WishlistDto> Wishlists { get; set; }
+        public DbQuery<RecruiterStatDto> RecruiterStats { get; set; }
+
+
 
         #endregion
 

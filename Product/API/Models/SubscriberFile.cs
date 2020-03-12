@@ -30,6 +30,8 @@ namespace UpDiddyApi.Models
             get
             {
                 string pattern = "(^[^_]+_)(.*)";
+                if (string.IsNullOrWhiteSpace(BlobName))
+                    return null;
                 MatchCollection matches = Regex.Matches(BlobName, pattern);
                 if (matches.Count == 0)
                     return BlobName;

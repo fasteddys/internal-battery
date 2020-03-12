@@ -86,8 +86,8 @@ namespace UpDiddyApi.Controllers.V2
         {
             string debugEmail = _configuration[$"SysEmail:SystemDebugEmailAddress"];
 
-            var notifySystemResult = await _sysEmail.SendEmailAsync(_syslog, debugEmail, "Test for NotifySystem SendGrid Account", "test", Constants.SendGridAccount.NotifySystem);
-            var transactionalResult = await _sysEmail.SendEmailAsync(_syslog, debugEmail, "Test for Transactional SendGrid Account", "test", Constants.SendGridAccount.Transactional);
+            var notifySystemResult = await _sysEmail.SendEmailAsync(debugEmail, "Test for NotifySystem SendGrid Account", "test", Constants.SendGridAccount.NotifySystem);
+            var transactionalResult = await _sysEmail.SendEmailAsync(debugEmail, "Test for Transactional SendGrid Account", "test", Constants.SendGridAccount.Transactional);
 
             return Json(new { NotifySystem = notifySystemResult, Transactional = transactionalResult });
         }

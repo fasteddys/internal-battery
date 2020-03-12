@@ -181,7 +181,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (isEmailValid != null && isEmailValid.Value == true)
             {
                 await _sysEmail.SendTemplatedEmailAsync( 
-                                _logger,
                                  sendTo,
                                  _config["SysEmail:Transactional:TemplateIds:PersonalityAssessment-ResultsSummary"],
                                  payload,
