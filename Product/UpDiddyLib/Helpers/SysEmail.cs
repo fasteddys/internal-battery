@@ -150,8 +150,10 @@ namespace UpDiddyLib.Helpers
         }
 
 
-        // Tried to capture the env in the construstor, but it seemd like when code like    _sysEmail = services.GetService<ISysEmail>();  
-        // was called the constructor was not being called.  
+        // Tried to capture the env in the constructor for a cleaner implementation but it appeared not to be called when code like:
+        // _sysEmail = services.GetService<ISysEmail>();  
+        // was used to DI in this class.  The time required to figure how to reliably capture the env information 
+        // in the class constructor was not justified over this less elegant solution.
         private string GetEnvironment()
         {
             string env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
