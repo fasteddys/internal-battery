@@ -799,6 +799,24 @@ namespace UpDiddyApi.Helpers
                 .ForMember(w => w.RecruiterGuid, opt => opt.MapFrom(src => src.Recruiter.RecruiterGuid))
                 .ForMember(w => w.TotalRecords, opt => opt.Ignore())
                 .ReverseMap();
+
+            CreateMap<Models.G2.ProfileComment, CommentDto>()
+                .ForMember(c => c.CommentGuid, opt => opt.MapFrom(src => src.ProfileCommentGuid))
+                .ForMember(c => c.RecruiterGuid, opt => opt.MapFrom(src => src.Recruiter.RecruiterGuid))
+                .ForMember(c => c.ProfileGuid, opt => opt.MapFrom(src => src.Profile.ProfileGuid))
+                .ForMember(c => c.TotalRecords, opt => opt.Ignore())
+                .ReverseMap();
+
+            CreateMap<List<CommentDto>, CommentListDto>()
+                .AfterMap((src, dest) =>
+                {
+                    if (src != null && src.Count() > 0)
+                        dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                    else
+                        dest.TotalRecords = 0;
+                })
+                .ForMember(dest => dest.Comments, opt => opt.MapFrom(src => src.ToList()))
+                .ReverseMap();
         }
     }
 }

@@ -211,5 +211,21 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             await _repositoryWrapper.StoredProcedureRepository.UpdateJobPostingSkills(jobPostingGuid, skills);
         }
+
+        public async Task<SkillListDto> GetProfileSkillsForRecruiter(Guid profileGuid, Guid subscriberGuid, int limit, int offset, string sort, string order)
+        {
+            var skills = _repositoryWrapper.SkillRepository.GetProfileSkillsForRecruiter(profileGuid, subscriberGuid, limit, offset, sort, order);
+            return _mapper.Map<SkillListDto>(skills);
+        }
+
+        public async Task RemoveSkillFromProfileForRecruiter(Guid subscriberGuid, Guid skillGuid, Guid profileGuid)
+        {
+            await _repositoryWrapper.SkillRepository.RemoveSkillFromProfileForRecruiter(subscriberGuid, skillGuid, profileGuid);
+        }
+
+        public async Task<Guid> AddSkillToProfileForRecruiter(Guid subscriberGuid, Guid skillGuid, Guid profileGuid)
+        {
+            return await _repositoryWrapper.SkillRepository.AddSkillToProfileForRecruiter(subscriberGuid, skillGuid, profileGuid);
+        }
     }
 }

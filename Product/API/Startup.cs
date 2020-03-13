@@ -354,6 +354,7 @@ namespace UpDiddyApi
             services.AddScoped<IG2Service, G2Service>();
             services.AddScoped<G2Interfaces.IProfileService, G2Services.ProfileService>();
             services.AddScoped<G2Interfaces.IWishlistService, G2Services.WishlistService>();
+            services.AddScoped<G2Interfaces.ICommentService, G2Services.CommentService>();
 
             #endregion
 

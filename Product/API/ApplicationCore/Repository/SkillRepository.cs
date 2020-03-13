@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -72,6 +73,21 @@ namespace UpDiddyApi.ApplicationCore.Repository
                                 select s).ToListAsync();
 
             return skills;
+        }
+
+        public async Task<List<SkillDto>> GetProfileSkillsForRecruiter(Guid profileGuid, Guid subscriberGuid, int limit, int offset, string sort, string order)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task RemoveSkillFromProfileForRecruiter(Guid subscriberGuid, Guid skillGuid, Guid profileGuid)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<Guid> AddSkillToProfileForRecruiter(Guid subscriberGuid, Guid skillGuid, Guid profileGuid)
+        {
+            throw new NotImplementedException();
         }
     }
 }
