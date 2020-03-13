@@ -87,7 +87,6 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
 
         #endregion
 
-
         #region subscriber index 
         public async Task<bool> AddOrUpdateSubscriber(Subscriber subscriber)
         {
@@ -103,7 +102,6 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
 
         #endregion
 
-
         #region Recruiter index 
         public async Task<bool> AddOrUpdateRecruiter(Recruiter recruiter)
         {
@@ -118,8 +116,6 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
         }
 
         #endregion
-
-
 
         #region helper functions 
 
@@ -146,7 +142,6 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
             return box.Value;
         }
 
-
         private async Task<string> SendG2Request(G2SDOC g2, string cmd)
         {            
             string index = _configuration["AzureSearch:G2IndexName"];
@@ -161,9 +156,6 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
             bool rval = await SendSearchIndexRequest(index, cmd, Json,box);  
             return box.Value;            
         }
-
-
- 
 
         private async Task<bool> SendRecruiterRequest(Recruiter recruiter, string cmd)
         {
@@ -182,8 +174,6 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
             });
             return true;
         }
-
-
 
         private async Task<bool> SendSubscriberRequest(Subscriber subscriber, string cmd)
         {

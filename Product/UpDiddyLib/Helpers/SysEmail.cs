@@ -127,6 +127,7 @@ namespace UpDiddyLib.Helpers
             var response = await client.SendEmailAsync(message);
         }
 
+        // todo jab look at Brent comments on the PR
         #region Private Helper Classes
         private class TemplateData
         {

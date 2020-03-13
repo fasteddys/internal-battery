@@ -161,27 +161,27 @@ namespace UpDiddyApi.Controllers.V2
         [HttpPost]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("index")]
-        public async Task<IActionResult> bootG2(Guid subscriberGuid)
+        public async Task<IActionResult> bootG2()
         {
             // 
             _g2Service.CreateG2IndexAsync();
-            return StatusCode(200);
+            return StatusCode(202);
         }
 
         /// <summary>
-        /// Creates G2 profiles for all active subscriber/company combinations
+        /// Deletes all g2 records from the azure index 
         /// </summary>
         /// 
         /// <returns></returns>
         [HttpDelete]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("index")]
-        public async Task<IActionResult> deleteG2(Guid subscriberGuid)
+        public async Task<IActionResult> deleteG2()
         {
 
             _g2Service.PurgeG2IndexAsync();
        
-            return StatusCode(200);
+            return StatusCode(202);
         }
 
 
@@ -197,7 +197,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> ReindexSubscriber(Guid subscriberGuid)
         {
             _g2Service.IndexSubscriberAsync(subscriberGuid);
-            return StatusCode(200);
+            return StatusCode(202);
         }
 
 
@@ -213,7 +213,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> ReindexSubscriberForCompany(Guid subscriberGuid, Guid companyGuid)
         {
             _g2Service.IndexSubscriberAsync(subscriberGuid, companyGuid);
-            return StatusCode(200);
+            return StatusCode(202);
         }
 
 
@@ -224,7 +224,7 @@ namespace UpDiddyApi.Controllers.V2
         {
 
             _g2Service.DeleteCompanyAsync(companyGuid);
-            return StatusCode(204);
+            return StatusCode(202);
         }
 
 
@@ -239,7 +239,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> AddNewCompany(Guid companyGuid)
         {
             _g2Service.AddCompanyAsync(companyGuid);
-            return StatusCode(200);
+            return StatusCode(202);
         }
 
         [HttpDelete]
@@ -249,7 +249,7 @@ namespace UpDiddyApi.Controllers.V2
         {
 
             _g2Service.DeleteSubscriberAsync(subscriberGuid);
-            return StatusCode(204);
+            return StatusCode(202);
         }
 
 
@@ -264,7 +264,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> AddNewSubscriber(Guid subscriberGuid)
         {
             _g2Service.AddSubscriberAsync(subscriberGuid);
-            return StatusCode(200);
+            return StatusCode(202);
         }
 
 
