@@ -86,9 +86,12 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         ICourseReferralRepository CourseReferralRepository { get; }
         INotificationGroupRepository NotificationGroupRepository { get; }
         ISendGridEventRepository SendGridEventRepository { get; }
-
         IHiringSolvedResumeParseRepository HiringSolvedResumeParseRepository { get; }
-
         ISovrenParseStatisticRepository SovrenParseStatisticRepository { get; }
+        ICityRepository CityRepository { get; }
+        IPostalRepository PostalRepository { get; }
+        IProfileRepository ProfileRepository { get; }
+        IAzureIndexStatusRepository AzureIndexStatusRepository { get; }
+        IWishlistRepository WishlistRepository { get; }
     }
 }

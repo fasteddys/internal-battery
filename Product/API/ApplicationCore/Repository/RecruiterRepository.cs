@@ -56,6 +56,20 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return recruiterResult.Count == 0 ? null : recruiterResult[0];
         }
 
+        public async Task<Recruiter> GetRecruiterAndCompanyBySubscriberGuid(Guid subscriberGuid)
+        {
+            var queryableRecruiter = GetAll();
+            var recruiterResult = await queryableRecruiter
+                                .Include( c => c.Company)
+                                .Where(jr => jr.IsDeleted == 0 && jr.Subscriber.SubscriberGuid == subscriberGuid)
+                                .ToListAsync();
+
+            return recruiterResult.Count == 0 ? null : recruiterResult[0];
+        }
+
+
+        
+
 
         public async Task UpdateRecruiter(Recruiter recruiter)
         {
