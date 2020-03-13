@@ -34,7 +34,7 @@ namespace UpDiddyApi.Controllers.V2
             _configuration = services.GetService<IConfiguration>();
             _subscriberService = services.GetService<ISubscriberService>();
             _sendGridEventService = services.GetService<ISendGridEventService>();
-            _sysEmail = services.GetService<ISysEmail>();
+            _sysEmail = services.GetService<ISysEmail>();        
             _repositoryWrapper = services.GetService<IRepositoryWrapper>();
             _subscriberEmailService = services.GetService<ISubscriberEmailService>();
             _syslog = syslog;
@@ -89,7 +89,24 @@ namespace UpDiddyApi.Controllers.V2
             var notifySystemResult = await _sysEmail.SendEmailAsync(debugEmail, "Test for NotifySystem SendGrid Account", "test", Constants.SendGridAccount.NotifySystem);
             var transactionalResult = await _sysEmail.SendEmailAsync(debugEmail, "Test for Transactional SendGrid Account", "test", Constants.SendGridAccount.Transactional);
 
-            return Json(new { NotifySystem = notifySystemResult, Transactional = transactionalResult });
+            var transactionalTemplateResult = await _sysEmail.SendTemplatedEmailAsync(
+               debugEmail,
+               _configuration["SysEmail:Transactional:TemplateIds:CourseReferral-ReferAFriend"],
+               new
+               {
+                   firstName = "TestFirstName",
+                   description = "Test Description",
+                   courseUrl = "https://www.careercircle.com"
+               },
+              Constants.SendGridAccount.Transactional,
+              null,
+              null,
+              null,
+              null
+               );
+
+ 
+            return Json(new { NotifySystem = notifySystemResult, Transactional = transactionalResult, TransactionalTemplate = transactionalTemplateResult});
         }
     }
 }

@@ -14,13 +14,20 @@ namespace UpDiddyLib.Helpers
     public class SysEmail : ISysEmail
     {
         private IConfiguration _configuration;
+ 
         public SysEmail(IConfiguration Configuration)
         {
             _configuration = Configuration;
+
         }
 
         public async Task<bool> SendEmailAsync(string email, string subject, string htmlContent, Constants.SendGridAccount SendGridAccount)
         {
+
+            // Include the environment as part of the subject  
+            if (IsProdEnvironment() == false)
+                subject = "Environment=" + GetEnvironment().ToUpper() + ":" + subject;            
+
             bool isDebugMode = _configuration[$"SysEmail:DebugMode"] == "true";
             string SendGridAccountType = Enum.GetName(typeof(Constants.SendGridAccount), SendGridAccount);
             var client = new SendGridClient(_configuration[$"SysEmail:{SendGridAccountType}:ApiKey"]);
@@ -46,6 +53,8 @@ namespace UpDiddyLib.Helpers
 
         public async Task<bool> SendTemplatedEmailAsync(string email, string templateId, dynamic templateData, Constants.SendGridAccount SendGridAccount, string subject = null, List<Attachment> attachments = null, DateTime? sendAt = null, int? unsubscribeGroupId = null)
         {
+
+         
             bool isDebugMode = _configuration[$"SysEmail:DebugMode"] == "true";
             string SendGridAccountType = Enum.GetName(typeof(Constants.SendGridAccount), SendGridAccount);
 
@@ -76,12 +85,12 @@ namespace UpDiddyLib.Helpers
             if (subject != null)
                 message.SetSubject(subject);
 
+  
             // Add custom property that will be sent to the webhook. For templated emails, we will use the templated ID as the subject since the actual
             // subject of the template is not readily available 
             string webhookSubject = $"CC Template: {templateId}";
-            if (subject != null)
+            if ( subject != null )
                 webhookSubject += $" with a subject of {subject}";
-
             message.CustomArgs = new Dictionary<string, string>()
             {
                 { "Subject", webhookSubject }
@@ -105,6 +114,18 @@ namespace UpDiddyLib.Helpers
             Guid enrollmentGuid,
             string rebateToc)
         {
+
+            // Add and or append environment information for non-production environments 
+            if (IsProdEnvironment() == false)
+            {
+                if (subject == null)
+                    subject = "Environment=" + GetEnvironment().ToUpper();
+                else
+                    subject = "Environment=" + GetEnvironment().ToUpper() + ":" + subject;
+            }
+
+
+
             var client = new SendGridClient(_configuration["SysEmail:Transactional:ApiKey"]);
             var message = new SendGridMessage();
             message.SetFrom(new EmailAddress(_configuration["SysEmail:Transactional:FromEmailAddress"], "CareerCircle"));
@@ -125,6 +146,24 @@ namespace UpDiddyLib.Helpers
             };
             message.SetTemplateData(purchaseReceipt);
             var response = await client.SendEmailAsync(message);
+
+        }
+
+
+        // Tried to capture the env in the construstor, but it seemd like when code like    _sysEmail = services.GetService<ISysEmail>();  
+        // was called the constructor was not being called.  
+        private string GetEnvironment()
+        {
+            string env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            if (string.IsNullOrEmpty(env))
+                env = "Development";
+
+            return env;
+        }
+
+        private bool IsProdEnvironment()
+        {        
+            return GetEnvironment().Trim() == "production";
         }
 
         #region Private Helper Classes
