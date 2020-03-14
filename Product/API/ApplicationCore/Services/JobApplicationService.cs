@@ -163,7 +163,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 }
                 catch(Exception ex)
                 {
-                    _syslog.Log("EMAIL EXCEPTION: "+ex.ToString()+" Email Step was: "+emailStep);
+                    _syslog.Log(LogLevel.Information, "EMAIL EXCEPTION: "+ex.ToString()+" Email Step was: "+emailStep);
                 }
                 _syslog.Log(LogLevel.Information, $"***** JobApplicationController:CreateJobApplication completed at: {DateTime.UtcNow.ToLongDateString()}");
                 return jobApplication.JobApplicationGuid;
