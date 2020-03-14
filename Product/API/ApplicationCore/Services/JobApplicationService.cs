@@ -105,11 +105,42 @@ namespace UpDiddyApi.ApplicationCore.Services
                             IsExternalRecruiter= true;
                         }
 
+
+                        string RecruiterEmailToUse = string.Empty;
+                        RecruiterEmailToUse = "bferree@careercircle.com"; 
+
                         emailStep=3;
-                        string RecruiterEmailToUse = jobPosting.Recruiter.Subscriber?.Email ?? jobPosting.Recruiter.Email;
-                        // Create a jobposting dto needed for the fully qualified job posting url in the recuriter email
+                        try
+                        {
+                        //RecruiterEmailToUse = jobPosting.Recruiter.Subscriber?.Email ?? jobPosting.Recruiter.Email;
+                            if (jobPosting !=null)
+                            {
+                                if (jobPosting.Recruiter !=null )
+                                {
+                                    if (jobPosting.Recruiter.Subscriber !=null)
+                                    {
+                                        if (jobPosting.Recruiter.Subscriber.Email != null)
+                                        {
+                                            RecruiterEmailToUse = jobPosting.Recruiter.Subscriber?.Email;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (jobPosting.Recruiter.Email!=null)
+                                        {
+                                        RecruiterEmailToUse = jobPosting.Recruiter.Email
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        catch(Exception iex)
+                        {
+                                RecruiterEmailToUse = "bferree@careercircle.com"; 
+                        }
 
                         emailStep=4;
+                        // Create a jobposting dto needed for the fully qualified job posting url in the recuriter email
                         UpDiddyLib.Dto.JobPostingDto jobPostingDto = _mapper.Map<UpDiddyLib.Dto.JobPostingDto>(jobPosting);
                       
                         // Send recruiter email alerting them to application
