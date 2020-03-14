@@ -128,7 +128,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                                     {
                                         if (jobPosting.Recruiter.Email!=null)
                                         {
-                                        RecruiterEmailToUse = jobPosting.Recruiter.Email
+                                            RecruiterEmailToUse = jobPosting.Recruiter.Email;
                                         }
                                     }
                                 }
