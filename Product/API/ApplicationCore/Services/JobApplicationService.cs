@@ -208,15 +208,15 @@ namespace UpDiddyApi.ApplicationCore.Services
                                 _syslog.Log(LogLevel.Information, "JOB APP INNER ABEND: "+indemailsendex.ToString());
                             }
                         }
-                        catch(Exception hfex)
-                        {
-                            _syslog.Log(LogLevel.Information, "JOB APP OUTER ABEND: "+hfex.ToString());
-                        }
+                    }
+                    catch(Exception hfex)
+                    {
+                        _syslog.Log(LogLevel.Information, "JOB APP OUTER ABEND: "+hfex.ToString());
                     }
                 }
-                catch(Exception ex)
+                catch(Exception ex1)
                 {
-                    _syslog.Log(LogLevel.Information, "EMAIL EXCEPTION: "+ex.ToString()+" Email Step was: "+emailStep);
+                    _syslog.Log(LogLevel.Information, "EMAIL EXCEPTION: "+ex1.ToString()+" Email Step was: "+emailStep);
                 }
                 _syslog.Log(LogLevel.Information, $"***** JobApplicationController:CreateJobApplication completed at: {DateTime.UtcNow.ToLongDateString()}");
                 return jobApplication.JobApplicationGuid;
