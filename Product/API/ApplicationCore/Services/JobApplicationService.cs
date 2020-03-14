@@ -99,19 +99,26 @@ namespace UpDiddyApi.ApplicationCore.Services
                         string resumeEncoded = Convert.ToBase64String(Utils.StreamToByteArray(SubscriberResumeAsStream));
                         
                         emailStep=2;
-                        bool IsExternalRecruiter = jobPosting.Recruiter.Subscriber == null;
-
-                        string RecruiterEmailToUse = jobPosting.Recruiter.Subscriber?.Email ?? jobPosting.Recruiter.Email;
-                        // Create a jobposting dto needed for the fully qualified job posting url in the recuriter email
-                        UpDiddyLib.Dto.JobPostingDto jobPostingDto = _mapper.Map<UpDiddyLib.Dto.JobPostingDto>(jobPosting);
-                        // Send recruiter email alerting them to application
+                        bool IsExternalRecruiter = false;
+                        if ( jobPosting.Recruiter != null && jobPosting.Recruiter.Subscriber != null )
+                        {
+                            IsExternalRecruiter= true;
+                        }
 
                         emailStep=3;
+                        string RecruiterEmailToUse = jobPosting.Recruiter.Subscriber?.Email ?? jobPosting.Recruiter.Email;
+                        // Create a jobposting dto needed for the fully qualified job posting url in the recuriter email
+
+                        emailStep=4;
+                        UpDiddyLib.Dto.JobPostingDto jobPostingDto = _mapper.Map<UpDiddyLib.Dto.JobPostingDto>(jobPosting);
+                      
+                        // Send recruiter email alerting them to application
+                        emailStep=5;
                         Dictionary<string, bool> EmailAddressesToSend = new Dictionary<string, bool>();
                         EmailAddressesToSend.Add(RecruiterEmailToUse, IsExternalRecruiter);
                         var VipEmails = _configuration.GetSection("SysEmail:VIPEmails").GetChildren();
 
-                        emailStep=4;
+                        emailStep=6;
                         // Ensure all VIPs get the internal email template
                         foreach (IConfigurationSection Child in VipEmails)
                         {
@@ -119,7 +126,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                             EmailAddressesToSend.Add(VipEmail, false);
                         }
 
-                        emailStep=5;
+                        emailStep=7;
                         foreach (string Email in EmailAddressesToSend.Keys)
                         {
                             _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync
