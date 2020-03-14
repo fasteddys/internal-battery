@@ -107,7 +107,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
                         string RecruiterEmailToUse = string.Empty;
-                        RecruiterEmailToUse = "bferree@careercircle.com"; 
+                        RecruiterEmailToUse = "webmaster@careercircle.com"; 
 
                         emailStep=3;
                         try
