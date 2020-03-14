@@ -23,6 +23,16 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<ProfileComment> GetCommentForRecruiter(Guid commentGuid, Guid subscriberGuid)
         {
+            var isRecruiterInCompanyProfile = (from s in _dbContext.Subscriber
+                                               join r in _dbContext.Recruiter on s.SubscriberId equals r.SubscriberId
+                                               join rc in _dbContext.RecruiterCompany on r.RecruiterId equals rc.RecruiterId
+                                               join p in _dbContext.Profile on rc.CompanyId equals p.CompanyId
+                                               join pc in _dbContext.ProfileComment on p.ProfileId equals pc.ProfileId
+                                               where pc.ProfileCommentGuid == commentGuid && s.SubscriberGuid == subscriberGuid
+                                               select p).Any();
+            if (!isRecruiterInCompanyProfile)
+                throw new FailedValidationException("recruiter does not belong to the company of the profile associated with the comment");
+
             var recruiterComment = await (from c in _dbContext.ProfileComment.Include(c => c.Recruiter).Include(c => c.Profile)
                                           join r in _dbContext.Recruiter on c.RecruiterId equals r.RecruiterId
                                           join s in _dbContext.Subscriber on r.SubscriberId equals s.SubscriberId
@@ -63,6 +73,16 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<Guid> CreateCommentForRecruiter(Guid subscriberGuid, CommentDto commentDto)
         {
+
+            var isRecruiterInCompanyProfile = (from s in _dbContext.Subscriber
+                                               join r in _dbContext.Recruiter on s.SubscriberId equals r.SubscriberId
+                                               join rc in _dbContext.RecruiterCompany on r.RecruiterId equals rc.RecruiterId
+                                               join p in _dbContext.Profile on rc.CompanyId equals p.CompanyId
+                                               where p.ProfileGuid == commentDto.ProfileGuid && s.SubscriberGuid == subscriberGuid
+                                               select p).Any();
+            if (!isRecruiterInCompanyProfile)
+                throw new FailedValidationException("recruiter does not belong to the company of the profile associated with the comment");
+
             Guid commentGuid = Guid.NewGuid();
             var recruiterId = (from s in _dbContext.Subscriber
                                join r in _dbContext.Recruiter on s.SubscriberId equals r.SubscriberId
@@ -75,12 +95,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
                              select p.ProfileId).FirstOrDefault();
             if (profileId == 0)
                 throw new FailedValidationException("profile not found");
-            var recruiterCompanyId = (from rc in _dbContext.RecruiterCompany
-                                      join p in _dbContext.Profile on rc.CompanyId equals p.CompanyId
-                                      where rc.RecruiterId == recruiterId && p.ProfileId == profileId
-                                      select rc.RecruiterCompanyId).FirstOrDefault();
-            if (recruiterCompanyId == 0)
-                throw new FailedValidationException("recruiter does not belong to the company associated with this profile");
             this.Create(new ProfileComment()
             {
                 CreateDate = DateTime.UtcNow,
@@ -98,6 +112,16 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task UpdateCommentForRecruiter(Guid subscriberGuid, CommentDto commentDto)
         {
+            var isRecruiterInCompanyProfile = (from s in _dbContext.Subscriber
+                                               join r in _dbContext.Recruiter on s.SubscriberId equals r.SubscriberId
+                                               join rc in _dbContext.RecruiterCompany on r.RecruiterId equals rc.RecruiterId
+                                               join p in _dbContext.Profile on rc.CompanyId equals p.CompanyId
+                                               join pc in _dbContext.ProfileComment on p.ProfileId equals pc.ProfileId
+                                               where pc.ProfileCommentGuid == commentDto.CommentGuid && s.SubscriberGuid == subscriberGuid
+                                               select p).Any();
+            if (!isRecruiterInCompanyProfile)
+                throw new FailedValidationException("recruiter does not belong to the company of the profile associated with the comment");
+
             var comment = (from c in _dbContext.ProfileComment
                            join r in _dbContext.Recruiter on c.RecruiterId equals r.RecruiterId
                            join s in _dbContext.Subscriber on r.SubscriberId equals s.SubscriberId
@@ -115,6 +139,16 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task DeleteCommentForRecruiter(Guid subscriberGuid, Guid commentGuid)
         {
+            var isRecruiterInCompanyProfile = (from s in _dbContext.Subscriber
+                                               join r in _dbContext.Recruiter on s.SubscriberId equals r.SubscriberId
+                                               join rc in _dbContext.RecruiterCompany on r.RecruiterId equals rc.RecruiterId
+                                               join p in _dbContext.Profile on rc.CompanyId equals p.CompanyId
+                                               join pc in _dbContext.ProfileComment on p.ProfileId equals pc.ProfileId
+                                               where pc.ProfileCommentGuid == commentGuid && s.SubscriberGuid == subscriberGuid
+                                               select p).Any();
+            if (!isRecruiterInCompanyProfile)
+                throw new FailedValidationException("recruiter does not belong to the company of the profile associated with the comment");
+            
             var comment = (from c in _dbContext.ProfileComment
                            join r in _dbContext.Recruiter on c.RecruiterId equals r.RecruiterId
                            join s in _dbContext.Subscriber on r.SubscriberId equals s.SubscriberId

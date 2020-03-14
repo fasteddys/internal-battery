@@ -275,6 +275,11 @@ namespace UpDiddyApi.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<RecruiterCompany>()
+                .HasIndex(rc => new { rc.CompanyId, rc.RecruiterId })
+                .HasName("UIX_RecruiterCompany_Recruiter_Company")
+                .IsUnique(true);
+
             modelBuilder.Entity<AzureIndexStatus>()
                 .HasIndex(ais => ais.Name)
                 .HasName("UIX_AzureIndexStatus_Name")
