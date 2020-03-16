@@ -224,7 +224,7 @@ namespace UpDiddyApi
             }
 
             // LOCAL TESTING ONLY - DO NOT UNCOMMENT THIS CODE!
-             BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
+            // BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
 
             // run job to look for un-indexed profiles and index them 
             int profileIndexerBatchSize = int.Parse(Configuration["CloudTalent:ProfileIndexerBatchSize"]);
