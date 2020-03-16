@@ -928,8 +928,13 @@ namespace UpDiddyApi.Workflow
                             // the factory method uses the guid property of the dto for GetJobPostingByGuidWithRelatedObjects - need to set that too
                             jobPostingDto.JobPostingGuid = jobPostingGuid;
 
-                            // attempt to update job posting
+                            // attempt to update job posting                            
+                            Recruiter recruiter = await RecruiterFactory.GetAddOrUpdate(_repositoryWrapper, jobPostingDto.Recruiter.Email, jobPostingDto.Recruiter.FirstName, jobPostingDto.Recruiter.LastName, null, null);
+                            Company company = await CompanyFactory.GetCompanyByGuid(_repositoryWrapper, jobPostingDto.Company.CompanyGuid);
+                            await RecruiterCompanyFactory.GetOrAdd(_repositoryWrapper, recruiter.RecruiterId, company.CompanyId, true);
+                            jobPostingDto.Recruiter.RecruiterGuid = recruiter.RecruiterGuid;
                             JobCrudDto jobCrudDto = _mapper.Map<JobCrudDto>(jobPostingDto);
+
                             if (jobPostingDto.JobPostingSkills != null && jobPostingDto.JobPostingSkills.Any())
                             {
                                 var jobPostingSkills = await _skillService.AddOrUpdateSkillsByName(jobPostingDto.JobPostingSkills.Select(jps => jps.SkillName).ToList());
