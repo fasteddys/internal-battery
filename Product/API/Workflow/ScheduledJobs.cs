@@ -947,6 +947,7 @@ namespace UpDiddyApi.Workflow
                             Recruiter recruiter = await RecruiterFactory.GetAddOrUpdate(_repositoryWrapper, jobPostingDto.Recruiter.Email, jobPostingDto.Recruiter.FirstName, jobPostingDto.Recruiter.LastName, null, null);
                             Company company = await CompanyFactory.GetCompanyByGuid(_repositoryWrapper, jobPostingDto.Company.CompanyGuid);
                             await RecruiterCompanyFactory.GetOrAdd(_repositoryWrapper, recruiter.RecruiterId, company.CompanyId, true);
+                            jobPostingDto.Recruiter.RecruiterGuid = recruiter.RecruiterGuid;
 
                             // attempt to create job posting
                             JobCrudDto jobCrudDto = _mapper.Map<JobCrudDto>(jobPostingDto);
