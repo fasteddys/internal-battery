@@ -2317,9 +2317,9 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
                 };
                 g2List.Add(delDoc);
  
-            };
+            }; 
             _syslog.LogInformation($"ScheduledJobs.G2IndexPurge: Retreived {Docs.SubscriberCount} G2s for purging.");
-            await _g2Service.G2IndexDeleteBulkAsync(g2List);
+            await _g2Service.G2IndexPurgeBulkAsync(g2List);
 
             // if the number of profiles retreived = the batch size, there may be more that needs to be purged so
             // schedule this job to run again for another batch

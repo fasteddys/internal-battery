@@ -1154,31 +1154,39 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         }
 
-
-        public async Task<bool> UpdateG2AzureIndexStatuses(List<Guid> profileGuids, string statusName, string statusInfo)
+        // todo jab add migration for updated SPROC 
+        public async Task<bool> UpdateG2AzureIndexStatuses(List<AzureIndexResultStatus> indexStatuses, string statusName, string statusInfo)
         {
-
+ 
             DataTable table = new DataTable();
-            table.Columns.Add("Guid", typeof(Guid));
-            if (profileGuids != null)
+            table.Columns.Add("ErrorMessage", typeof(string));
+            table.Columns.Add("ProfileGuid", typeof(Guid));
+            table.Columns.Add("IndexStatus", typeof(int));
+            if (indexStatuses != null)
             {
-                foreach (var profileGuid in profileGuids)
+                foreach (AzureIndexResultStatus Status in indexStatuses)
                 {
-                    table.Rows.Add(profileGuid);
+                    Guid ProfileGuid = Guid.Parse(Status.Key);
+
+                    DataRow row = table.Rows.Add();
+                    row["IndexStatus"] = Status.StatusCode;
+                    row["ErrorMessage"] = Status.ErrorMessage;
+                    row["ProfileGuid"] = ProfileGuid;
+
                 }
             }
 
-            var profileGuidsParam = new SqlParameter("@ProfileGuids", table);
+            var profileGuidsParam = new SqlParameter("@ProfileIndexStatuses", table);
             profileGuidsParam.SqlDbType = SqlDbType.Structured;
-            profileGuidsParam.TypeName = "dbo.GuidList";
+            profileGuidsParam.TypeName = "dbo.AzureIndexStatus";
 
             var spParams = new object[] {
                 profileGuidsParam
                 ,new SqlParameter("@StatusName", statusName)
                 ,new SqlParameter("@IndexStatusInfo", statusInfo)
-            };
-
-            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [g2].[System_Update_AzureG2Status] @ProfileGuids, @StatusName, @IndexStatusInfo", spParams);
+            };        
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [g2].[System_Update_AzureG2Status] @ProfileIndexStatuses, @StatusName, @IndexStatusInfo", spParams);
+    
             return true;
         }
 

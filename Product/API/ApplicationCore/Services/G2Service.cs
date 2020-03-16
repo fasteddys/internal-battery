@@ -244,8 +244,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <returns></returns>
         public async Task<bool> IndexG2Async(G2SDOC g2)
         {
-            string info = await _azureSearchService.AddOrUpdateG2(g2);
-            await UpdateG2Status(g2, Constants.G2AzureIndexStatus.Indexed, info);
+            AzureIndexResult info = await _azureSearchService.AddOrUpdateG2(g2);
+            await UpdateG2Status(info, Constants.G2AzureIndexStatus.Indexed, info.StatusMsg);
             return true;
         }
 
@@ -285,8 +285,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<bool> G2IndexAddOrUpdateAsync(G2SDOC g2)
         {
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexAddOrUpdateAsync starting index for g2 {g2.ProfileGuid}");
-            string info = await _azureSearchService.AddOrUpdateG2(g2);
-            await UpdateG2Status(g2, Constants.G2AzureIndexStatus.Indexed, info);
+            AzureIndexResult info = await _azureSearchService.AddOrUpdateG2(g2);
+            await UpdateG2Status(info, Constants.G2AzureIndexStatus.Indexed, info.StatusMsg);
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexAddOrUpdateAsync done index for g2 {g2.ProfileGuid}");
             return true;
         }
@@ -524,12 +524,12 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
         }
-
+   
         public async Task<bool> IndexG2BulkAsync(List<G2SDOC> g2List)
         {
             _logger.Log(LogLevel.Information, $"G2Service.IndexG2BulkAsync starting index for g2");
-            string info = await _azureSearchService.AddOrUpdateG2Bulk(g2List);            
-            await UpdateG2Status(g2List, Constants.G2AzureIndexStatus.Indexed, info);
+            AzureIndexResult info = await _azureSearchService.AddOrUpdateG2Bulk(g2List);            
+            await UpdateG2Status(info, Constants.G2AzureIndexStatus.Indexed, info.StatusMsg);
             _logger.Log(LogLevel.Information, $"G2Service.IndexG2BulkAsync done index for g2");
             return true;
         }
@@ -537,18 +537,39 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
         /// <summary>
-        /// Add or update the G2 into the azure search index 
+        /// Bulk delete of items from azure index - delete means delete the info from azure index and mark the item in
+        /// the backing store as deleted
         /// </summary>
         /// <param name="g2"></param>
         /// <returns></returns>
         public async Task<bool> G2IndexDeleteBulkAsync(List<G2SDOC> g2List)
         {
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexDeleteBulkAsync starting index delete");
-            string info = await _azureSearchService.DeleteG2Bulk(g2List);
-            await UpdateG2Status(g2List, Constants.G2AzureIndexStatus.Deleted, info);
+            AzureIndexResult info = await _azureSearchService.DeleteG2Bulk(g2List); 
+            await UpdateG2Status(info, Constants.G2AzureIndexStatus.Deleted, info.StatusMsg);
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexDeleteBulkAsync done index delete");
             return true;
         }
+
+
+
+        /// <summary>
+        /// Bulk purge of items from azure index - purge means delete the info from azure index and mark the item in
+        /// the backing store as unidexed 
+        /// </summary>
+        /// <param name="g2"></param>
+        /// <returns></returns>
+        public async Task<bool> G2IndexPurgeBulkAsync(List<G2SDOC> g2List)
+        {
+            _logger.Log(LogLevel.Information, $"G2Service.G2IndexDeleteBulkAsync starting index delete");
+            AzureIndexResult info = await _azureSearchService.DeleteG2Bulk(g2List);
+            // set index status to "none" for purges so these items will be reindex the next time a global re-index of 
+            // all un-indexed items is done 
+            await UpdateG2Status(info, Constants.G2AzureIndexStatus.None, info.StatusMsg);
+            _logger.Log(LogLevel.Information, $"G2Service.G2IndexDeleteBulkAsync done index delete");
+            return true;
+        }
+
 
 
 
@@ -561,8 +582,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<bool> G2IndexDeleteAsync(G2SDOC g2)
         {
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexDeleteAsync starting index for g2 {g2.ProfileGuid}");
-            string info =  await _azureSearchService.DeleteG2(g2);
-            await UpdateG2Status(g2, Constants.G2AzureIndexStatus.Deleted, info);
+            AzureIndexResult info =  await _azureSearchService.DeleteG2(g2);
+            await UpdateG2Status(info, Constants.G2AzureIndexStatus.Deleted, info.StatusMsg);
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexDeleteAsync done index for g2 {g2.ProfileGuid}");
             return true;
         }
@@ -602,32 +623,22 @@ namespace UpDiddyApi.ApplicationCore.Services
         #endregion
 
         #region private helper functions 
-
-        private async Task<bool> UpdateG2Status( G2SDOC g2, string cmd, string info)
-        {
-
-            List<G2SDOC> g2List = new List<G2SDOC>();
-            g2List.Add(g2);
-            await UpdateG2Status(g2List, cmd, info); 
-            return true;
-
-        }
-
-
-
-        private async Task<bool> UpdateG2Status(List<G2SDOC> g2List, string statusName, string info)
-        {
-
-            List<Guid> profileGuidList = new List<Guid>();
-            foreach (G2SDOC g2 in g2List)
-            {
-                profileGuidList.Add(g2.ProfileGuid);
-            }
  
-            _repository.StoredProcedureRepository.UpdateG2AzureIndexStatuses(profileGuidList, statusName, info);
-
+        private async Task<bool> UpdateG2Status( AzureIndexResult results, string statusName, string info)
+        {   
+            // Call stored procedure 
+            try
+            {
+                _repository.StoredProcedureRepository.UpdateG2AzureIndexStatuses(results.DOCResults.Value, statusName, info);
+            }
+            catch ( Exception ex )
+            {
+                _logger.LogError($"G2Service:UpdateG2Status Error updating index statuses {ex.Message}");
+                throw ex;
+            }
+            
+            
             return true;
-
         }
 
 
