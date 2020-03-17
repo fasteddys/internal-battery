@@ -2,6 +2,7 @@
 using GeoJSON.Net.Geometry;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
@@ -19,7 +20,7 @@ using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Helpers;
 
-namespace UpDiddyApi.ApplicationCore.Services
+namespace UpDiddyApi.ApplicationCore.Services.G2
 {
     public class G2Service : IG2Service
     {
@@ -34,7 +35,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public G2Service(
             UpDiddyDbContext context,
-            IConfiguration configuration,            
+            IConfiguration configuration,
             IRepositoryWrapper repository,
             ILogger<SubscriberService> logger,
             IMapper mapper,
@@ -43,22 +44,22 @@ namespace UpDiddyApi.ApplicationCore.Services
             )
         {
             _db = context;
-            _configuration = configuration;            
+            _configuration = configuration;
             _repository = repository;
             _logger = logger;
             _mapper = mapper;
             _azureSearchService = azureSearchService;
             _hangfireService = hangfireService;
         }
- 
+
         #region G2 Searching 
 
-        public async Task<G2SearchResultDto> SearchG2Async(Guid subscriberGuid, int cityId,   int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0 )
+        public async Task<G2SearchResultDto> SearchG2Async(Guid subscriberGuid, Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0)
         {
 
             // validate the the user provides a city if they also provided a radius
-            if (cityId == 0 && radius != 0)
-                throw new FailedValidationException("A cityId must be provided if a radius is specifed");
+            if ((cityGuid == null ||cityGuid == Guid.Empty) && radius != 0)
+                throw new FailedValidationException("A city guid must be provided if a radius is specifed");
 
             Recruiter recruiter = await _repository.RecruiterRepository.GetRecruiterAndCompanyBySubscriberGuid(subscriberGuid);
 
@@ -72,17 +73,18 @@ namespace UpDiddyApi.ApplicationCore.Services
             // get company id for the recruiter 
             int companyId = recruiter.CompanyId.Value;
             // handle case of non geo search 
-            if ( cityId == 0 )
+            if (cityGuid == null || cityGuid == Guid.Empty)
                 return await SearchG2Async(recruiter.Company.CompanyGuid, limit, offset, sort, order, keyword, 0, 0, 0 );
 
             // pick a random postal code for the city to get the last and long 
             Postal postal = _repository.PostalRepository.GetAll()
-                .Where(p => p.CityId == cityId && p.IsDeleted == 0)
+                .Include( c => c.City)
+                .Where(p =>  p.City.CityGuid == cityGuid && p.IsDeleted == 0)
                 .FirstOrDefault();
 
             // validate that the city has a postal code 
             if (postal == null)
-                throw new NotFoundException($"A city with an Id of {cityId} cannot be found.");
+                throw new NotFoundException($"A city with an Guid of {cityGuid} cannot be found.");
 
             return await SearchG2Async(recruiter.Company.CompanyGuid, limit, offset, sort, order, keyword, radius, (double)postal.Latitude, (double)postal.Longitude);
         }

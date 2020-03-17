@@ -143,9 +143,9 @@ namespace UpDiddyApi.Controllers.V2
         [HttpGet]
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("query")]
-        public async Task<IActionResult> SearchG2(int cityId, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0)
+        public async Task<IActionResult> SearchG2(Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0)
         {
-            var rVal = await _g2Service.SearchG2Async(GetSubscriberGuid(), cityId, limit, offset, sort, order, keyword, radius);
+            var rVal = await _g2Service.SearchG2Async(GetSubscriberGuid(), cityGuid, limit, offset, sort, order, keyword, radius);
             return Ok(rVal);
         }
 

@@ -13,7 +13,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     {
  
         #region G2 Searching
-        Task<G2SearchResultDto> SearchG2Async(Guid subscriberGuid, int cityId,int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0);
+        Task<G2SearchResultDto> SearchG2Async(Guid subscriberGuid, Guid cityGuid,int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0);
         Task<G2SearchResultDto> GetTopG2sAsync(int numRecords);        
         #endregion
 
