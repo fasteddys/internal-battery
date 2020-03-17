@@ -16,6 +16,7 @@ using UpDiddyLib.Domain.AzureSearch;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
 using UpDiddyLib.Domain.Models.G2;
+using System.Collections.Generic;
 
 namespace UpDiddyApi.Controllers.V2
 {
@@ -42,7 +43,7 @@ namespace UpDiddyApi.Controllers.V2
             _skillService = services.GetService<ISkillService>();
         }
  
-        #region Profiles
+        #region Recruiter Profile Operations
     
         [HttpGet]
         [Authorize(Policy = "IsRecruiterPolicy")]
@@ -114,19 +115,19 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpPost]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        [Route("wishlists/{wishlistGuid:guid}/profiles/{profileGuid:guid}")]
-        public async Task<IActionResult> AddProfileToWishlist(Guid wishlistGuid, Guid profileGuid)
+        [Route("wishlists/{wishlistGuid:guid}/profiles")]
+        public async Task<IActionResult> AddProfilesToWishlist(Guid wishlistGuid, [FromBody] List<Guid> profileGuids)
         {
-            Guid profileWishlistGuid = await _wishlistService.AddProfileWishlistForRecruiter(GetSubscriberGuid(), wishlistGuid, profileGuid);
-            return StatusCode(201, profileWishlistGuid);
+           List<Guid> profileWishlistGuids = await _wishlistService.AddProfileWishlistsForRecruiter(GetSubscriberGuid(), wishlistGuid, profileGuids);
+            return StatusCode(201, profileWishlistGuids);
         }
 
         [HttpDelete]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        [Route("wishlists/profiles/{profileWishlistGuid:guid}")]
-        public async Task<IActionResult> DeleteProfileFromWishlist(Guid profileWishlistGuid)
+        [Route("wishlists/profiles")]
+        public async Task<IActionResult> DeleteProfilesFromWishlist([FromBody] List<Guid> profileWishlistGuids)
         {
-            await _wishlistService.DeleteProfileWishlistForRecruiter(GetSubscriberGuid(), profileWishlistGuid);
+            await _wishlistService.DeleteProfileWishlistsForRecruiter(GetSubscriberGuid(), profileWishlistGuids);
             return StatusCode(204);
         }
 
@@ -196,19 +197,19 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpPost]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        [Route("skills/{skillGuid:guid}/profiles/{profileGuid:guid}")]
-        public async Task<IActionResult> AddSkillToProfile(Guid skillGuid, Guid profileGuid)
+        [Route("skills/profiles/{profileGuid:guid}")]
+        public async Task<IActionResult> AddSkillsToProfile([FromBody] List<Guid> skillGuids, Guid profileGuid)
         {
-            Guid profileSkillGuid = await _skillService.AddSkillToProfileForRecruiter(GetSubscriberGuid(), skillGuid, profileGuid);
-            return StatusCode(201, profileSkillGuid);
+            List<Guid> profileSkillGuids = await _skillService.AddSkillsToProfileForRecruiter(GetSubscriberGuid(), skillGuids, profileGuid);
+            return StatusCode(201, profileSkillGuids);
         }
         
         [HttpDelete]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        [Route("skills/{skillGuid:guid}/profiles/{profileGuid:guid}")]
-        public async Task<IActionResult> RemoveSkillFromProfile(Guid skillGuid, Guid profileGuid)
+        [Route("skills/profiles")]
+        public async Task<IActionResult> DeleteSkillsFromProfile([FromBody] List<Guid> profileSkillGuids)
         {
-            await _skillService.RemoveSkillFromProfileForRecruiter(GetSubscriberGuid(), skillGuid, profileGuid);
+            await _skillService.DeleteSkillsFromProfileForRecruiter(GetSubscriberGuid(), profileSkillGuids);
             return StatusCode(204);
         }
 
@@ -220,6 +221,10 @@ namespace UpDiddyApi.Controllers.V2
             var skills = await _skillService.GetProfileSkillsForRecruiter(profileGuid, GetSubscriberGuid(), limit, offset, sort, order);
             return Ok(skills);
         }
+
+        #endregion
+
+        #region Recruiter Tag Operations
 
         #endregion
 
@@ -354,7 +359,5 @@ namespace UpDiddyApi.Controllers.V2
 
 
         #endregion
-
- 
     }
 }

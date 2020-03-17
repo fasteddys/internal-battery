@@ -6,6 +6,9 @@ using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using UpDiddyLib.Domain.Models;
+using UpDiddyApi.ApplicationCore.Exceptions;
+using UpDiddyApi.Models.G2;
+using System.Data.SqlClient;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -63,7 +66,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
                           select s).Distinct().ToListAsync();
         }
 
-
         public async Task<List<Skill>> GetByCourseGuid(Guid courseGuid)
         {
             var skills = await (from ss in _dbContext.CourseSkill
@@ -77,17 +79,113 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<List<SkillDto>> GetProfileSkillsForRecruiter(Guid profileGuid, Guid subscriberGuid, int limit, int offset, string sort, string order)
         {
-            throw new NotImplementedException();
+            var spParams = new object[] {
+                new SqlParameter("@ProfileGuid", profileGuid),
+                new SqlParameter("@SubscriberGuid", subscriberGuid),
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+            List<SkillDto> profileSkills = null;
+            profileSkills = await _dbContext.Skills.FromSql<SkillDto>("[G2].[System_Get_ProfileSkillsForRecruiter] @ProfileGuid, @SubscriberGuid, @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return profileSkills;
         }
 
-        public async Task RemoveSkillFromProfileForRecruiter(Guid subscriberGuid, Guid skillGuid, Guid profileGuid)
+        public async Task<List<Guid>> AddSkillsToProfileForRecruiter(Guid subscriberGuid, List<Guid> skillGuids, Guid profileGuid)
         {
-            throw new NotImplementedException();
+            bool isProfileAssociatedWithRecruiterCompany = (from p in _dbContext.Profile
+                                                            join c in _dbContext.Company on p.CompanyId equals c.CompanyId
+                                                            join rc in _dbContext.RecruiterCompany on c.CompanyId equals rc.CompanyId
+                                                            join r in _dbContext.Recruiter on rc.RecruiterId equals r.RecruiterId
+                                                            join s in _dbContext.Subscriber on r.SubscriberId equals s.SubscriberId
+                                                            where s.SubscriberGuid == subscriberGuid && p.ProfileGuid == profileGuid
+                                                            select rc.RecruiterCompanyId).Any();
+            if (!isProfileAssociatedWithRecruiterCompany)
+                throw new FailedValidationException($"recruiter does not have permission to modify profile skills");
+
+            List<Guid> profileSkillGuids = new List<Guid>();
+            foreach (Guid skillGuid in skillGuids)
+            {
+                Guid profileSkillGuid = Guid.NewGuid();
+                profileSkillGuids.Add(profileSkillGuid);
+                bool isSkillAlreadyAddedProfile = (from ps in _dbContext.ProfileSkill
+                                                   join p in _dbContext.Profile on ps.ProfileId equals p.ProfileId
+                                                   join s in _dbContext.Skill on ps.SkillId equals s.SkillId
+                                                   where s.SkillGuid == skillGuid && p.ProfileGuid == profileGuid
+                                                   select ps.ProfileSkillId).Any();
+                if (isSkillAlreadyAddedProfile)
+                    throw new FailedValidationException($"The skill '{skillGuid}' is already associated with this profile");
+
+                var profileId = (from p in _dbContext.Profile
+                                 where p.ProfileGuid == profileGuid && p.IsDeleted == 0
+                                 select p.ProfileId).FirstOrDefault();
+                if (profileId == null || profileId == 0)
+                    throw new FailedValidationException("profile not found");
+
+                var skillId = (from s in _dbContext.Skill
+                               where s.SkillGuid == skillGuid && s.IsDeleted == 0
+                               select s.SkillId).FirstOrDefault();
+                if (skillId == null || skillId == 0)
+                    throw new FailedValidationException("skill not found");
+
+                ProfileSkill skillDeletedFromProfile = (from ps in _dbContext.ProfileSkill
+                                                        join p in _dbContext.Profile on ps.ProfileId equals p.ProfileId
+                                                        join s in _dbContext.Skill on ps.SkillId equals s.SkillId
+                                                        where s.SkillGuid == skillGuid && p.ProfileGuid == profileGuid && ps.IsDeleted == 1
+                                                        select ps).FirstOrDefault();
+
+                if (skillDeletedFromProfile != null)
+                {
+                    skillDeletedFromProfile.IsDeleted = 0;
+                    skillDeletedFromProfile.ModifyDate = DateTime.UtcNow;
+                    skillDeletedFromProfile.ModifyGuid = Guid.Empty;
+                    _dbContext.ProfileSkill.Update(skillDeletedFromProfile);
+                }
+                else
+                {
+                    _dbContext.ProfileSkill.Add(new ProfileSkill()
+                    {
+                        CreateDate = DateTime.UtcNow,
+                        CreateGuid = Guid.Empty,
+                        IsDeleted = 0,
+                        ProfileId = profileId,
+                        SkillId = skillId,
+                        ProfileSkillGuid = profileSkillGuid
+                    });
+                }
+            }
+            await _dbContext.SaveChangesAsync();
+            return profileSkillGuids;
         }
 
-        public async Task<Guid> AddSkillToProfileForRecruiter(Guid subscriberGuid, Guid skillGuid, Guid profileGuid)
+        public async Task DeleteSkillsFromProfileForRecruiter(Guid subscriberGuid, List<Guid> profileSkillGuids)
         {
-            throw new NotImplementedException();
+            bool isProfileAssociatedWithRecruiterCompany = (from ps in _dbContext.ProfileSkill
+                                                            join p in _dbContext.Profile on ps.ProfileId equals p.ProfileId
+                                                            join c in _dbContext.Company on p.CompanyId equals c.CompanyId
+                                                            join rc in _dbContext.RecruiterCompany on c.CompanyId equals rc.CompanyId
+                                                            join r in _dbContext.Recruiter on rc.RecruiterId equals r.RecruiterId
+                                                            join s in _dbContext.Subscriber on r.SubscriberId equals s.SubscriberId
+                                                            where s.SubscriberGuid == subscriberGuid && ps.ProfileSkillGuid == profileSkillGuids.FirstOrDefault()
+                                                            select rc.RecruiterCompanyId).Any();
+            if (!isProfileAssociatedWithRecruiterCompany)
+                throw new FailedValidationException($"recruiter does not have permission to modify profile skills");
+
+            foreach (Guid profileSkillGuid in profileSkillGuids)
+            {
+                var profileSkill = (from ps in _dbContext.ProfileSkill
+                                       where ps.ProfileSkillGuid == profileSkillGuid && ps.IsDeleted == 0
+                                       select ps).FirstOrDefault();
+                if (profileSkill == null)
+                    throw new NotFoundException($"profile skill '{profileSkillGuid}' not found");
+
+                profileSkill.ModifyDate = DateTime.UtcNow;
+                profileSkill.ModifyGuid = Guid.Empty;
+                profileSkill.IsDeleted = 1;
+                _dbContext.Update(profileSkill);
+            }
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

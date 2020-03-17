@@ -270,7 +270,6 @@ namespace UpDiddyApi.Models
         public DbQuery<RecruiterStatDto> RecruiterStats { get; set; }
         public DbQuery<CommentDto> Comments { get; set; }
 
-
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -214,18 +214,18 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<SkillListDto> GetProfileSkillsForRecruiter(Guid profileGuid, Guid subscriberGuid, int limit, int offset, string sort, string order)
         {
-            var skills = _repositoryWrapper.SkillRepository.GetProfileSkillsForRecruiter(profileGuid, subscriberGuid, limit, offset, sort, order);
+            var skills = await _repositoryWrapper.SkillRepository.GetProfileSkillsForRecruiter(profileGuid, subscriberGuid, limit, offset, sort, order);
             return _mapper.Map<SkillListDto>(skills);
         }
 
-        public async Task RemoveSkillFromProfileForRecruiter(Guid subscriberGuid, Guid skillGuid, Guid profileGuid)
+        public async Task DeleteSkillsFromProfileForRecruiter(Guid subscriberGuid, List<Guid> profileSkillGuids)
         {
-            await _repositoryWrapper.SkillRepository.RemoveSkillFromProfileForRecruiter(subscriberGuid, skillGuid, profileGuid);
+            await _repositoryWrapper.SkillRepository.DeleteSkillsFromProfileForRecruiter(subscriberGuid, profileSkillGuids);
         }
 
-        public async Task<Guid> AddSkillToProfileForRecruiter(Guid subscriberGuid, Guid skillGuid, Guid profileGuid)
+        public async Task<List<Guid>> AddSkillsToProfileForRecruiter(Guid subscriberGuid, List<Guid> skillGuids, Guid profileGuid)
         {
-            return await _repositoryWrapper.SkillRepository.AddSkillToProfileForRecruiter(subscriberGuid, skillGuid, profileGuid);
+            return await _repositoryWrapper.SkillRepository.AddSkillsToProfileForRecruiter(subscriberGuid, skillGuids, profileGuid);
         }
     }
 }

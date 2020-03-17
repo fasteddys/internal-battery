@@ -16,7 +16,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<Skill>> GetByTopicGuid(Guid topicGuid);
         Task<List<Skill>> GetByCourseGuid(Guid courseGuid);
         Task<List<SkillDto>> GetProfileSkillsForRecruiter(Guid profileGuid, Guid subscriberGuid, int limit, int offset, string sort, string order);
-        Task RemoveSkillFromProfileForRecruiter(Guid subscriberGuid, Guid skillGuid, Guid profileGuid);
-        Task<Guid> AddSkillToProfileForRecruiter(Guid subscriberGuid, Guid skillGuid, Guid profileGuid);
+        Task DeleteSkillsFromProfileForRecruiter(Guid subscriberGuid, List<Guid> profileSkillGuids);
+        Task<List<Guid>> AddSkillsToProfileForRecruiter(Guid subscriberGuid, List<Guid> skillGuids, Guid profileGuid);
     }
 }
