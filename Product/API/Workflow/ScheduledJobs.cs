@@ -61,7 +61,7 @@ namespace UpDiddyApi.Workflow
  
 
 
-
+        // todo jab verify all instrumentation has correct proc name 
 
         public ScheduledJobs(
             UpDiddyDbContext context,
@@ -2118,7 +2118,7 @@ namespace UpDiddyApi.Workflow
 public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
         {
             _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2Index starting index for g2 {g2.ProfileGuid}");
-            await _g2Service.IndexG2Async(g2);
+            await _g2Service.G2IndexAsync(g2);
             _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2Index done index for g2 {g2.ProfileGuid}");
             return true;
         }
@@ -2127,7 +2127,7 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
         public async Task<bool> G2IndexAddOrUpdateBulk(List<G2SDOC> g2List)
         {
             _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2IndexAddOrUpdateBulk starting index for g2");
-            await _g2Service.IndexG2BulkAsync(g2List);            
+            await _g2Service.G2IndexBulkAsync(g2List);            
             _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2IndexAddOrUpdateBulk done index for g2");
             return true;
         }
@@ -2179,9 +2179,9 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
         {
             _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2AddSubscriber add of subscriber {subscriberGuid}");
             // call the g2 service to create a new g2 record for the subscriber for every active company
-            int numG2sCreated =  await _g2Service.AddSubscriberProfilesAsync(subscriberGuid);
+            int numG2sCreated =  await _g2Service.G2ProfileAddSubscriberAsync(subscriberGuid);
             if (numG2sCreated > 0)
-                await _g2Service.IndexSubscriberAsync(subscriberGuid);
+                await _g2Service.G2IndexBySubscriberAsync(subscriberGuid);
             _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2AddSubscriber done index for g2 {subscriberGuid}");
             return true;
         }
@@ -2196,9 +2196,9 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
         {
             _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2DeleteSubscriber add of subscriber {subscriberGuid}");
             // call the g2 service to remove all g2 profile information for subscriber 
-            int numG2sCreated = await _g2Service.DeleteSubscriberProfilesAsync(subscriberGuid);
+            int numG2sCreated = await _g2Service.G2ProfileDeleteSubscriberAsync(subscriberGuid);
             // delete subscriber information from azure search index
-            _g2Service.RemoveSubscriberFromIndexAsync(subscriberGuid);   
+            _g2Service.G2IndexRemoveSubscriberAsync(subscriberGuid);   
             _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2DeleteSubscriber done index for g2 {subscriberGuid}");
             return true;
         }
@@ -2213,9 +2213,9 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
         {
             _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2AddNewCompany add of subscriber {companyGuid}");
             // call the g2 service to create a new g2 record for the subscriber for every active company
-            int numG2sCreated = await _g2Service.AddCompanyProfilesAsync(companyGuid);
+            int numG2sCreated = await _g2Service.G2ProfileDeleteSubscriberAsync(companyGuid);
             if (numG2sCreated > 0)
-                await _g2Service.IndexCompanyAsync(companyGuid);
+                await _g2Service.G2IndexCompanyProflesAsync(companyGuid);
             _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2AddNewCompany done index for g2 {companyGuid}");
             return true;
         }
@@ -2232,11 +2232,11 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
             _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2DeleteCompany add of subscriber {companyGuid}");
             // call the g2 service to remove all g2 profile information for subscriber 
             
-             int NumCompanyG2s = await _g2Service.DeleteCompanyProfilesAsync(companyGuid);
+             int NumCompanyG2s = await _g2Service.G2ProfileDeleteByCompany(companyGuid);
             
             
             // delete company information from azure search index
-            _g2Service.RemoveCompanyFromIndexAsync(companyGuid);
+            _g2Service.G2IndexRemoveCompanyProflesAsync(companyGuid);
             _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2DeleteCompany done index for g2 {companyGuid}");
             return true;
         }
@@ -2280,7 +2280,7 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
                 return true;
 
             // Call the G2service to index the batch 
-            await _g2Service.IndexBatchAsync(g2Profiles);
+            await _g2Service.G2IndexBulkByProfileAzureSearchAsync(g2Profiles);
 
             // if the number of profiles retreived = the batch size, there may be more that needs to be indexed so
             // schedule this job to run again for another batch
@@ -2303,7 +2303,7 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
             _syslog.LogInformation($"ScheduledJobs.G2IndexPurge: Starting with a batch size of {G2IndexPurgeBatchSize}");
 
             // Get some G2s to purge 
-            G2SearchResultDto Docs = await _g2Service.GetTopG2sAsync(G2IndexPurgeBatchSize);
+            G2SearchResultDto Docs = await _g2Service.G2SearchGetTopAsync(G2IndexPurgeBatchSize);
 
             if (Docs.SubscriberCount == 0)
                 return true;

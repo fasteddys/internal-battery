@@ -145,7 +145,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("query")]
         public async Task<IActionResult> SearchG2(Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0)
         {
-            var rVal = await _g2Service.SearchG2Async(GetSubscriberGuid(), cityGuid, limit, offset, sort, order, keyword, radius);
+            var rVal = await _g2Service.G2SearchAsync(GetSubscriberGuid(), cityGuid, limit, offset, sort, order, keyword, radius);
             return Ok(rVal);
         }
 
@@ -161,10 +161,10 @@ namespace UpDiddyApi.Controllers.V2
         [HttpPost]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("index")]
-        public async Task<IActionResult> bootG2()
+        public async Task<IActionResult> addNewSubscribers()
         {
             // 
-            _g2Service.IndexAllUnindexedSubscribersAsync();
+            _g2Service.G2AddNewSubscribers();
             return StatusCode(202);
         }
 
@@ -179,7 +179,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> deleteG2()
         {
 
-            _g2Service.PurgeG2IndexAsync();
+            _g2Service.G2IndexPurgeAsync();
        
             return StatusCode(202);
         }
@@ -196,7 +196,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("subscriber/{subscriberGuid}")]
         public async Task<IActionResult> ReindexSubscriber(Guid subscriberGuid)
         {
-            _g2Service.IndexSubscriberAsync(subscriberGuid);
+            _g2Service.G2IndexBySubscriberAsync(subscriberGuid);
             return StatusCode(202);
         }
 
@@ -212,7 +212,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("subscriber/{subscriberGuid}/company/{companyGuid}")]
         public async Task<IActionResult> ReindexSubscriberForCompany(Guid subscriberGuid, Guid companyGuid)
         {
-            _g2Service.IndexSubscriberAsync(subscriberGuid, companyGuid);
+            _g2Service.G2IndexBySubscriberAsync(subscriberGuid, companyGuid);
             return StatusCode(202);
         }
 
@@ -223,7 +223,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> DeleteCompanyFromIndex(Guid companyGuid)
         {
 
-            _g2Service.DeleteCompanyAsync(companyGuid);
+            _g2Service.G2DeleteCompanyAsync(companyGuid);
             return StatusCode(202);
         }
 
@@ -238,7 +238,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("company/{companyGuid}")]
         public async Task<IActionResult> AddNewCompany(Guid companyGuid)
         {
-            _g2Service.AddCompanyAsync(companyGuid);
+            _g2Service.G2AddCompanyAsync(companyGuid);
             return StatusCode(202);
         }
 
@@ -248,7 +248,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> DeleteSubscriberFromIndex(Guid subscriberGuid)
         {
 
-            _g2Service.DeleteSubscriberAsync(subscriberGuid);
+            _g2Service.G2DeleteSubscriberAsync(subscriberGuid);
             return StatusCode(202);
         }
 
@@ -263,7 +263,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("subscriber/{subscriberGuid}")]
         public async Task<IActionResult> AddNewSubscriber(Guid subscriberGuid)
         {
-            _g2Service.AddSubscriberAsync(subscriberGuid);
+            _g2Service.G2AddSubscriberAsync(subscriberGuid);
             return StatusCode(202);
         }
 
