@@ -121,7 +121,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             var queryableRecruiters = _repositoryWrapper.RecruiterRepository.GetAllRecruiters();
 
-            var includeDependentsToRecruiters = queryableRecruiters.Include<Recruiter>("Subscriber").Include<Recruiter>("Company");
+            var includeDependentsToRecruiters = queryableRecruiters.Include<Recruiter>("Subscriber").Include<Recruiter>("Company")git;
             //get only non deleted records
             var recruiters = _mapper.Map<List<RecruiterDto>>(await includeDependentsToRecruiters.Where(c => c.IsDeleted == 0
                                                                             && c.SubscriberId != null && c.CompanyId != null && c.RecruiterGuid != Guid.Empty).ToListAsync());
