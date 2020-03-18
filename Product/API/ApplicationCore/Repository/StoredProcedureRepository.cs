@@ -10,6 +10,7 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.Reports;
+using UpDiddyLib.Domain.AzureSearchDocuments;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -1081,5 +1082,113 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Update_JobPostingSkillsByGuid] @JobPostingGuid, @SkillGuids", spParams);
         }
+
+
+        /// <summary>
+        /// Invoke stored procedure to create g2 records for the specified subscriber.  1 record per active company will be created.  If an existing record for the
+        /// subscriber/company combination already exists, it will NOT be duplicated.
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        public async Task<int> CreateSubscriberG2Profiles(Guid subscriberGuid)
+        {
+            var subscriber = new SqlParameter("@SubscriberGuid", SqlDbType.UniqueIdentifier);
+            subscriber.Value = subscriberGuid; 
+            subscriber.Direction = ParameterDirection.Input;
+        
+            var spParams = new object[] { subscriber };
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Create_SubscriberG2Profiles] @SubscriberGuid", spParams);
+            return rowsAffected;          
+            
+        }
+
+        /// <summary>
+        /// Invoke stored procedure to delete g2 records for the specified subscriber  
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        public async Task<int> DeleteSubscriberG2Profiles(Guid subscriberGuid)
+        {
+            var subscriber = new SqlParameter("@SubscriberGuid", SqlDbType.UniqueIdentifier);
+            subscriber.Value = subscriberGuid;
+            subscriber.Direction = ParameterDirection.Input;
+
+            var spParams = new object[] { subscriber };
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Delete_SubscriberG2Profiles] @SubscriberGuid", spParams);
+            return rowsAffected;
+
+        }
+ 
+        /// <summary>
+        /// Invoke stored procedure to create g2 records for the specified company.  1 record per active subscriber will be created.  If an existing record for the
+        /// subscriber/company combination already exists, it will NOT be duplicated.
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        public async Task<int> CreateCompanyG2Profiles(Guid companyGuid)
+        {
+            var subscriber = new SqlParameter("@CompanyGuid", SqlDbType.UniqueIdentifier);
+            subscriber.Value = companyGuid;
+            subscriber.Direction = ParameterDirection.Input;
+
+            var spParams = new object[] { subscriber };
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Create_CompanyG2Profiles] @CompanyGuid", spParams);
+            return rowsAffected;
+
+        }
+
+        /// <summary>
+        /// Invoke stored procedure to delete g2 records for the specified company.
+        /// </summary>
+        /// <param name="companyGuid"></param>
+        /// <returns></returns>
+        public async Task<int> DeleteCompanyG2Profiles(Guid companyGuid)
+        {
+            var company = new SqlParameter("@CompanyGuid", SqlDbType.UniqueIdentifier);
+            company.Value = companyGuid;
+            company.Direction = ParameterDirection.Input;
+
+            var spParams = new object[] { company };
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Delete_CompanyG2Profiles] @CompanyGuid", spParams);
+            return rowsAffected;
+
+        }
+
+
+        public async Task<bool> UpdateG2AzureIndexStatuses(List<Guid> profileGuids, string statusName, string statusInfo)
+        {
+
+            DataTable table = new DataTable();
+            table.Columns.Add("Guid", typeof(Guid));
+            if (profileGuids != null)
+            {
+                foreach (var profileGuid in profileGuids)
+                {
+                    table.Rows.Add(profileGuid);
+                }
+            }
+
+            var profileGuidsParam = new SqlParameter("@ProfileGuids", table);
+            profileGuidsParam.SqlDbType = SqlDbType.Structured;
+            profileGuidsParam.TypeName = "dbo.GuidList";
+
+            var spParams = new object[] {
+                profileGuidsParam
+                ,new SqlParameter("@StatusName", statusName)
+                ,new SqlParameter("@IndexStatusInfo", statusInfo)
+            };
+
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [g2].[System_Update_AzureG2Status] @ProfileGuids, @StatusName, @IndexStatusInfo", spParams);
+            return true;
+        }
+
+
+        public async Task<int>  BootG2Profiles()
+        {
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Create_G2Profiles]");
+            return rowsAffected;
+        }
+
+
     }
 }

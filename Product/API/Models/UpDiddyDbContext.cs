@@ -9,6 +9,9 @@ using UpDiddyLib.Dto.User;
 using UpDiddyLib.Domain.Models;
 using System.Collections.Generic;
 using UpDiddyLib.Domain.Models.Reports;
+using UpDiddyApi.Models.G2;
+using UpDiddyLib.Domain.AzureSearchDocuments;
+using UpDiddyLib.Domain.Models.G2;
 
 namespace UpDiddyApi.Models
 {
@@ -58,6 +61,9 @@ namespace UpDiddyApi.Models
     public class UpDiddyDbContext : DbContext
     {
         public UpDiddyDbContext(DbContextOptions<UpDiddyDbContext> options) : base(options) { }
+
+        #region DBEntities
+
         public DbSet<Topic> Topic { get; set; }
         public DbSet<Vendor> Vendor { get; set; }
         public DbSet<Subscriber> Subscriber { get; set; }
@@ -186,16 +192,28 @@ namespace UpDiddyApi.Models
         public DbSet<CourseReferral> CourseReferral { get; set; }
         public DbSet<NotificationGroup> NotificationGroup { get; set; }
         public DbSet<SendGridEvent> SendGridEvent { get; set; }
-        public DbSet<SubscriberSendGridEvent> SubscriberSendGridEvent { get; set; }    
+        public DbSet<SubscriberSendGridEvent> SubscriberSendGridEvent { get; set; }
         public DbSet<HiringSolvedResumeParse> HiringSolvedResumeParse { get; set; }
         public DbSet<SovrenParseStatistic> SovrenParseStatistics { get; set; }
+        public DbSet<Profile> Profile { get; set; }
+        public DbSet<ContactType> ContactType { get; set; }
+        public DbSet<ProfileComment> ProfileComment { get; set; }
+        public DbSet<ProfileDocument> ProfileDocument { get; set; }
+        public DbSet<ProfileSearchLocation> ProfileSearchLocation { get; set; }
+        public DbSet<ProfileSkill> ProfileSkill { get; set; }
+        public DbSet<ProfileTag> ProfileTag { get; set; }
+        public DbSet<Wishlist> Wishlist { get; set; }
+        public DbSet<ProfileWishlist> ProfileWishlist { get; set; }
+        public DbSet<AzureIndexStatus> AzureIndexStatus { get; set; }
         public DbSet<RecruiterStat> RecruiterStat { get; set; }
 
 
 
+        #endregion
 
         #region DBQueries
 
+        public DbQuery<v_ProfileAzureSearch> ProfileAzureSearch { get; set; }
         public DbQuery<CampaignStatistic> CampaignStatistic { get; set; }
         public DbQuery<CampaignDetail> CampaignDetail { get; set; }
         public DbQuery<v_SubscriberSources> SubscriberSources { get; set; }
@@ -221,7 +239,7 @@ namespace UpDiddyApi.Models
         public DbQuery<SearchTermDto> LocationSearchTerms { get; set; }
         public DbQuery<SubscriberNotesDto> SubscriberNoteQuery { get; set; }
         public DbQuery<SubscriberCourseDto> SubscriberCourses { get; set; }
-        public DbQuery<JobSitemapDto> JobSitemap {get;set;}
+        public DbQuery<JobSitemapDto> JobSitemap { get; set; }
         public DbQuery<UpDiddyLib.Dto.NotificationDto> LegacyNotifications { get; set; }
         public DbQuery<UpDiddyLib.Domain.Models.NotificationDto> Notifications { get; set; }
         public DbQuery<CompanyDto> Companies { get; set; }
@@ -247,8 +265,10 @@ namespace UpDiddyApi.Models
         public DbQuery<UpDiddyLib.Domain.Models.JobSiteScrapeStatisticDto> JobSiteScrapeStatistics { get; set; }
         public DbQuery<UsersDto> Users { get; set; }
         public DbQuery<UsersDetailDto> UsersDetail { get; set; }
-        public DbQuery<PartnerUsers> PartnerUsers { get; set; }    
+        public DbQuery<PartnerUsers> PartnerUsers { get; set; } 
         public DbQuery<SubscriberEmailStatisticDto> SubscriberEmailStatistics { get; set; }
+        public DbQuery<ProfileWishlistDto> ProfileWishlists { get; set; }
+        public DbQuery<WishlistDto> Wishlists { get; set; }
         public DbQuery<RecruiterStatDto> RecruiterStats { get; set; }
 
 
@@ -257,6 +277,50 @@ namespace UpDiddyApi.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<AzureIndexStatus>()
+                .HasIndex(ais => ais.Name)
+                .HasName("UIX_AzureIndexStatus_Name")
+                .IsUnique(true);
+
+            modelBuilder.Entity<ProfileTag>()
+                .HasIndex(pt => new { pt.TagId, pt.ProfileId })
+                .HasName("UIX_ProfileTag_Profile_Tag")
+                .IsUnique(true);
+
+            modelBuilder.Entity<ProfileWishlist>()
+                .HasIndex(pw => new { pw.ProfileId, pw.WishlistId })
+                .HasName("UIX_ProfileWishlist_Profile_Wishlist")
+                .IsUnique(true);
+
+            modelBuilder.Entity<Wishlist>()
+                .HasIndex(w => new { w.RecruiterId, w.Name })
+                .HasName("UIX_Wishlist_Recruiter_Name")
+                .IsUnique(true);
+
+            modelBuilder
+                .Query<v_ProfileAzureSearch>()
+                .ToView("v_ProfileAzureSearch", "G2");
+
+            modelBuilder.Entity<Profile>()
+                .HasIndex(p => new { p.SubscriberId, p.CompanyId })
+                .HasName("UIX_Profile_Subscriber_Company")
+                .IsUnique(true);
+
+            modelBuilder.Entity<ProfileSearchLocation>()
+                .HasIndex(psl => new { psl.ProfileId, psl.CityId, psl.PostalId })
+                .HasName("UIX_ProfileSearchLocation_Profile_City_Postal")
+                .IsUnique(true);
+
+            modelBuilder.Entity<ProfileSkill>()
+                .HasIndex(ps => new { ps.ProfileId, ps.SkillId })
+                .HasName("UIX_ProfileSkill_Profile_Skill")
+                .IsUnique(true);
+
+            modelBuilder.Entity<ContactType>()
+                .HasIndex(ct => ct.Name)
+                .HasName("UIX_ContactType_Name")
+                .IsUnique(true);
+
             modelBuilder.Query<JobSitemapDto>()
                 .Property(jsm => jsm.Url)
                 .HasConversion(
@@ -568,8 +632,8 @@ namespace UpDiddyApi.Models
                 .HasDefaultValue(true);
 
 
-            modelBuilder.Entity <NotificationGroup>()
-               .HasIndex(p => new {  p.NotificationGroupId, p.GroupId })
+            modelBuilder.Entity<NotificationGroup>()
+               .HasIndex(p => new { p.NotificationGroupId, p.GroupId })
                .HasName("UIX_NotificationGroup_Group")
                .IsUnique(true);
 

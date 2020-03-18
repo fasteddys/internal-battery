@@ -168,6 +168,7 @@ namespace UpDiddyLib.Helpers
             return GetEnvironment().Trim() == "production";
         }
 
+        // todo jab look at Brent comments on the PR
         #region Private Helper Classes
         private class TemplateData
         {

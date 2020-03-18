@@ -92,13 +92,15 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ICourseLevelRepository _courseLevelRepository;
         private ICourseReferralRepository _courseReferralRepository;
         private INotificationGroupRepository _notificationGroupRepository;
-
         private readonly IConfiguration _configuration;
-
         private ISendGridEventRepository _sendGridEventRepository;
         private IHiringSolvedResumeParseRepository _hiringSolvedResumeParseRepository;
         private ISovrenParseStatisticRepository _sovrenParseStatisticRepository;
-
+        private ICityRepository _cityRepository;
+        private IPostalRepository _postalRepository;
+        private IProfileRepository _profileRepository;
+        private IAzureIndexStatusRepository _azureIndexStatusRepository;
+        private IWishlistRepository _wishlistRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
         {
@@ -1127,7 +1129,66 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
+        public ICityRepository CityRepository
+        {
+            get
+            {
+                if (_cityRepository == null)
+                {
+                    _cityRepository = new CityRepository(_dbContext);
+                }
+                return _cityRepository;
+            }
+        }
 
+
+        public IPostalRepository PostalRepository
+        {
+            get
+            {
+                if (_postalRepository== null)
+                {
+                    _postalRepository = new PostalRepository(_dbContext);
+                }
+                return _postalRepository;
+            }
+        }
+
+        public IProfileRepository ProfileRepository
+        {
+            get
+            {
+                if (_profileRepository == null)
+                {
+                    _profileRepository = new ProfileRepository(_dbContext);
+                }
+                return _profileRepository;
+            }
+        }
+
+        public IAzureIndexStatusRepository AzureIndexStatusRepository
+        {
+            get
+            {
+                if (_azureIndexStatusRepository == null)
+                {
+                    _azureIndexStatusRepository = new AzureIndexStatusRepository(_dbContext);
+                }
+                return _azureIndexStatusRepository;
+            }
+        }
+
+        public IWishlistRepository WishlistRepository
+        {
+            get
+            {
+                if (_wishlistRepository == null)
+                {
+                    _wishlistRepository = new WishlistRepository(_dbContext);
+                }
+                return _wishlistRepository;
+            }
+        }
 
         public async Task SaveAsync()
         {
@@ -1141,6 +1202,5 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
             await this._dbContext.SaveChangesAsync();
         }
-
     }
 }
