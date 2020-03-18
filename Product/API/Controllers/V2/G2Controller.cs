@@ -31,6 +31,7 @@ namespace UpDiddyApi.Controllers.V2
         private readonly G2Interfaces.IWishlistService _wishlistService;
         private readonly G2Interfaces.ICommentService _commentService;
         private readonly ISkillService _skillService;
+        private readonly ITagService _tagService;
 
         public G2Controller(IServiceProvider services)
         {
@@ -41,6 +42,7 @@ namespace UpDiddyApi.Controllers.V2
             _wishlistService = services.GetService<G2Interfaces.IWishlistService>();
             _commentService = services.GetService<G2Interfaces.ICommentService>();
             _skillService = services.GetService<ISkillService>();
+            _tagService = services.GetService<ITagService>();
         }
  
         #region Recruiter Profile Operations
@@ -225,6 +227,33 @@ namespace UpDiddyApi.Controllers.V2
         #endregion
 
         #region Recruiter Tag Operations
+
+        [HttpPost]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("tags/profiles/{profileGuid:guid}")]
+        public async Task<IActionResult> AddTagsToProfile([FromBody] List<Guid> tagGuids, Guid profileGuid)
+        {
+            List<Guid> profileTagGuids = await _tagService.AddTagsToProfileForRecruiter(GetSubscriberGuid(), tagGuids, profileGuid);
+            return StatusCode(201, profileTagGuids);
+        }
+
+        [HttpDelete]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("tags/profiles")]
+        public async Task<IActionResult> DeleteTagsFromProfile([FromBody] List<Guid> profileTagGuids)
+        {
+            await _tagService.DeleteTagsFromProfileForRecruiter(GetSubscriberGuid(), profileTagGuids);
+            return StatusCode(204);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("tags/profiles/{profileGuid:guid}")]
+        public async Task<IActionResult> GetTags(Guid profileGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        {
+            var tags = await _tagService.GetProfileTagsForRecruiter(profileGuid, GetSubscriberGuid(), limit, offset, sort, order);
+            return Ok(tags);
+        }
 
         #endregion
 

@@ -817,6 +817,32 @@ namespace UpDiddyApi.Helpers
                 })
                 .ForMember(dest => dest.Comments, opt => opt.MapFrom(src => src.ToList()))
                 .ReverseMap();
+
+            CreateMap<Tag, UpDiddyLib.Domain.Models.TagDto>()
+                .ForMember(t => t.TotalRecords, opt => opt.Ignore())
+                .ReverseMap();
+
+            CreateMap<List<UpDiddyLib.Domain.Models.TagDto>, TagListDto>()
+                  .AfterMap((src, dest) =>
+                  {
+                      if (src != null && src.Count() > 0)
+                          dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                      else
+                          dest.TotalRecords = 0;
+                  })
+                .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.ToList()))
+                .ReverseMap();
+
+            CreateMap<List<ProfileTagDto>, ProfileTagListDto>()
+                  .AfterMap((src, dest) =>
+                  {
+                      if (src != null && src.Count() > 0)
+                          dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                      else
+                          dest.TotalRecords = 0;
+                  })
+                .ForMember(dest => dest.ProfileTags, opt => opt.MapFrom(src => src.ToList()))
+                .ReverseMap();
         }
     }
 }

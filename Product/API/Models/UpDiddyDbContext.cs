@@ -269,6 +269,8 @@ namespace UpDiddyApi.Models
         public DbQuery<WishlistDto> Wishlists { get; set; }
         public DbQuery<RecruiterStatDto> RecruiterStats { get; set; }
         public DbQuery<CommentDto> Comments { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.TagDto> Tags { get; set; }
+        public DbQuery<ProfileTagDto> ProfileTags { get; set; }
 
         #endregion
 
