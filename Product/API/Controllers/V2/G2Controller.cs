@@ -164,7 +164,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> bootG2()
         {
             // 
-            _g2Service.CreateG2IndexAsync();
+            _g2Service.IndexAllUnindexedSubscribersAsync();
             return StatusCode(202);
         }
 

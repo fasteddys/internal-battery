@@ -604,7 +604,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         /// Should only be called once when the product is launched.
         /// </summary>
         /// <returns></returns>
-        public async Task<bool> CreateG2IndexAsync()
+        public async Task<bool> IndexAllUnindexedSubscribersAsync()
         {
             int numNewProfiles  = await _repository.StoredProcedureRepository.BootG2Profiles();
             // Kick off job to index any unindexed g2 profiles 
@@ -624,6 +624,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
 
         #endregion
 
+ 
         #region private helper functions 
  
         private async Task<bool> UpdateG2Status( AzureIndexResult results, string statusName, string info)
