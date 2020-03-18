@@ -37,7 +37,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<Recruiter> GetRecruiterBySubscriberId(int subscriberId)
         {
-            var queryableRecruiter =  GetAll();
+            var queryableRecruiter = GetAll();
             var recruiterResult = await queryableRecruiter
                                 .Where(jr => jr.IsDeleted == 0 && jr.SubscriberId == subscriberId)
                                 .ToListAsync();
@@ -60,16 +60,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             var queryableRecruiter = GetAll();
             var recruiterResult = await queryableRecruiter
-                                .Include( c => c.Company)
-                                .Where(jr => jr.IsDeleted == 0 && jr.Subscriber.SubscriberGuid == subscriberGuid)
+                                .Include(rc => rc.RecruiterCompanies).ThenInclude(c => c.Company)
+                                .Where(r => r.IsDeleted == 0 && r.Subscriber.SubscriberGuid == subscriberGuid)
                                 .ToListAsync();
 
             return recruiterResult.Count == 0 ? null : recruiterResult[0];
         }
-
-
-        
-
 
         public async Task UpdateRecruiter(Recruiter recruiter)
         {
