@@ -101,6 +101,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IProfileRepository _profileRepository;
         private IAzureIndexStatusRepository _azureIndexStatusRepository;
         private IWishlistRepository _wishlistRepository;
+        private ICommentRepository _commentRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
         {
@@ -1187,6 +1188,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _wishlistRepository = new WishlistRepository(_dbContext);
                 }
                 return _wishlistRepository;
+            }
+        }
+
+        public ICommentRepository CommentRepository
+        {
+            get
+            {
+                if (_commentRepository == null)
+                {
+                    _commentRepository = new CommentRepository(_dbContext);
+                }
+                return _commentRepository;
             }
         }
 

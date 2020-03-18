@@ -207,8 +207,6 @@ namespace UpDiddyApi.Models
         public DbSet<AzureIndexStatus> AzureIndexStatus { get; set; }
         public DbSet<RecruiterStat> RecruiterStat { get; set; }
 
-
-
         #endregion
 
         #region DBQueries
@@ -270,13 +268,19 @@ namespace UpDiddyApi.Models
         public DbQuery<ProfileWishlistDto> ProfileWishlists { get; set; }
         public DbQuery<WishlistDto> Wishlists { get; set; }
         public DbQuery<RecruiterStatDto> RecruiterStats { get; set; }
-
-
+        public DbQuery<CommentDto> Comments { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.TagDto> Tags { get; set; }
+        public DbQuery<ProfileTagDto> ProfileTags { get; set; }
 
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<RecruiterCompany>()
+                .HasIndex(rc => new { rc.CompanyId, rc.RecruiterId })
+                .HasName("UIX_RecruiterCompany_Recruiter_Company")
+                .IsUnique(true);
+
             modelBuilder.Entity<AzureIndexStatus>()
                 .HasIndex(ais => ais.Name)
                 .HasName("UIX_AzureIndexStatus_Name")

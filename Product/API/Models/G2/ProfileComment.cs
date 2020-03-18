@@ -15,6 +15,9 @@ namespace UpDiddyApi.Models.G2
         public Guid ProfileCommentGuid { get; set; }
         public int ProfileId { get; set; }
         public virtual Profile Profile { get; set; }
+        public int RecruiterId { get; set; }
+        public virtual Recruiter Recruiter { get; set; }
+        [Required]
         [StringLength(500)]
         public string Value { get; set; }
         [DefaultValue(false)]
