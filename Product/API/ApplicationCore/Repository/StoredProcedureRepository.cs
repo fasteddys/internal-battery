@@ -1154,7 +1154,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         }
 
-        // todo jab add migration for updated SPROC 
         public async Task<bool> UpdateG2AzureIndexStatuses(List<AzureIndexResultStatus> indexStatuses, string statusName, string statusInfo)
         {
  
