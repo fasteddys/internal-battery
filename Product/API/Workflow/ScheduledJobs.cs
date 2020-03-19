@@ -60,8 +60,7 @@ namespace UpDiddyApi.Workflow
         private readonly IG2Service _g2Service;
  
 
-
-        // todo jab verify all instrumentation has correct proc name 
+ 
 
         public ScheduledJobs(
             UpDiddyDbContext context,
