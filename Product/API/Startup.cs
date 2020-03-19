@@ -44,6 +44,7 @@ using Microsoft.AspNetCore.Mvc.Versioning;
 using UpDiddyApi.ApplicationCore.Services.AzureSearch;
 using G2Services = UpDiddyApi.ApplicationCore.Services.G2;
 using G2Interfaces = UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
+using UpDiddyApi.ApplicationCore.Services.G2;
 
 namespace UpDiddyApi
 {
@@ -285,7 +286,7 @@ namespace UpDiddyApi
 
             services.AddTransient<IB2CGraph, B2CGraphClient>();
             services.AddHttpClient<IB2CGraph, B2CGraphClient>();
-            services.AddScoped<IProfileService, ProfileService>();
+            services.AddScoped<IProfileService, ApplicationCore.Services.ProfileService>();
             services.AddScoped<ISubscriberService, SubscriberService>();
             services.AddScoped<ISubscriberEducationalHistoryService, SubscriberEducationalHistoryService>();
             services.AddScoped<ISubscriberWorkHistoryService, SubscriberWorkHistoryService>();
