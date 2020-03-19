@@ -56,7 +56,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         #region admin functions
 
-        Task<bool> CreateG2IndexAsync();
+        Task<bool> IndexAllUnindexedSubscribersAsync();
         Task<bool> PurgeG2IndexAsync();
 
 
