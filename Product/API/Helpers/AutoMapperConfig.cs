@@ -696,7 +696,6 @@ namespace UpDiddyApi.Helpers
                 .ForAllOtherMembers(opt => opt.Ignore());
 
             CreateMap<RecruiterSDOC, Recruiter>()
-                .ForMember(r => r.Subscriber.SubscriberGuid, opt => opt.MapFrom(src => src.SubscriberGuid))
                 .ForMember(r => r.FirstName, opt => opt.MapFrom(src => src.FirstName))
                 .ForMember(r => r.LastName, opt => opt.MapFrom(src => src.LastName))
                 .ForMember(r => r.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
@@ -705,6 +704,8 @@ namespace UpDiddyApi.Helpers
                 .ReverseMap()
                 .AfterMap((src, dest) =>
                 {
+                    dest.SubscriberGuid = src.Subscriber.SubscriberGuid.Value;
+
                     if (src.RecruiterCompanies.Any())
                     {
                         dest.CompanyGuid = src.RecruiterCompanies.First().Company.CompanyGuid;

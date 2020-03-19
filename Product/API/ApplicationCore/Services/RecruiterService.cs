@@ -50,8 +50,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(recruiterDto.SubscriberGuid);
 
                 //check if recruiter exist
-                var queryableRecruiter = _repositoryWrapper.RecruiterRepository.GetAllRecruiters();
-                var existingRecruiter = await queryableRecruiter.Where(r => r.SubscriberId == subscriber.SubscriberId).FirstOrDefaultAsync();
+                var internalRecruiters = await _repositoryWrapper.RecruiterRepository.GetAllInternalRecruiters();
+                var existingRecruiter = internalRecruiters.Where(r => r.Subscriber.SubscriberId == subscriber.SubscriberId).FirstOrDefault();
 
                 if (existingRecruiter != null)
                 {
@@ -119,17 +119,10 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<List<RecruiterDto>> GetRecruitersAsync()
         {
-            var queryableRecruiters = _repositoryWrapper.RecruiterRepository.GetAllRecruiters();
-
-            var includeDependentsToRecruiters = queryableRecruiters.Include<Recruiter>("Subscriber").Include<Recruiter>("Company")git;
-            //get only non deleted records
-            var recruiters = _mapper.Map<List<RecruiterDto>>(await includeDependentsToRecruiters.Where(c => c.IsDeleted == 0
-                                                                            && c.SubscriberId != null && c.CompanyId != null && c.RecruiterGuid != Guid.Empty).ToListAsync());
-
-)
-
-            await CheckRecruiterPermissionAsync(recruiters);
-            return recruiters;
+            var recruiters = _repositoryWrapper.RecruiterRepository.GetAllInternalRecruiters();
+            var recruiterDtos = _mapper.Map<List<RecruiterDto>>(recruiters);
+            await CheckRecruiterPermissionAsync(recruiterDtos);
+            return recruiterDtos;
         }
 
         public async Task EditRecruiterAsync(RecruiterDto recruiterDto)
@@ -218,8 +211,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new FailedValidationException($"{recruiterDto.CompanyGuid.Value} is not a valid company");
 
             //check if recruiter exist
-            var queryableRecruiter = _repositoryWrapper.RecruiterRepository.GetAllRecruiters();
-            var existingRecruiter = await queryableRecruiter.Where(r => r.SubscriberId == subscriber.SubscriberId).FirstOrDefaultAsync();
+            var internalRecruiters = await _repositoryWrapper.RecruiterRepository.GetAllInternalRecruiters();
+            var existingRecruiter = internalRecruiters.Where(r => r.Subscriber.SubscriberId == subscriber.SubscriberId).FirstOrDefault();
             Guid recruiterGuid;
             if (existingRecruiter != null)
             {
@@ -256,19 +249,24 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     Recruiter = newRecruiter,
                     CompanyId = company.CompanyId,
-                    RecruiterCompanyGuid = Guid.NewGuid()
+                    RecruiterCompanyGuid = Guid.NewGuid(),
+                    CreateDate = DateTime.UtcNow,
+                    CreateGuid = Guid.Empty
+
                 };
                 BaseModelFactory.SetDefaultsForAddNew(newRecruiterCompany);
                 newRecruiter.RecruiterCompanies = new List<RecruiterCompany>();
                 newRecruiter.RecruiterCompanies.Add(newRecruiterCompany);
-                // add recruiter in azure
-                _azureSearchService.AddOrUpdateRecruiter(newRecruiter);
 
+                await _repositoryWrapper.RecruiterRepository.Create(newRecruiter);
+                await _repositoryWrapper.RecruiterRepository.SaveAsync();
+                // add recruiter in azure
+                bool isIndexOperationSuccessful = await _azureSearchService.AddOrUpdateRecruiter(newRecruiter);
             }
             //Assign permission to recruiter
             if (recruiterDto.IsInAuth0RecruiterGroup != null && recruiterDto.IsInAuth0RecruiterGroup.Value == true)
                 await AssignRecruiterPermissionsAsync(recruiterDto.SubscriberGuid.Value);
-
+            
             return recruiterGuid;
         }
         
@@ -296,9 +294,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (company == null)
                 throw new FailedValidationException($"{recruiterDto.CompanyGuid.Value} is not a valid company");
 
-            if (company.CompanyId != recruiter.CompanyId)
-                recruiter.CompanyId = company.CompanyId;
-
+            if (recruiter.RecruiterCompanies.Any() && company.CompanyId != recruiter.RecruiterCompanies.First().CompanyId)
+            {
+                recruiter.RecruiterCompanies.First().CompanyId = company.CompanyId;
+                recruiter.RecruiterCompanies.First().ModifyDate = DateTime.UtcNow;
+                recruiter.RecruiterCompanies.First().ModifyGuid = Guid.Empty;
+            }
             recruiter.FirstName = recruiterDto.FirstName;
             recruiter.LastName = recruiterDto.LastName;
             recruiter.PhoneNumber = recruiterDto.PhoneNumber;
@@ -306,9 +307,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             recruiter.Email = recruiterDto.Email;
 
             await _repositoryWrapper.RecruiterRepository.UpdateRecruiter(recruiter);
-
+            await _repositoryWrapper.RecruiterRepository.SaveAsync();
             // Update recruiter in azure
-            _azureSearchService.AddOrUpdateRecruiter(recruiter);
+            bool isIndexOperationSuccessful = await _azureSearchService.AddOrUpdateRecruiter(recruiter);
 
             if (recruiterDto.IsInAuth0RecruiterGroup != null)
             {
@@ -364,7 +365,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             var recruiter = _repositoryWrapper.RecruiterRepository.GetAll()
                 .Include(s => s.Subscriber)
-                .Include(c => c.Company)
+                .Include(c => c.RecruiterCompanies).ThenInclude(rc => rc.Company)
                 .Where(r => r.IsDeleted == 0 && r.RecruiterGuid == RecruiterGuid)
                 .FirstOrDefault();
 
@@ -382,7 +383,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             var recruiter = _repositoryWrapper.RecruiterRepository.GetAll()
                 .Include(s => s.Subscriber)
-                .Include(c => c.Company)
+                .Include(c => c.RecruiterCompanies).ThenInclude(rc => rc.Company)
                 .Where(r => r.IsDeleted == 0 && r.Subscriber.SubscriberGuid == SubscriberGuid)
                 .FirstOrDefault();
 

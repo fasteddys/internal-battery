@@ -46,7 +46,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
                         .Include(el => el.ExperienceLevel)
                         .Include(s => s.State)
                     join c in _dbContext.Company on p.CompanyId equals c.CompanyId
-                    join r in _dbContext.Recruiter on c.CompanyId equals r.CompanyId
+                    join rc in _dbContext.RecruiterCompany on c.CompanyId equals rc.CompanyId
+                    join r in _dbContext.Recruiter on rc.RecruiterId equals r.RecruiterId
                     join s in _dbContext.Subscriber on r.SubscriberId equals s.SubscriberId
                     where p.ProfileGuid == profileGuid && s.SubscriberGuid == subscriberGuid
                     select p)
