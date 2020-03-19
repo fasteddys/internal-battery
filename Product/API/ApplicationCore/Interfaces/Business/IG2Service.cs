@@ -23,6 +23,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<bool> IndexSubscriberAsync(Guid subscriberGuid);
         Task<bool> G2IndexDeleteAsync(G2SDOC g2);
         Task<bool> G2IndexDeleteBulkAsync(List<G2SDOC> g2List);
+        Task<bool> G2IndexPurgeBulkAsync(List<G2SDOC> g2List);
         Task<bool> IndexSubscriberAsync(Guid subscriberGuid, Guid companyGuid);
 
         Task<bool> RemoveSubscriberFromIndexAsync(Guid subscriberGuid);

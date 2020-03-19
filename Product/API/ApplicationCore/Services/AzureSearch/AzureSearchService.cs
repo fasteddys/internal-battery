@@ -62,25 +62,25 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
 
         #region G2
  
-        public async Task<string> AddOrUpdateG2(G2SDOC g2)
+        public async Task<AzureIndexResult> AddOrUpdateG2(G2SDOC g2)
         {
             return await SendG2Request(g2, "upload");
    
         }
 
-        public async Task<string> DeleteG2(G2SDOC g2)
+        public async Task<AzureIndexResult> DeleteG2(G2SDOC g2)
         {
             return await SendG2Request(g2, "delete");
  
         }
 
-        public async Task<string > DeleteG2Bulk(List<G2SDOC> g2s)
+        public async Task<AzureIndexResult> DeleteG2Bulk(List<G2SDOC> g2s)
         {
             return await SendG2RequestBulk(g2s, "delete");
         }
 
 
-        public async Task<string > AddOrUpdateG2Bulk(List<G2SDOC> g2s)
+        public async Task<AzureIndexResult> AddOrUpdateG2Bulk(List<G2SDOC> g2s)
         {
             return await SendG2RequestBulk(g2s, "upload");        
         }
@@ -120,7 +120,7 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
         #region helper functions 
 
 
-        private async Task<string> SendG2RequestBulk(List<G2SDOC> g2s, string cmd)
+        private async Task<AzureIndexResult> SendG2RequestBulk(List<G2SDOC> g2s, string cmd)
         {
             string index = _configuration["AzureSearch:G2IndexName"];
             SDOCRequest<G2SDOC> docs = new SDOCRequest<G2SDOC>();
@@ -131,30 +131,21 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
                 g2.SearchAction = cmd;
                 docs.value.Add(g2);
             }                       
-
-            string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffZ" });
-            string statusMsg = string.Empty;
-            StrongBox<string> box = new StrongBox<string>(statusMsg);
-            // use a strongbox to get the statuse msg box 
-            bool rval = await SendSearchIndexRequest(index, cmd, Json,box);
- 
-        
-            return box.Value;
+            string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffZ" });            
+            AzureIndexResult rval = await SendSearchIndexRequest(index, cmd, Json);
+            return rval;
         }
 
-        private async Task<string> SendG2Request(G2SDOC g2, string cmd)
+        private async Task<AzureIndexResult> SendG2Request(G2SDOC g2, string cmd)
         {            
             string index = _configuration["AzureSearch:G2IndexName"];
             SDOCRequest<G2SDOC> docs = new SDOCRequest<G2SDOC>();                            
             g2.SearchAction = cmd;
             docs.value.Add(g2);
  
-            string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffZ" });
-            string statusMsg = string.Empty;
-            // use a strongbox to get the statuse msg box 
-            StrongBox<string> box = new StrongBox<string>(statusMsg);
-            bool rval = await SendSearchIndexRequest(index, cmd, Json,box);  
-            return box.Value;            
+            string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffZ" }); 
+            AzureIndexResult rval = await SendSearchIndexRequest(index, cmd, Json);
+            return rval;           
         }
 
         private async Task<bool> SendRecruiterRequest(Recruiter recruiter, string cmd)
@@ -166,11 +157,8 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
                 RecruiterSDOC doc = _mapper.Map<RecruiterSDOC>(recruiter);
                 doc.SearchAction = cmd;
                 docs.value.Add(doc);
-                string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs);
-                string statusMsg = string.Empty;
-                // use a strongbox to get the statuse msg box 
-                StrongBox<string> box = new StrongBox<string>(statusMsg);
-                SendSearchIndexRequest(index, cmd, Json, box);
+                string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs);         
+                SendSearchIndexRequest(index, cmd, Json);
             });
             return true;
         }
@@ -185,28 +173,22 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
                 doc.SearchAction = cmd;
                 docs.value.Add(doc);
                 string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs);
-                string statusMsg = string.Empty;
-                // use a strongbox to get the statuse msg box 
-                StrongBox<string> box = new StrongBox<string>(statusMsg);
-                SendSearchIndexRequest(index, cmd, Json, box);         
+                SendSearchIndexRequest(index, cmd, Json);         
             });
             return true;
         }
         
-        private async Task<bool> SendSearchIndexRequest(string indexName, string cmd, string jsonDocs, StrongBox<string> statusMsg )
+        private async Task<AzureIndexResult> SendSearchIndexRequest(string indexName, string cmd, string jsonDocs )
         {
             string ResponseJson = string.Empty;
+            AzureIndexResult rVal = new AzureIndexResult();
             try
             {
                 string SearchBaseUrl = _configuration["AzureSearch:SearchServiceBaseUrl"];
                 string SearchIndexVersion = _configuration["AzureSearch:SearchServiceAdminVersion"];
                 string SearchApiKey = _configuration["AzureSearch:SearchServiceAdminApiKey"];
-
                 string Url = $"{SearchBaseUrl}/indexes/{indexName}/docs/index?api-version={SearchIndexVersion}";
-
                 _logger.LogInformation($"AzureSearchService:SendSearchRequest: url = {Url}");
-
-
 
                 HttpClient client = _httpClientFactory.CreateClient(Constants.HttpPostClientName);
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, Url)
@@ -222,35 +204,34 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
                 _logger.LogInformation($"AzureSearchService:SendSearchRequest: json = {jsonDocs}");
                 _logger.LogInformation($"AzureSearchService:SendSearchRequest: response = {ResponseJson}");
 
+                // capture statuscode for return value 
+                rVal.StatusCode = SearchResponse.StatusCode;
                 // return boolean for overall status and return status msg in the strong box 
                 if (SearchResponse.StatusCode == System.Net.HttpStatusCode.OK)
-                {                    
+                {         
+                    
+                    rVal.DOCResults = Newtonsoft.Json.JsonConvert.DeserializeObject<AzureIndexDOCResults>(ResponseJson);
                     if (cmd != "delete")
-                        statusMsg.Value = $"Indexed On {Utils.ISO8601DateString(DateTime.UtcNow)}";
+                       rVal.StatusMsg = $"Indexed On {Utils.ISO8601DateString(DateTime.UtcNow)}";
                     else
-                        statusMsg.Value = $"Deleted On {Utils.ISO8601DateString(DateTime.UtcNow)}"; 
-                    return true;
-
+                        rVal.StatusMsg = $"Deleted On {Utils.ISO8601DateString(DateTime.UtcNow)}"; 
+                    return rVal;
                 }                    
                 else
                 {
-                    statusMsg.Value = $"StatusCode = {SearchResponse.StatusCode} ResponseJson = {ResponseJson} "; 
-                    return false;
-                }
-                    
+                    rVal.StatusMsg = $"StatusCode = {SearchResponse.StatusCode} ResponseJson = {ResponseJson} "; 
+                    return rVal;
+                }                    
             }
             catch ( Exception ex )
             {
-                _logger.LogError($"AzureSearchService:SendSearchRequest: Error: {ex.Message}  response = {ResponseJson}");
-                return false;
-
-            }
-            
-          
+                string StatusMsg = $"AzureSearchService:SendSearchRequest: Error: {ex.Message}  response = {ResponseJson}";
+                _logger.LogError(StatusMsg);
+                rVal.StatusMsg = StatusMsg;
+                return rVal;
+            }                     
         }
-
-
-
+        
         #endregion
 
 

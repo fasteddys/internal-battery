@@ -17,10 +17,10 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
         Task<bool> AddOrUpdateRecruiter(Recruiter recruiter);
         Task<bool> DeleteRecruiter(Recruiter recruiter);
 
-        Task<string> AddOrUpdateG2(G2SDOC g2);
-        Task<string> DeleteG2(G2SDOC g2);
-        Task<string> DeleteG2Bulk(List<G2SDOC> g2);
-        Task<string> AddOrUpdateG2Bulk(List<G2SDOC> g2);
+        Task<AzureIndexResult> AddOrUpdateG2(G2SDOC g2);
+        Task<AzureIndexResult> DeleteG2(G2SDOC g2);
+        Task<AzureIndexResult> DeleteG2Bulk(List<G2SDOC> g2);
+        Task<AzureIndexResult> AddOrUpdateG2Bulk(List<G2SDOC> g2);
 
 
     }
