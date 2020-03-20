@@ -40,7 +40,7 @@ namespace UpDiddyLib.Domain.AzureSearchDocuments
 
         public string ExperienceLevel { get; set; }
 
-        public string EmploymentType { get; set; }
+        public string EmploymentTypes { get; set; }
 
         public string Title { get; set; }
 

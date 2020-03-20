@@ -44,7 +44,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
                         .Include(c => c.City)
                         .Include(et => et.ProfileEmploymentTypes).ThenInclude(pet => pet.EmploymentType)
                         .Include(el => el.ExperienceLevel)
-                        .Include(s => s.State)
+                        .Include(s => s.Subscriber)
+                        .Include(s => s.State).ThenInclude(c => c.Country)
+                        .Include(p => p.Postal)
                     join c in _dbContext.Company on p.CompanyId equals c.CompanyId
                     join rc in _dbContext.RecruiterCompany on c.CompanyId equals rc.CompanyId
                     join r in _dbContext.Recruiter on rc.RecruiterId equals r.RecruiterId
@@ -62,8 +64,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var stateGuid = new SqlParameter { ParameterName = "@StateGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = (object)profileDto.StateGuid ?? DBNull.Value };
             var postalGuid = new SqlParameter { ParameterName = "@PostalGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = (object)profileDto.PostalGuid ?? DBNull.Value };
             var experienceLevelGuid = new SqlParameter { ParameterName = "@ExperienceLevelGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = (object)profileDto.ExperienceLevelGuid ?? DBNull.Value };
-            // todo: come up with replacement for this...
-            //            var employmentTypeGuid = new SqlParameter { ParameterName = "@EmploymentTypeGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = (object)profileDto.EmploymentTypeGuid ?? DBNull.Value };
+            DataTable employmentTypeTable = new DataTable();
+            employmentTypeTable.Columns.Add("Guid", typeof(Guid));
+            if (profileDto.EmploymentTypeGuids != null && profileDto.EmploymentTypeGuids.Count > 0)
+            {
+                foreach (var employmentTypeGuid in profileDto.EmploymentTypeGuids)
+                {
+                    employmentTypeTable.Rows.Add(employmentTypeGuid);
+                }
+            }
+            var employmentTypeGuids = new SqlParameter("@EmploymentTypeGuids", employmentTypeTable);
+            employmentTypeGuids.SqlDbType = SqlDbType.Structured;
+            employmentTypeGuids.TypeName = "dbo.GuidList";
             var contactTypeGuid = new SqlParameter { ParameterName = "@ContactTypeGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = (object)profileDto.ContactTypeGuid ?? DBNull.Value };
             var firstName = new SqlParameter { ParameterName = "@FirstName", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)profileDto.FirstName ?? DBNull.Value };
             var lastName = new SqlParameter { ParameterName = "@LastName", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)profileDto.LastName ?? DBNull.Value };
@@ -81,9 +93,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var preferences = new SqlParameter { ParameterName = "@Preferences", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)profileDto.Preferences ?? DBNull.Value };
             var profileGuid = new SqlParameter { ParameterName = "@ProfileGuid", SqlDbType = SqlDbType.UniqueIdentifier, Size = -1, Direction = ParameterDirection.Output };
             var validationErrors = new SqlParameter { ParameterName = "@ValidationErrors", SqlDbType = SqlDbType.NVarChar, Size = -1, Direction = ParameterDirection.Output };
-            var spParams = new object[] { companyGuid, subscriberGuid, cityGuid, stateGuid, postalGuid, experienceLevelGuid, contactTypeGuid, firstName, lastName, email, phoneNumber, streetAddress, title, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono, currentRate, desiredRate, goals, preferences, profileGuid, validationErrors };
+            var spParams = new object[] { companyGuid, subscriberGuid, cityGuid, stateGuid, postalGuid, experienceLevelGuid, contactTypeGuid, firstName, lastName, email, phoneNumber, streetAddress, title, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono, currentRate, desiredRate, goals, preferences, employmentTypeGuids, profileGuid, validationErrors };
 
-            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Create_Profile] @CompanyGuid, @SubscriberGuid, @CityGuid, @StateGuid, @PostalGuid, @ExperienceLevelGuid, @ContactTypeGuid, @FirstName, @LastName, @Email, @PhoneNumber, @StreetAddress, @Title, @IsWillingToTravel, @IsActiveJobSeeker, @IsCurrentlyEmployed, @IsWillingToWorkProBono, @CurrentRate, @DesiredRate, @Goals, @Preferences, @ProfileGuid OUTPUT, @ValidationErrors OUTPUT", spParams);
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Create_Profile] @CompanyGuid, @SubscriberGuid, @CityGuid, @StateGuid, @PostalGuid, @ExperienceLevelGuid, @ContactTypeGuid, @FirstName, @LastName, @Email, @PhoneNumber, @StreetAddress, @Title, @IsWillingToTravel, @IsActiveJobSeeker, @IsCurrentlyEmployed, @IsWillingToWorkProBono, @CurrentRate, @DesiredRate, @Goals, @Preferences, @EmploymentTypeGuids, @ProfileGuid OUTPUT, @ValidationErrors OUTPUT", spParams);
 
             if (!string.IsNullOrWhiteSpace(validationErrors.Value.ToString()))
                 throw new FailedValidationException(validationErrors.Value.ToString());
@@ -101,8 +113,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var stateGuid = new SqlParameter { ParameterName = "@StateGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = (object)profileDto.StateGuid ?? DBNull.Value };
             var postalGuid = new SqlParameter { ParameterName = "@PostalGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = (object)profileDto.PostalGuid ?? DBNull.Value };
             var experienceLevelGuid = new SqlParameter { ParameterName = "@ExperienceLevelGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = (object)profileDto.ExperienceLevelGuid ?? DBNull.Value };
-            // todo: come up with replacement for this...
-            //var employmentTypeGuid = new SqlParameter { ParameterName = "@EmploymentTypeGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = (object)profileDto.EmploymentTypeGuid ?? DBNull.Value };
+            DataTable employmentTypeTable = new DataTable();
+            employmentTypeTable.Columns.Add("Guid", typeof(Guid));
+            if (profileDto.EmploymentTypeGuids != null && profileDto.EmploymentTypeGuids.Count > 0)
+            {
+                foreach (var employmentTypeGuid in profileDto.EmploymentTypeGuids)
+                {
+                    employmentTypeTable.Rows.Add(employmentTypeGuid);
+                }
+            }
+            var employmentTypeGuids = new SqlParameter("@EmploymentTypeGuids", employmentTypeTable);
+            employmentTypeGuids.SqlDbType = SqlDbType.Structured;
+            employmentTypeGuids.TypeName = "dbo.GuidList";
             var contactTypeGuid = new SqlParameter { ParameterName = "@ContactTypeGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = (object)profileDto.ContactTypeGuid ?? DBNull.Value };
             var firstName = new SqlParameter { ParameterName = "@FirstName", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)profileDto.FirstName ?? DBNull.Value };
             var lastName = new SqlParameter { ParameterName = "@LastName", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)profileDto.LastName ?? DBNull.Value };
@@ -119,9 +141,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var goals = new SqlParameter { ParameterName = "@Goals", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)profileDto.Goals ?? DBNull.Value };
             var preferences = new SqlParameter { ParameterName = "@Preferences", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)profileDto.Preferences ?? DBNull.Value };
             var validationErrors = new SqlParameter { ParameterName = "@ValidationErrors", SqlDbType = SqlDbType.NVarChar, Size = -1, Direction = ParameterDirection.Output };
-            var spParams = new object[] { recruiterSubscriberGuid, profileGuid, companyGuid, subscriberGuid, cityGuid, stateGuid, postalGuid, experienceLevelGuid, contactTypeGuid, firstName, lastName, email, phoneNumber, streetAddress, title, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono, currentRate, desiredRate, goals, preferences, validationErrors };
+            var spParams = new object[] { recruiterSubscriberGuid, profileGuid, companyGuid, subscriberGuid, cityGuid, stateGuid, postalGuid, experienceLevelGuid, contactTypeGuid, firstName, lastName, email, phoneNumber, streetAddress, title, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono, currentRate, desiredRate, goals, preferences, employmentTypeGuids, validationErrors };
 
-            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Update_Profile] @RecruiterSubscriberGuid, @ProfileGuid, @CompanyGuid, @SubscriberGuid, @CityGuid, @StateGuid, @PostalGuid, @ExperienceLevelGuid, @ContactTypeGuid, @FirstName, @LastName, @Email, @PhoneNumber, @StreetAddress, @Title, @IsWillingToTravel, @IsActiveJobSeeker, @IsCurrentlyEmployed, @IsWillingToWorkProBono, @CurrentRate, @DesiredRate, @Goals, @Preferences, @ValidationErrors OUTPUT", spParams);
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Update_Profile] @RecruiterSubscriberGuid, @ProfileGuid, @CompanyGuid, @SubscriberGuid, @CityGuid, @StateGuid, @PostalGuid, @ExperienceLevelGuid, @ContactTypeGuid, @FirstName, @LastName, @Email, @PhoneNumber, @StreetAddress, @Title, @IsWillingToTravel, @IsActiveJobSeeker, @IsCurrentlyEmployed, @IsWillingToWorkProBono, @CurrentRate, @DesiredRate, @Goals, @Preferences, @EmploymentTypeGuids, @ValidationErrors OUTPUT", spParams);
 
             if (!string.IsNullOrWhiteSpace(validationErrors.Value.ToString()))
                 throw new FailedValidationException(validationErrors.Value.ToString());
