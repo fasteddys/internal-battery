@@ -4,14 +4,16 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
     public class RecruiterRepository : UpDiddyRepositoryBase<Recruiter>, IRecruiterRepository
     {
+        private UpDiddyDbContext _dbContext;
         public RecruiterRepository(UpDiddyDbContext dbContext) : base(dbContext)
         {
-
+            _dbContext = dbContext;
         }
 
         public async Task AddRecruiter(Recruiter recruiter)
@@ -20,56 +22,41 @@ namespace UpDiddyApi.ApplicationCore.Repository
             await SaveAsync();
         }
 
-        public IQueryable<Recruiter> GetAllRecruiters()
+        public async Task<List<Recruiter>> GetAllInternalRecruiters()
         {
-            return GetAll();
+            return await (from r in _dbContext.Recruiter.Include(r => r.Subscriber).Include(r => r.RecruiterCompanies).ThenInclude(rc => rc.Company)
+                          where r.Subscriber != null && r.RecruiterCompanies.Any() && r.IsDeleted == 0
+                          select r).ToListAsync();
         }
 
         public async Task<Recruiter> GetRecruiterByRecruiterGuid(Guid recruiterGuid)
         {
-            var queryableRecruiter = GetAll();
-            var recruiterResult = await queryableRecruiter
-                                .Where(jr => jr.IsDeleted == 0 && jr.RecruiterGuid == recruiterGuid)
-                                .ToListAsync();
-
-            return recruiterResult.Count == 0 ? null : recruiterResult[0];
+            return await (from r in _dbContext.Recruiter.Include(r => r.Subscriber).Include(r => r.RecruiterCompanies).ThenInclude(rc => rc.Company)
+                          where r.RecruiterCompanies.Any() && r.IsDeleted == 0 && r.RecruiterGuid == recruiterGuid
+                          select r).FirstOrDefaultAsync();
         }
 
         public async Task<Recruiter> GetRecruiterBySubscriberId(int subscriberId)
         {
-            var queryableRecruiter =  GetAll();
-            var recruiterResult = await queryableRecruiter
-                                .Where(jr => jr.IsDeleted == 0 && jr.SubscriberId == subscriberId)
-                                .ToListAsync();
-
-            return recruiterResult.Count == 0 ? null : recruiterResult[0];
+            return await (from r in _dbContext.Recruiter.Include(r => r.Subscriber).Include(r => r.RecruiterCompanies).ThenInclude(rc => rc.Company)
+                          where r.RecruiterCompanies.Any() && r.IsDeleted == 0 && r.SubscriberId == subscriberId
+                          select r).FirstOrDefaultAsync();
         }
 
 
         public async Task<Recruiter> GetRecruiterBySubscriberGuid(Guid subscriberGuid)
         {
-            var queryableRecruiter = GetAll();
-            var recruiterResult = await queryableRecruiter
-                                .Where(jr => jr.IsDeleted == 0 && jr.Subscriber.SubscriberGuid == subscriberGuid)
-                                .ToListAsync();
-
-            return recruiterResult.Count == 0 ? null : recruiterResult[0];
+            return await (from r in _dbContext.Recruiter.Include(r => r.Subscriber).Include(r => r.RecruiterCompanies).ThenInclude(rc => rc.Company)
+                          where r.RecruiterCompanies.Any() && r.IsDeleted == 0 && r.Subscriber.SubscriberGuid == subscriberGuid
+                          select r).FirstOrDefaultAsync();
         }
 
         public async Task<Recruiter> GetRecruiterAndCompanyBySubscriberGuid(Guid subscriberGuid)
         {
-            var queryableRecruiter = GetAll();
-            var recruiterResult = await queryableRecruiter
-                                .Include( c => c.Company)
-                                .Where(jr => jr.IsDeleted == 0 && jr.Subscriber.SubscriberGuid == subscriberGuid)
-                                .ToListAsync();
-
-            return recruiterResult.Count == 0 ? null : recruiterResult[0];
+            return await (from r in _dbContext.Recruiter.Include(r => r.Subscriber).Include(r => r.RecruiterCompanies).ThenInclude(rc => rc.Company)
+                          where r.RecruiterCompanies.Any() && r.IsDeleted == 0 && r.Subscriber.SubscriberGuid == subscriberGuid
+                          select r).FirstOrDefaultAsync();
         }
-
-
-        
-
 
         public async Task UpdateRecruiter(Recruiter recruiter)
         {

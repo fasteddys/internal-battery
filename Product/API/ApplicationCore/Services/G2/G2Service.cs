@@ -67,14 +67,14 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             if (recruiter == null)
                 throw new NotFoundException($"Subscriber {subscriberGuid} is not a recruiter");
             // validate that the recruiter is asscociated with a company
-            if (recruiter.CompanyId == null)
+            if (recruiter.RecruiterCompanies == null || recruiter.RecruiterCompanies.FirstOrDefault() == null)
                 throw new FailedValidationException($"Recruiter {recruiter.RecruiterGuid} is not associated with a company");
 
-            // get company id for the recruiter 
-            int companyId = recruiter.CompanyId.Value;
+            // get company guid for the recruiter 
+            Guid companyGuid = recruiter.RecruiterCompanies.First().Company.CompanyGuid;
             // handle case of non geo search 
             if (cityGuid == null || cityGuid == Guid.Empty)
-                return await SearchG2Async(recruiter.Company.CompanyGuid, limit, offset, sort, order, keyword, 0, 0, 0 );
+                return await SearchG2Async(companyGuid, limit, offset, sort, order, keyword, 0, 0, 0 );
 
             // pick a random postal code for the city to get the last and long 
             Postal postal = _repository.PostalRepository.GetAll()
@@ -86,7 +86,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             if (postal == null)
                 throw new NotFoundException($"A city with an Guid of {cityGuid} cannot be found.");
 
-            return await SearchG2Async(recruiter.Company.CompanyGuid, limit, offset, sort, order, keyword, radius, (double)postal.Latitude, (double)postal.Longitude);
+            return await SearchG2Async(companyGuid, limit, offset, sort, order, keyword, radius, (double)postal.Latitude, (double)postal.Longitude);
         }
 
 

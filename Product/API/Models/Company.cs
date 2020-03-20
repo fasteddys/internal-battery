@@ -26,5 +26,6 @@ namespace UpDiddyApi.Models
         /// Additional information such as error received from cloud talent
         /// </summary>
         public string CloudTalentIndexInfo { get; set; }
+        public IList<RecruiterCompany> RecruiterCompanies { get; set; }
     }
 }
