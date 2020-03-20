@@ -790,7 +790,7 @@ namespace UpDiddyApi.Helpers
             CreateMap<Models.G2.Profile, ProfileDto>()
                 .ForMember(p => p.CityGuid, opt => opt.MapFrom(src => src.City.CityGuid))
                 .ForMember(p => p.CompanyGuid, opt => opt.MapFrom(src => src.Company.CompanyGuid))
-                .ForMember(p => p.EmploymentTypeGuid, opt => opt.MapFrom(src => src.EmploymentType.EmploymentTypeGuid))
+                .ForMember(p => p.EmploymentTypeGuids, opt => opt.MapFrom(src => src.ProfileEmploymentTypes.Select(pet => pet.EmploymentType.EmploymentTypeGuid).ToList()))
                 .ForMember(p => p.ExperienceLevelGuid, opt => opt.MapFrom(src => src.ExperienceLevel.ExperienceLevelGuid))
                 .ForMember(p => p.PostalGuid, opt => opt.MapFrom(src => src.Postal.PostalGuid))
                 .ForMember(p => p.StateGuid, opt => opt.MapFrom(src => src.State.StateGuid))
