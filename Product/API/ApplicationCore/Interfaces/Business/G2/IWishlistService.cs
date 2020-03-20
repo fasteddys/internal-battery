@@ -15,7 +15,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business.G2
         Task UpdateWishlistForRecruiter(Guid subscriberGuid, WishlistDto wishlistDto);
         Task DeleteWishlistForRecruiter(Guid subscriberGuid, Guid wishlistGuid);
         Task<WishlistListDto> GetWishlistsForRecruiter(Guid subscriberGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending");
-        Task DeleteProfileWishlistForRecruiter(Guid subscriberGuid, Guid profileWishlistGuid);
-        Task<Guid> AddProfileWishlistForRecruiter(Guid subscriberGuid, Guid wishlistGuid, Guid profileGuid);
+        Task DeleteProfileWishlistsForRecruiter(Guid subscriberGuid, List<Guid> profileWishlistGuids);
+        Task<List<Guid>> AddProfileWishlistsForRecruiter(Guid subscriberGuid, Guid wishlistGuid, List<Guid> profileGuids);
     }
 }

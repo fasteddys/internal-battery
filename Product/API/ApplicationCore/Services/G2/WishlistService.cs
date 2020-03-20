@@ -78,23 +78,23 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             return _mapper.Map<WishlistListDto>(wishlists);
         }
 
-        public async Task<Guid> AddProfileWishlistForRecruiter(Guid subscriberGuid, Guid wishlistGuid, Guid profileGuid)
+        public async Task<List<Guid>> AddProfileWishlistsForRecruiter(Guid subscriberGuid, Guid wishlistGuid, List<Guid> profileGuids)
         {
             if (wishlistGuid == null || wishlistGuid == Guid.Empty)
                 throw new FailedValidationException("wishlistGuid cannot be null or empty");
 
-            if (profileGuid == null || profileGuid == Guid.Empty)
-                throw new FailedValidationException("profileGuid cannot be null or empty");
+            if (profileGuids == null || profileGuids.Count() == 0)
+                throw new FailedValidationException("profileGuids cannot be null or empty");
 
-            return await _repositoryWrapper.WishlistRepository.AddProfileWishlistForRecruiter(subscriberGuid, wishlistGuid, profileGuid);
+            return await _repositoryWrapper.WishlistRepository.AddProfileWishlistsForRecruiter(subscriberGuid, wishlistGuid, profileGuids);
         }
 
-        public async Task DeleteProfileWishlistForRecruiter(Guid subscriberGuid, Guid profileWishlistGuid)
+        public async Task DeleteProfileWishlistsForRecruiter(Guid subscriberGuid, List<Guid> profileWishlistGuids)
         {
-            if(profileWishlistGuid==null || profileWishlistGuid==Guid.Empty)
-                throw new FailedValidationException("profileWishlistGuid cannot be null or empty");
+            if(profileWishlistGuids == null || profileWishlistGuids.Count()== 0)
+                throw new FailedValidationException("profileWishlistGuids cannot be null or empty");
 
-            await _repositoryWrapper.WishlistRepository.DeleteProfileWishlistForRecruiter(subscriberGuid, profileWishlistGuid);
+            await _repositoryWrapper.WishlistRepository.DeleteProfileWishlistsForRecruiter(subscriberGuid, profileWishlistGuids);
         }
     }
 }

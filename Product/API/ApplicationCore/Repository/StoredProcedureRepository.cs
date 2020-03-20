@@ -1154,7 +1154,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         }
 
- 
         public async Task<bool> UpdateG2AzureIndexStatuses(List<AzureIndexResultStatus> indexStatuses, string statusName, string statusInfo)
         {
  

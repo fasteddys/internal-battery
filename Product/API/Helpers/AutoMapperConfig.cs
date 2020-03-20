@@ -672,18 +672,52 @@ namespace UpDiddyApi.Helpers
             .ForMember(dest => dest.Entities, opt => opt.MapFrom(src => src.ToList()))
             .ReverseMap();
 
-            CreateMap<Recruiter, RecruiterInfoDto>()
-               .ForPath(x => x.SubscriberGuid, opt => opt.MapFrom(src => src.Subscriber.SubscriberGuid))
-               .ForMember(x => x.TotalRecords, opt => opt.Ignore())
-               .ForMember(x => x.IsInAuth0RecruiterGroup, opt => opt.Ignore())
-               .ForMember(c => c.RecruiterGuid, opt => opt.MapFrom(src => src.RecruiterGuid))
-               .ForMember(c => c.FirstName, opt => opt.MapFrom(src => src.FirstName))
-               .ForMember(c => c.LastName, opt => opt.MapFrom(src => src.LastName))
-               .ForMember(c => c.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
-               .ForMember(c => c.Email, opt => opt.MapFrom(src => src.Email))
-               .ForMember(c => c.CompanyGuid, opt => opt.MapFrom(src => src.Company.CompanyGuid))
-               .ForMember(c => c.CompanyName, opt => opt.MapFrom(src => src.Company.CompanyName))
-               .ReverseMap();
+            CreateMap<RecruiterInfoDto, Recruiter>()
+                .ForPath(r => r.Subscriber.SubscriberGuid, opt => opt.MapFrom(src => src.SubscriberGuid))
+                .ForMember(r => r.RecruiterGuid, opt => opt.MapFrom(src => src.RecruiterGuid))
+                .ForMember(r => r.FirstName, opt => opt.MapFrom(src => src.FirstName))
+                .ForMember(r => r.LastName, opt => opt.MapFrom(src => src.LastName))
+                .ForMember(r => r.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+                .ForMember(r => r.Email, opt => opt.MapFrom(src => src.Email))
+                .ReverseMap()
+                .AfterMap((src, dest) =>
+                {
+                    if (src.RecruiterCompanies.Any())
+                    {
+                        dest.CompanyGuid = src.RecruiterCompanies.First().Company.CompanyGuid;
+                        dest.CompanyName = src.RecruiterCompanies.First().Company.CompanyName;
+                    }
+                    else
+                    {
+                        dest.CompanyGuid = null;
+                        dest.CompanyName = null;
+                    }
+                })
+                .ForAllOtherMembers(opt => opt.Ignore());
+
+            CreateMap<RecruiterSDOC, Recruiter>()
+                .ForMember(r => r.FirstName, opt => opt.MapFrom(src => src.FirstName))
+                .ForMember(r => r.LastName, opt => opt.MapFrom(src => src.LastName))
+                .ForMember(r => r.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+                .ForMember(r => r.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(r => r.RecruiterGuid, opt => opt.MapFrom(src => src.RecruiterGuid))
+                .ReverseMap()
+                .AfterMap((src, dest) =>
+                {
+                    dest.SubscriberGuid = src.Subscriber.SubscriberGuid.Value;
+
+                    if (src.RecruiterCompanies.Any())
+                    {
+                        dest.CompanyGuid = src.RecruiterCompanies.First().Company.CompanyGuid;
+                        dest.CompanyName = src.RecruiterCompanies.First().Company.CompanyName;
+                    }
+                    else
+                    {
+                        dest.CompanyGuid = Guid.Empty;
+                        dest.CompanyName = null;
+                    }
+                })
+                .ForAllOtherMembers(opt => opt.Ignore());
 
             CreateMap<SendGridEventDto, SendGridEvent>()
                 .ForMember(x => x.SendGridEventGuid, opt => opt.Ignore())
@@ -711,7 +745,7 @@ namespace UpDiddyApi.Helpers
                   })
                 .ForMember(dest => dest.NewUsers, opt => opt.MapFrom(src => src.ToList()))
                 .ReverseMap();
-            
+
             CreateMap<Subscriber, SubscriberSDOC>()
             .ForMember(c => c.SubscriberGuid, opt => opt.MapFrom(src => src.SubscriberGuid))
             .ForMember(c => c.FirstName, opt => opt.MapFrom(src => src.FirstName))
@@ -720,17 +754,6 @@ namespace UpDiddyApi.Helpers
             .ForMember(c => c.Email, opt => opt.MapFrom(src => src.Email))
             .ForAllOtherMembers(opt => opt.Ignore());
             
-            CreateMap<Recruiter, RecruiterSDOC>()
-            .ForMember(c => c.SubscriberGuid, opt => opt.MapFrom(src => src.Subscriber.SubscriberGuid))
-            .ForMember(c => c.FirstName, opt => opt.MapFrom(src => src.FirstName))
-            .ForMember(c => c.LastName, opt => opt.MapFrom(src => src.LastName))
-            .ForMember(c => c.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
-            .ForMember(c => c.Email, opt => opt.MapFrom(src => src.Email))
-            .ForMember(c => c.RecruiterGuid, opt => opt.MapFrom(src => src.RecruiterGuid))
-            .ForMember(c => c.CompanyGuid, opt => opt.MapFrom(src => src.Company.CompanyGuid))
-            .ForMember(c => c.CompanyName, opt => opt.MapFrom(src => src.Company.CompanyName))
-            .ForAllOtherMembers(opt => opt.Ignore());
-
             CreateMap<List<RecruiterStatDto>, RecruiterStatListDto>()
                   .AfterMap((src, dest) =>
                   {
@@ -743,7 +766,8 @@ namespace UpDiddyApi.Helpers
                           dest.TotalOpCoStarts = src.FirstOrDefault().TotalOpCoStarts;
                           dest.TotalCCStarts = src.FirstOrDefault().TotalCCStarts;
                           dest.TotalOpCoSpread = src.FirstOrDefault().TotalOpCoSpread;
-                          dest.TotalCCSpread = src.FirstOrDefault().TotalCCSpread;                      }
+                          dest.TotalCCSpread = src.FirstOrDefault().TotalCCSpread;
+                      }
                       else
                       {
                           dest.TotalOpCoSubmittals = 0;
@@ -758,7 +782,7 @@ namespace UpDiddyApi.Helpers
                   })
                 .ForMember(dest => dest.RecruiterStats, opt => opt.MapFrom(src => src.ToList()))
                 .ReverseMap();
-            
+
             CreateMap<v_ProfileAzureSearch, G2SDOC>()
               .ForMember(x => x.Location, opt => opt.Ignore())
               .ReverseMap();
@@ -798,6 +822,50 @@ namespace UpDiddyApi.Helpers
             CreateMap<Models.G2.Wishlist, WishlistDto>()
                 .ForMember(w => w.RecruiterGuid, opt => opt.MapFrom(src => src.Recruiter.RecruiterGuid))
                 .ForMember(w => w.TotalRecords, opt => opt.Ignore())
+                .ReverseMap();
+
+            CreateMap<Models.G2.ProfileComment, CommentDto>()
+                .ForMember(c => c.CommentGuid, opt => opt.MapFrom(src => src.ProfileCommentGuid))
+                .ForMember(c => c.RecruiterGuid, opt => opt.MapFrom(src => src.Recruiter.RecruiterGuid))
+                .ForMember(c => c.ProfileGuid, opt => opt.MapFrom(src => src.Profile.ProfileGuid))
+                .ForMember(c => c.TotalRecords, opt => opt.Ignore())
+                .ReverseMap();
+
+            CreateMap<List<CommentDto>, CommentListDto>()
+                .AfterMap((src, dest) =>
+                {
+                    if (src != null && src.Count() > 0)
+                        dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                    else
+                        dest.TotalRecords = 0;
+                })
+                .ForMember(dest => dest.Comments, opt => opt.MapFrom(src => src.ToList()))
+                .ReverseMap();
+
+            CreateMap<Tag, UpDiddyLib.Domain.Models.TagDto>()
+                .ForMember(t => t.TotalRecords, opt => opt.Ignore())
+                .ReverseMap();
+
+            CreateMap<List<UpDiddyLib.Domain.Models.TagDto>, TagListDto>()
+                  .AfterMap((src, dest) =>
+                  {
+                      if (src != null && src.Count() > 0)
+                          dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                      else
+                          dest.TotalRecords = 0;
+                  })
+                .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.ToList()))
+                .ReverseMap();
+
+            CreateMap<List<ProfileTagDto>, ProfileTagListDto>()
+                  .AfterMap((src, dest) =>
+                  {
+                      if (src != null && src.Count() > 0)
+                          dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                      else
+                          dest.TotalRecords = 0;
+                  })
+                .ForMember(dest => dest.ProfileTags, opt => opt.MapFrom(src => src.ToList()))
                 .ReverseMap();
         }
     }

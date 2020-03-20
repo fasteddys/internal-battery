@@ -15,8 +15,6 @@ namespace UpDiddyApi.Models
         public string LastName { get; set; }
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
-        public int? CompanyId { get; set; }
-        public Company Company { get; set; }
-
+        public IList<RecruiterCompany> RecruiterCompanies { get; set; }
     }
 }

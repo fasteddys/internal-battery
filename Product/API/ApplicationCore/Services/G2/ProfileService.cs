@@ -54,9 +54,8 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
                 throw new NotFoundException("profileDto cannot be null");
             await _repositoryWrapper.ProfileRepository.UpdateProfileForRecruiter(profileDto, subscriberGuid);
 
-            // Update the profile in azure search            
- 
-            await _g2Service.IndexProfileAsync(profileDto.ProfileGuid);            
+            // Update the profile in azure search             
+            await _g2Service.G2IndexProfileByGuidAsync(profileDto.ProfileGuid);            
         }
 
  

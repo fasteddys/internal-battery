@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
@@ -10,9 +11,10 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200313133201_System_Get_ProfileCommentsForRecruiter")]
+    partial class System_Get_ProfileCommentsForRecruiter
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3377,6 +3379,8 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<int?>("CompanyId");
+
                     b.Property<DateTime>("CreateDate");
 
                     b.Property<Guid>("CreateGuid");
@@ -3400,6 +3404,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<int?>("SubscriberId");
 
                     b.HasKey("RecruiterId");
+
+                    b.HasIndex("CompanyId");
 
                     b.HasIndex("SubscriberId");
 
@@ -3471,11 +3477,9 @@ namespace UpDiddyApi.Migrations
 
                     b.HasKey("RecruiterCompanyId");
 
-                    b.HasIndex("RecruiterId");
+                    b.HasIndex("CompanyId");
 
-                    b.HasIndex("CompanyId", "RecruiterId")
-                        .IsUnique()
-                        .HasName("UIX_RecruiterCompany_Recruiter_Company");
+                    b.HasIndex("RecruiterId");
 
                     b.ToTable("RecruiterCompany");
                 });
@@ -5753,6 +5757,10 @@ namespace UpDiddyApi.Migrations
 
             modelBuilder.Entity("UpDiddyApi.Models.Recruiter", b =>
                 {
+                    b.HasOne("UpDiddyApi.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId");
+
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany()
                         .HasForeignKey("SubscriberId");
@@ -5778,12 +5786,12 @@ namespace UpDiddyApi.Migrations
             modelBuilder.Entity("UpDiddyApi.Models.RecruiterCompany", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.Company", "Company")
-                        .WithMany("RecruiterCompanies")
+                        .WithMany()
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("UpDiddyApi.Models.Recruiter", "Recruiter")
-                        .WithMany("RecruiterCompanies")
+                        .WithMany()
                         .HasForeignKey("RecruiterId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });

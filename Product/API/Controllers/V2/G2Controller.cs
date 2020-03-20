@@ -16,6 +16,7 @@ using UpDiddyLib.Domain.AzureSearch;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
 using UpDiddyLib.Domain.Models.G2;
+using System.Collections.Generic;
 
 namespace UpDiddyApi.Controllers.V2
 {
@@ -24,11 +25,13 @@ namespace UpDiddyApi.Controllers.V2
     public class G2Controller : BaseApiController
     {
         private readonly IConfiguration _configuration;
-        private readonly IG2Service _g2Service;
- 
+        private readonly IG2Service _g2Service; 
         private readonly IHangfireService _hangfireService;
         private readonly G2Interfaces.IProfileService _profileService;
         private readonly G2Interfaces.IWishlistService _wishlistService;
+        private readonly G2Interfaces.ICommentService _commentService;
+        private readonly ISkillService _skillService;
+        private readonly ITagService _tagService;
 
         public G2Controller(IServiceProvider services)
         {
@@ -37,9 +40,12 @@ namespace UpDiddyApi.Controllers.V2
             _hangfireService = services.GetService<IHangfireService>();
             _profileService = services.GetService<G2Interfaces.IProfileService>();
             _wishlistService = services.GetService<G2Interfaces.IWishlistService>();
+            _commentService = services.GetService<G2Interfaces.ICommentService>();
+            _skillService = services.GetService<ISkillService>();
+            _tagService = services.GetService<ITagService>();
         }
  
-        #region Profiles
+        #region Recruiter Profile Operations
     
         [HttpGet]
         [Authorize(Policy = "IsRecruiterPolicy")]
@@ -111,19 +117,19 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpPost]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        [Route("wishlists/{wishlistGuid:guid}/profiles/{profileGuid:guid}")]
-        public async Task<IActionResult> AddProfileToWishlist(Guid wishlistGuid, Guid profileGuid)
+        [Route("wishlists/{wishlistGuid:guid}/profiles")]
+        public async Task<IActionResult> AddProfilesToWishlist(Guid wishlistGuid, [FromBody] List<Guid> profileGuids)
         {
-            Guid profileWishlistGuid = await _wishlistService.AddProfileWishlistForRecruiter(GetSubscriberGuid(), wishlistGuid, profileGuid);
-            return StatusCode(201, profileWishlistGuid);
+           List<Guid> profileWishlistGuids = await _wishlistService.AddProfileWishlistsForRecruiter(GetSubscriberGuid(), wishlistGuid, profileGuids);
+            return StatusCode(201, profileWishlistGuids);
         }
 
         [HttpDelete]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        [Route("wishlists/profiles/{profileWishlistGuid:guid}")]
-        public async Task<IActionResult> DeleteProfileFromWishlist(Guid profileWishlistGuid)
+        [Route("wishlists/profiles")]
+        public async Task<IActionResult> DeleteProfilesFromWishlist([FromBody] List<Guid> profileWishlistGuids)
         {
-            await _wishlistService.DeleteProfileWishlistForRecruiter(GetSubscriberGuid(), profileWishlistGuid);
+            await _wishlistService.DeleteProfileWishlistsForRecruiter(GetSubscriberGuid(), profileWishlistGuids);
             return StatusCode(204);
         }
 
@@ -138,6 +144,119 @@ namespace UpDiddyApi.Controllers.V2
 
         #endregion
 
+        #region Recruiter Comment Operations
+
+        [HttpPost]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("comments/profiles/{profileGuid:guid}")]
+        public async Task<IActionResult> CreateComment(Guid profileGuid, [FromBody] CommentDto commentDto)
+        {
+            commentDto.ProfileGuid = profileGuid;
+            Guid commentGuid = await _commentService.CreateCommentForRecruiter(GetSubscriberGuid(), commentDto);
+            return StatusCode(201, commentGuid);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("comments/{commentGuid:guid}")]
+        public async Task<IActionResult> GetComment(Guid commentGuid)
+        {
+            var comment = await _commentService.GetCommentForRecruiter(commentGuid, GetSubscriberGuid());
+            return Ok(comment);
+        }
+
+        [HttpPut]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("comments/{commentGuid:guid}")]
+        public async Task<IActionResult> UpdateComment(Guid commentGuid, [FromBody] CommentDto commentDto)
+        {
+            commentDto.CommentGuid = commentGuid;
+            await _commentService.UpdateCommentForRecruiter(GetSubscriberGuid(), commentDto);
+            return StatusCode(204);
+        }
+
+        [HttpDelete]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("comments/{commentGuid:guid}")]
+        public async Task<IActionResult> DeleteComment(Guid commentGuid)
+        {
+            await _commentService.DeleteCommentForRecruiter(GetSubscriberGuid(), commentGuid);
+            return StatusCode(204);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("comments/profiles/{profileGuid:guid}")]
+        public async Task<IActionResult> GetComments(Guid profileGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        {
+            var comments = await _commentService.GetProfileCommentsForRecruiter(profileGuid, GetSubscriberGuid(), limit, offset, sort, order);
+            return Ok(comments);
+        }
+
+        #endregion
+
+        #region Recruiter Skill Operations
+
+        [HttpPost]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("skills/profiles/{profileGuid:guid}")]
+        public async Task<IActionResult> AddSkillsToProfile([FromBody] List<Guid> skillGuids, Guid profileGuid)
+        {
+            List<Guid> profileSkillGuids = await _skillService.AddSkillsToProfileForRecruiter(GetSubscriberGuid(), skillGuids, profileGuid);
+            return StatusCode(201, profileSkillGuids);
+        }
+        
+        [HttpDelete]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("skills/profiles")]
+        public async Task<IActionResult> DeleteSkillsFromProfile([FromBody] List<Guid> profileSkillGuids)
+        {
+            await _skillService.DeleteSkillsFromProfileForRecruiter(GetSubscriberGuid(), profileSkillGuids);
+            return StatusCode(204);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("skills/profiles/{profileGuid:guid}")]
+        public async Task<IActionResult> GetSkills(Guid profileGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        {
+            var skills = await _skillService.GetProfileSkillsForRecruiter(profileGuid, GetSubscriberGuid(), limit, offset, sort, order);
+            return Ok(skills);
+        }
+
+        #endregion
+
+        #region Recruiter Tag Operations
+
+        [HttpPost]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("tags/profiles/{profileGuid:guid}")]
+        public async Task<IActionResult> AddTagsToProfile([FromBody] List<Guid> tagGuids, Guid profileGuid)
+        {
+            List<Guid> profileTagGuids = await _tagService.AddTagsToProfileForRecruiter(GetSubscriberGuid(), tagGuids, profileGuid);
+            return StatusCode(201, profileTagGuids);
+        }
+
+        [HttpDelete]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("tags/profiles")]
+        public async Task<IActionResult> DeleteTagsFromProfile([FromBody] List<Guid> profileTagGuids)
+        {
+            await _tagService.DeleteTagsFromProfileForRecruiter(GetSubscriberGuid(), profileTagGuids);
+            return StatusCode(204);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("tags/profiles/{profileGuid:guid}")]
+        public async Task<IActionResult> GetTags(Guid profileGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        {
+            var tags = await _tagService.GetProfileTagsForRecruiter(profileGuid, GetSubscriberGuid(), limit, offset, sort, order);
+            return Ok(tags);
+        }
+
+        #endregion
+
         #region G2 Query Functions
 
         [HttpGet]
@@ -145,7 +264,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("query")]
         public async Task<IActionResult> SearchG2(Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0)
         {
-            var rVal = await _g2Service.SearchG2Async(GetSubscriberGuid(), cityGuid, limit, offset, sort, order, keyword, radius);
+            var rVal = await _g2Service.G2SearchAsync(GetSubscriberGuid(), cityGuid, limit, offset, sort, order, keyword, radius);
             return Ok(rVal);
         }
 
@@ -161,10 +280,10 @@ namespace UpDiddyApi.Controllers.V2
         [HttpPost]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("index")]
-        public async Task<IActionResult> bootG2()
+        public async Task<IActionResult> addNewSubscribers()
         {
             // 
-            _g2Service.IndexAllUnindexedSubscribersAsync();
+            _g2Service.G2AddNewSubscribers();
             return StatusCode(202);
         }
 
@@ -179,7 +298,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> deleteG2()
         {
 
-            _g2Service.PurgeG2IndexAsync();
+            _g2Service.G2IndexPurgeAsync();
        
             return StatusCode(202);
         }
@@ -196,7 +315,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("subscriber/{subscriberGuid}")]
         public async Task<IActionResult> ReindexSubscriber(Guid subscriberGuid)
         {
-            _g2Service.IndexSubscriberAsync(subscriberGuid);
+            _g2Service.G2IndexBySubscriberAsync(subscriberGuid);
             return StatusCode(202);
         }
 
@@ -212,7 +331,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("subscriber/{subscriberGuid}/company/{companyGuid}")]
         public async Task<IActionResult> ReindexSubscriberForCompany(Guid subscriberGuid, Guid companyGuid)
         {
-            _g2Service.IndexSubscriberAsync(subscriberGuid, companyGuid);
+            _g2Service.G2IndexBySubscriberAsync(subscriberGuid, companyGuid);
             return StatusCode(202);
         }
 
@@ -223,7 +342,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> DeleteCompanyFromIndex(Guid companyGuid)
         {
 
-            _g2Service.DeleteCompanyAsync(companyGuid);
+            _g2Service.G2DeleteCompanyAsync(companyGuid);
             return StatusCode(202);
         }
 
@@ -238,7 +357,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("company/{companyGuid}")]
         public async Task<IActionResult> AddNewCompany(Guid companyGuid)
         {
-            _g2Service.AddCompanyAsync(companyGuid);
+            _g2Service.G2AddCompanyAsync(companyGuid);
             return StatusCode(202);
         }
 
@@ -248,7 +367,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> DeleteSubscriberFromIndex(Guid subscriberGuid)
         {
 
-            _g2Service.DeleteSubscriberAsync(subscriberGuid);
+            _g2Service.G2DeleteSubscriberAsync(subscriberGuid);
             return StatusCode(202);
         }
 
@@ -263,13 +382,11 @@ namespace UpDiddyApi.Controllers.V2
         [Route("subscriber/{subscriberGuid}")]
         public async Task<IActionResult> AddNewSubscriber(Guid subscriberGuid)
         {
-            _g2Service.AddSubscriberAsync(subscriberGuid);
+            _g2Service.G2AddSubscriberAsync(subscriberGuid);
             return StatusCode(202);
         }
 
 
         #endregion
-
- 
     }
 }
