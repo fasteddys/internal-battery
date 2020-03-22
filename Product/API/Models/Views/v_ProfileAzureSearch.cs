@@ -23,7 +23,7 @@ namespace UpDiddyApi.Models.Views
         public string State { get; set; }
         public string Postal { get; set; }
         public string ExperienceLevel { get; set; }
-        public string EmploymentType { get; set; }
+        public string EmploymentTypes { get; set; }
         public string Title { get; set; }
         public bool? IsWillingToTravel { get; set; }
         public bool? IsActiveJobSeeker { get; set; }

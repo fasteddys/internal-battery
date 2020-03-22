@@ -1097,7 +1097,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             subscriber.Direction = ParameterDirection.Input;
         
             var spParams = new object[] { subscriber };
-            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Create_SubscriberG2Profiles] @SubscriberGuid", spParams);
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Create_SubscriberG2Profiles] @SubscriberGuid", spParams);
             return rowsAffected;          
             
         }
@@ -1114,7 +1114,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             subscriber.Direction = ParameterDirection.Input;
 
             var spParams = new object[] { subscriber };
-            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Delete_SubscriberG2Profiles] @SubscriberGuid", spParams);
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Delete_SubscriberG2Profiles] @SubscriberGuid", spParams);
             return rowsAffected;
 
         }
@@ -1132,7 +1132,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             subscriber.Direction = ParameterDirection.Input;
 
             var spParams = new object[] { subscriber };
-            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Create_CompanyG2Profiles] @CompanyGuid", spParams);
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Create_CompanyG2Profiles] @CompanyGuid", spParams);
             return rowsAffected;
 
         }
@@ -1149,7 +1149,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             company.Direction = ParameterDirection.Input;
 
             var spParams = new object[] { company };
-            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Delete_CompanyG2Profiles] @CompanyGuid", spParams);
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Delete_CompanyG2Profiles] @CompanyGuid", spParams);
             return rowsAffected;
 
         }
@@ -1184,7 +1184,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 ,new SqlParameter("@StatusName", statusName)
                 ,new SqlParameter("@IndexStatusInfo", statusInfo)
             };        
-            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [g2].[System_Update_AzureG2Status] @ProfileIndexStatuses, @StatusName, @IndexStatusInfo", spParams);
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Update_AzureG2Status] @ProfileIndexStatuses, @StatusName, @IndexStatusInfo", spParams);
     
             return true;
         }
@@ -1192,7 +1192,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<int>  BootG2Profiles()
         {
-            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Create_G2Profiles]");
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Create_G2Profiles]");
             return rowsAffected;
         }
 

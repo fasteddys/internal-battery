@@ -37,8 +37,6 @@ namespace UpDiddyApi.Models.G2
         public virtual Postal Postal { get; set; }
         public int? ExperienceLevelId { get; set; }
         public virtual ExperienceLevel ExperienceLevel { get; set; }
-        public int? EmploymentTypeId { get; set; }
-        public virtual EmploymentType EmploymentType { get; set; }
         [StringLength(100)]
         public string Title { get; set; }
         public bool? IsWillingToTravel { get; set; }
@@ -56,5 +54,6 @@ namespace UpDiddyApi.Models.G2
         public int? AzureIndexStatusId { get; set; }
         public AzureIndexStatus AzureIndexStatus { get; set; }
         public string AzureSearchIndexInfo { get; set; }
+        public List<ProfileEmploymentType> ProfileEmploymentTypes { get; set; }
     }
 }

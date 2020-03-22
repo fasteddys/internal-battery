@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace UpDiddyLib.Domain.Models.G2
@@ -25,7 +26,6 @@ namespace UpDiddyLib.Domain.Models.G2
         public Guid? PostalGuid { get; set; }
         public Guid? ContactTypeGuid { get; set; }
         public Guid? ExperienceLevelGuid { get; set; }
-        public Guid? EmploymentTypeGuid { get; set; }
         [StringLength(100)]
         public string Title { get; set; }
         public bool? IsWillingToTravel { get; set; }
@@ -38,5 +38,6 @@ namespace UpDiddyLib.Domain.Models.G2
         public string Goals { get; set; }
         [StringLength(500)]
         public string Preferences { get; set; }
+        public List<Guid> EmploymentTypeGuids { get; set; }
     }
 }

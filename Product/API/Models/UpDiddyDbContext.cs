@@ -206,6 +206,7 @@ namespace UpDiddyApi.Models
         public DbSet<ProfileWishlist> ProfileWishlist { get; set; }
         public DbSet<AzureIndexStatus> AzureIndexStatus { get; set; }
         public DbSet<RecruiterStat> RecruiterStat { get; set; }
+        public DbSet<ProfileEmploymentType> ProfileEmploymentType { get; set; }
 
         #endregion
 
@@ -276,6 +277,11 @@ namespace UpDiddyApi.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<ProfileEmploymentType>()
+                .HasIndex(pet => new { pet.ProfileId, pet.EmploymentTypeId })
+                .HasName("UIX_ProfileEmploymentType_Profile_EmploymentType")
+                .IsUnique(true);
+
             modelBuilder.Entity<RecruiterCompany>()
                 .HasIndex(rc => new { rc.CompanyId, rc.RecruiterId })
                 .HasName("UIX_RecruiterCompany_Recruiter_Company")
