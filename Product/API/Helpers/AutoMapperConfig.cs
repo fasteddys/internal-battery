@@ -92,6 +92,30 @@ namespace UpDiddyApi.Helpers
                 .ForMember(dest => dest.States, opt => opt.MapFrom(src => src.ToList()))
                 .ReverseMap();
 
+            CreateMap<CityDetailDto, City>().ReverseMap();
+            CreateMap<List<CityDetailDto>, CityDetailListDto>()
+                .AfterMap((src, dest) =>
+                {
+                    if (src != null && src.Count() > 0)
+                        dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                    else
+                        dest.TotalRecords = 0;
+                })
+                .ForMember(dest => dest.Cities, opt => opt.MapFrom(src => src.ToList()))
+                .ReverseMap();
+
+            CreateMap<PostalDetailDto, Postal>().ReverseMap();
+            CreateMap<List<PostalDetailDto>, PostalDetailListDto>()
+                 .AfterMap((src, dest) =>
+                 {
+                     if (src != null && src.Count() > 0)
+                         dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                     else
+                         dest.TotalRecords = 0;
+                 })
+                 .ForMember(dest => dest.Postals, opt => opt.MapFrom(src => src.ToList()))
+                 .ReverseMap();
+
             CreateMap<EnrollmentLog, EnrollmentLogDto>().ReverseMap();
             CreateMap<CourseVariantType, CourseVariantTypeDto>().ReverseMap();
             CreateMap<Skill, UpDiddyLib.Dto.SkillDto>().ReverseMap();

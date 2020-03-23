@@ -52,11 +52,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
                                .OrderBy(s => s.Sequence)
                                .ToListAsync();
         }
-
-        public async Task<State> GetByCountryGuidAndStateGuid(Guid countryGuid, Guid stateGuid)
+        
+        public async Task<State> GetByStateGuid(Guid stateGuid)
         {
-            return await (from s in _dbContext.State
-                          join c in _dbContext.Country on s.CountryId equals c.CountryId
+            return await (from s in _dbContext.State.Include(s => s.Country)
                           where s.StateGuid == stateGuid
                           select s).FirstOrDefaultAsync();
         }
