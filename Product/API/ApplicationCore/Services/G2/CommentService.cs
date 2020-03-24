@@ -54,6 +54,14 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             return await _repositoryWrapper.CommentRepository.CreateCommentForRecruiter(subscriberGuid, commentDto);
         }
 
+        public async Task<List<Guid>> CreateCommentsForRecruiter(Guid subscriberGuid, CommentsDto commentsDto)
+        {
+            if (commentsDto == null)
+                throw new FailedValidationException("commentDto cannot be null");
+
+            return await _repositoryWrapper.CommentRepository.CreateCommentsForRecruiter(subscriberGuid, commentsDto);
+        }
+
         public async Task UpdateCommentForRecruiter(Guid subscriberGuid, CommentDto commentDto)
         {
             if (commentDto == null)

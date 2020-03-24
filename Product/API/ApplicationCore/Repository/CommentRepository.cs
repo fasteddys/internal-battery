@@ -110,6 +110,53 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return commentGuid;
         }
 
+        public async Task<List<Guid>> CreateCommentsForRecruiter(Guid subscriberGuid, CommentsDto commentsDto)
+        {
+
+            var isRecruiterInCompanyProfile = (from s in _dbContext.Subscriber
+                                               join r in _dbContext.Recruiter on s.SubscriberId equals r.SubscriberId
+                                               join rc in _dbContext.RecruiterCompany on r.RecruiterId equals rc.RecruiterId
+                                               join p in _dbContext.Profile on rc.CompanyId equals p.CompanyId
+                                               where commentsDto.ProfileGuids.Contains(p.ProfileGuid) && s.SubscriberGuid == subscriberGuid
+                                               select p).Any();
+            if (!isRecruiterInCompanyProfile)
+                throw new FailedValidationException("recruiter does not belong to the company of the profile associated with the comment");
+
+            var recruiterId = (from s in _dbContext.Subscriber
+                               join r in _dbContext.Recruiter on s.SubscriberId equals r.SubscriberId
+                               where s.SubscriberGuid == subscriberGuid && r.IsDeleted == 0
+                               select r.RecruiterId).FirstOrDefault();
+            if (recruiterId == 0)
+                throw new FailedValidationException("recruiter not found");
+
+            var profileIds = await _dbContext.Profile
+                .Where(p => commentsDto.ProfileGuids.Contains(p.ProfileGuid) && p.IsDeleted == 0)
+                .Select(p => p.ProfileId)
+                .Distinct()
+                .ToListAsync();
+
+            if (!profileIds.Any())
+                throw new FailedValidationException("profiles not found");
+
+            var comments = profileIds.Select(p => new ProfileComment
+            {
+                CreateDate = DateTime.UtcNow,
+                CreateGuid = Guid.Empty,
+                Value = commentsDto.Value,
+                IsDeleted = 0,
+                ProfileCommentGuid = Guid.NewGuid(),
+                IsVisibleToCompany = commentsDto.IsVisibleToCompany,
+                RecruiterId = recruiterId,
+                ProfileId = p
+            }).ToArray();
+
+            await this.CreateRange(comments);
+            await this.SaveAsync();
+            return comments
+                .Select(c => c.ProfileCommentGuid)
+                .ToList();
+        }
+
         public async Task UpdateCommentForRecruiter(Guid subscriberGuid, CommentDto commentDto)
         {
             var isRecruiterInCompanyProfile = (from s in _dbContext.Subscriber
@@ -148,7 +195,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                                                select p).Any();
             if (!isRecruiterInCompanyProfile)
                 throw new FailedValidationException("recruiter does not belong to the company of the profile associated with the comment");
-            
+
             var comment = (from c in _dbContext.ProfileComment
                            join r in _dbContext.Recruiter on c.RecruiterId equals r.RecruiterId
                            join s in _dbContext.Subscriber on r.SubscriberId equals s.SubscriberId

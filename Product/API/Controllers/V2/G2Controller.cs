@@ -157,6 +157,15 @@ namespace UpDiddyApi.Controllers.V2
             return StatusCode(201, commentGuid);
         }
 
+        [HttpPost]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("comments/profiles/")]
+        public async Task<IActionResult> CreateComments([FromBody] CommentsDto commentsDto)
+        {
+            var commentGuids = await _commentService.CreateCommentsForRecruiter(GetSubscriberGuid(), commentsDto);
+            return StatusCode(201, commentGuids);
+        }
+
         [HttpGet]
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("comments/{commentGuid:guid}")]
