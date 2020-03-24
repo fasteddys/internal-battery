@@ -80,7 +80,10 @@ namespace UpDiddyApi.Helpers
                 .ForMember(dest => dest.Countries, opt => opt.MapFrom(src => src.ToList()))
                 .ReverseMap();
 
-            CreateMap<StateDetailDto, State>().ReverseMap();
+            CreateMap<State, StateDetailDto>()
+                .ForMember(dest => dest.CountryGuid, opt => opt.MapFrom(src => src.Country.CountryGuid))
+                .ReverseMap();
+
             CreateMap<List<StateDetailDto>, StateDetailListDto>()
                   .AfterMap((src, dest) =>
                   {
@@ -92,7 +95,10 @@ namespace UpDiddyApi.Helpers
                 .ForMember(dest => dest.States, opt => opt.MapFrom(src => src.ToList()))
                 .ReverseMap();
 
-            CreateMap<CityDetailDto, City>().ReverseMap();
+            CreateMap<City, CityDetailDto>()
+                .ForMember(dest => dest.StateGuid, opt => opt.MapFrom(src => src.State.StateGuid))
+                .ReverseMap();
+
             CreateMap<List<CityDetailDto>, CityDetailListDto>()
                 .AfterMap((src, dest) =>
                 {
@@ -104,7 +110,10 @@ namespace UpDiddyApi.Helpers
                 .ForMember(dest => dest.Cities, opt => opt.MapFrom(src => src.ToList()))
                 .ReverseMap();
 
-            CreateMap<PostalDetailDto, Postal>().ReverseMap();
+            CreateMap<Postal, PostalDetailDto>()
+                .ForMember(dest => dest.CityGuid, opt => opt.MapFrom(src => src.City.CityGuid))
+                .ReverseMap();
+
             CreateMap<List<PostalDetailDto>, PostalDetailListDto>()
                  .AfterMap((src, dest) =>
                  {

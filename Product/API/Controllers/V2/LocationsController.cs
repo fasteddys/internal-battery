@@ -69,7 +69,8 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> UpdateCountry(Guid country, [FromBody] CountryDetailDto countryDetailDto)
         {
-            await _countryService.UpdateCountry(country, countryDetailDto);
+            countryDetailDto.CountryGuid = country;
+            await _countryService.UpdateCountry(countryDetailDto);
             return StatusCode(204);
         }
 
@@ -95,7 +96,7 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         [HttpPost]
-        [Route("/countries/{country:guid}/states")]
+        [Route("countries/{country:guid}/states")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateState(Guid country, [FromBody] StateDetailDto stateDetailDto)
         {
@@ -215,7 +216,7 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> UpdatePostal(Guid postal, [FromBody] PostalDetailDto postalDetailDto)
         {
-            postalDetailDto.CityGuid = postal;
+            postalDetailDto.PostalGuid = postal;
             await _postalService.UpdatePostal(postalDetailDto);
             return StatusCode(204);
         }

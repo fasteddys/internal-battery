@@ -32,7 +32,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var city = _mapper.Map<City>(cityDetailDto);
             city.CreateDate = DateTime.UtcNow;
             city.CityGuid = Guid.NewGuid();
-            city.CityId = city.CityId;
+            city.StateId = state.StateId;
             await _repositoryWrapper.CityRepository.Create(city);
             await _repositoryWrapper.SaveAsync();
             return city.CityGuid.Value;

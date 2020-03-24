@@ -39,7 +39,8 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> UpdateCountry(Guid country, [FromBody] CountryDetailDto countryDetailDto)
         {
-            await _countryService.UpdateCountry(country, countryDetailDto);
+            countryDetailDto.CountryGuid = country;
+            await _countryService.UpdateCountry(countryDetailDto);
             return StatusCode(204);
         }
 

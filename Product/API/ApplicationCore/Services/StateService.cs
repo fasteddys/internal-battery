@@ -25,7 +25,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (stateGuid == null || stateGuid == Guid.Empty)
                 throw new NullReferenceException("stateGuid cannot be null");
-            var state = await _repositoryWrapper.State.GetByGuid(stateGuid);
+            var state = await _repositoryWrapper.State.GetByStateGuid(stateGuid);
             if (state == null)
                 throw new NotFoundException($"State with guid: {stateGuid} does not exist");
             return _mapper.Map<StateDetailDto>(state);

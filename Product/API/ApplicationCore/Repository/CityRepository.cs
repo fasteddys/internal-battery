@@ -23,6 +23,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             return await (from c in _dbContext.City.Include(c => c.State)
                           where c.CityGuid == city
+                          && c.IsDeleted == 0
                           select c).FirstOrDefaultAsync();
         }
 

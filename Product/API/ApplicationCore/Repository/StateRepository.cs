@@ -57,6 +57,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             return await (from s in _dbContext.State.Include(s => s.Country)
                           where s.StateGuid == stateGuid
+                          && s.IsDeleted == 0
                           select s).FirstOrDefaultAsync();
         }
     }
