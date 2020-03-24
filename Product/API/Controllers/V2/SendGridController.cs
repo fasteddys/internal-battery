@@ -26,6 +26,7 @@ namespace UpDiddyApi.Controllers.V2
         private readonly ISendGridEventService _sendGridEventService;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly ISubscriberEmailService _subscriberEmailService;
+        private readonly ISendGridService _sendGridService;
         private ISysEmail _sysEmail;
         private readonly ILogger _syslog;
 
@@ -37,6 +38,7 @@ namespace UpDiddyApi.Controllers.V2
             _sysEmail = services.GetService<ISysEmail>();        
             _repositoryWrapper = services.GetService<IRepositoryWrapper>();
             _subscriberEmailService = services.GetService<ISubscriberEmailService>();
+            _sendGridService = services.GetService<ISendGridService>();
             _syslog = syslog;
         }
 
@@ -77,6 +79,34 @@ namespace UpDiddyApi.Controllers.V2
             var rval = await _subscriberEmailService.GetEmailStatistics(subscriberGuid);
             return Ok(rval);
         }
+
+
+
+        #region Email Templates 
+        // todo jab add migratoin for [System_Get_EmailTemplates]
+       
+
+        [HttpPost]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("Template/{TemplateGuid}")]
+        public async Task<IActionResult> SendEmailByList([FromBody] List<Guid> Profiles, Guid TemplateGuid)
+        {
+            await _sendGridService.SendBulkEmailByList(TemplateGuid, Profiles);
+            return StatusCode(201);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("Templates")]
+        public async Task<IActionResult> GetEmailTemplates(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        {
+            EmailTemplateListDto rVal =  await _sendGridService.GetEmailTemplates(limit, offset, sort, order);
+            return Ok(rVal);
+        }
+
+        
+
+        #endregion
 
 
         [HttpPost]

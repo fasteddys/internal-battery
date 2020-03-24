@@ -8,6 +8,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyLib.Domain.Models.G2;
+using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Services.G2
 {
@@ -17,8 +18,8 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         private readonly IMapper _mapper;
         private readonly IG2Service _g2Service;
 
-        public ProfileService(IRepositoryWrapper repositoryWrapper, IMapper mapper , IG2Service g2Service)
-    
+        public ProfileService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IG2Service g2Service)
+
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
@@ -44,7 +45,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             var profile = await _repositoryWrapper.ProfileRepository.GetProfileForRecruiter(profileGuid, subscriberGuid);
             if (profile == null)
                 throw new NotFoundException("profile not found");
-            
+
             return _mapper.Map<ProfileDto>(profile);
         }
 
@@ -55,11 +56,11 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             await _repositoryWrapper.ProfileRepository.UpdateProfileForRecruiter(profileDto, subscriberGuid);
 
             // Update the profile in azure search             
-            await _g2Service.G2IndexProfileByGuidAsync(profileDto.ProfileGuid);            
+            await _g2Service.G2IndexProfileByGuidAsync(profileDto.ProfileGuid);
         }
 
- 
-     
+
+
         public async Task UpdateAzureIndexStatus(Guid profileGuid, string azureIndexStatusName, string azureSearchIndexInfo)
         {
             if (profileGuid == null || profileGuid == Guid.Empty)
@@ -72,6 +73,34 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
 
             await _repositoryWrapper.ProfileRepository.UpdateAzureIndexStatus(profileGuid, azureIndexStatus.AzureIndexStatusGuid, azureSearchIndexInfo);
         }
+
+
+        /// <summary>
+        /// Return a list of email for the profiles defined by the passed list of profile guids 
+        /// </summary>
+        /// <param name="profileGuids"></param>
+        /// <returns></returns>
+        public async Task<List<string>> GetProfileEmailsByGuidList(List<Guid> profileGuids)
+        {
+            List<string> rval = new List<string>();
+            List<UpDiddyApi.Models.G2.Profile>  profiles = await _repositoryWrapper.ProfileRepository.GetProfilesByGuidList(profileGuids);
+            foreach (UpDiddyApi.Models.G2.Profile p in profiles )
+            {
+                rval.Add(p.Email);
+            }
+            return rval;
+        }
+
+
+        public async Task<List<UpDiddyApi.Models.G2.Profile>> GetProfilesByGuidList(List<Guid> profileGuids)
+        { 
+            List<UpDiddyApi.Models.G2.Profile> profiles = await _repositoryWrapper.ProfileRepository.GetProfilesByGuidList(profileGuids);      
+            return profiles;
+        }
+
+
+
        
+
     }
 }
