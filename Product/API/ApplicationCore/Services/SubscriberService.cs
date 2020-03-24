@@ -792,9 +792,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             //get notes for subscriber that are public and visible to recruiters of current logged in recruiter company
             var subscriberPublicNotesQueryable = from subscriberNote in _repository.SubscriberNotesRepository.GetAll()
                                                  join recruiter in _repository.RecruiterRepository.GetAll() on subscriberNote.RecruiterId equals recruiter.RecruiterId
-                                                 join company in _repository.Company.GetAllCompanies() on recruiter.CompanyId equals company.CompanyId
+                                                 join recruiterCompany in _repository.RecruiterCompanyRepository.GetAll() on recruiter.RecruiterId equals recruiterCompany.RecruiterId
+                                                 join company in _repository.Company.GetAllCompanies() on recruiterCompany.CompanyId equals company.CompanyId
                                                  join subscriber in _repository.SubscriberRepository.GetAll() on recruiter.SubscriberId equals subscriber.SubscriberId
-                                                 where subscriberNote.SubscriberId.Equals(subscriberData.SubscriberId) && subscriberNote.IsDeleted.Equals(0) && recruiter.CompanyId.Equals(rec.CompanyId) && subscriberNote.ViewableByOthersInRecruiterCompany.Equals(true)
+                                                 where subscriberNote.SubscriberId.Equals(subscriberData.SubscriberId) && subscriberNote.IsDeleted.Equals(0) && subscriberNote.ViewableByOthersInRecruiterCompany.Equals(true)
                                                  select new SubscriberNotesDto()
                                                  {
                                                      ViewableByOthersInRecruiterCompany = subscriberNote.ViewableByOthersInRecruiterCompany,

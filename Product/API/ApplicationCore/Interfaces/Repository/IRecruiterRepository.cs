@@ -8,7 +8,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface IRecruiterRepository :IUpDiddyRepositoryBase<Recruiter>
     {
-        IQueryable<Recruiter> GetAllRecruiters();
+        Task<List<Recruiter>> GetAllInternalRecruiters();
         Task<Recruiter> GetRecruiterBySubscriberId(int subscriberId);
         Task<Recruiter> GetRecruiterBySubscriberGuid(Guid subscriberGuid);
         Task<Recruiter> GetRecruiterAndCompanyBySubscriberGuid(Guid subscriberGuid);

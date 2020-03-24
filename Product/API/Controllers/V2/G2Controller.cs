@@ -58,9 +58,10 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpPut]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        [Route("profiles")]
-        public async Task<IActionResult> UpdateProfile([FromBody] ProfileDto profileDto)
-        {                         
+        [Route("profiles/{profileGuid:guid}")]
+        public async Task<IActionResult> UpdateProfile([FromBody] ProfileDto profileDto, Guid profileGuid)
+        {
+            profileDto.ProfileGuid = profileGuid;
             await _profileService.UpdateProfileForRecruiter(profileDto, GetSubscriberGuid());
             return StatusCode(204);
         }

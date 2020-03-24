@@ -20,9 +20,7 @@ namespace UpDiddyLib.Domain.Models
         public Guid RecruiterGuid { get; set; }
         public Guid? SubscriberGuid { get; set; }
         public Guid? CompanyGuid { get; set; }
-
         public string CompanyName { get; set; }
-
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }

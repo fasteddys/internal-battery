@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
@@ -10,9 +11,10 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200320183353_employment type and profile")]
+    partial class employmenttypeandprofile
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1205,37 +1207,6 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("EducationalInstitutionId");
 
                     b.ToTable("EducationalInstitution");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.EmailTemplate", b =>
-                {
-                    b.Property<int>("EmailTemplateId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<Guid>("EmailTemplateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<string>("Name");
-
-                    b.Property<string>("SendGridSubAccount");
-
-                    b.Property<string>("SendGridTemplateId");
-
-                    b.Property<string>("TemplateParams");
-
-                    b.HasKey("EmailTemplateId");
-
-                    b.ToTable("EmailTemplate");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.EmailVerification", b =>
