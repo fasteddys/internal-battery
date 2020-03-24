@@ -49,16 +49,6 @@ steps:
 - script: |
     dotnet build Product/API --configuration $(buildConfiguration)
   displayName: Compile
-
-# run tests for UpDiddyLib
-- script: |
-    dotnet test --logger trx --results-directory $(Agent.TempDirectory) Product/UpDiddyLib.Tests
-  displayName: UpDiddyLib Unit Tests
-
-# run tests for API
-- script: |
-    dotnet test --logger trx --results-directory $(Agent.TempDirectory) Product/API.Tests
-  displayName: API Unit Tests
   
 # compile application and output to artifact staging directory (see below link for artifact staging directory variable info)
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml#build-variables
@@ -85,8 +75,8 @@ steps:
 - task: AzureKeyVault@1
   inputs:
     azureSubscription: Digital BT (933642d7-459a-499f-acc7-0d9a14ecf604)
-    keyVaultName: CareerCircleDev
-  displayName: Acquire ConnectionString
+    keyVaultName: CareerCircleStaging
+  displayName: Acquire ConnectionString for Staging Database from Staging KV
 
 # generate sql migrations script (idempotent) as part of build and to be used for automated release (staging)
 # https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/#generate-sql-scripts
@@ -101,4 +91,4 @@ steps:
 - task: PublishBuildArtifacts@1
   displayName: Publish Artifacts
   inputs:
-    artifactName: 'api'
+    artifactName: 'apiStaging'
