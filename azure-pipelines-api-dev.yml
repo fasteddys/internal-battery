@@ -83,7 +83,7 @@ steps:
     cd Product/API
     dotnet ef migrations script -i --output $(Build.ArtifactStagingDirectory)/script.sql
   displayName: Generate SQL Script
-  env: { ASPNETCORE_ENVIRONMENT: Staging, CareerCircleSqlConnection: $(CareerCircleSqlConnection) }
+  env: { ASPNETCORE_ENVIRONMENT: development, CareerCircleSqlConnection: $(CareerCircleSqlConnection) }
 
 # publish build files for devops to be able to use later
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/publish-build-artifacts?view=azure-devops
