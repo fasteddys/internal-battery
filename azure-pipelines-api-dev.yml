@@ -1,6 +1,6 @@
 # Build dotnet core project using Azure Pipelines
 # This pipeline is designed for API
-
+ 
 # build name format
 name: api.$(date:yyyyMMdd)$(rev:.r)
 
