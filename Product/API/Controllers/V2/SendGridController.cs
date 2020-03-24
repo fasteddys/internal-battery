@@ -83,9 +83,8 @@ namespace UpDiddyApi.Controllers.V2
 
 
         #region Email Templates 
-        // todo jab add migratoin for [System_Get_EmailTemplates]
-       
-
+     
+ 
         [HttpPost]
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("Template/{TemplateGuid}")]

@@ -87,7 +87,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             // get the list of email associated with the profiles 
             List<UpDiddyApi.Models.G2.Profile> profiles = await _profileService.GetProfilesByGuidList(Profiles);
 
-
             foreach (Models.G2.Profile p in profiles)
             {
                 dynamic templateData = null;
@@ -102,22 +101,18 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 }
 
-                // TODO JAB Try catch and log this 
-                SendGridAccount accountType = (SendGridAccount) Enum.Parse(typeof(SendGridAccount), template.SendGridSubAccount);
-                // todo jab try catch and log on buildEmailTempate 
-                _sysEmail.SendTemplatedEmailAsync(p.Email, template.SendGridTemplateId, templateData, accountType );
+                try
+                {
+                    // map account type to enum 
+                    SendGridAccount accountType = (SendGridAccount)Enum.Parse(typeof(SendGridAccount), template.SendGridSubAccount);
+                    // send the email 
+                    _sysEmail.SendTemplatedEmailAsync(p.Email, template.SendGridTemplateId, templateData, accountType);
+                }
+                catch (Exception ex)
+                {
+                    _syslog.LogError($"SendGridService:SendbulkEmailByList  Error sending email to  {p.Email} Error = {ex.Message} ");
+                }                
             }
-
-
-
-  
-            
-
-
-
-
-
-            // todo jab loop through each profile guid, find subscriber and call send email 
 
             return true;
 
@@ -125,7 +120,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<EmailTemplateListDto> GetEmailTemplates(int limit, int offset, string sort, string order)
         {
-            // todo jab implement 
+            // get the list of available email templates 
             EmailTemplateListDto rval = await _emailTemplateService.GetEmailTemplates(limit,offset,sort,order);
 
             return rval;
@@ -137,57 +132,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-        /*
-
-            TODO JAB Remove but Save very cool 
-
-
-        AssemblyBuilder dynamicAssembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("MyDynamicAssembly"),
-   AssemblyBuilderAccess.Run);
-        ModuleBuilder dynamicModule = dynamicAssembly.DefineDynamicModule("MyDynamicAssemblyModule");
-        TypeBuilder dynamicType = dynamicModule.DefineType("MyDynamicType", TypeAttributes.Public);
-        AddProperty(dynamicType, "firstName", typeof(string));
-        AddProperty(dynamicType, "description", typeof(string));
-        AddProperty(dynamicType, "courseUrl", typeof(string));
-        Type myType = dynamicType.CreateType();
-        var instantiatedObject = Activator.CreateInstance(myType);
-
-
-        PropertyInfo prop1 = myType.GetProperty("firstName");
-        prop1.SetValue(instantiatedObject, "This is the first name ", null);
-            PropertyInfo prop2 = myType.GetProperty("description");
-        prop2.SetValue(instantiatedObject, "This is the description", null);
-            PropertyInfo prop3 = myType.GetProperty("courseUrl");
-        prop3.SetValue(instantiatedObject, "This is the courseUrl", null);
-
-        private    void AddProperty(TypeBuilder typeBuilder, string propertyName, Type propertyType)
-        {
-            const MethodAttributes getSetAttr = MethodAttributes.Public | MethodAttributes.HideBySig;
-
-            FieldBuilder field = typeBuilder.DefineField("_" + propertyName, typeof(string), FieldAttributes.Private);
-            PropertyBuilder property = typeBuilder.DefineProperty(propertyName, PropertyAttributes.None, propertyType,
-                new[] { propertyType });
-
-            MethodBuilder getMethodBuilder = typeBuilder.DefineMethod("get_value", getSetAttr, propertyType,
-                Type.EmptyTypes);
-            ILGenerator getIl = getMethodBuilder.GetILGenerator();
-            getIl.Emit(OpCodes.Ldarg_0);
-            getIl.Emit(OpCodes.Ldfld, field);
-            getIl.Emit(OpCodes.Ret);
-
-            MethodBuilder setMethodBuilder = typeBuilder.DefineMethod("set_value", getSetAttr, null,
-                new[] { propertyType });
-            ILGenerator setIl = setMethodBuilder.GetILGenerator();
-            setIl.Emit(OpCodes.Ldarg_0);
-            setIl.Emit(OpCodes.Ldarg_1);
-            setIl.Emit(OpCodes.Stfld, field);
-            setIl.Emit(OpCodes.Ret);
-
-            property.SetGetMethod(getMethodBuilder);
-            property.SetSetMethod(setMethodBuilder);
-        }
-
-    */
+   
 
 
         private dynamic BuildEmailTemplate(Models.G2.Profile p, string TemplateParams)
