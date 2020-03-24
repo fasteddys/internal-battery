@@ -1,5 +1,4 @@
 # Build dotnet core project using Azure Pipelines
-
 # This pipeline is designed for API
 
 # build name format
@@ -7,7 +6,7 @@ name: api.$(date:yyyyMMdd)$(rev:.r)
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#pool
 pool:
-  vmImage: 'ubuntu-16.04'
+  vmImage: 'ubuntu-latest'
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#variables
 variables:
