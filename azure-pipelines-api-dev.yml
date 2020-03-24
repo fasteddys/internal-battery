@@ -75,7 +75,7 @@ steps:
   inputs:
     azureSubscription: Digital BT (933642d7-459a-499f-acc7-0d9a14ecf604)
     keyVaultName: CareerCircleDev
-  displayName: Acquire ConnectionString
+  displayName: Acquire ConnectionString from KV CareerCircleDev
 
 # generate sql migrations script (idempotent) as part of build and to be used for automated release (staging)
 # https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/#generate-sql-scripts
