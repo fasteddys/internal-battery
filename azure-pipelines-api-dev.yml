@@ -1,0 +1,94 @@
+# Build dotnet core project using Azure Pipelines
+
+# This pipeline is designed for API
+
+# build name format
+name: api.$(date:yyyyMMdd)$(rev:.r)
+
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#pool
+pool:
+  vmImage: 'ubuntu-16.04'
+
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#variables
+variables:
+  buildConfiguration: 'Release'
+
+# trigger CI build for the following branches, and only trigger if changes are in UpDiddyLib or API
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#triggers
+trigger:
+  branches:
+    include:
+      - dev
+  paths:
+    include:
+      - Product/UpDiddyLib/*
+      - Product/API/*
+    exclude:
+      - Product/WebApp/*
+      - Product/CCProfileService/*
+
+# disable CI builds for pull requests for now
+pr: none
+
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#steps
+steps:
+
+# dotnet core 2.2.x
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '2.2.x'
+  displayName: Specify dotnet core 2.2.x sdk
+
+# get/install dependencies using NugGet
+- script: |
+    dotnet restore Product/API
+  displayName: Restore NuGet Packages
+
+# build the project
+- script: |
+    dotnet build Product/API --configuration $(buildConfiguration)
+  displayName: Compile
+  
+# compile application and output to artifact staging directory (see below link for artifact staging directory variable info)
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml#build-variables
+- script: |
+    dotnet publish Product/API --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
+  displayName: Publish Files
+
+# Publish test results for devops to be able to display
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/test/publish-test-results?view=azure-devops&tabs=yaml
+- task: PublishTestResults@2
+  inputs: 
+    testRunner: VSTest
+    testResultsFiles: '**/*.trx' 
+    searchFolder: '$(Agent.TempDirectory)'
+
+# package up all dlls and compiled code
+- script: |
+    cd $(Build.ArtifactStagingDirectory)
+    zip -rm api.zip *
+  displayName: Packaging
+
+# get secret for connection string to staging db
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-key-vault?view=azure-devops#yaml-snippet
+- task: AzureKeyVault@1
+  inputs:
+    azureSubscription: Digital BT (933642d7-459a-499f-acc7-0d9a14ecf604)
+    keyVaultName: CareerCircleDev
+  displayName: Acquire ConnectionString
+
+# generate sql migrations script (idempotent) as part of build and to be used for automated release (staging)
+# https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/#generate-sql-scripts
+- script: |
+    cd Product/API
+    dotnet ef migrations script -i --output $(Build.ArtifactStagingDirectory)/script.sql
+  displayName: Generate SQL Script
+  env: { ASPNETCORE_ENVIRONMENT: Staging, CareerCircleSqlConnection: $(CareerCircleSqlConnection) }
+
+# publish build files for devops to be able to use later
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/publish-build-artifacts?view=azure-devops
+- task: PublishBuildArtifacts@1
+  displayName: Publish Artifacts
+  inputs:
+    artifactName: 'api'
