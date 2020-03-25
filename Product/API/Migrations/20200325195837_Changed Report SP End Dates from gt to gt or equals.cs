@@ -9,6 +9,7 @@ namespace UpDiddyApi.Migrations
             migrationBuilder.Sql(@"EXEC('/*
     <remarks>
     2020.01.30 - Bill Koenig - Created
+    2020.03.25 - Scott Eggert - Corrected date range logic
     </remarks>
     <description>
     This is used by the new API endpoint titled ''Dashboard - New Users Report''. This endpoint is intended to supply data to a 
@@ -55,6 +56,7 @@ namespace UpDiddyApi.Migrations
             migrationBuilder.Sql(@"EXEC('/*
     <remarks>
     2020.01.30 - Bill Koenig - Created
+    2020.03.25 - Scott Eggert - Corrected date range logic
     </remarks>
     <description>
     This is used by the new API endpoint titled ''Dashboard - Users By Partner Report''. This endpoint is intended to supply data to a
@@ -111,6 +113,7 @@ namespace UpDiddyApi.Migrations
             migrationBuilder.Sql(@"EXEC('/*
     <remarks>
     2020.01.30 - Bill Koenig - Created
+    2020.03.25 - Scott Eggert - Corrected date range logic
     </remarks>
     <description>
     This is used by the new API endpoint titled ''Dashboard - Users By Partner Detail Report''. This endpoint is intended to supply 
