@@ -28,9 +28,9 @@ namespace UpDiddyApi.Models
             IConfigurationBuilder configBuilder = new ConfigurationBuilder();
             string Env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             if (string.IsNullOrEmpty(Env))
-                Env = "Development";
+                Env = "LocalDevelopment";
             string SettingsFile = $"appsettings.{Env}.json";
-            bool IsEnvLocal = Env == "Development";
+            bool IsEnvLocal = Env == "LocalDevelopment";
             IConfiguration config;
             // if development file exists then this is being executed locally
             if (IsEnvLocal)
