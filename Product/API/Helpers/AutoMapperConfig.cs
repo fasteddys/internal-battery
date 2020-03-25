@@ -80,7 +80,10 @@ namespace UpDiddyApi.Helpers
                 .ForMember(dest => dest.Countries, opt => opt.MapFrom(src => src.ToList()))
                 .ReverseMap();
 
-            CreateMap<StateDetailDto, State>().ReverseMap();
+            CreateMap<State, StateDetailDto>()
+                .ForMember(dest => dest.CountryGuid, opt => opt.MapFrom(src => src.Country.CountryGuid))
+                .ReverseMap();
+
             CreateMap<List<StateDetailDto>, StateDetailListDto>()
                   .AfterMap((src, dest) =>
                   {
@@ -91,6 +94,36 @@ namespace UpDiddyApi.Helpers
                   })
                 .ForMember(dest => dest.States, opt => opt.MapFrom(src => src.ToList()))
                 .ReverseMap();
+
+            CreateMap<City, CityDetailDto>()
+                .ForMember(dest => dest.StateGuid, opt => opt.MapFrom(src => src.State.StateGuid))
+                .ReverseMap();
+
+            CreateMap<List<CityDetailDto>, CityDetailListDto>()
+                .AfterMap((src, dest) =>
+                {
+                    if (src != null && src.Count() > 0)
+                        dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                    else
+                        dest.TotalRecords = 0;
+                })
+                .ForMember(dest => dest.Cities, opt => opt.MapFrom(src => src.ToList()))
+                .ReverseMap();
+
+            CreateMap<Postal, PostalDetailDto>()
+                .ForMember(dest => dest.CityGuid, opt => opt.MapFrom(src => src.City.CityGuid))
+                .ReverseMap();
+
+            CreateMap<List<PostalDetailDto>, PostalDetailListDto>()
+                 .AfterMap((src, dest) =>
+                 {
+                     if (src != null && src.Count() > 0)
+                         dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                     else
+                         dest.TotalRecords = 0;
+                 })
+                 .ForMember(dest => dest.Postals, opt => opt.MapFrom(src => src.ToList()))
+                 .ReverseMap();
 
             CreateMap<EnrollmentLog, EnrollmentLogDto>().ReverseMap();
             CreateMap<CourseVariantType, CourseVariantTypeDto>().ReverseMap();
