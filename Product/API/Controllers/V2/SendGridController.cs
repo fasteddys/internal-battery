@@ -14,6 +14,7 @@ using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using Microsoft.Extensions.Logging;
+using UpDiddyApi.Workflow;
 
 namespace UpDiddyApi.Controllers.V2
 {
@@ -27,6 +28,7 @@ namespace UpDiddyApi.Controllers.V2
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly ISubscriberEmailService _subscriberEmailService;
         private readonly ISendGridService _sendGridService;
+        private readonly IHangfireService _hangfireService;
         private ISysEmail _sysEmail;
         private readonly ILogger _syslog;
 
@@ -39,6 +41,7 @@ namespace UpDiddyApi.Controllers.V2
             _repositoryWrapper = services.GetService<IRepositoryWrapper>();
             _subscriberEmailService = services.GetService<ISubscriberEmailService>();
             _sendGridService = services.GetService<ISendGridService>();
+            _hangfireService = services.GetService<IHangfireService>();
             _syslog = syslog;
         }
 
@@ -90,8 +93,9 @@ namespace UpDiddyApi.Controllers.V2
         [Route("Template/{TemplateGuid}")]
         public async Task<IActionResult> SendEmailByList([FromBody] List<Guid> Profiles, Guid TemplateGuid)
         {
-            await _sendGridService.SendBulkEmailByList(TemplateGuid, Profiles);
-            return StatusCode(201);
+            // Fire and forget bulk emails 
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.SendBulkEmail(TemplateGuid,Profiles));            
+            return StatusCode(202);
         }
 
         [HttpGet]

@@ -166,8 +166,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             List<Profile> rval = await (from p in _dbContext.Profile
                                          .Include(c => c.Company)
                                          .Include(ct => ct.ContactType)
-                                         .Include(c => c.City)
-                                         .Include(et => et.EmploymentType)
+                                         .Include(c => c.City)   
                                          .Include(el => el.ExperienceLevel)
                                          .Include(s => s.State
                                        )
