@@ -12,6 +12,7 @@ namespace UpDiddyLib.Domain.Models
 
     public class StateDetailDto
     {
+        public Guid CountryGuid { get; set; }
         public Guid StateGuid { get; set; }
         public string Name { get; set; }
         public string Code { get; set; }

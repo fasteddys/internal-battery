@@ -66,10 +66,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             _sysEmail = sysEmail;
         }
 
-
+ 
         public async Task<bool> SendBulkEmailByList(Guid TemplateGuid, List<Guid> Profiles )
         {            
-
             // validate profiles have been specified 
             if (Profiles == null || Profiles.Count == 0)
                 throw new FailedValidationException($"SendGridService:SendBulkEmailsByList  One or more profiles must be specified for bulk email");
@@ -92,13 +91,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                 dynamic templateData = null;
                 try
                 {
-                    templateData = BuildEmailTemplate(p, template.TemplateParams);
-              
+                    templateData = BuildEmailTemplateData(p, template.TemplateParams);              
                 }
                 catch ( Exception ex )
                 {
                     _syslog.LogError($"SendGridService:SendbulkEmailByList  Error generating email data for {p.ProfileGuid} Error = {ex.Message} ");
-
                 }
 
                 try
@@ -113,9 +110,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     _syslog.LogError($"SendGridService:SendbulkEmailByList  Error sending email to  {p.Email} Error = {ex.Message} ");
                 }                
             }
-
             return true;
-
         }
 
         public async Task<EmailTemplateListDto> GetEmailTemplates(int limit, int offset, string sort, string order)
@@ -129,17 +124,9 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         #region Private Helpers
 
-
-
-
-   
-
-
-        private dynamic BuildEmailTemplate(Models.G2.Profile p, string TemplateParams)
+        private dynamic BuildEmailTemplateData(Models.G2.Profile p, string TemplateParams)
         {
-  
             string[] props = TemplateParams.Split(';');
-
             JObject rval = new JObject();
            
             foreach ( string prop in props)
@@ -156,11 +143,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                         rval.Add(paramName, paramVal);
                     }                    
                 }
-            }
- 
+            } 
             return rval;
         }
-
 
         private  object GetPropertyValue(object src, string propName)
         {
@@ -173,8 +158,11 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 var prop = src.GetType().GetProperty(temp[0]);
                 if (prop == null)
+                {
+                    _syslog.LogError($"SendGridService:GetPropertyValue: {temp[0]} is NOT a valid profile navigation property, returning null");
                     return null;
-
+                }
+                   
                 var subObject = prop.GetValue(src, null);
                 if (subObject == null)
                     return null;
@@ -184,6 +172,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             else
             {
                 var prop = src.GetType().GetProperty(propName);
+                if (prop == null)
+                    _syslog.LogError($"SendGridService:GetPropertyValue: {propName} is NOT a valid profile property, returning null");
                 return prop != null ? prop.GetValue(src, null) : null;
             }
         }
@@ -192,10 +182,8 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         private bool ValidateSendgridSubAccount(string accountName)
         {
-
             string apiKey =  _configuration[$"SysEmail:{accountName}:ApiKey"];
             return apiKey != null;
-
         }
 
         #endregion

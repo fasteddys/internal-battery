@@ -357,6 +357,8 @@ namespace UpDiddyApi
             services.AddScoped<G2Interfaces.IWishlistService, G2Services.WishlistService>();
             services.AddScoped<G2Interfaces.ICommentService, G2Services.CommentService>();
             services.AddScoped<ITagService, TagService>();
+            services.AddScoped<ICityService, CityService>();
+            services.AddScoped<IPostalService, PostalService>();
             services.AddScoped<ISendGridService, SendGridService>();
             services.AddScoped<IEmailTemplateService, EmailTemplateService>();
 

@@ -58,9 +58,10 @@ namespace UpDiddyApi.Workflow
         private readonly IHiringSolvedService _hiringSolvedService;
         private readonly ISkillService _skillService;
         private readonly IG2Service _g2Service;
- 
+        private readonly ISendGridService _sendGridService;
 
- 
+
+
 
         public ScheduledJobs(
             UpDiddyDbContext context,
@@ -86,7 +87,8 @@ namespace UpDiddyApi.Workflow
             IEmploymentTypeService employmentTypeService,
             IHiringSolvedService hiringSolvedService,
             ISkillService skillService,
-            IG2Service g2Service 
+            IG2Service g2Service,
+            ISendGridService sendGridService
             )
         {
             _db = context;
@@ -115,6 +117,7 @@ namespace UpDiddyApi.Workflow
             _hiringSolvedService = hiringSolvedService;
             _skillService = skillService;
             _g2Service = g2Service;
+            _sendGridService = sendGridService;
        
         }
 
@@ -2073,6 +2076,33 @@ namespace UpDiddyApi.Workflow
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.PurgeSendGridAuditRecords completed at: {DateTime.UtcNow.ToLongDateString()}");
             }
         }
+
+
+
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        public async Task SendBulkEmail(Guid TemplateGuid, List<Guid> Profiles)
+        {
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.SendBulkEmail started at: {DateTime.UtcNow.ToLongDateString()}");
+            try
+            { 
+                await _sendGridService.SendBulkEmailByList(TemplateGuid, Profiles);
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.SendBulkEmail encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+            }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.SendBulkEmail completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
+        }
+
+
+
+
+
+
+
 
         #endregion
 

@@ -7,8 +7,7 @@ namespace UpDiddyApi.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
 
-            migrationBuilder.Sql(@"EXEC('
- /*     
+            migrationBuilder.Sql(@"EXEC('/*     
 <remarks>
 2019.12.23 - Jim Brazil - Created 
 </remarks>
@@ -49,8 +48,7 @@ BEGIN
     CASE WHEN @Order = ''descending'' AND @Sort = ''modifyDate'' THEN ModifyDate END DESC 
     OFFSET @Offset ROWS
     FETCH FIRST @Limit ROWS ONLY
-END
-')");
+END')");
 
         }
 
