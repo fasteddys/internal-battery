@@ -359,6 +359,8 @@ namespace UpDiddyApi
             services.AddScoped<ITagService, TagService>();
             services.AddScoped<ICityService, CityService>();
             services.AddScoped<IPostalService, PostalService>();
+            services.AddScoped<ISendGridService, SendGridService>();
+            services.AddScoped<IEmailTemplateService, EmailTemplateService>();
 
             #endregion
 

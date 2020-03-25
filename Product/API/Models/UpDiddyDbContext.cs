@@ -208,6 +208,8 @@ namespace UpDiddyApi.Models
         public DbSet<RecruiterStat> RecruiterStat { get; set; }
         public DbSet<ProfileEmploymentType> ProfileEmploymentType { get; set; }
 
+        public DbSet<EmailTemplate> EmailTemplate { get; set; }
+
         #endregion
 
         #region DBQueries
@@ -274,6 +276,7 @@ namespace UpDiddyApi.Models
         public DbQuery<ProfileTagDto> ProfileTags { get; set; }
         public DbQuery<UpDiddyLib.Domain.Models.CityDetailDto> Cities { get; set; }
         public DbQuery<UpDiddyLib.Domain.Models.PostalDetailDto> Postals { get; set; }
+        public DbQuery<EmailTemplateDto> EmailTemplates { get; set; }
 
         #endregion
 

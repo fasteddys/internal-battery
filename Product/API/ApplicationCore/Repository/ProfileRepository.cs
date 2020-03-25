@@ -160,5 +160,26 @@ namespace UpDiddyApi.ApplicationCore.Repository
             _dbContext.Update(profile);
             await _dbContext.SaveChangesAsync();
         }
+
+        public async Task<List<Profile>> GetProfilesByGuidList(List<Guid> profilesGuids)
+        {
+            List<Profile> rval = await (from p in _dbContext.Profile
+                                         .Include(c => c.Company)
+                                         .Include(ct => ct.ContactType)
+                                         .Include(c => c.City)   
+                                         .Include(el => el.ExperienceLevel)
+                                         .Include(s => s.State
+                                       )
+                                       where (profilesGuids.Contains(p.ProfileGuid))
+                                       select p)
+                                       .ToListAsync();                                                            
+            return rval;
+        }
+
+
     }
-}
+
+
+
+    }
+ 

@@ -14,6 +14,7 @@ using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using Microsoft.Extensions.Logging;
+using UpDiddyApi.Workflow;
 
 namespace UpDiddyApi.Controllers.V2
 {
@@ -26,6 +27,8 @@ namespace UpDiddyApi.Controllers.V2
         private readonly ISendGridEventService _sendGridEventService;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly ISubscriberEmailService _subscriberEmailService;
+        private readonly ISendGridService _sendGridService;
+        private readonly IHangfireService _hangfireService;
         private ISysEmail _sysEmail;
         private readonly ILogger _syslog;
 
@@ -37,6 +40,8 @@ namespace UpDiddyApi.Controllers.V2
             _sysEmail = services.GetService<ISysEmail>();        
             _repositoryWrapper = services.GetService<IRepositoryWrapper>();
             _subscriberEmailService = services.GetService<ISubscriberEmailService>();
+            _sendGridService = services.GetService<ISendGridService>();
+            _hangfireService = services.GetService<IHangfireService>();
             _syslog = syslog;
         }
 
@@ -77,6 +82,34 @@ namespace UpDiddyApi.Controllers.V2
             var rval = await _subscriberEmailService.GetEmailStatistics(subscriberGuid);
             return Ok(rval);
         }
+
+
+
+        #region Email Templates 
+     
+ 
+        [HttpPost]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("Template/{TemplateGuid}")]
+        public async Task<IActionResult> SendEmailByList([FromBody] List<Guid> Profiles, Guid TemplateGuid)
+        {
+            // Fire and forget bulk emails 
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.SendBulkEmail(TemplateGuid,Profiles));            
+            return StatusCode(202);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("Templates")]
+        public async Task<IActionResult> GetEmailTemplates(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        {
+            EmailTemplateListDto rVal =  await _sendGridService.GetEmailTemplates(limit, offset, sort, order);
+            return Ok(rVal);
+        }
+
+        
+
+        #endregion
 
 
         [HttpPost]

@@ -53,8 +53,6 @@ namespace UpDiddyLib.Helpers
 
         public async Task<bool> SendTemplatedEmailAsync(string email, string templateId, dynamic templateData, Constants.SendGridAccount SendGridAccount, string subject = null, List<Attachment> attachments = null, DateTime? sendAt = null, int? unsubscribeGroupId = null)
         {
-
-         
             bool isDebugMode = _configuration[$"SysEmail:DebugMode"] == "true";
             string SendGridAccountType = Enum.GetName(typeof(Constants.SendGridAccount), SendGridAccount);
 
@@ -96,7 +94,7 @@ namespace UpDiddyLib.Helpers
                 { "Subject", webhookSubject }
             };
 
-            var response = await client.SendEmailAsync(message);
+            var response = await client.SendEmailAsync(message);           
             int statusCode = (int)response.StatusCode;
 
             return statusCode >= 200 && statusCode <= 299;

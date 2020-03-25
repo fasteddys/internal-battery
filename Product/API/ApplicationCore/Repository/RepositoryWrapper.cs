@@ -102,6 +102,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IAzureIndexStatusRepository _azureIndexStatusRepository;
         private IWishlistRepository _wishlistRepository;
         private ICommentRepository _commentRepository;
+        private IEmailTemplateRepository _emailTemplateRepository;
+
 
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
         {
@@ -1202,6 +1204,21 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 return _commentRepository;
             }
         }
+
+
+        public IEmailTemplateRepository EmailTemplateRepository
+        {
+            get
+            {
+                if (_emailTemplateRepository == null)
+                {
+                    _emailTemplateRepository = new EmailTemplateRepository(_dbContext);
+                }
+                return _emailTemplateRepository;
+            }
+        }
+
+
 
         public async Task SaveAsync()
         {

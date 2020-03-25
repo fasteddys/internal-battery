@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
@@ -10,9 +11,10 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200320164344_adding subaccount to emailtemplate")]
+    partial class addingsubaccounttoemailtemplate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1231,8 +1233,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("SendGridTemplateId");
 
-                    b.Property<string>("TemplateParams");
-
                     b.HasKey("EmailTemplateId");
 
                     b.ToTable("EmailTemplate");
@@ -1615,6 +1615,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<string>("Email")
                         .HasMaxLength(254);
 
+                    b.Property<int?>("EmploymentTypeId");
+
                     b.Property<int?>("ExperienceLevelId");
 
                     b.Property<string>("FirstName")
@@ -1669,6 +1671,8 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("CompanyId");
 
                     b.HasIndex("ContactTypeId");
+
+                    b.HasIndex("EmploymentTypeId");
 
                     b.HasIndex("ExperienceLevelId");
 
@@ -1749,39 +1753,6 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("ProfileId");
 
                     b.ToTable("ProfileDocuments","G2");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.G2.ProfileEmploymentType", b =>
-                {
-                    b.Property<int>("ProfileEmploymentTypeId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("EmploymentTypeId");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<Guid>("ProfileEmploymentTypeGuid");
-
-                    b.Property<int>("ProfileId");
-
-                    b.HasKey("ProfileEmploymentTypeId");
-
-                    b.HasIndex("EmploymentTypeId");
-
-                    b.HasIndex("ProfileId", "EmploymentTypeId")
-                        .IsUnique()
-                        .HasName("UIX_ProfileEmploymentType_Profile_EmploymentType");
-
-                    b.ToTable("ProfileEmploymentTypes","G2");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.G2.ProfileSearchLocation", b =>
@@ -3437,6 +3408,8 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<int?>("CompanyId");
+
                     b.Property<DateTime>("CreateDate");
 
                     b.Property<Guid>("CreateGuid");
@@ -3460,6 +3433,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<int?>("SubscriberId");
 
                     b.HasKey("RecruiterId");
+
+                    b.HasIndex("CompanyId");
 
                     b.HasIndex("SubscriberId");
 
@@ -5365,6 +5340,10 @@ namespace UpDiddyApi.Migrations
                         .WithMany()
                         .HasForeignKey("ContactTypeId");
 
+                    b.HasOne("UpDiddyApi.Models.EmploymentType", "EmploymentType")
+                        .WithMany()
+                        .HasForeignKey("EmploymentTypeId");
+
                     b.HasOne("UpDiddyApi.Models.ExperienceLevel", "ExperienceLevel")
                         .WithMany()
                         .HasForeignKey("ExperienceLevelId");
@@ -5400,19 +5379,6 @@ namespace UpDiddyApi.Migrations
                 {
                     b.HasOne("UpDiddyApi.Models.G2.Profile", "Profile")
                         .WithMany()
-                        .HasForeignKey("ProfileId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.G2.ProfileEmploymentType", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.EmploymentType", "EmploymentType")
-                        .WithMany()
-                        .HasForeignKey("EmploymentTypeId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UpDiddyApi.Models.G2.Profile", "Profile")
-                        .WithMany("ProfileEmploymentTypes")
                         .HasForeignKey("ProfileId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -5822,6 +5788,10 @@ namespace UpDiddyApi.Migrations
 
             modelBuilder.Entity("UpDiddyApi.Models.Recruiter", b =>
                 {
+                    b.HasOne("UpDiddyApi.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId");
+
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany()
                         .HasForeignKey("SubscriberId");
@@ -5847,12 +5817,12 @@ namespace UpDiddyApi.Migrations
             modelBuilder.Entity("UpDiddyApi.Models.RecruiterCompany", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.Company", "Company")
-                        .WithMany("RecruiterCompanies")
+                        .WithMany()
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("UpDiddyApi.Models.Recruiter", "Recruiter")
-                        .WithMany("RecruiterCompanies")
+                        .WithMany()
                         .HasForeignKey("RecruiterId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
