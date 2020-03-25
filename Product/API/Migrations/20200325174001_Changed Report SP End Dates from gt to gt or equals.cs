@@ -11,7 +11,7 @@ namespace UpDiddyApi.Migrations
     2020.01.30 - Bill Koenig - Created
     </remarks>
     <description>
-    This is used by the new API endpoint titled 'Dashboard - New Users Report'. This endpoint is intended to supply data to a 
+    This is used by the new API endpoint titled ''Dashboard - New Users Report''. This endpoint is intended to supply data to a 
     report in the admin portal that displays aggregate data on user creation and course enrollment week over week for the last year.
     </description>
     <example>
@@ -40,7 +40,7 @@ namespace UpDiddyApi.Migrations
     			FROM Enrollment 
     			WHERE IsDeleted = 0) TotalEnrollments
     	)
-    	SELECT CONVERT(VARCHAR(10), d.StartDate, 101) + ' - ' + CONVERT(VARCHAR(10), DATEADD(DAY, 7, d.StartDate), 101) DateRange
+    	SELECT CONVERT(VARCHAR(10), d.StartDate, 101) + '' - '' + CONVERT(VARCHAR(10), DATEADD(DAY, 7, d.StartDate), 101) DateRange
     		, COUNT(DISTINCT s.SubscriberId) UsersCreated
     		, COUNT(DISTINCT e.EnrollmentId) EnrollmentsCreated
     		, (SELECT TOP 1 TotalUsers FROM totals) TotalUsers
@@ -57,11 +57,11 @@ namespace UpDiddyApi.Migrations
     2020.01.30 - Bill Koenig - Created
     </remarks>
     <description>
-    This is used by the new API endpoint titled 'Dashboard - Users By Partner Report'. This endpoint is intended to supply data to a
+    This is used by the new API endpoint titled ''Dashboard - Users By Partner Report''. This endpoint is intended to supply data to a
     report in the admin portal that displays aggregate data on user creation and course enrollment by partner. 
     </description>
     <example>
-    EXEC [dbo].[System_Report_UsersByPartner] @StartDate = '10/1/2019', @EndDate = '1/1/2020'
+    EXEC [dbo].[System_Report_UsersByPartner] @StartDate = ''10/1/2019'', @EndDate = ''1/1/2020''
     </example>
     */
     ALTER PROCEDURE [dbo].[System_Report_UsersByPartner](
@@ -113,11 +113,11 @@ namespace UpDiddyApi.Migrations
     2020.01.30 - Bill Koenig - Created
     </remarks>
     <description>
-    This is used by the new API endpoint titled 'Dashboard - Users By Partner Detail Report'. This endpoint is intended to supply 
+    This is used by the new API endpoint titled ''Dashboard - Users By Partner Detail Report''. This endpoint is intended to supply 
     data to a report in the admin portal that displays detailed data on user creation and course enrollment for the supplied partner.
     </description>
     <example>
-    EXEC [dbo].[System_Report_UsersByPartnerDetail] @Partner = '88AB14F3-D2BF-4458-BEE2-41F7C732274B', @StartDate = '10/1/2019', @EndDate = '1/1/2020'
+    EXEC [dbo].[System_Report_UsersByPartnerDetail] @Partner = ''88AB14F3-D2BF-4458-BEE2-41F7C732274B'', @StartDate = ''10/1/2019'', @EndDate = ''1/1/2020''
     </example>
     */
     ALTER PROCEDURE [dbo].[System_Report_UsersByPartnerDetail](
