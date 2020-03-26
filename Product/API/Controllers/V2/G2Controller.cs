@@ -159,7 +159,7 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpPost]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        [Route("comments/profiles/")]
+        [Route("comments/profiles")]
         public async Task<IActionResult> CreateComments([FromBody] CommentsDto commentsDto)
         {
             var commentGuids = await _commentService.CreateCommentsForRecruiter(GetSubscriberGuid(), commentsDto);
