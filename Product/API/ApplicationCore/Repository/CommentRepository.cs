@@ -78,7 +78,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                                                join r in _dbContext.Recruiter on s.SubscriberId equals r.SubscriberId
                                                join rc in _dbContext.RecruiterCompany on r.RecruiterId equals rc.RecruiterId
                                                join p in _dbContext.Profile on rc.CompanyId equals p.CompanyId
-                                               where p.ProfileGuid == commentDto.ProfileGuid && s.SubscriberGuid == subscriberGuid
+                                               where p.ProfileGuid == commentDto.ProfileGuid && s.SubscriberGuid == subscriberGuid && p.IsDeleted == 0
                                                select p).Any();
             if (!isRecruiterInCompanyProfile)
                 throw new FailedValidationException("recruiter does not belong to the company of the profile associated with the comment");
@@ -117,7 +117,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                                                join r in _dbContext.Recruiter on s.SubscriberId equals r.SubscriberId
                                                join rc in _dbContext.RecruiterCompany on r.RecruiterId equals rc.RecruiterId
                                                join p in _dbContext.Profile on rc.CompanyId equals p.CompanyId
-                                               where commentsDto.ProfileGuids.Contains(p.ProfileGuid) && s.SubscriberGuid == subscriberGuid
+                                               where commentsDto.ProfileGuids.Contains(p.ProfileGuid) && s.SubscriberGuid == subscriberGuid && p.IsDeleted == 0
                                                select p).Any();
             if (!isRecruiterInCompanyProfile)
                 throw new FailedValidationException("recruiter does not belong to the company of the profile associated with the comment");
