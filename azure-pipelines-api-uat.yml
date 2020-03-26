@@ -7,7 +7,7 @@ name: api.$(date:yyyyMMdd)$(rev:.r)
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#pool
 pool:
-  vmImage: 'ubuntu-16.04'
+  vmImage: 'ubuntu-latest'
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#variables
 variables:
@@ -84,11 +84,11 @@ steps:
     cd Product/API
     dotnet ef migrations script -i --output $(Build.ArtifactStagingDirectory)/script.sql
   displayName: Generate SQL Script
-  env: { ASPNETCORE_ENVIRONMENT: Staging, CareerCircleSqlConnection: $(CareerCircleSqlConnection) }
+  env: { ASPNETCORE_ENVIRONMENT: UAT, CareerCircleSqlConnection: $(CareerCircleSqlConnection) }
 
 # publish build files for devops to be able to use later
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/publish-build-artifacts?view=azure-devops
 - task: PublishBuildArtifacts@1
   displayName: Publish Artifacts
   inputs:
-    artifactName: 'api'
+    artifactName: 'apiUAT'
