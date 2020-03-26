@@ -627,8 +627,8 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             }
             catch ( Exception ex )
             {
-                _logger.LogError($"G2Service:UpdateG2Status Error updating index statuses {ex.Message}");
-                throw ex;
+                _logger.LogError($"G2Service:UpdateG2Status Error updating index statuses; message: {ex.Message}, stack trace: {ex.StackTrace}");
+                throw;
             }
             
             
@@ -783,8 +783,8 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             }
             catch ( Exception ex )
             {
-                _logger.LogError($"G2Service:MapToG2SDOC Exception for {g2.ProfileGuid} error = {ex.Message}");
-                throw ex;
+                _logger.LogError($"G2Service:MapToG2SDOC Exception for profile {g2.ProfileGuid}; error: {ex.Message}, stack trace: {ex.StackTrace}");
+                throw;
             }
         }
  
