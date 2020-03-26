@@ -70,15 +70,15 @@ namespace UpDiddyApi
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
 
-            // if environment is set to development then add user secrets
-            if (env.IsDevelopment())
+            // if environment is set to LocalDevelopment then add user secrets
+            if (env.IsEnvironment("LocalDevelopment"))
             {
                 builder.AddUserSecrets<Startup>();
             }
-
-            // if environment is set to staging or production then add vault keysF
+            
+            // if environment is set to anything other than local development, add secrets from the key vault
             var config = builder.Build();
-            if (env.IsStaging() || env.IsProduction())
+            if (!env.IsEnvironment("LocalDevelopment"))
             {
                 builder.AddAzureKeyVault(config["Vault:Url"],
                     config["Vault:ClientId"],
