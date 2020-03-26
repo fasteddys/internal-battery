@@ -271,7 +271,7 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        [Route("query")]
+        [Route("profiles/query")]
         public async Task<IActionResult> SearchG2(Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0)
         {
             var rVal = await _g2Service.G2SearchAsync(GetSubscriberGuid(), cityGuid, limit, offset, sort, order, keyword, radius);
@@ -280,7 +280,48 @@ namespace UpDiddyApi.Controllers.V2
 
         #endregion
 
+
+        #region G2 Indexing Operations
+
+
+
+        /// <summary>
+        /// Re-index subsriber.  This operation will update as well as create documents in the 
+        /// azure g2 index 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("index/subscriber/{subscriberGuid}")]
+        public async Task<IActionResult> ReindexSubscriber(Guid subscriberGuid)
+        {
+            _g2Service.G2IndexBySubscriberAsync(subscriberGuid);
+            return StatusCode(202);
+        }
+
+        /// <summary>
+        /// Re-index subsriber.  This operation will update as well as create documents in the 
+        /// azure g2 index 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("index/subscriber/{subscriberGuid}/company/{companyGuid}")]
+        public async Task<IActionResult> ReindexSubscriberForCompany(Guid subscriberGuid, Guid companyGuid)
+        {
+            _g2Service.G2IndexBySubscriberAsync(subscriberGuid, companyGuid);
+            return StatusCode(202);
+        }
+
+        #endregion
+ 
+
         #region Admin Functions 
+
+        // Admin functions will not be made public throught the APi gateway.  They are here for dev administration of the 
+        // g2 profiles and azure index 
 
         /// <summary>
         /// Creates G2 profiles for all active subscriber/company combinations
@@ -289,13 +330,14 @@ namespace UpDiddyApi.Controllers.V2
         /// <returns></returns>
         [HttpPost]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        [Route("index")]
+        [Route("admin/index")]
         public async Task<IActionResult> addNewSubscribers()
         {
             // 
             _g2Service.G2AddNewSubscribers();
             return StatusCode(202);
         }
+
 
         /// <summary>
         /// Deletes all g2 records from the azure index 
@@ -304,51 +346,19 @@ namespace UpDiddyApi.Controllers.V2
         /// <returns></returns>
         [HttpDelete]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        [Route("index")]
+        [Route("admin/index")]
         public async Task<IActionResult> deleteG2()
         {
 
             _g2Service.G2IndexPurgeAsync();
-       
             return StatusCode(202);
         }
 
-
-        /// <summary>
-        /// Re-index subsriber.  This operation will update as well as create documents in the 
-        /// azure g2 index 
-        /// </summary>
-        /// <param name="subscriberGuid"></param>
-        /// <returns></returns>
-        [HttpPut]
-        [Authorize(Policy = "IsCareerCircleAdmin")]
-        [Route("subscriber/{subscriberGuid}")]
-        public async Task<IActionResult> ReindexSubscriber(Guid subscriberGuid)
-        {
-            _g2Service.G2IndexBySubscriberAsync(subscriberGuid);
-            return StatusCode(202);
-        }
-
-
-        /// <summary>
-        /// Re-index subsriber.  This operation will update as well as create documents in the 
-        /// azure g2 index 
-        /// </summary>
-        /// <param name="subscriberGuid"></param>
-        /// <returns></returns>
-        [HttpPut]
-        [Authorize(Policy = "IsCareerCircleAdmin")]
-        [Route("subscriber/{subscriberGuid}/company/{companyGuid}")]
-        public async Task<IActionResult> ReindexSubscriberForCompany(Guid subscriberGuid, Guid companyGuid)
-        {
-            _g2Service.G2IndexBySubscriberAsync(subscriberGuid, companyGuid);
-            return StatusCode(202);
-        }
 
 
         [HttpDelete]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        [Route("company/{companyGuid}")]
+        [Route("admin/companies/{companyGuid}")]
         public async Task<IActionResult> DeleteCompanyFromIndex(Guid companyGuid)
         {
 
@@ -364,16 +374,21 @@ namespace UpDiddyApi.Controllers.V2
         /// <returns></returns>
         [HttpPost]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        [Route("company/{companyGuid}")]
+        [Route("admin/companies/{companyGuid}")]
         public async Task<IActionResult> AddNewCompany(Guid companyGuid)
         {
             _g2Service.G2AddCompanyAsync(companyGuid);
             return StatusCode(202);
         }
 
+        /// <summary>
+        /// remove the subcribers profiles and remove them from the azure index 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
         [HttpDelete]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        [Route("subscriber/{subscriberGuid}")]
+        [Route("admin/profiles/subscriber/{subscriberGuid}")]
         public async Task<IActionResult> DeleteSubscriberFromIndex(Guid subscriberGuid)
         {
 
@@ -381,20 +396,6 @@ namespace UpDiddyApi.Controllers.V2
             return StatusCode(202);
         }
 
-
-        /// <summary>
-        /// Add new subscriber  
-        /// </summary>
-        /// <param name="subscriberGuid"></param>
-        /// <returns></returns>
-        [HttpPost]
-        [Authorize(Policy = "IsCareerCircleAdmin")]
-        [Route("subscriber/{subscriberGuid}")]
-        public async Task<IActionResult> AddNewSubscriber(Guid subscriberGuid)
-        {
-            _g2Service.G2AddSubscriberAsync(subscriberGuid);
-            return StatusCode(202);
-        }
 
 
         #endregion
