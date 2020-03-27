@@ -666,13 +666,14 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<CommunityGroupSubscriber>()
                 .HasOne<CommunityGroup>()
                 .WithMany()
-                .HasForeignKey(jr => jr.CommunityGroupId);
+                .HasForeignKey(jr => jr.CommunityGroupId)
+                .IsRequired(true);
 
             modelBuilder.Entity<CommunityGroupSubscriber>()
                .HasOne<Subscriber>()
                .WithMany()
                .HasForeignKey(jr => jr.SubscriberId)
-               .IsRequired(false);
+               .IsRequired(true);
 
 
         }
