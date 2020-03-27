@@ -150,7 +150,22 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         #region G2 Azure Indexing 
 
 
+        public async Task<bool> G2IndexBulkDeleteByGuidAsync(List<Guid> guidList)
+        {
+            //todo jab implement 
+            List<G2SDOC> Docs = new List<G2SDOC>();
+            foreach (Guid g in guidList)
+            {
+                G2SDOC delDoc = new G2SDOC()
+                {
+                    ProfileGuid = g
+                };
+                Docs.Add(delDoc);
+            };
 
+            await G2IndexDeleteBulkAsync(Docs);
+            return true;
+        }
 
         public async Task<bool> G2IndexBySubscriberAsync(Guid subscriberGuid, Guid companyGuid)
         {
@@ -537,7 +552,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         #region  G2 Operations
 
         /// <summary>
-        /// Adds a new subsriber by creating a g2.profile record for every active company for the subscriber.
+        /// Adds a new subscriber by creating a g2.profile record for every active company for the subscriber.
         /// Also indexes the subscriber into azure search
         /// </summary>
         /// <param name="subscriberGuid"></param>
@@ -627,8 +642,8 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             }
             catch ( Exception ex )
             {
-                _logger.LogError($"G2Service:UpdateG2Status Error updating index statuses {ex.Message}");
-                throw ex;
+                _logger.LogError($"G2Service:UpdateG2Status Error updating index statuses; message: {ex.Message}, stack trace: {ex.StackTrace}");
+                throw;
             }
             
             
@@ -783,8 +798,8 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             }
             catch ( Exception ex )
             {
-                _logger.LogError($"G2Service:MapToG2SDOC Exception for {g2.ProfileGuid} error = {ex.Message}");
-                throw ex;
+                _logger.LogError($"G2Service:MapToG2SDOC Exception for profile {g2.ProfileGuid}; error: {ex.Message}, stack trace: {ex.StackTrace}");
+                throw;
             }
         }
  

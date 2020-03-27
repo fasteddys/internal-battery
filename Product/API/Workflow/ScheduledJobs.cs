@@ -2080,12 +2080,12 @@ namespace UpDiddyApi.Workflow
 
 
         [DisableConcurrentExecution(timeoutInSeconds: 60)]
-        public async Task SendBulkEmail(Guid TemplateGuid, List<Guid> Profiles)
+        public async Task SendBulkEmail(Guid TemplateGuid, List<Guid> Profiles, Guid subscriberId)
         {
             _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.SendBulkEmail started at: {DateTime.UtcNow.ToLongDateString()}");
             try
             { 
-                await _sendGridService.SendBulkEmailByList(TemplateGuid, Profiles);
+                await _sendGridService.SendBulkEmailByList(TemplateGuid, Profiles, subscriberId);
             }
             catch (Exception e)
             {

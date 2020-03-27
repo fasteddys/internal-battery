@@ -12,6 +12,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<ProfileComment> GetCommentForRecruiter(Guid commentGuid, Guid subscriberGuid);
         Task<List<CommentDto>> GetProfileCommentsForRecruiter(Guid profileGuid, Guid subscriberGuid, int limit, int offset, string sort, string order);
         Task<Guid> CreateCommentForRecruiter(Guid subscriberGuid, CommentDto commentDto);
+
+        Task<List<Guid>> CreateCommentsForRecruiter(Guid subscriberGuid, CommentsDto commentsDto);
         Task UpdateCommentForRecruiter(Guid subscriberGuid, CommentDto commentDto);
         Task DeleteCommentForRecruiter(Guid subscriberGuid, Guid commentGuid);
     }

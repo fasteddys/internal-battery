@@ -36,7 +36,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// <returns></returns>
         Task<bool> G2IndexBulkAsync(List<G2SDOC> g2List);
 
-        
+        Task<bool> G2IndexBulkDeleteByGuidAsync(List<Guid> guidList);
+
         /// <summary>
         /// index all g2s for given subscriber across all companies 
         /// </summary>
