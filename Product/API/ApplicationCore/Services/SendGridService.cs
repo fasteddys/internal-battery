@@ -47,7 +47,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly ILogger _syslog;
         private readonly ISysEmail _sysEmail;
- 
+
 
         public SendGridService(IServiceProvider services, IRepositoryWrapper repositoryWrapper, IMapper mapper, IHangfireService hangfireService, IConfiguration configuration, ILogger<SendGridService> logger, ISysEmail sysEmail)
         {
@@ -66,9 +66,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             _sysEmail = sysEmail;
         }
 
- 
-        public async Task<bool> SendBulkEmailByList(Guid TemplateGuid, List<Guid> Profiles )
-        {            
+
+        public async Task<bool> SendBulkEmailByList(Guid TemplateGuid, List<Guid> Profiles, Guid subscriberId)
+        {
             // validate profiles have been specified 
             if (Profiles == null || Profiles.Count == 0)
                 throw new FailedValidationException($"SendGridService:SendBulkEmailsByList  One or more profiles must be specified for bulk email");
@@ -76,11 +76,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             // validate the email template 
             EmailTemplate template = await _repositoryWrapper.EmailTemplateRepository.GetByGuid(TemplateGuid);
 
-            if ( template == null )
+            if (template == null)
                 throw new FailedValidationException($"SendGridService:SendBulkEmailsByList {TemplateGuid} is not a valid bulk email template");
 
             // validate the api key 
-            if ( ValidateSendgridSubAccount(template.SendGridSubAccount) == false )
+            if (ValidateSendgridSubAccount(template.SendGridSubAccount) == false)
                 throw new FailedValidationException($"SendGridService:SendBulkEmailsByList {template.SendGridSubAccount} is not a valid SendGrid subaccount");
 
             // get the list of email associated with the profiles 
@@ -91,9 +91,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                 dynamic templateData = null;
                 try
                 {
-                    templateData = BuildEmailTemplateData(p, template.TemplateParams);              
+                    templateData = BuildEmailTemplateData(p, template.TemplateParams);
                 }
-                catch ( Exception ex )
+                catch (Exception ex)
                 {
                     _syslog.LogError($"SendGridService:SendbulkEmailByList  Error generating email data for {p.ProfileGuid} Error = {ex.Message} ");
                 }
@@ -108,19 +108,37 @@ namespace UpDiddyApi.ApplicationCore.Services
                 catch (Exception ex)
                 {
                     _syslog.LogError($"SendGridService:SendbulkEmailByList  Error sending email to  {p.Email} Error = {ex.Message} ");
-                }                
+                }
             }
+
+            await LogBulkEmailNotes(template.Name, subscriberId);
             return true;
         }
 
         public async Task<EmailTemplateListDto> GetEmailTemplates(int limit, int offset, string sort, string order)
         {
             // get the list of available email templates 
-            EmailTemplateListDto rval = await _emailTemplateService.GetEmailTemplates(limit,offset,sort,order);
+            EmailTemplateListDto rval = await _emailTemplateService.GetEmailTemplates(limit, offset, sort, order);
 
             return rval;
         }
 
+        private async Task LogBulkEmailNotes(string templateName, Guid subscriberId)
+        {
+            var recruiter = await _repositoryWrapper.RecruiterRepository.GetRecruiterBySubscriberGuid(subscriberId);
+
+            if (recruiter?.SubscriberId == null) { return; }
+
+            await _repositoryWrapper.SubscriberNotesRepository.AddNotes(new SubscriberNotes
+            {
+                SubscriberNotesGuid = Guid.NewGuid(),
+                SubscriberId = recruiter.SubscriberId.Value,
+                RecruiterId = recruiter.RecruiterId,
+                IsDeleted = 0,
+                ViewableByOthersInRecruiterCompany = true,
+                Notes = $"Template {templateName} bulk email sent by {recruiter.LastName}, {recruiter.FirstName} on {DateTime.UtcNow:G}.",
+            });
+        }
 
         #region Private Helpers
 
@@ -128,26 +146,26 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             string[] props = TemplateParams.Split(';');
             JObject rval = new JObject();
-           
-            foreach ( string prop in props)
+
+            foreach (string prop in props)
             {
-                if ( string.IsNullOrEmpty(prop) == false )
+                if (string.IsNullOrEmpty(prop) == false)
                 {
-                    string [] info = prop.Split(':');
+                    string[] info = prop.Split(':');
                     string path = info[0];
                     string paramName = info[1];
                     var val = GetPropertyValue(p, path);
-                    if ( val != null )
+                    if (val != null)
                     {
                         JToken paramVal = JToken.FromObject(val);
                         rval.Add(paramName, paramVal);
-                    }                    
+                    }
                 }
-            } 
+            }
             return rval;
         }
 
-        private  object GetPropertyValue(object src, string propName)
+        private object GetPropertyValue(object src, string propName)
         {
             if (src == null) throw new ArgumentException("Value cannot be null.", "src");
             if (propName == null) throw new ArgumentException("Value cannot be null.", "propName");
@@ -162,7 +180,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     _syslog.LogError($"SendGridService:GetPropertyValue: {temp[0]} is NOT a valid profile navigation property, returning null");
                     return null;
                 }
-                   
+
                 var subObject = prop.GetValue(src, null);
                 if (subObject == null)
                     return null;
@@ -182,7 +200,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         private bool ValidateSendgridSubAccount(string accountName)
         {
-            string apiKey =  _configuration[$"SysEmail:{accountName}:ApiKey"];
+            string apiKey = _configuration[$"SysEmail:{accountName}:ApiKey"];
             return apiKey != null;
         }
 
