@@ -83,11 +83,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<int> DeleteSubscriberG2Profiles(Guid subscriberGuid);
         Task<int> CreateCompanyG2Profiles(Guid companyGuid);
         Task<int> DeleteCompanyG2Profiles(Guid companyGuid);
-
         Task<bool> UpdateG2AzureIndexStatuses(List<AzureIndexResultStatus> profileGuids, string statusName, string statusInfo); 
-
         Task<int> BootG2Profiles();
-
+ 
 
     }  
 }
