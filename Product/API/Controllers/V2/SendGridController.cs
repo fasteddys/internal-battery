@@ -83,14 +83,14 @@ namespace UpDiddyApi.Controllers.V2
             return Ok(rval);
         }
 
-
+  
 
         #region Email Templates 
      
  
         [HttpPost]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        [Route("Template/{TemplateGuid}")]
+        [Route("template/{TemplateGuid}")]
         public async Task<IActionResult> SendEmailByList([FromBody] List<Guid> Profiles, Guid TemplateGuid)
         {
             // Fire and forget bulk emails 
@@ -100,7 +100,7 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        [Route("Templates")]
+        [Route("templates")]
         public async Task<IActionResult> GetEmailTemplates(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             EmailTemplateListDto rVal =  await _sendGridService.GetEmailTemplates(limit, offset, sort, order);
