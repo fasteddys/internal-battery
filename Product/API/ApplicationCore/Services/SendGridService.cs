@@ -100,16 +100,25 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 try
                 {
+                    // remove the profile that have been found from the list of passed profiles.  Do this first to make extra sure its done just 
+                    // in some of the following code excepts out.
+                    Profiles.Remove(p.ProfileGuid);
                     // map account type to enum 
                     SendGridAccount accountType = (SendGridAccount)Enum.Parse(typeof(SendGridAccount), template.SendGridSubAccount);
                     // send the email 
                     _sysEmail.SendTemplatedEmailAsync(p.Email, template.SendGridTemplateId, templateData, accountType);
+          
                 }
                 catch (Exception ex)
                 {
                     _syslog.LogError($"SendGridService:SendbulkEmailByList  Error sending email to  {p.Email} Error = {ex.Message} ");
                 }                
             }
+
+            // Any guids left in the passed list of profiles at this point are Zombies cuz there is code above that removes them as
+            // they are processed for bulk emails sends.  We will remove them from the azure index now so they will no longer appear
+            // in queries
+            _g2Service.G2IndexBulkDeleteByGuidAsync(Profiles);
             return true;
         }
 
