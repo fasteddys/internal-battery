@@ -17,6 +17,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IZeroBounceRepository ZeroBounceRepository { get; }
         IPartnerContactLeadStatusRepository PartnerContactLeadStatusRepository { get; }
         ISubscriberRepository SubscriberRepository { get; }
+        ICommunityGroupRepository CommunityGroupRepository { get; }
+        ICommunityGroupSubscriberRepository CommunityGroupSubscriberRepository { get; }
         IJobReferralRepository JobReferralRepository { get; }
         ISubscriberNotesRepository SubscriberNotesRepository { get; }
         IRecruiterRepository RecruiterRepository { get; }

@@ -210,6 +210,10 @@ namespace UpDiddyApi.Models
 
         public DbSet<EmailTemplate> EmailTemplate { get; set; }
 
+        public DbSet<CommunityGroup> CommunityGroup { get; set; }
+
+        public DbSet<CommunityGroupSubscriber> CommunityGroupSubscriber { get; set; }
+
         #endregion
 
         #region DBQueries
@@ -277,6 +281,8 @@ namespace UpDiddyApi.Models
         public DbQuery<UpDiddyLib.Domain.Models.CityDetailDto> Cities { get; set; }
         public DbQuery<UpDiddyLib.Domain.Models.PostalDetailDto> Postals { get; set; }
         public DbQuery<EmailTemplateDto> EmailTemplates { get; set; }
+
+        public DbQuery<UpDiddyLib.Domain.Models.CommunityGroupDto> CommunityGroups { get; set; }
 
         #endregion
 
@@ -651,6 +657,20 @@ namespace UpDiddyApi.Models
                .HasIndex(p => new { p.NotificationGroupId, p.GroupId })
                .HasName("UIX_NotificationGroup_Group")
                .IsUnique(true);
+
+
+            modelBuilder.Entity<CommunityGroup>();
+          
+            modelBuilder.Entity<CommunityGroupSubscriber>()
+                .HasOne<CommunityGroup>()
+                .WithMany()
+                .HasForeignKey(jr => jr.CommunityGroupId);
+
+            modelBuilder.Entity<CommunityGroupSubscriber>()
+               .HasOne<Subscriber>()
+               .WithMany()
+               .HasForeignKey(jr => jr.SubscriberId)
+               .IsRequired(false);
 
 
         }

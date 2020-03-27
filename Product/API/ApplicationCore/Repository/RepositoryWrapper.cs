@@ -103,6 +103,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IWishlistRepository _wishlistRepository;
         private ICommentRepository _commentRepository;
         private IEmailTemplateRepository _emailTemplateRepository;
+        private ICommunityGroupRepository _communityGroupRepository;
+        private ICommunityGroupSubscriberRepository _communityGroupSubscriberRepository;
 
 
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
@@ -1215,6 +1217,32 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _emailTemplateRepository = new EmailTemplateRepository(_dbContext);
                 }
                 return _emailTemplateRepository;
+            }
+        }
+
+
+        public ICommunityGroupRepository CommunityGroupRepository
+        {
+            get
+            {
+                if (_communityGroupRepository == null)
+                {
+                    _communityGroupRepository = new CommunityGroupRepository(_dbContext, CommunityGroupSubscriberRepository);
+                }
+                return _communityGroupRepository;
+            }
+        }
+
+
+        public ICommunityGroupSubscriberRepository CommunityGroupSubscriberRepository
+        {
+            get
+            {
+                if (_communityGroupSubscriberRepository == null)
+                {
+                    _communityGroupSubscriberRepository = new CommunityGroupSubscriberRepository(_dbContext);
+                }
+                return _communityGroupSubscriberRepository;
             }
         }
 
