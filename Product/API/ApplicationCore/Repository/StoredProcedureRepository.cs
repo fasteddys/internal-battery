@@ -1195,7 +1195,5 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Create_G2Profiles]");
             return rowsAffected;
         }
-
-
     }
 }

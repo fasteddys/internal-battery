@@ -150,7 +150,22 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         #region G2 Azure Indexing 
 
 
+        public async Task<bool> G2IndexBulkDeleteByGuidAsync(List<Guid> guidList)
+        {
+            //todo jab implement 
+            List<G2SDOC> Docs = new List<G2SDOC>();
+            foreach (Guid g in guidList)
+            {
+                G2SDOC delDoc = new G2SDOC()
+                {
+                    ProfileGuid = g
+                };
+                Docs.Add(delDoc);
+            };
 
+            await G2IndexDeleteBulkAsync(Docs);
+            return true;
+        }
 
         public async Task<bool> G2IndexBySubscriberAsync(Guid subscriberGuid, Guid companyGuid)
         {
