@@ -20,7 +20,7 @@ namespace UpDiddyApi.Controllers.V2
 {
     [Route("/V2/[controller]/")]
     [ApiController]
-    public class SendGridController : Controller
+    public class SendGridController : BaseApiController
     {
         private readonly IConfiguration _configuration;
         private readonly ISubscriberService _subscriberService;
@@ -93,8 +93,10 @@ namespace UpDiddyApi.Controllers.V2
         [Route("template/{TemplateGuid}")]
         public async Task<IActionResult> SendEmailByList([FromBody] List<Guid> Profiles, Guid TemplateGuid)
         {
+            var subscriberId = base.GetSubscriberGuid();
+
             // Fire and forget bulk emails 
-            _hangfireService.Enqueue<ScheduledJobs>(j => j.SendBulkEmail(TemplateGuid,Profiles));            
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.SendBulkEmail(TemplateGuid, Profiles, subscriberId));            
             return StatusCode(202);
         }
 
@@ -139,7 +141,7 @@ namespace UpDiddyApi.Controllers.V2
                );
 
  
-            return Json(new { NotifySystem = notifySystemResult, Transactional = transactionalResult, TransactionalTemplate = transactionalTemplateResult});
+            return new JsonResult(new { NotifySystem = notifySystemResult, Transactional = transactionalResult, TransactionalTemplate = transactionalTemplateResult});
         }
     }
 }
