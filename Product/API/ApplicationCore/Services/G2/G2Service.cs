@@ -537,7 +537,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         #region  G2 Operations
 
         /// <summary>
-        /// Adds a new subsriber by creating a g2.profile record for every active company for the subscriber.
+        /// Adds a new subscriber by creating a g2.profile record for every active company for the subscriber.
         /// Also indexes the subscriber into azure search
         /// </summary>
         /// <param name="subscriberGuid"></param>
