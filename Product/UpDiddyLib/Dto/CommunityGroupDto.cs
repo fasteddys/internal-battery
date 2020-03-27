@@ -8,7 +8,9 @@ namespace UpDiddyLib.Dto
     {
         public int CommunityGroupId { get; set; }
         public Guid? CommunityGroupGuid { get; set; }
-        public string  Name { get; set; }
+        public string Name { get; set; }
+
+        public string ExternalId { get; set; }
     
     }
 }

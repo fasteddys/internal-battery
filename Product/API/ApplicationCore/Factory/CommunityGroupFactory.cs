@@ -20,6 +20,8 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyLib.Domain.Models;
+
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class CommunityGroupFactory

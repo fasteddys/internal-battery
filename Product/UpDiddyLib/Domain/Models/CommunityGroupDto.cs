@@ -8,5 +8,8 @@ namespace UpDiddyLib.Domain.Models
         public string Name { get; set; }
 
         public Guid CommunityGroupGuid { get; set; }
+
+        public string ExternalId { get; set; }
+
     }
 }

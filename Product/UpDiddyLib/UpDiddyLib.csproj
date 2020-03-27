@@ -11,6 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Dto\CommunityGroupDto.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Braintree" Version="4.7.0" />
     <PackageReference Include="GeoJSON.Net" Version="1.2.14" />
     <PackageReference Include="Google.Protobuf" Version="3.7.0" />
