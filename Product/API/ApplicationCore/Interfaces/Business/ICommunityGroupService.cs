@@ -23,6 +23,13 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// </summary>
         /// <param name="subscriberDto"></param>
         /// <returns></returns>
+        Task<List<CommunityGroup>> GetAllCommunityGroups();
+
+        /// <summary>
+        /// Create a Community Group and return its guid
+        /// </summary>
+        /// <param name="subscriberDto"></param>
+        /// <returns></returns>
         Task<Guid> CreateCommunityGroup(UpDiddyLib.Domain.Models.CommunityGroupDto communityGroupDto);
 
 

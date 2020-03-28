@@ -27,6 +27,14 @@ namespace UpDiddyApi.Controllers.V2
             _communityGroupService = services.GetService<ICommunityGroupService>();
         }
 
+        [HttpGet]
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
+        [Route("get-community-groups")]
+        public async Task<IActionResult> GetAllCommunityGroups()
+        {
+            return Ok(await _communityGroupService.GetAllCommunityGroups());
+        }
+
         [HttpPost]
         [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
         [Route("add-community-group")]

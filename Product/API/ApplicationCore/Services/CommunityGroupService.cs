@@ -78,6 +78,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             
         }
 
+        public async Task<List<CommunityGroup>> GetAllCommunityGroups()
+        {
+            return await _repository.CommunityGroupRepository.GetAllCommunityGroupsAsync().ToListAsync();
+        }
+
         public async Task<CommunityGroup> GetCommunityGroupByName(string name)
         {
             return await _repository.CommunityGroupRepository.GetCommunityGroupByNameAsync(name);
