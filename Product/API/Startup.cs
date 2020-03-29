@@ -362,6 +362,8 @@ namespace UpDiddyApi
             services.AddScoped<ISendGridService, SendGridService>();
             services.AddScoped<IEmailTemplateService, EmailTemplateService>();
 
+            services.AddScoped<ICommunityGroupService, CommunityGroupService>();
+
             #endregion
 
             // Configure SnapshotCollector from application settings
