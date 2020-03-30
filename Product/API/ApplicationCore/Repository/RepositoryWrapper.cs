@@ -43,6 +43,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IEntityTypeRepository _entityTypeRepository;
         private IActionRepository _actionRepository;
         private IContactRepository _contactRepository;
+        private IContactTypeRepository _contactTypeRepository;
         private IOfferRepository _offerRepository;
         private ISubscriberFileRepository _subscriberFileRepository;
         private ISkillRepository _skillRepository;
@@ -507,6 +508,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _contactRepository = new ContactRepository(_dbContext);
                 }
                 return _contactRepository;
+            }
+        }
+
+        public IContactTypeRepository ContactTypeRepository
+        {
+            get
+            {
+                if (_contactTypeRepository == null)
+                {
+                    _contactTypeRepository = new ContactTypeRepository(_dbContext);
+                }
+                return _contactTypeRepository;
             }
         }
 
