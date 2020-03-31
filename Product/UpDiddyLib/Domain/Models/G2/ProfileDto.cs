@@ -38,6 +38,9 @@ namespace UpDiddyLib.Domain.Models.G2
         public string Goals { get; set; }
         [StringLength(500)]
         public string Preferences { get; set; }
+        [StringLength(500)]
+        public string SkillsNote { get; set; }
+
         public List<Guid> EmploymentTypeGuids { get; set; }
     }
 }
