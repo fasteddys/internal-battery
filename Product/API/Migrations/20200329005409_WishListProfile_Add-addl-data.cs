@@ -9,7 +9,7 @@ namespace UpDiddyApi.Migrations
             migrationBuilder.Sql(@"EXEC('/*     
 <remarks>     
 2020.03.10 - Bill Koenig - Created
-2020.03.29 - Joey Herrington - Modified
+2020.03.29 - Joey Herrington - Added PhoneNumber, City, State, Postal, and Title to the SELECT list
 </remarks>
 <description>
 Returns profile wishlist details. The subscriber guid is a security measure to ensure that wishlists cannot be viewed by people other than the person that created it.
