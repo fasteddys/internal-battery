@@ -54,7 +54,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
 
         #region G2 Searching 
 
-        public async Task<G2SearchResultDto> G2SearchAsync(Guid subscriberGuid, Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? partnerGuid = null, int radius = 0)
+        public async Task<G2SearchResultDto> G2SearchAsync(Guid subscriberGuid, Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0)
         {
 
             // validate the the user provides a city if they also provided a radius
@@ -74,7 +74,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             Guid companyGuid = recruiter.RecruiterCompanies.First().Company.CompanyGuid;
             // handle case of non geo search 
             if (cityGuid == null || cityGuid == Guid.Empty)
-                return await SearchG2Async(companyGuid, limit, offset, sort, order, keyword, partnerGuid, 0, 0, 0 );
+                return await SearchG2Async(companyGuid, limit, offset, sort, order, keyword, sourcePartnerGuid, 0, 0, 0 );
 
             // pick a random postal code for the city to get the last and long 
             Postal postal = _repository.PostalRepository.GetAll()
@@ -86,7 +86,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             if (postal == null)
                 throw new NotFoundException($"A city with an Guid of {cityGuid} cannot be found.");
 
-            return await SearchG2Async(companyGuid, limit, offset, sort, order, keyword, partnerGuid, radius, (double)postal.Latitude, (double)postal.Longitude);
+            return await SearchG2Async(companyGuid, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, (double)postal.Latitude, (double)postal.Longitude);
         }
 
 
@@ -810,7 +810,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         }
  
  
-        private async Task<G2SearchResultDto> SearchG2Async(Guid companyGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? partnerGuid = null, int radius = 0, double lat = 0, double lng = 0)
+        private async Task<G2SearchResultDto> SearchG2Async(Guid companyGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, double lat = 0, double lng = 0)
         {
             DateTime startSearch = DateTime.Now;
             G2SearchResultDto searchResults = new G2SearchResultDto();
@@ -845,8 +845,8 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             parameters.Filter = $"CompanyGuid eq '{companyGuid}'";
 
             // Add partner filter if one has been specified
-            if ( partnerGuid != null)
-                parameters.Filter += $" and PartnerGuid eq '{partnerGuid}'";
+            if (sourcePartnerGuid != null)
+                parameters.Filter += $" and PartnerGuid eq '{sourcePartnerGuid}'";
 
             double radiusKm = 0;
             // check to see if radius is in play

@@ -272,9 +272,9 @@ namespace UpDiddyApi.Controllers.V2
         [HttpGet]
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("profiles/query")]
-        public async Task<IActionResult> SearchG2(Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? partnerGuid = null, int radius = 0)
+        public async Task<IActionResult> SearchG2(Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0)
         {
-            var rVal = await _g2Service.G2SearchAsync(GetSubscriberGuid(), cityGuid, limit, offset, sort, order, keyword, partnerGuid, radius);
+            var rVal = await _g2Service.G2SearchAsync(GetSubscriberGuid(), cityGuid, limit, offset, sort, order, keyword, sourcePartnerGuid, radius);
             return Ok(rVal);
         }
 
