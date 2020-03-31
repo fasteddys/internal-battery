@@ -20,6 +20,7 @@ namespace UpDiddyLib.Domain.Models.G2
         [StringLength(500)]
         public string Value { get; set; }
         public bool IsVisibleToCompany { get; set; }
+        public DateTime CreateDate { get; set; }
         [JsonIgnore]
         public int TotalRecords { get; set; }
     }
