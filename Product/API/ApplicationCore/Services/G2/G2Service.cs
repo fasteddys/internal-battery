@@ -54,7 +54,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
 
         #region G2 Searching 
 
-        public async Task<G2SearchResultDto> G2SearchAsync(Guid subscriberGuid, Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0)
+        public async Task<G2SearchResultDto> G2SearchAsync(Guid subscriberGuid, Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? partnerGuid = null, int radius = 0)
         {
 
             // validate the the user provides a city if they also provided a radius
@@ -74,7 +74,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             Guid companyGuid = recruiter.RecruiterCompanies.First().Company.CompanyGuid;
             // handle case of non geo search 
             if (cityGuid == null || cityGuid == Guid.Empty)
-                return await SearchG2Async(companyGuid, limit, offset, sort, order, keyword, 0, 0, 0 );
+                return await SearchG2Async(companyGuid, limit, offset, sort, order, keyword, partnerGuid, 0, 0, 0 );
 
             // pick a random postal code for the city to get the last and long 
             Postal postal = _repository.PostalRepository.GetAll()
@@ -86,7 +86,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             if (postal == null)
                 throw new NotFoundException($"A city with an Guid of {cityGuid} cannot be found.");
 
-            return await SearchG2Async(companyGuid, limit, offset, sort, order, keyword, radius, (double)postal.Latitude, (double)postal.Longitude);
+            return await SearchG2Async(companyGuid, limit, offset, sort, order, keyword, partnerGuid, radius, (double)postal.Latitude, (double)postal.Longitude);
         }
 
 
@@ -151,8 +151,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
 
 
         public async Task<bool> G2IndexBulkDeleteByGuidAsync(List<Guid> guidList)
-        {
-            //todo jab implement 
+        {          
             List<G2SDOC> Docs = new List<G2SDOC>();
             foreach (Guid g in guidList)
             {
@@ -407,6 +406,10 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
                 }
             };
 
+            // Don't queue the hangfire job if there is nothing to do
+            if (Docs.Count == 0)
+                return true;
+
             _hangfireService.Enqueue<ScheduledJobs>(j => j.G2IndexAddOrUpdateBulk(Docs));
             _logger.LogInformation($"G2Service:G2IndexBulkByProfileAzureSearchAsync Done");
 
@@ -422,6 +425,9 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         /// <returns></returns>
         public async Task<bool> G2IndexBulkAsync(List<G2SDOC> g2List)
         {
+            // If there is no work to do jus return true
+            if (g2List.Count == 0)
+                return true;
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexBulkAsync starting index for g2");
             AzureIndexResult info = await _azureSearchService.AddOrUpdateG2Bulk(g2List);
             await UpdateG2Status(info, Constants.G2AzureIndexStatus.Indexed, info.StatusMsg);
@@ -803,7 +809,8 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             }
         }
  
-        private async Task<G2SearchResultDto> SearchG2Async(Guid companyGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", int radius = 0, double lat = 0, double lng = 0)
+ 
+        private async Task<G2SearchResultDto> SearchG2Async(Guid companyGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? partnerGuid = null, int radius = 0, double lat = 0, double lng = 0)
         {
             DateTime startSearch = DateTime.Now;
             G2SearchResultDto searchResults = new G2SearchResultDto();
@@ -834,9 +841,12 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
                     IncludeTotalResultCount = true,
                 };
 
-
             // IMPORTANT!!!!   Filter quereies to be withing the specified company id for security reasons 
             parameters.Filter = $"CompanyGuid eq '{companyGuid}'";
+
+            // Add partner filter if one has been specified
+            if ( partnerGuid != null)
+                parameters.Filter += $" and PartnerGuid eq '{partnerGuid}'";
 
             double radiusKm = 0;
             // check to see if radius is in play

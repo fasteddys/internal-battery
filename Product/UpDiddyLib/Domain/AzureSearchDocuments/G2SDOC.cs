@@ -20,6 +20,7 @@ namespace UpDiddyLib.Domain.AzureSearchDocuments
 
         public Guid ProfileGuid { get; set; }
 
+
         public string FirstName { get; set; }
 
         public string LastName { get; set; }
@@ -71,5 +72,8 @@ namespace UpDiddyLib.Domain.AzureSearchDocuments
 
         public Guid SubscriberGuid { get; set; }
 
+        public string AvatarUrl { get; set; }
+
+        public Guid PartnerGuid { get; set; }
     }
 }
