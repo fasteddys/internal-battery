@@ -234,6 +234,15 @@ namespace UpDiddyApi.Controllers.V2
             return Ok(skills);
         }
 
+        [HttpPut]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("skills/profiles/{profileGuid:guid}")]
+        public async Task<IActionResult> UpdateSkillsForProfile([FromBody] List<Guid> skillGuids, Guid profileGuid)
+        {
+            await _skillService.UpdateProfileSkillsForRecruiter(GetSubscriberGuid(), skillGuids, profileGuid);
+            return StatusCode(204);
+        }
+
         #endregion
 
         #region Recruiter Tag Operations

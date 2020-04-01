@@ -9,6 +9,7 @@ using UpDiddyLib.Domain.Models;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.Models.G2;
 using System.Data.SqlClient;
+using System.Data;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -186,6 +187,31 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 _dbContext.Update(profileSkill);
             }
             await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task UpdateProfileSkillsForRecruiter(Guid subscriberGuid, List<Guid> skillGuids, Guid profileGuid)
+        {
+            var recruiterSubscriber = new SqlParameter { ParameterName = "@RecruiterSubscriberGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = (object)subscriberGuid ?? DBNull.Value };
+            var profile = new SqlParameter { ParameterName = "@ProfileGuid", SqlDbType = SqlDbType.UniqueIdentifier, Direction = ParameterDirection.Input, Value = (object)profileGuid ?? DBNull.Value };
+            DataTable skillsTable = new DataTable();
+            skillsTable.Columns.Add("Guid", typeof(Guid));
+            if (skillGuids != null && skillGuids.Count > 0)
+            {
+                foreach (var skillGuid in skillGuids)
+                {
+                    skillsTable.Rows.Add(skillGuid);
+                }
+            }
+            var skills = new SqlParameter("@SkillGuids", skillsTable);
+            skills.SqlDbType = SqlDbType.Structured;
+            skills.TypeName = "dbo.GuidList";            
+            var validationErrors = new SqlParameter { ParameterName = "@ValidationErrors", SqlDbType = SqlDbType.NVarChar, Size = -1, Direction = ParameterDirection.Output };
+            var spParams = new object[] { recruiterSubscriber, profile, skills, validationErrors };
+
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Update_ProfileSkillsForRecruiter] @RecruiterSubscriberGuid, @ProfileGuid, @SkillGuids, @ValidationErrors OUTPUT", spParams);
+
+            if (!string.IsNullOrWhiteSpace(validationErrors.Value.ToString()))
+                throw new FailedValidationException(validationErrors.Value.ToString());
         }
     }
 }
