@@ -104,7 +104,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             catch (Exception e)
             {
                 Serilog.Log.Error(e, $"An error occurred in ProfileRepository.CreateProfile: {e.Message}");
-                throw new FailedValidationException("An unknown error occurred; see logs for details");
+                throw new FailedValidationException("An unknown error occurred; see logging for details.");
             }
 
             if (!string.IsNullOrWhiteSpace(validationErrors.Value.ToString()))
