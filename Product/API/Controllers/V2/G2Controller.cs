@@ -279,7 +279,6 @@ namespace UpDiddyApi.Controllers.V2
 
         #endregion
 
-
         #region G2 Indexing Operations
 
 
@@ -315,7 +314,27 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         #endregion
- 
+
+        #region ContactTypes
+
+        [HttpGet("contactTypes")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        public async Task<IActionResult> GetContactTypes()
+        {
+            var contactTypes = await _profileService.GetContactTypeList();
+            return StatusCode((int)HttpStatusCode.OK, contactTypes);
+        }
+
+        [HttpGet("contactTypes/{id}")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        public async Task<IActionResult> GetContactTypeDetails(Guid id)
+        {
+            var contactType = await _profileService.GetContactTypeDetail(id);
+            return StatusCode((int)HttpStatusCode.OK, contactType);
+        }
+
+        #endregion ContactTypes
+
 
         #region Admin Functions 
 

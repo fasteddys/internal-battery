@@ -9,6 +9,8 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyLib.Domain.Models.G2;
 using UpDiddyApi.Models;
+using UpDiddyLib.Dto;
+using Microsoft.EntityFrameworkCore;
 
 namespace UpDiddyApi.ApplicationCore.Services.G2
 {
@@ -59,8 +61,6 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             await _g2Service.G2IndexProfileByGuidAsync(profileDto.ProfileGuid);
         }
 
-
-
         public async Task UpdateAzureIndexStatus(Guid profileGuid, string azureIndexStatusName, string azureSearchIndexInfo)
         {
             if (profileGuid == null || profileGuid == Guid.Empty)
@@ -73,7 +73,6 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
 
             await _repositoryWrapper.ProfileRepository.UpdateAzureIndexStatus(profileGuid, azureIndexStatus.AzureIndexStatusGuid, azureSearchIndexInfo);
         }
-
 
         /// <summary>
         /// Return a list of email for the profiles defined by the passed list of profile guids 
@@ -91,16 +90,44 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             return rval;
         }
 
-
         public async Task<List<UpDiddyApi.Models.G2.Profile>> GetProfilesByGuidList(List<Guid> profileGuids)
         { 
             List<UpDiddyApi.Models.G2.Profile> profiles = await _repositoryWrapper.ProfileRepository.GetProfilesByGuidList(profileGuids);      
             return profiles;
         }
 
+        #region ContactTypes
 
+        public async Task<ContactTypeListDto> GetContactTypeList()
+        {
+            var contactTypes = await _repositoryWrapper.ContactTypeRepository
+                .GetAll()
+                .OrderBy(ct => ct.Sequence)
+                .Select(ct => new ContactTypeDto
+                {
+                    ContactTypeGuid = ct.ContactTypeGuid,
+                    Name = ct.Name
+                })
+                .ToListAsync();
+            return new ContactTypeListDto
+            {
+                ContactTypes = contactTypes
+            };
+        }
 
-       
+        public async Task<ContactTypeDto> GetContactTypeDetail(Guid contactTypeId)
+        {
+            var contactType = await _repositoryWrapper.ContactTypeRepository
+                .GetByGuid(contactTypeId);
 
+            return new ContactTypeDto
+            {
+                ContactTypeGuid = contactType.ContactTypeGuid,
+                Name = contactType.Name,
+                Description = contactType.Description
+            };
+        }
+
+        #endregion ContactTypes
     }
 }

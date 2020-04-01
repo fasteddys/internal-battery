@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models.G2;
 using UpDiddyLib.Domain.Models.G2;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business.G2
 {
@@ -17,9 +18,14 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business.G2
 
         Task<List<string>> GetProfileEmailsByGuidList(List<Guid> profileGuids);
 
-
-
         Task<List<Profile>> GetProfilesByGuidList(List<Guid> profileGuids);
 
+        #region ContactTypes
+
+        Task<ContactTypeListDto> GetContactTypeList();
+
+        Task<ContactTypeDto> GetContactTypeDetail(Guid contactTypeId);
+
+        #endregion ContactTypes
     }
 }
