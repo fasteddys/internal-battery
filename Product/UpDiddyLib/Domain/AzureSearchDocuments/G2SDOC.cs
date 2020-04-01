@@ -71,7 +71,7 @@ namespace UpDiddyLib.Domain.AzureSearchDocuments
         public string AvatarUrl { get; set; }
 
         public Guid PartnerGuid { get; set; }
-        public DateTime? CreateDate { get; set; }
+     // todo jab   public DateTime? CreateDate { get; set; }
 
      
     }
