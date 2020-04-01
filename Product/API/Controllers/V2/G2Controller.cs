@@ -267,8 +267,7 @@ namespace UpDiddyApi.Controllers.V2
 
         #endregion
 
-        #region G2 Query Functions
-
+        #region G2 Query Functions 
         [HttpGet]
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("profiles/query")]

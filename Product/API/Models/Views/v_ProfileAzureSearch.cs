@@ -35,10 +35,11 @@ namespace UpDiddyApi.Models.Views
         public string PublicSkills { get; set; }
         public string PrivateSkills { get; set; }
         public SqlGeography Location { get; set; }
-        public DateTime ModifyDate { get; set; }
+        public DateTime? ModifyDate { get; set; }
         public int? AzureIndexStatusId { get; set; }
         public string AvatarUrl { get; set; }
         public Guid? PartnerGuid { get; set; }
+        public DateTime? CreateDate { get; set; }
 
     }
 }

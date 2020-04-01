@@ -15,11 +15,8 @@ namespace UpDiddyLib.Domain.AzureSearchDocuments
     {
         [JsonProperty("@search.action")]
         public string SearchAction { get; set; }
-
      
-
         public Guid ProfileGuid { get; set; }
-
 
         public string FirstName { get; set; }
 
@@ -62,18 +59,20 @@ namespace UpDiddyLib.Domain.AzureSearchDocuments
         public string PublicSkills { get; set; }
 
         public string PrivateSkills { get; set; }
- 
-   
+    
         public Point Location { get; set; }
 
         public Guid CompanyGuid { get; set; }
 
-        public DateTime ModifyDate { get; set; }
+        public DateTime? ModifyDate { get; set; }
 
         public Guid SubscriberGuid { get; set; }
 
         public string AvatarUrl { get; set; }
 
         public Guid PartnerGuid { get; set; }
+        public DateTime? CreateDate { get; set; }
+
+     
     }
 }
