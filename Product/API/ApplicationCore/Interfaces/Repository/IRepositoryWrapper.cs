@@ -35,6 +35,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IEntityTypeRepository EntityTypeRepository { get; }
         IActionRepository ActionRepository { get; }
         IContactRepository ContactRepository { get; }
+        IContactTypeRepository ContactTypeRepository { get; }
         IOfferRepository Offer { get; }
         ISubscriberFileRepository SubscriberFileRepository { get; }
         ISkillRepository SkillRepository { get; }
@@ -85,5 +86,16 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         ICourseLevelRepository CourseLevelRepository { get; }
         ICourseReferralRepository CourseReferralRepository { get; }
         INotificationGroupRepository NotificationGroupRepository { get; }
+        ISendGridEventRepository SendGridEventRepository { get; }
+        IHiringSolvedResumeParseRepository HiringSolvedResumeParseRepository { get; }
+        ISovrenParseStatisticRepository SovrenParseStatisticRepository { get; }
+        ICityRepository CityRepository { get; }
+        IPostalRepository PostalRepository { get; }
+        IProfileRepository ProfileRepository { get; }
+        IAzureIndexStatusRepository AzureIndexStatusRepository { get; }
+        IWishlistRepository WishlistRepository { get; }
+        ICommentRepository CommentRepository { get; }
+        IEmailTemplateRepository EmailTemplateRepository { get; }
+
     }
 }

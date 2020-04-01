@@ -18,6 +18,7 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyLib.Domain.Models;
+using System.Threading;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -31,6 +32,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly IHangfireService _hangfireService;
         private readonly ISysEmail _sysEmail;
+        private readonly IResumeService _resumeService;
+
         public JobApplicationService(
             UpDiddyDbContext db,
             IRepositoryWrapper repositoryWrapper,
@@ -39,7 +42,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             ISubscriberService subscriberService,
             Microsoft.Extensions.Configuration.IConfiguration configuration,
             IHangfireService hangfireService,
-            ISysEmail sysEmail
+            ISysEmail sysEmail,
+            IResumeService resumeService
             )
         {
             _repositoryWrapper = repositoryWrapper;
@@ -50,6 +54,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _configuration = configuration;
             _hangfireService = hangfireService;
             _sysEmail = sysEmail;
+            _resumeService = resumeService;
         }
 
         public async Task<bool> IsSubscriberAppliedToJobPosting(int subscriberId, int jobPostingId)
@@ -58,9 +63,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await jobPosting.AnyAsync(x => x.SubscriberId == subscriberId && x.JobPostingId == jobPostingId);
         }
 
-        public async Task<bool> CreateJobApplication( Guid subscriberGuid, Guid jobGuid, ApplicationDto applicationDto)
+        public async Task<Guid> CreateJobApplication(Guid subscriberGuid, Guid jobGuid, ApplicationDto applicationDto)
         {
-            
             try
             {
                 _syslog.Log(LogLevel.Information, $"***** JobApplicationController:CreateJobApplication started at: {DateTime.UtcNow.ToLongDateString()}");
@@ -68,7 +72,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 Subscriber subscriber = null;
                 string ErrorMsg = string.Empty;
                 int ErrorCode = 0;
-                if (ValidateJobApplication(applicationDto, subscriberGuid, jobGuid, ref subscriber, ref jobPosting,  ref ErrorMsg) == false)
+                if (ValidateJobApplication(applicationDto, subscriberGuid, jobGuid, ref subscriber, ref jobPosting, ref ErrorMsg) == false)
                     throw new FailedValidationException(ErrorMsg);
 
                 // create job application 
@@ -79,7 +83,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 jobApplication.SubscriberId = subscriber.SubscriberId;
                 jobApplication.CoverLetter = applicationDto.CoverLetter == null ? string.Empty : applicationDto.CoverLetter;
                 // Map Partner 
-                if (string.IsNullOrEmpty(applicationDto.PartnerName) == false )
+                if (string.IsNullOrEmpty(applicationDto.PartnerName) == false)
                 {
                     PartnerType partnerType = await _repositoryWrapper.PartnerTypeRepository.GetPartnerTypeByName("ExternalSource");
                     // Get or create the referenced partner 
@@ -90,84 +94,102 @@ namespace UpDiddyApi.ApplicationCore.Services
                 _db.JobApplication.Add(jobApplication);
                 _db.SaveChanges();
 
-                Stream SubscriberResumeAsStream = await _subscriberService.GetResumeAsync(subscriber);
-                SubscriberResumeAsStream.Seek(0, SeekOrigin.Begin);
-                string resumeEncoded = Convert.ToBase64String(Utils.StreamToByteArray(SubscriberResumeAsStream));
+                // consolidated logic for job application emails
+                await this.SendJobApplicationEmail(subscriber, jobPosting, applicationDto, jobApplication.JobApplicationGuid);
 
-                bool IsExternalRecruiter = jobPosting.Recruiter.Subscriber == null;
-
-                string RecruiterEmailToUse = jobPosting.Recruiter.Subscriber?.Email ?? jobPosting.Recruiter.Email;
-                // Create a jobposting dto needed for the fully qualified job posting url in the recuriter email
-                UpDiddyLib.Dto.JobPostingDto jobPostingDto = _mapper.Map<UpDiddyLib.Dto.JobPostingDto>(jobPosting);
-                // Send recruiter email alerting them to application
-
-                Dictionary<string, bool> EmailAddressesToSend = new Dictionary<string, bool>();
-                EmailAddressesToSend.Add(RecruiterEmailToUse, IsExternalRecruiter);
-                var VipEmails = _configuration.GetSection("SysEmail:VIPEmails").GetChildren();
-
-                // Ensure all VIPs get the internal email template
-                foreach (IConfigurationSection Child in VipEmails)
-                {
-                    string VipEmail = Child.Value;
-                    EmailAddressesToSend.Add(VipEmail, false);
-                }
-
-                foreach (string Email in EmailAddressesToSend.Keys)
-                {
-                    _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync
-                    (
-                        Email,
-                        _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter" +
-                            (EmailAddressesToSend[Email] == true ? "-External" : string.Empty)],
-                        new
-                        {
-                            ApplicantName = applicationDto.FirstName + " " + applicationDto.LastName,
-                            ApplicantFirstName = applicationDto.FirstName,
-                            ApplicantLastName = applicationDto.LastName,
-                            ApplicantEmail = subscriber.Email,
-                            JobTitle = jobPosting.Title,
-                            ApplicantUrl = SubscriberFactory.JobseekerUrl(_configuration, subscriber.SubscriberGuid.Value),
-                            JobUrl = JobPostingFactory.JobPostingFullyQualifiedUrl(_configuration, jobPostingDto),
-                            Subject = (IsExternalRecruiter == true ? $"{jobPosting.Company.CompanyName} job posting via CareerCircle" : "Applicant Alert"),
-                            RecruiterGuid = jobPosting.Recruiter.RecruiterGuid,
-                            JobApplicationGuid = jobApplication.JobApplicationGuid
-                        },
-                        Constants.SendGridAccount.Transactional,
-                        null,
-                        new List<Attachment>
-                        {
-                            new Attachment
-                            {
-                                Content = resumeEncoded,
-                                Filename = Path.GetFileName(subscriber.SubscriberFile.FirstOrDefault().BlobName),
-                                Type=subscriber.SubscriberFile.FirstOrDefault().MimeType
-                            },
-                            new Attachment
-                            {
-                                Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(applicationDto.CoverLetter)),
-                                Filename = "CoverLetter.txt"
-                            }
-                        },
-                        null,
-                        null
-                    ));
-                }
-
-
-                _syslog.Log(LogLevel.Information, $"***** JobApplicationController:CreateJobApplication completed at: {DateTime.UtcNow.ToLongDateString()}");
-                return true;
+                return jobApplication.JobApplicationGuid;
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                _syslog.Log(LogLevel.Information, $"***** JobApplicationController:CreateJobApplication exception : {ex.Message}");
-                throw ex;
+                _syslog.Log(LogLevel.Information, $"***** JobApplicationController:CreateJobApplication exception for subscriber {subscriberGuid.ToString()} and job {jobGuid}; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                throw new FailedValidationException("the job application could not be created");
+            }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** JobApplicationController:CreateJobApplication completed at: {DateTime.UtcNow.ToLongDateString()}");
             }
         }
-
-
-
-
         #region helper functions 
+
+        private async Task SendJobApplicationEmail(Subscriber subscriber, JobPosting jobPosting, ApplicationDto applicationDto, Guid jobApplicationGuid)
+        {
+            try
+            {
+                _syslog.Log(LogLevel.Information, $"***** JobApplicationService.SendJobApplicationEmail started at: {DateTime.UtcNow.ToLongDateString()}");
+
+                List<Attachment> attachments = new List<Attachment>();
+
+                // attach a resume if a user has uploaded one (using the more recently created resume service)
+                if (await _resumeService.HasSubscriberUploadedResume(subscriber.SubscriberGuid.Value))
+                {
+                    // use the resume service to create the attachment (as opposed to using the old methods for resume in SubscriberService)
+                    var resume = await _resumeService.DownloadResume(subscriber.SubscriberGuid.Value);
+                    Attachment resumeAttachment = new Attachment()
+                    {
+                        Content = resume.Base64EncodedData,
+                        Filename = resume.FileName,
+                        Type = resume.MimeType
+                    };
+                    attachments.Add(resumeAttachment);
+                }
+
+                // attach a cover letter if content was added to this field
+                if (!string.IsNullOrWhiteSpace(applicationDto.CoverLetter))
+                {
+                    var coverLetter = new Attachment
+                    {
+                        Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(applicationDto.CoverLetter)),
+                        Filename = "CoverLetter.txt"
+                    };
+                    attachments.Add(coverLetter);
+                }
+
+                Dictionary<string, bool> EmailAddressesToSend = new Dictionary<string, bool>();
+                // configure an email for the recruiter (if one exists for the job posting)
+                if (jobPosting.Recruiter != null)
+                {
+                    bool isExternalRecruiter = !jobPosting.Recruiter.SubscriberId.HasValue;
+                    EmailAddressesToSend.Add(jobPosting.Recruiter.Email, isExternalRecruiter);
+                }
+
+                // configure separate emails for all VIPs (internal people that want to know when job applications occur)
+                var vipEmails = _configuration.GetSection("SysEmail:VIPEmails").GetChildren();
+                foreach (IConfigurationSection section in vipEmails)
+                {
+                    string vipEmail = section.Value;
+                    EmailAddressesToSend.Add(vipEmail, false);
+                }
+
+                // send all templated emails
+                foreach (string email in EmailAddressesToSend.Keys)
+                {
+                    bool isExternalMessage = EmailAddressesToSend[email];
+                    string templateId = isExternalMessage ? _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter-External"].ToString() : _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter"].ToString();
+                    object templateData = new
+                    {
+                        ApplicantName = applicationDto.FirstName + " " + applicationDto.LastName,
+                        ApplicantFirstName = applicationDto.FirstName,
+                        ApplicantLastName = applicationDto.LastName,
+                        ApplicantEmail = subscriber.Email,
+                        JobTitle = jobPosting.Title,
+                        ApplicantUrl = _configuration["CareerCircle:ViewTalentUrl"] + subscriber.SubscriberGuid.ToString(),
+                        JobUrl = _configuration["CareerCircle:ViewJobPostingUrl"] + jobPosting.JobPostingGuid.ToString(),
+                        Subject = isExternalMessage ? $"{jobPosting.Company.CompanyName} job posting via CareerCircle" : "Applicant Alert",
+                        RecruiterGuid = jobPosting.Recruiter.RecruiterGuid,
+                        JobApplicationGuid = jobApplicationGuid
+                    };
+                    _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(email, templateId, templateData, Constants.SendGridAccount.Transactional, null, attachments, null, null));
+                }
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Information, $"***** JobApplicationController.SendJobApplicationEmail exception for jobApplicationGuid {jobApplicationGuid.ToString()}; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+            }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** JobApplicationService.SendJobApplicationEmail started at: {DateTime.UtcNow.ToLongDateString()}");
+            }
+        }
 
         // per Foley the requirment for a cover letter has been removed
         private bool ValidateJobApplication(ApplicationDto applicationDto, Guid subscriberGuid, Guid jobGuid, ref Subscriber subscriber, ref JobPosting jobPosting, ref string ErrorMsg)
@@ -178,39 +200,39 @@ namespace UpDiddyApi.ApplicationCore.Services
                 ErrorMsg = "Job application is required.";
                 return false;
             }
- 
+
             subscriber = SubscriberFactory.GetSubscriberWithSubscriberFiles(_repositoryWrapper, subscriberGuid).Result;
             if (subscriber == null)
-            {             
+            {
                 ErrorMsg = $"Subscriber {subscriberGuid} does not exist.";
                 return false;
             }
 
             //validate that resume and cover letter are present
-            if (subscriber.SubscriberFile.FirstOrDefault() == null )
-            {             
+            if (subscriber.SubscriberFile.FirstOrDefault() == null)
+            {
                 ErrorMsg = "Subscriber has not supplied a resume.";
                 return false;
             }
-       
+
             jobPosting = JobPostingFactory.GetJobPostingByGuid(_repositoryWrapper, jobGuid).Result;
 
             if (jobPosting == null)
-            {             
+            {
                 ErrorMsg = $"Job posting {jobGuid} does not exist.";
                 return false;
             }
 
             if (jobPosting.JobStatus != (int)JobPostingStatus.Active)
-            {             
+            {
                 ErrorMsg = $"Job {jobPosting.JobPostingGuid} is not active.";
                 return false;
             }
 
             // verify user has not already applied 
-            JobApplication jobApplication = GetJobApplication( subscriber.SubscriberId, jobPosting.JobPostingId);
+            JobApplication jobApplication = GetJobApplication(subscriber.SubscriberId, jobPosting.JobPostingId);
             if (jobApplication != null)
-            {             
+            {
                 ErrorMsg = "User has already applied.";
                 return false;
             }
@@ -220,14 +242,14 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-        private  JobApplication GetJobApplication(int subscriberId, int jobPostingID)
+        private JobApplication GetJobApplication(int subscriberId, int jobPostingID)
         {
             return _repositoryWrapper.JobApplication.GetAllWithTracking()
                 .Where(s => s.IsDeleted == 0 && s.JobPostingId == jobPostingID && s.SubscriberId == subscriberId)
                 .FirstOrDefault();
         }
 
-        public async  Task<bool> HasJobApplication(Guid subscriberGuid, Guid jobPostingGuid)
+        public async Task<bool> HasJobApplication(Guid subscriberGuid, Guid jobPostingGuid)
         {
             return await _repositoryWrapper.JobApplication.HasSubscriberAppliedToJobPosting(subscriberGuid, jobPostingGuid);
         }
@@ -236,13 +258,5 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
         #endregion
-
-
     }
-
-
-
-
-
 }
- 

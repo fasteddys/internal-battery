@@ -39,7 +39,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _mapper.Map<PartnerListDto>(partners);
         }
 
-        public async Task CreatePartner(PartnerDto partnerDto)
+        public async Task<Guid> CreatePartner(PartnerDto partnerDto)
         {
             if (partnerDto == null)
                 throw new NullReferenceException("PartnerDto cannot be null");
@@ -49,6 +49,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             partner.Description = partnerDto.Description;
             await _repositoryWrapper.PartnerRepository.Create(partner);
             await _repositoryWrapper.SaveAsync();
+            return partner.PartnerGuid.Value;
         }
 
         public async Task UpdatePartner(Guid partnerGuid, PartnerDto partnerDto)

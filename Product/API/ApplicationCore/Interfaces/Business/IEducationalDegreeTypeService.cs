@@ -10,7 +10,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<EducationalDegreeTypeListDto> GetEducationalDegreeTypes(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending");
         Task<List<EducationalDegreeTypeDto>> GetAllEducationDegreeTypes();
         Task UpdateEducationalDegreeType(Guid educationalDegreeTypeGuid, EducationalDegreeTypeDto educationalDegreeTypeDto);
-        Task CreateEducationalDegreeType(EducationalDegreeTypeDto educationalDegreeTypeDto);
+        Task<Guid> CreateEducationalDegreeType(EducationalDegreeTypeDto educationalDegreeTypeDto);
         Task DeleteEducationalDegreeType(Guid educationalDegreeTypeGuid);
     }
 }

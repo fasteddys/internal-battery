@@ -9,6 +9,6 @@ namespace UpDiddyLib.Domain.Models
         public string AssessmentId { get; set; }
         public string Host { get; set;  }
         public string PublicKey { get; set; }
-        
+        public Guid TraitifyGuid { get; set; }
     }
 }

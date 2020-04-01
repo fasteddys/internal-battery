@@ -159,10 +159,9 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> EnrollSubscriber([FromBody] CourseEnrollmentDto courseEnrollmentDto, Guid courseGuid)
         {
 
-            var rVal = await _courseEnrollmentService.Enroll(GetSubscriberGuid(), courseEnrollmentDto, courseGuid);
-            return Ok(rVal);
+            var enrollmentGuid = await _courseEnrollmentService.Enroll(GetSubscriberGuid(), courseEnrollmentDto, courseGuid);
+            return StatusCode(201, enrollmentGuid);
         }
-
 
         #endregion
 
@@ -200,17 +199,15 @@ namespace UpDiddyApi.Controllers
         [HttpPost]
         [Route("{course:guid}/favorites")]
         [Authorize]
-
         public async Task<IActionResult> AddCourseFavorite(Guid course)
         {
-            await _courseFavoriteService.AddToFavorite(GetSubscriberGuid(), course);
-            return StatusCode(201);
+            var courseFavoriteGuid = await _courseFavoriteService.AddToFavorite(GetSubscriberGuid(), course);
+            return StatusCode(201, courseFavoriteGuid);
         }
 
         [HttpDelete]
         [Route("{course:guid}/favorites")]
         [Authorize]
-
         public async Task<IActionResult> RemoveCourseFavorite(Guid course)
         {
             await _courseFavoriteService.RemoveFromFavorite(GetSubscriberGuid(), course);
@@ -226,10 +223,8 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> GetRelatedCoursesByCourses([FromBody] List<Guid> courses, int limit = 100, int offset = 0)
         {
             List<RelatedCourseDto> relatedCourses = null;
-
             relatedCourses = await _courseService.GetCoursesByCourses(courses, limit, offset);
-
-            return Ok(relatedCourses);
+            return StatusCode(200, relatedCourses);
         }
 
         [HttpGet]
@@ -237,10 +232,8 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> GetRelatedCoursesByCourse(Guid course, int limit = 100, int offset = 0)
         {
             List<RelatedCourseDto> relatedCourses = null;
-
             relatedCourses = await _courseService.GetCoursesByCourse(course, limit, offset);
-
-            return Ok(relatedCourses);
+            return StatusCode(200, relatedCourses);
         }
 
         [HttpPost]
@@ -248,10 +241,8 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> GetRelatedCoursesByJobs([FromBody] List<Guid> jobs, int limit = 100, int offset = 0)
         {
             List<RelatedCourseDto> relatedCourses = null;
-
             relatedCourses = await _courseService.GetCoursesByJobs(jobs, limit, offset);
-
-            return Ok(relatedCourses);
+            return StatusCode(200, relatedCourses);
         }
 
         [HttpGet]
@@ -259,10 +250,8 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> GetRelatedCoursesByJob(Guid job, int limit = 100, int offset = 0)
         {
             List<RelatedCourseDto> relatedCourses = null;
-
             relatedCourses = await _courseService.GetCoursesByJob(job, limit, offset);
-
-            return Ok(relatedCourses);
+            return StatusCode(200, relatedCourses);
         }
 
         [HttpGet]
@@ -272,10 +261,8 @@ namespace UpDiddyApi.Controllers
             var subscriber = GetSubscriberGuid();
             if (subscriber == Guid.Empty)
                 throw new NotFoundException("Subscriber not found");
-
             var relatedCourses = await _courseService.GetCoursesBySubscriber(subscriber, limit, offset);
-
-            return Ok(relatedCourses);
+            return StatusCode(200, relatedCourses);
         }
 
         #endregion
@@ -287,14 +274,14 @@ namespace UpDiddyApi.Controllers
         [Route("refer")]
         public async Task<IActionResult> ReferAFriend([FromBody] CourseReferralDto courseReferral)
         {
-
-            var rVal = await _courseService.ReferCourseToFriend(GetSubscriberGuid(), courseReferral);
-            return Ok(rVal);
+            var courseReferralGuid = await _courseService.ReferCourseToFriend(GetSubscriberGuid(), courseReferral);
+            return StatusCode(201, courseReferralGuid);
         }
+
         #endregion
 
         #region Skills
-        
+
         [HttpGet]
         [Route("{course:guid}/skills")]
         public async Task<IActionResult> GetSkillForCourse(Guid course)

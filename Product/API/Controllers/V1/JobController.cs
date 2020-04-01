@@ -273,7 +273,7 @@ namespace UpDiddyApi.Controllers
                 _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
                 // update the job posting 
                 string ErrorMsg = string.Empty;
-                bool UpdateOk = JobPostingFactory.UpdateJobPosting(_repositoryWrapper, jobPostingDto.JobPostingGuid.Value, jobPostingDto, ref ErrorMsg, _hangfireService,_configuration);
+                bool UpdateOk = false; //JobPostingFactory.UpdateJobPosting(_repositoryWrapper, jobPostingDto.JobPostingGuid.Value, jobPostingDto, ref ErrorMsg, _hangfireService,_configuration);
                 _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
                 if (UpdateOk)
                     return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{jobPostingDto.JobPostingGuid.Value}" });
@@ -316,7 +316,7 @@ namespace UpDiddyApi.Controllers
 
                 string errorMsg = string.Empty;
                 Guid newPostingGuid = Guid.Empty;
-                if (JobPostingFactory.PostJob(_repositoryWrapper, recruiter.RecruiterId, jobPostingDto, ref newPostingGuid, ref errorMsg, _syslog, _mapper, _configuration, _hangfireService) == true)
+                if (false) // JobPostingFactory.PostJob(_repositoryWrapper, recruiter.RecruiterId, jobPostingDto, ref newPostingGuid, ref errorMsg, _syslog, _mapper, _configuration, _hangfireService) == true)
                     return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{newPostingGuid}" });
                 else
                     return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = errorMsg });
@@ -348,7 +348,7 @@ namespace UpDiddyApi.Controllers
             if (jobPosting.Recruiter.Subscriber.SubscriberGuid != subsriberGuidClaim)
                 return BadRequest(new BasicResponseDto() { StatusCode = 401, Description = "Unauthorized to copy posting" });
 
-            jobPosting = await JobPostingFactory.CopyJobPosting(_repositoryWrapper, jobPosting, _postingTTL);
+            jobPosting = null; // await JobPostingFactory.CopyJobPosting(_repositoryWrapper, jobPosting, _postingTTL);
 
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{jobPosting.JobPostingGuid}" });
         }

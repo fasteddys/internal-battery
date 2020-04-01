@@ -25,7 +25,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _config = config;
         }
 
-        public async Task AddCompanyAsync(CompanyDto companyDto)
+        public async Task<Guid> AddCompanyAsync(CompanyDto companyDto)
         {
             //TODO Address company logo URL in the future. Possibly a byte array represending the image which will be uploaded to azure blob storage 
             if (companyDto == null)
@@ -36,6 +36,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             company.LogoUrl = string.Empty;
             BaseModelFactory.SetDefaultsForAddNew(company);
             await _repositoryWrapper.Company.AddCompany(company);
+            return company.CompanyGuid;
         }
 
         public async Task EditCompanyAsync(CompanyDto companyDto)

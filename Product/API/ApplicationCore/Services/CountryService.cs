@@ -36,7 +36,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _mapper.Map<CountryDetailListDto>(countries);
         }
 
-        public async Task CreateCountry(CountryDetailDto countryDetailDto)
+        public async Task<Guid> CreateCountry(CountryDetailDto countryDetailDto)
         {
             if (countryDetailDto == null)
                 throw new NullReferenceException("countryDetailDto cannot be null");
@@ -45,13 +45,14 @@ namespace UpDiddyApi.ApplicationCore.Services
             country.CountryGuid = Guid.NewGuid();
             await _repositoryWrapper.Country.Create(country);
             await _repositoryWrapper.SaveAsync();
+            return country.CountryGuid.Value;
         }
 
-        public async Task UpdateCountry(Guid countryGuid, CountryDetailDto countryDetailDto)
+        public async Task UpdateCountry(CountryDetailDto countryDetailDto)
         {
-            if (countryDetailDto == null || countryGuid == null || countryGuid == Guid.Empty)
-                throw new NullReferenceException("countryDetailDto and countryGuid cannot be null");
-            var country = await _repositoryWrapper.Country.GetbyCountryGuid(countryGuid);
+            if (countryDetailDto == null )
+                throw new NullReferenceException("countryDetailDto cannot be null");
+            var country = await _repositoryWrapper.Country.GetbyCountryGuid(countryDetailDto.CountryGuid);
             if (country == null)
                 throw new NotFoundException("Country not found");
             country.OfficialName = countryDetailDto.OfficialName;

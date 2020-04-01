@@ -6,6 +6,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using Microsoft.AspNetCore.Authorization;
 namespace UpDiddyApi.Controllers
 {
+    [Obsolete("This can be removed once we have transitioned to the Locations controller", false)]
     [Route("/V2/[controller]/")]
     public class CountriesController : ControllerBase
     {
@@ -36,9 +37,10 @@ namespace UpDiddyApi.Controllers
         [HttpPut]
         [Route("{country:guid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<IActionResult> UpdateCountry(Guid country, [FromBody]  CountryDetailDto countryDetailDto)
+        public async Task<IActionResult> UpdateCountry(Guid country, [FromBody] CountryDetailDto countryDetailDto)
         {
-            await _countryService.UpdateCountry(country, countryDetailDto);
+            countryDetailDto.CountryGuid = country;
+            await _countryService.UpdateCountry(countryDetailDto);
             return StatusCode(204);
         }
 
@@ -55,8 +57,8 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateCountry([FromBody] CountryDetailDto countryDetailDto)
         {
-            await _countryService.CreateCountry(countryDetailDto);
-            return StatusCode(201);
+            var countryGuid = await _countryService.CreateCountry(countryDetailDto);
+            return StatusCode(201, countryGuid);
         }
 
         [HttpGet]
@@ -80,7 +82,9 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> UpdateState(Guid country, Guid state, [FromBody] StateDetailDto stateDetailDto)
         {
-            await _stateService.UpdateState(country, state, stateDetailDto);
+            stateDetailDto.CountryGuid = country;
+            stateDetailDto.StateGuid = state;
+            await _stateService.UpdateState(stateDetailDto);
             return StatusCode(204);
         }
 
@@ -89,17 +93,18 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> DeleteState(Guid country, Guid state)
         {
-            await _stateService.DeleteState(country, state);
+            await _stateService.DeleteState(state);
             return StatusCode(204);
         }
 
         [HttpPost]
         [Route("{country:guid}/states/")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<IActionResult> CreateState(Guid country, [FromBody] StateDetailDto StateDetailDto)
+        public async Task<IActionResult> CreateState(Guid country, [FromBody] StateDetailDto stateDetailDto)
         {
-            await _stateService.CreateState(country, StateDetailDto);
-            return StatusCode(201);
+            stateDetailDto.CountryGuid = country;
+            var stateGuid = await _stateService.CreateState(stateDetailDto);
+            return StatusCode(201, stateGuid);
         }
     }
 }

@@ -6,6 +6,7 @@ using UpDiddyLib.Dto.User;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.Reports;
+using UpDiddyLib.Domain.AzureSearchDocuments;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
@@ -31,7 +32,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<int> AddOrUpdateCourseAsync(CourseParams courseParams);
         Task<List<SubscriberInitialSourceDto>> GetNewSubscribers();
         Task<List<CourseDetailDto>> GetCoursesRandom(int NumCourses);
-        Task<List<CourseDetailDto>> GetCourses(int limit, int offset, string sort, string order);    
+        Task<List<CourseDetailDto>> GetCourses(int limit, int offset, string sort, string order);
         Task<CourseDetailDto> GetCourse(Guid courseGuid);
         Task<List<CourseFavoriteDto>> GetFavoriteCourses(Guid subscriberGuid, int limit, int offset, string sort, string order);
         Task<List<SubscriberNotesDto>> GetSubscriberNotes(Guid subscriberGuid, Guid talentGuid, int limit, int offset, string sort, string order);
@@ -72,5 +73,19 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<UsersDetailDto>> GetAllUsersDetail();
         Task<List<UsersDetailDto>> GetUsersByPartnerDetail(Guid partner, DateTime startDate, DateTime endDate);
         Task<List<PartnerUsers>> GetUsersByPartner(DateTime startDate, DateTime endDate);
-    }
+        Task<bool> InsertSendGridEvents(string sendGridJson);
+        Task<bool> PurgeSendGridEvents(int LookbackDays);
+        Task<List<SubscriberEmailStatisticDto>> GetSubscriberEmailStatistics(string email);
+        Task<Tuple<Guid?, string>> CreateJobPosting(JobCrudDto jobCrudDto);
+        Task<string> UpdateJobPosting(JobCrudDto jobCrudDto);
+        Task UpdateJobPostingSkills(Guid jobPostingGuid, List<Guid> skillGuids);
+        Task<int> CreateSubscriberG2Profiles(Guid subscriberGuid);
+        Task<int> DeleteSubscriberG2Profiles(Guid subscriberGuid);
+        Task<int> CreateCompanyG2Profiles(Guid companyGuid);
+        Task<int> DeleteCompanyG2Profiles(Guid companyGuid);
+        Task<bool> UpdateG2AzureIndexStatuses(List<AzureIndexResultStatus> profileGuids, string statusName, string statusInfo); 
+        Task<int> BootG2Profiles();
+ 
+
+    }  
 }

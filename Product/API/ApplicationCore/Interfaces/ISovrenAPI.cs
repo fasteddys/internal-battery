@@ -8,6 +8,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
 {
     public interface ISovrenAPI
     {
-        Task<String> SubmitResumeAsync(string base64Resume);
+        Task<String> SubmitResumeAsync(int SubscriberId, string base64Resume);
     }
 }

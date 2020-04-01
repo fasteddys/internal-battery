@@ -8,7 +8,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface ISubscriberEducationalHistoryService
     {
-        Task <Guid> CreateEducationalHistory(SubscriberEducationHistoryDto EducationHistoryDto, Guid subscriberGuid);
+        Task<Guid> CreateEducationalHistory(SubscriberEducationHistoryDto EducationHistoryDto, Guid subscriberGuid);
         Task<bool> UpdateEducationalHistory(SubscriberEducationHistoryDto EducationHistoryDto, Guid subscriberGuid, Guid educationalHistoryGuid);
         Task<bool> DeleteEducationalHistory(Guid subscriberGuid, Guid educationalHistoryGuid);
         Task<List<SubscriberEducationHistoryDto>> GetEducationalHistory(Guid subscriberGuid);

@@ -39,6 +39,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return await (from sf in _dbContext.SubscriberFile
                           join s in _dbContext.Subscriber on sf.SubscriberId equals s.SubscriberId
                           where s.SubscriberGuid == subscriberGuid && sf.IsDeleted == 0
+                          orderby sf.CreateDate descending
                           select sf).FirstOrDefaultAsync();
         }
     }

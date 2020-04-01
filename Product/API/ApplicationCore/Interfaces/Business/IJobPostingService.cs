@@ -15,8 +15,10 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<List<RelatedJobDto>> GetJobsBySubscriber(Guid subscriberGuid, int limit, int offset);
         Task<List<JobPostingCountDto>> GetJobCountPerProvinceAsync();
         Task<List<JobDto>> GetSubscriberJobFavorites(int SubscriberId);
-        Task<Guid> CreateJobPosting(Guid subscriberGuid, JobCrudDto jobPostingDto);
-        Task<bool> UpdateJobPosting(Guid subscriberGuid, Guid jobPostingGuid, JobCrudDto jobPostingDto);
+        Task<Guid> CreateJobPosting(JobCrudDto jobCrudDto);
+        Task<bool> UpdateJobPosting(JobCrudDto jobCrudDto);
+        Task<Guid> CreateJobPostingForSubscriber(Guid subscriberGuid, JobCrudDto jobCrudDto);
+        Task<bool> UpdateJobPostingForSubscriber(Guid subscriberGuid, JobCrudDto jobCrudDto);
         Task<bool> DeleteJobPosting(Guid subscriberGuid, Guid jobPostingGuid);
         Task<UpDiddyLib.Dto.JobPostingDto> GetJobPosting(Guid subscriberGuid, Guid jobPostingGuid);
         Task<List<UpDiddyLib.Dto.JobPostingDto>> GetJobPostingForSubscriber(Guid subscriberGuid);

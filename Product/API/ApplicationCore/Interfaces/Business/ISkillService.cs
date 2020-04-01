@@ -9,7 +9,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<SkillListDto> GetSkills(int limit, int offset, string sort, string order);
         Task<List<SkillDto>> GetSkillsByKeyword(string keyword);
         Task<SkillDto> GetSkill(Guid skillGuid);
-        Task CreateSkill(SkillDto skillDto);
+        Task<Guid> CreateSkill(SkillDto skillDto);
         Task UpdateSkill(Guid skillGuid, SkillDto skillDto);
         Task DeleteSkill(Guid skillGuid);
         Task<List<SkillDto>> GetSkillsByCourseGuid(Guid courseGuid);
@@ -17,5 +17,11 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task UpdateCourseSkills(Guid course, List<Guid> skills);
         Task UpdateSubscriberSkills(Guid subscriber, List<string> skills);
         Task UpdateSubscriberSkillsByGuid(Guid subscriber, List<Guid> skills);
+        Task<List<SkillDto>> AddOrUpdateSkillsByName(List<string> skillNames);
+        Task UpdateJobPostingSkillsByGuid(Guid jobPostingGuid, List<Guid> skills);
+        Task<SkillListDto> GetProfileSkillsForRecruiter(Guid profileGuid, Guid subscriberGuid, int limit, int offset, string sort, string order);
+        Task DeleteSkillsFromProfileForRecruiter(Guid subscriberGuid, List<Guid> profileSkillGuids);
+        Task<List<Guid>> AddSkillsToProfileForRecruiter(Guid subscriberGuid, List<Guid> skillGuids, Guid profileGuid);
+        Task UpdateProfileSkillsForRecruiter(Guid subscriberGuid, List<Guid> skillGuids, Guid profileGuid);
     }
 }

@@ -250,8 +250,8 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/delete-by-uri")]
         public IActionResult DeleteProfileByGoogleName([FromBody] string TalentCloudUri)
         {
-            _cloudTalentService.DeleteProfileFromCloudTalentByUri(TalentCloudUri);
-            return Ok();
+            var rval = _cloudTalentService.DeleteProfileFromCloudTalentByUri(TalentCloudUri);
+            return Ok(rval.Description);
         }
  
 

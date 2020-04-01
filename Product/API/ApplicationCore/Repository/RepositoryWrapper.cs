@@ -43,6 +43,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IEntityTypeRepository _entityTypeRepository;
         private IActionRepository _actionRepository;
         private IContactRepository _contactRepository;
+        private IContactTypeRepository _contactTypeRepository;
         private IOfferRepository _offerRepository;
         private ISubscriberFileRepository _subscriberFileRepository;
         private ISkillRepository _skillRepository;
@@ -92,8 +93,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ICourseLevelRepository _courseLevelRepository;
         private ICourseReferralRepository _courseReferralRepository;
         private INotificationGroupRepository _notificationGroupRepository;
-
         private readonly IConfiguration _configuration;
+        private ISendGridEventRepository _sendGridEventRepository;
+        private IHiringSolvedResumeParseRepository _hiringSolvedResumeParseRepository;
+        private ISovrenParseStatisticRepository _sovrenParseStatisticRepository;
+        private ICityRepository _cityRepository;
+        private IPostalRepository _postalRepository;
+        private IProfileRepository _profileRepository;
+        private IAzureIndexStatusRepository _azureIndexStatusRepository;
+        private IWishlistRepository _wishlistRepository;
+        private ICommentRepository _commentRepository;
+        private IEmailTemplateRepository _emailTemplateRepository;
+
 
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
         {
@@ -497,6 +508,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _contactRepository = new ContactRepository(_dbContext);
                 }
                 return _contactRepository;
+            }
+        }
+
+        public IContactTypeRepository ContactTypeRepository
+        {
+            get
+            {
+                if (_contactTypeRepository == null)
+                {
+                    _contactTypeRepository = new ContactTypeRepository(_dbContext);
+                }
+                return _contactTypeRepository;
             }
         }
 
@@ -1072,6 +1095,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
+        public ISendGridEventRepository SendGridEventRepository
+        {
+            get
+            {
+                if (_sendGridEventRepository == null)
+                {
+                    _sendGridEventRepository = new SendGridEventRepository(_dbContext);
+                }
+                return _sendGridEventRepository;
+            }
+        }
+
 
         public INotificationGroupRepository NotificationGroupRepository
         {
@@ -1082,6 +1117,117 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _notificationGroupRepository = new NotificationGroupRepository(_dbContext);
                 }
                 return _notificationGroupRepository;
+            }
+        }
+
+
+        public IHiringSolvedResumeParseRepository HiringSolvedResumeParseRepository
+        {
+            get
+            {
+                if (_hiringSolvedResumeParseRepository == null)
+                {
+                    _hiringSolvedResumeParseRepository = new HiringSolvedResumeParseRepository(_dbContext);
+                }
+                return _hiringSolvedResumeParseRepository;
+            }
+        }
+
+        public ISovrenParseStatisticRepository SovrenParseStatisticRepository
+        {
+            get
+            {
+                if (_sovrenParseStatisticRepository == null)
+                {
+                    _sovrenParseStatisticRepository = new SovrenParseStatisticRepository(_dbContext);
+                }
+                return _sovrenParseStatisticRepository;
+            }
+        }
+
+        public ICityRepository CityRepository
+        {
+            get
+            {
+                if (_cityRepository == null)
+                {
+                    _cityRepository = new CityRepository(_dbContext);
+                }
+                return _cityRepository;
+            }
+        }
+
+
+        public IPostalRepository PostalRepository
+        {
+            get
+            {
+                if (_postalRepository== null)
+                {
+                    _postalRepository = new PostalRepository(_dbContext);
+                }
+                return _postalRepository;
+            }
+        }
+
+        public IProfileRepository ProfileRepository
+        {
+            get
+            {
+                if (_profileRepository == null)
+                {
+                    _profileRepository = new ProfileRepository(_dbContext);
+                }
+                return _profileRepository;
+            }
+        }
+
+        public IAzureIndexStatusRepository AzureIndexStatusRepository
+        {
+            get
+            {
+                if (_azureIndexStatusRepository == null)
+                {
+                    _azureIndexStatusRepository = new AzureIndexStatusRepository(_dbContext);
+                }
+                return _azureIndexStatusRepository;
+            }
+        }
+
+        public IWishlistRepository WishlistRepository
+        {
+            get
+            {
+                if (_wishlistRepository == null)
+                {
+                    _wishlistRepository = new WishlistRepository(_dbContext);
+                }
+                return _wishlistRepository;
+            }
+        }
+
+        public ICommentRepository CommentRepository
+        {
+            get
+            {
+                if (_commentRepository == null)
+                {
+                    _commentRepository = new CommentRepository(_dbContext);
+                }
+                return _commentRepository;
+            }
+        }
+
+
+        public IEmailTemplateRepository EmailTemplateRepository
+        {
+            get
+            {
+                if (_emailTemplateRepository == null)
+                {
+                    _emailTemplateRepository = new EmailTemplateRepository(_dbContext);
+                }
+                return _emailTemplateRepository;
             }
         }
 
@@ -1099,6 +1245,5 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
             await this._dbContext.SaveChangesAsync();
         }
-
     }
 }

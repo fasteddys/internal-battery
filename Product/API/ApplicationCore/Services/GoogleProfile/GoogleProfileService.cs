@@ -149,7 +149,7 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
             {
                 string ResponseJson = string.Empty;
                 string encodedUri = WebUtility.UrlEncode(profileUri);
-                ExecuteProfileApiGet($"profile\\{encodedUri}", ref ResponseJson);
+                ExecuteProfileApiGet($"profile?profilename={encodedUri}", ref ResponseJson);
                 Rval = Newtonsoft.Json.JsonConvert.DeserializeObject<BasicResponseDto>(ResponseJson);
                 if (Rval.StatusCode != 200)
                     throw new Exception(Rval.Description);
@@ -169,8 +169,9 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
             {
                 string ResponseJson = string.Empty;
                 string encodedUri = WebUtility.UrlEncode(profileUri);
-                ExecuteProfileApiDelete($"profile\\{encodedUri}", ref ResponseJson);
-                _syslog.LogInformation($"GoogleProfileInterface.DeleteProfile response from ExecuteProfileApiDelete: {ResponseJson}");
+
+                ExecuteProfileApiDelete($"profile?profilename={encodedUri}", ref ResponseJson);
+                _syslog.LogInformation($"GoogleProfileInterface.DeleteProfile response from ExecuteProfileApiDelete: {ResponseJson}   DeleteUrl = {_configuration["CloudTalent:ProfileBaseUrl"]}profile?profilename={encodedUri}");
                 Rval = Newtonsoft.Json.JsonConvert.DeserializeObject<BasicResponseDto>(ResponseJson);
                 if (Rval.StatusCode != 200)
                     throw new Exception(Rval.Description);
