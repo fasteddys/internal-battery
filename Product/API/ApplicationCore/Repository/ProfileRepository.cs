@@ -11,6 +11,7 @@ using System.Data.SqlClient;
 using System.Data;
 using UpDiddyApi.ApplicationCore.Exceptions;
 
+
 namespace UpDiddyApi.ApplicationCore.Repository
 {
     public class ProfileRepository : UpDiddyRepositoryBase<Profile>, IProfileRepository
@@ -47,12 +48,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
                         .Include(s => s.Subscriber)
                         .Include(s => s.State).ThenInclude(c => c.Country)
                         .Include(p => p.Postal)
-                    join c in _dbContext.Company on p.CompanyId equals c.CompanyId
-                    join rc in _dbContext.RecruiterCompany on c.CompanyId equals rc.CompanyId
-                    join r in _dbContext.Recruiter on rc.RecruiterId equals r.RecruiterId
-                    join s in _dbContext.Subscriber on r.SubscriberId equals s.SubscriberId
-                    where p.ProfileGuid == profileGuid && s.SubscriberGuid == subscriberGuid
-                    select p)
+                          join c in _dbContext.Company on p.CompanyId equals c.CompanyId
+                          join rc in _dbContext.RecruiterCompany on c.CompanyId equals rc.CompanyId
+                          join r in _dbContext.Recruiter on rc.RecruiterId equals r.RecruiterId
+                          join s in _dbContext.Subscriber on r.SubscriberId equals s.SubscriberId
+                          where p.ProfileGuid == profileGuid && s.SubscriberGuid == subscriberGuid
+                          select p)
                     .FirstOrDefaultAsync();
         }
 
@@ -96,7 +97,15 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var validationErrors = new SqlParameter { ParameterName = "@ValidationErrors", SqlDbType = SqlDbType.NVarChar, Size = -1, Direction = ParameterDirection.Output };
             var spParams = new object[] { companyGuid, subscriberGuid, cityGuid, stateGuid, postalGuid, experienceLevelGuid, contactTypeGuid, firstName, lastName, email, phoneNumber, streetAddress, title, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono, currentRate, desiredRate, goals, preferences, skillsNote, employmentTypeGuids, profileGuid, validationErrors };
 
-            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Create_Profile] @CompanyGuid, @SubscriberGuid, @CityGuid, @StateGuid, @PostalGuid, @ExperienceLevelGuid, @ContactTypeGuid, @FirstName, @LastName, @Email, @PhoneNumber, @StreetAddress, @Title, @IsWillingToTravel, @IsActiveJobSeeker, @IsCurrentlyEmployed, @IsWillingToWorkProBono, @CurrentRate, @DesiredRate, @Goals, @Preferences, @SkillsNote, @EmploymentTypeGuids, @ProfileGuid OUTPUT, @ValidationErrors OUTPUT", spParams);
+            try
+            {
+                var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Create_Profile] @CompanyGuid, @SubscriberGuid, @CityGuid, @StateGuid, @PostalGuid, @ExperienceLevelGuid, @ContactTypeGuid, @FirstName, @LastName, @Email, @PhoneNumber, @StreetAddress, @Title, @IsWillingToTravel, @IsActiveJobSeeker, @IsCurrentlyEmployed, @IsWillingToWorkProBono, @CurrentRate, @DesiredRate, @Goals, @Preferences, @SkillsNote, @EmploymentTypeGuids, @ProfileGuid OUTPUT, @ValidationErrors OUTPUT", spParams);
+            }
+            catch (Exception e)
+            {
+                Serilog.Log.Error(e, $"An error occurred in ProfileRepository.CreateProfile: {e.Message}");
+                throw new FailedValidationException("An unknown error occurred; see logs for details");
+            }
 
             if (!string.IsNullOrWhiteSpace(validationErrors.Value.ToString()))
                 throw new FailedValidationException(validationErrors.Value.ToString());
@@ -145,7 +154,15 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var validationErrors = new SqlParameter { ParameterName = "@ValidationErrors", SqlDbType = SqlDbType.NVarChar, Size = -1, Direction = ParameterDirection.Output };
             var spParams = new object[] { recruiterSubscriberGuid, profileGuid, companyGuid, subscriberGuid, cityGuid, stateGuid, postalGuid, experienceLevelGuid, contactTypeGuid, firstName, lastName, email, phoneNumber, streetAddress, title, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono, currentRate, desiredRate, goals, preferences, skillsNote, employmentTypeGuids, validationErrors };
 
-            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Update_Profile] @RecruiterSubscriberGuid, @ProfileGuid, @CompanyGuid, @SubscriberGuid, @CityGuid, @StateGuid, @PostalGuid, @ExperienceLevelGuid, @ContactTypeGuid, @FirstName, @LastName, @Email, @PhoneNumber, @StreetAddress, @Title, @IsWillingToTravel, @IsActiveJobSeeker, @IsCurrentlyEmployed, @IsWillingToWorkProBono, @CurrentRate, @DesiredRate, @Goals, @Preferences, @SkillsNote, @EmploymentTypeGuids, @ValidationErrors OUTPUT", spParams);
+            try
+            {
+                var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Update_Profile] @RecruiterSubscriberGuid, @ProfileGuid, @CompanyGuid, @SubscriberGuid, @CityGuid, @StateGuid, @PostalGuid, @ExperienceLevelGuid, @ContactTypeGuid, @FirstName, @LastName, @Email, @PhoneNumber, @StreetAddress, @Title, @IsWillingToTravel, @IsActiveJobSeeker, @IsCurrentlyEmployed, @IsWillingToWorkProBono, @CurrentRate, @DesiredRate, @Goals, @Preferences, @SkillsNote, @EmploymentTypeGuids, @ValidationErrors OUTPUT", spParams);
+            }
+            catch (Exception e)
+            {
+                Serilog.Log.Error(e, $"An error occurred in ProfileRepository.UpdateProfileForRecruiter: {e.Message}");
+                throw new FailedValidationException("An unknown error occurred; see logs for details");
+            }
 
             if (!string.IsNullOrWhiteSpace(validationErrors.Value.ToString()))
                 throw new FailedValidationException(validationErrors.Value.ToString());
@@ -168,13 +185,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
             List<Profile> rval = await (from p in _dbContext.Profile
                                          .Include(c => c.Company)
                                          .Include(ct => ct.ContactType)
-                                         .Include(c => c.City)   
+                                         .Include(c => c.City)
                                          .Include(el => el.ExperienceLevel)
                                          .Include(s => s.State
                                        )
-                                       where (profilesGuids.Contains(p.ProfileGuid))
-                                       select p)
-                                       .ToListAsync();                                                            
+                                        where (profilesGuids.Contains(p.ProfileGuid))
+                                        select p)
+                                       .ToListAsync();
             return rval;
         }
 
@@ -183,5 +200,4 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
 
 
-    }
- 
+}
