@@ -153,7 +153,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (notificationGuid == null)
                 throw new FailedValidationException("Notification guid is required");
 
-            Notification ExistingNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == notificationGuid).Result.FirstOrDefault();
+            Notification ExistingNotification = await _repositoryWrapper.NotificationRepository.GetByGuid(notificationGuid);
 
             if (ExistingNotification == null)
                 throw new NotFoundException($"Unable to location notification {notificationGuid}");
@@ -224,7 +224,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (notificationGuid == null)
                 throw new FailedValidationException("Notification guid is required");
 
-            Notification ExistingNotification = await _repositoryWrapper.NotificationRepository.GetByGuid(notificationGuid);
+            Notification ExistingNotification = await _repositoryWrapper.NotificationRepository.GetAll()
+                .Where(n => n.NotificationGuid == notificationGuid && n.IsDeleted == 0 && (n.ExpirationDate == null || n.ExpirationDate > DateTime.UtcNow))
+                .FirstOrDefaultAsync();
 
             if (ExistingNotification == null)
                 throw new NotFoundException($"Cannot find notification {notificationGuid}");
