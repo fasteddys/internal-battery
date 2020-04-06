@@ -12,5 +12,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task UpdateSubscriberFileAsync(SubscriberFile subscriberFile);
         Task<List<SubscriberFile>> GetAllSubscriberFilesBySubscriberGuid(Guid subscriberFile);
         Task<SubscriberFile> GetMostRecentBySubscriberGuid(Guid subscriberGuid);
+        Task<SubscriberFile> GetMostRecentBySubscriberGuidForRecruiter(Guid profileGuid, Guid subscriberGuid);
     }
 }
