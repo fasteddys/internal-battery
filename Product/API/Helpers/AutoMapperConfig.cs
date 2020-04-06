@@ -828,6 +828,11 @@ namespace UpDiddyApi.Helpers
                 .ForMember(p => p.PostalGuid, opt => opt.MapFrom(src => src.Postal.PostalGuid))
                 .ForMember(p => p.StateGuid, opt => opt.MapFrom(src => src.State.StateGuid))
                 .ForMember(p => p.SubscriberGuid, opt => opt.MapFrom(src => src.Subscriber.SubscriberGuid))
+                .ForMember(p => p.FacebookUrl, opt => opt.MapFrom(src => src.Subscriber.FacebookUrl))
+                .ForMember(p => p.TwitterUrl, opt => opt.MapFrom(src => src.Subscriber.TwitterUrl))
+                .ForMember(p => p.GitHubUrl, opt => opt.MapFrom(src => src.Subscriber.GithubUrl))
+                .ForMember(p => p.LinkedInUrl, opt => opt.MapFrom(src => src.Subscriber.LinkedInUrl))
+                .ForMember(p => p.StackOverflowUrl, opt => opt.MapFrom(src => src.Subscriber.StackOverflowUrl))
                 .ReverseMap();
 
             CreateMap<List<WishlistDto>, WishlistListDto>()
