@@ -133,17 +133,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                     attachments.Add(resumeAttachment);
                 }
 
-                // attach a cover letter if content was added to this field
-                if (!string.IsNullOrWhiteSpace(applicationDto.CoverLetter))
-                {
-                    var coverLetter = new Attachment
-                    {
-                        Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(applicationDto.CoverLetter)),
-                        Filename = "CoverLetter.txt"
-                    };
-                    attachments.Add(coverLetter);
-                }
-
                 Dictionary<string, bool> EmailAddressesToSend = new Dictionary<string, bool>();
                 // configure an email for the recruiter (if one exists for the job posting)
                 if (jobPosting.Recruiter != null)
