@@ -30,9 +30,9 @@ namespace UpDiddyLib.Domain.Models
 
         public string AvatarUrl { get; set; }
 
-     // todo jab   public DateTime? CreateDate { get; set; }
+       public DateTime? CreateDate { get; set; }
 
-        // todo jab public DateTime? ModifyDate { get; set; }
+       public DateTime? ModifyDate { get; set; }
 
     }
 }

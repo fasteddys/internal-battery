@@ -39,7 +39,8 @@ namespace UpDiddyApi.Models.Views
         public int? AzureIndexStatusId { get; set; }
         public string AvatarUrl { get; set; }
         public Guid? PartnerGuid { get; set; }
-    // todo jab     public DateTime? CreateDate { get; set; }
+
+       public DateTime? CreateDate { get; set; }
 
     }
 }
