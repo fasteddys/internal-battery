@@ -380,12 +380,15 @@ namespace UpDiddyApi.Helpers
                 .ForMember(x => x.MetaTitle, opt => opt.Ignore())
                 .ReverseMap();
 
-
-
-
             CreateMap<JobPosting, JobDetailDto>()
                 .ForMember(x => x.CompanyName, opt => opt.MapFrom(src => src.Company.CompanyName))
                 .ForMember(x => x.CommuteTime, opt => opt.Ignore())
+                .ForMember(x => x.EmploymentType, opt => opt.MapFrom(src => src.EmploymentType.Name))
+                .ForMember(x => x.EducationLevel, opt => opt.MapFrom(src => src.EducationLevel.Level))
+                .ForMember(x => x.ExperienceLevel, opt => opt.MapFrom(src => src.ExperienceLevel.DisplayName))
+                .ForMember(x => x.Industry, opt => opt.MapFrom(src => src.Industry.Name))
+                .ForMember(x => x.JobCategory, opt => opt.MapFrom(src => src.JobCategory.Name))
+                .ForMember(x => x.Skills, opt => opt.MapFrom(src => src.JobPostingSkills.Select(s => s.Skill.SkillName).ToList()))
                 .ReverseMap();
 
 
