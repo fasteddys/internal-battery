@@ -1,38 +1,37 @@
-﻿using System.Net;
-using System;
-using System.Threading.Tasks;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using UpDiddyApi.ApplicationCore.Interfaces.Business;
-using G2Interfaces = UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
-using UpDiddyApi.Authorization;
-using UpDiddyLib.Domain.Models;
-using UpDiddyLib.Dto.User;
-using Microsoft.AspNetCore.Authorization;
-using UpDiddyApi.ApplicationCore.Interfaces;
-using UpDiddyLib.Domain.AzureSearchDocuments;
-using UpDiddyLib.Domain.AzureSearch;
-using UpDiddyApi.Models;
-using UpDiddyApi.Workflow;
-using UpDiddyLib.Domain.Models.G2;
-using System.Collections.Generic;
-using UpDiddyApi.ApplicationCore.Interfaces.Repository;
-using AutoMapper;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Reflection;
+using System.Reflection.Emit;
+using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
-using static UpDiddyLib.Helpers.Constants;
-using UpDiddyLib.Helpers;
+using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.Authorization;
+using UpDiddyApi.Models;
 using UpDiddyApi.Models;
 using UpDiddyApi.Models.G2;
-using Newtonsoft.Json.Linq;
-using System.Reflection.Emit;
-using System.Reflection;
+using UpDiddyApi.Workflow;
+using UpDiddyLib.Domain.AzureSearch;
+using UpDiddyLib.Domain.AzureSearchDocuments;
+using UpDiddyLib.Domain.Models;
+using UpDiddyLib.Domain.Models.G2;
+using UpDiddyLib.Dto.User;
+using UpDiddyLib.Helpers;
+using static UpDiddyLib.Helpers.Constants;
+using G2Interfaces = UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
-
-
     public class SendGridService : ISendGridService
     {
         private readonly IConfiguration _configuration;
@@ -47,7 +46,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly ILogger _syslog;
         private readonly ISysEmail _sysEmail;
-
 
         public SendGridService(IServiceProvider services, IRepositoryWrapper repositoryWrapper, IMapper mapper, IHangfireService hangfireService, IConfiguration configuration, ILogger<SendGridService> logger, ISysEmail sysEmail)
         {
@@ -66,7 +64,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             _sysEmail = sysEmail;
         }
 
-
         public async Task<bool> SendBulkEmailByList(Guid TemplateGuid, List<Guid> Profiles, Guid subscriberId)
         {
             // validate profiles have been specified 
@@ -78,6 +75,8 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             if (template == null)
                 throw new FailedValidationException($"SendGridService:SendBulkEmailsByList {TemplateGuid} is not a valid bulk email template");
+
+            var recruiter = await _repositoryWrapper.RecruiterRepository.GetRecruiterBySubscriberGuid(subscriberId);
 
             // validate the api key 
             if (ValidateSendgridSubAccount(template.SendGridSubAccount) == false)
@@ -91,7 +90,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 dynamic templateData = null;
                 try
                 {
-                    templateData = BuildEmailTemplateData(p, template.TemplateParams);
+                    templateData = BuildEmailTemplateData(template.TemplateParams, p, recruiter);
                 }
                 catch (Exception ex)
                 {
@@ -151,24 +150,34 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         #region Private Helpers
 
-        private dynamic BuildEmailTemplateData(Models.G2.Profile p, string TemplateParams)
+        private dynamic BuildEmailTemplateData(string templateParams, Models.G2.Profile profile, Recruiter recruiter)
         {
-            string[] props = TemplateParams.Split(';');
+            var props = templateParams.Split(';')
+                .SkipWhile(string.IsNullOrEmpty)
+                .Select(s => s.Split(':'))
+                .Where(s => s.Length == 2)
+                .ToDictionary(s => s[1], s => s[0]);
+
             JObject rval = new JObject();
 
-            foreach (string prop in props)
+            foreach (var keyValuePair in props)
             {
-                if (string.IsNullOrEmpty(prop) == false)
+                var objectToTest =
+                    keyValuePair.Value.StartsWith("recruiter.", StringComparison.CurrentCultureIgnoreCase) ? recruiter
+                    : keyValuePair.Value.StartsWith("profile.", StringComparison.CurrentCultureIgnoreCase) ? profile
+                    : null as object;
+
+                if (objectToTest == null)
                 {
-                    string[] info = prop.Split(':');
-                    string path = info[0];
-                    string paramName = info[1];
-                    var val = GetPropertyValue(p, path);
-                    if (val != null)
-                    {
-                        JToken paramVal = JToken.FromObject(val);
-                        rval.Add(paramName, paramVal);
-                    }
+                    _syslog.LogError($"SendGridService:GetPropertyValue: {keyValuePair.Value} is NOT a valid profile navigation property, skipping...");
+                    continue;
+                }
+
+                var val = GetPropertyValue(objectToTest, keyValuePair.Value.Remove(0, keyValuePair.Value.IndexOf('.') + 1));
+                if (val != null)
+                {
+                    JToken paramVal = JToken.FromObject(val);
+                    rval.Add(keyValuePair.Key, paramVal);
                 }
             }
             return rval;
