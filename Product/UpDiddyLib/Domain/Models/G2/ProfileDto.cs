@@ -41,10 +41,30 @@ namespace UpDiddyLib.Domain.Models.G2
         [StringLength(500)]
         public string SkillsNote { get; set; }
         public List<Guid> EmploymentTypeGuids { get; set; }
-        public string FacebookUrl { get; set; }
-        public string GithubUrl { get; set; }
-        public string LinkedInUrl { get; set; }
-        public string StackOverflowUrl { get; set; }
+
+        /// <summary>
+        /// Profile's Twitter url.
+        /// </summary>
         public string TwitterUrl { get; set; }
+
+        /// <summary>
+        /// Profile's StackOverflow Url.
+        /// </summary>
+        public string StackOverflowUrl { get; set; }
+
+        /// <summary>
+        /// Profile's Facebook Url.
+        /// </summary>
+        public string FacebookUrl { get; set; }
+
+        /// <summary>
+        /// Profile's GitHub Url.
+        /// </summary>
+        public string GitHubUrl { get; set; }
+
+        /// <summary>
+        /// Profile's LinkedIn Url.
+        /// </summary>
+        public string LinkedInUrl { get; set; }
     }
 }
