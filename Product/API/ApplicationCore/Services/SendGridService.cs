@@ -66,7 +66,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
    
-        public async Task<bool> SendBulkEmailByList(Guid TemplateGuid, List<Guid> Profiles, Guid subscriberId)
+        public async Task<bool> SendBulkEmailByList(Guid TemplateGuid, List<Guid> Profiles, Guid recruiterSubscriberGuid)
         {
             // validate profiles have been specified 
             if (Profiles == null || Profiles.Count == 0)
@@ -78,11 +78,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (template == null)
                 throw new FailedValidationException($"SendGridService:SendBulkEmailsByList {TemplateGuid} is not a valid bulk email template");
 
-            var recruiter = await _repositoryWrapper.RecruiterRepository.GetRecruiterBySubscriberGuid(subscriberId);
+            var recruiter = await _repositoryWrapper.RecruiterRepository.GetRecruiterBySubscriberGuid(recruiterSubscriberGuid);
 
             // except out oif recruiter is not found 
             if (recruiter == null)
-                throw new FailedValidationException($"SendGridService:SendBulkEmailsByList Subscriber {subscriberId} is not a recruiter");
+                throw new FailedValidationException($"SendGridService:SendBulkEmailsByList Subscriber {recruiterSubscriberGuid} is not a recruiter");
 
             // get list of recruiters companies 
             List<RecruiterCompany> recruiterCompanies  = _repositoryWrapper.RecruiterCompanyRepository.GetAll()   
@@ -118,7 +118,12 @@ namespace UpDiddyApi.ApplicationCore.Services
                     SendGridAccount accountType = (SendGridAccount)Enum.Parse(typeof(SendGridAccount), template.SendGridSubAccount);
                     // send the email if the profile is associated with the recruiters company                    
                    if ( recruiterCompanies.Any(c => c.CompanyId == p.CompanyId)  )
-                      _sysEmail.SendTemplatedEmailAsync(p.Email, template.SendGridTemplateId, templateData, accountType);
+                   {
+                        _sysEmail.SendTemplatedEmailAsync(p.Email, template.SendGridTemplateId, templateData, accountType);
+                        // add note about email being sent 
+                        await LogBulkEmailNotes(template.Name, recruiterSubscriberGuid, p.Subscriber.SubscriberId);
+                    }
+                      
                    else
                       _syslog.LogError($"SendGridService:SendbulkEmailByList  Profile {p.ProfileGuid} is asscociated with any of recruiters {recruiter.RecruiterGuid} companies.  Email not sent for this profile.");
                 }
@@ -132,7 +137,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             // they are processed for bulk emails sends.  We will remove them from the azure index now so they will no longer appear
             // in queries
             _g2Service.G2IndexBulkDeleteByGuidAsync(Profiles);
-            await LogBulkEmailNotes(template.Name, subscriberId);
+            
             return true;
         }
 
@@ -144,20 +149,19 @@ namespace UpDiddyApi.ApplicationCore.Services
             return rval;
         }
 
-        private async Task LogBulkEmailNotes(string templateName, Guid subscriberId)
+        private async Task LogBulkEmailNotes(string templateName, Guid recruiterSubscriberGuid, int subscriberId)
         {
-            var recruiter = await _repositoryWrapper.RecruiterRepository.GetRecruiterBySubscriberGuid(subscriberId);
-
+            var recruiter = await _repositoryWrapper.RecruiterRepository.GetRecruiterBySubscriberGuid(recruiterSubscriberGuid);
             if (recruiter?.SubscriberId == null) { return; }
 
             await _repositoryWrapper.SubscriberNotesRepository.AddNotes(new SubscriberNotes
             {
                 SubscriberNotesGuid = Guid.NewGuid(),
-                SubscriberId = recruiter.SubscriberId.Value,
+                SubscriberId = subscriberId,
                 RecruiterId = recruiter.RecruiterId,
                 IsDeleted = 0,
                 ViewableByOthersInRecruiterCompany = true,
-                Notes = $"Template {templateName} bulk email sent by {recruiter.LastName}, {recruiter.FirstName} on {DateTime.UtcNow:G}.",
+                Notes = $"Template {templateName} bulk email sent by {recruiter.LastName}, {recruiter.FirstName} on {DateTime.Now:G}.",
             });
         }
 

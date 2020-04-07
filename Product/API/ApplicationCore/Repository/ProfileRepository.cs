@@ -187,7 +187,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
                                          .Include(ct => ct.ContactType)
                                          .Include(c => c.City)
                                          .Include(el => el.ExperienceLevel)
-                                         .Include(s => s.State
+                                         .Include(s => s.State)
+                                         .Include(s => s.Subscriber
                                        )
                                         where (profilesGuids.Contains(p.ProfileGuid))
                                         select p)
