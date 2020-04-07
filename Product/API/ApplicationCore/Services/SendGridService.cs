@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -64,6 +65,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _sysEmail = sysEmail;
         }
 
+   
         public async Task<bool> SendBulkEmailByList(Guid TemplateGuid, List<Guid> Profiles, Guid subscriberId)
         {
             // validate profiles have been specified 
@@ -78,11 +80,21 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             var recruiter = await _repositoryWrapper.RecruiterRepository.GetRecruiterBySubscriberGuid(subscriberId);
 
+            // except out oif recruiter is not found 
+            if (recruiter == null)
+                throw new FailedValidationException($"SendGridService:SendBulkEmailsByList Subscriber {subscriberId} is not a recruiter");
+
+            // get list of recruiters companies 
+            List<RecruiterCompany> recruiterCompanies  = _repositoryWrapper.RecruiterCompanyRepository.GetAll()   
+                 .Include(c => c.Company)
+                 .Where(rc => rc.IsDeleted == 0 && rc.RecruiterId == recruiter.RecruiterId)
+                 .ToList();
+      
             // validate the api key 
             if (ValidateSendgridSubAccount(template.SendGridSubAccount) == false)
                 throw new FailedValidationException($"SendGridService:SendBulkEmailsByList {template.SendGridSubAccount} is not a valid SendGrid subaccount");
 
-            // get the list of email associated with the profiles 
+            // get the list of email associated with the profiles irregardless of if they are associated with the recruiters company 
             List<UpDiddyApi.Models.G2.Profile> profiles = await _profileService.GetProfilesByGuidList(Profiles);
 
             foreach (Models.G2.Profile p in profiles)
@@ -104,9 +116,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                     Profiles.Remove(p.ProfileGuid);
                     // map account type to enum 
                     SendGridAccount accountType = (SendGridAccount)Enum.Parse(typeof(SendGridAccount), template.SendGridSubAccount);
-                    // send the email 
-                    _sysEmail.SendTemplatedEmailAsync(p.Email, template.SendGridTemplateId, templateData, accountType);
-          
+                    // send the email if the profile is associated with the recruiters company                    
+                   if ( recruiterCompanies.Any(c => c.CompanyId == p.CompanyId)  )
+                      _sysEmail.SendTemplatedEmailAsync(p.Email, template.SendGridTemplateId, templateData, accountType);
+                   else
+                      _syslog.LogError($"SendGridService:SendbulkEmailByList  Profile {p.ProfileGuid} is asscociated with any of recruiters {recruiter.RecruiterGuid} companies.  Email not sent for this profile.");
                 }
                 catch (Exception ex)
                 {
@@ -118,7 +132,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             // they are processed for bulk emails sends.  We will remove them from the azure index now so they will no longer appear
             // in queries
             _g2Service.G2IndexBulkDeleteByGuidAsync(Profiles);
-
             await LogBulkEmailNotes(template.Name, subscriberId);
             return true;
         }
