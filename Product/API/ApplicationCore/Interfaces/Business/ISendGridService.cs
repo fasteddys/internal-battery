@@ -8,7 +8,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface ISendGridService
     {
-        Task<bool> SendBulkEmailByList(Guid TemplateGuid, List<Guid> profiles, Guid subscriberId);
+        Task<bool> SendBulkEmailByList(Guid TemplateGuid, List<Guid> profiles, Guid recruiterSubscriberGuid);
         Task<EmailTemplateListDto> GetEmailTemplates(int limit, int offset, string sort, string order);
 
     }
