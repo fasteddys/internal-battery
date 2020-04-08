@@ -48,6 +48,19 @@ namespace UpDiddyApi.ApplicationCore.Services
             _hiringSolvedService = hiringSolvedService;
         }
 
+        public async Task<bool> HasSubscriberUploadedResumeForRecruiter(Guid profileGuid, Guid subscriberGuid)
+        {
+            SubscriberFile file = await _repositoryWrapper.SubscriberFileRepository.GetMostRecentBySubscriberGuidForRecruiter(profileGuid, subscriberGuid);
+            if (file == null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
         public async Task<bool> HasSubscriberUploadedResume(Guid subscriberGuid)
         {
             var subscriber = await _subscriberService.GetBySubscriberGuid(subscriberGuid);
@@ -103,6 +116,31 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _repositoryWrapper.SaveAsync();
             var resumeParseGuid = await ResumeHelper.ImportSubscriberProfileDataAsync(_hiringSolvedService, _subscriberService, _repositoryWrapper, _sovrenApi, subscriber, subscriberFileResume, fileDto.Base64EncodedData);
             return resumeParseGuid;
+        }
+
+        public async Task<UpDiddyLib.Domain.Models.FileDto> DownloadResumeForRecruiter(Guid profileGuid, Guid subscriberGuid)
+        {
+            SubscriberFile file = await _repositoryWrapper.SubscriberFileRepository.GetMostRecentBySubscriberGuidForRecruiter(profileGuid, subscriberGuid);
+            if (file == null || file.SimpleName == null)
+                throw new NotFoundException("Resume not found");
+            UpDiddyLib.Domain.Models.FileDto resume = new UpDiddyLib.Domain.Models.FileDto();
+            resume.MimeType = file.MimeType;
+            resume.FileName = file.SimpleName;
+            try
+            {
+                resume.Base64EncodedData = Convert.ToBase64String(Utils.StreamToByteArray(await _cloudStorage.OpenReadAsync(file.BlobName)));
+            }
+            catch (Exception e)
+            {
+                List<KeyValuePair<string, object>> props = new List<KeyValuePair<string, object>>();
+                props.Add(new KeyValuePair<string, object>("SubscriberFileGuid", file.SubscriberFileGuid));
+                props.Add(new KeyValuePair<string, object>("BlobName", file.BlobName));
+                props.Add(new KeyValuePair<string, object>("SimpleName", file.SimpleName));
+                props.Add(new KeyValuePair<string, object>("MimeType", file.MimeType));
+                _syslog.LogInformation($"An error occurred while downloading a resume for profile: {profileGuid}", props);
+                throw new NotFoundException("There was a problem downloading the resume", e);
+            }
+            return resume;
         }
 
         public async Task<UpDiddyLib.Domain.Models.FileDto> DownloadResume(Guid subscriberGuid)

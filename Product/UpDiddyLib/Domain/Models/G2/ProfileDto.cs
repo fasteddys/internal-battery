@@ -41,7 +41,6 @@ namespace UpDiddyLib.Domain.Models.G2
         [StringLength(500)]
         public string SkillsNote { get; set; }
         public List<Guid> EmploymentTypeGuids { get; set; }
-
         /// <summary>
         /// Profile's Twitter url.
         /// </summary>
@@ -66,5 +65,6 @@ namespace UpDiddyLib.Domain.Models.G2
         /// Profile's LinkedIn Url.
         /// </summary>
         public string LinkedInUrl { get; set; }
+        public string AvatarUrl { get; set; }
     }
 }

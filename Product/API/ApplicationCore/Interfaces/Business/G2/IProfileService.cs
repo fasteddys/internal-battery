@@ -15,11 +15,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business.G2
         Task<Guid> CreateProfile(ProfileDto profileDto);
         Task DeleteProfile(Guid profileGuid);
         Task UpdateAzureIndexStatus(Guid profileGuid, string azureIndexStatusName, string azureSearchIndexInfo);
-
         Task<List<string>> GetProfileEmailsByGuidList(List<Guid> profileGuids);
-
         Task<List<Profile>> GetProfilesByGuidList(List<Guid> profileGuids);
-
         #region ContactTypes
 
         Task<ContactTypeListDto> GetContactTypeList();

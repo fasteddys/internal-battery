@@ -32,6 +32,7 @@ namespace UpDiddyApi.Controllers.V2
         private readonly G2Interfaces.ICommentService _commentService;
         private readonly ISkillService _skillService;
         private readonly ITagService _tagService;
+        private readonly IResumeService _resumeService;
 
         public G2Controller(IServiceProvider services)
         {
@@ -43,6 +44,7 @@ namespace UpDiddyApi.Controllers.V2
             _commentService = services.GetService<G2Interfaces.ICommentService>();
             _skillService = services.GetService<ISkillService>();
             _tagService = services.GetService<ITagService>();
+            _resumeService = services.GetService<IResumeService>();
         }
  
         #region Recruiter Profile Operations
@@ -64,6 +66,25 @@ namespace UpDiddyApi.Controllers.V2
             profileDto.ProfileGuid = profileGuid;
             await _profileService.UpdateProfileForRecruiter(profileDto, GetSubscriberGuid());
             return StatusCode(204);
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("profiles/{profileGuid:guid}/resume/is-exists")]
+        public async Task<IActionResult> HasSubscriberUploadedResumeForRecruiter(Guid profileGuid)
+        {
+            var resume = await _resumeService.HasSubscriberUploadedResumeForRecruiter(profileGuid, GetSubscriberGuid());
+            return Ok(resume);
+        }
+
+
+        [HttpGet]
+        [Authorize]
+        [Route("profiles/{profileGuid:guid}/resume")]
+        public async Task<IActionResult> DownloadResumeForRecruiter(Guid profileGuid)
+        {
+            var resume = await _resumeService.DownloadResumeForRecruiter(profileGuid, GetSubscriberGuid());
+            return Ok(resume);
         }
 
         #endregion
@@ -343,8 +364,7 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         #endregion ContactTypes
-
-
+               
         #region Admin Functions 
 
         // Admin functions will not be made public throught the APi gateway.  They are here for dev administration of the 
