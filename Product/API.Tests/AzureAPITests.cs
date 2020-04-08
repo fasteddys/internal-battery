@@ -30,6 +30,7 @@ namespace API.Tests.AzureApi
             {
                 var command = new SqlCommand(SQL_DELETE_OBJECT_BY_GUID, connection);
                 command.CommandType = CommandType.StoredProcedure;
+                command.CommandTimeout = 60;
                 command.Parameters.Add("@ObjectIdentifier", SqlDbType.UniqueIdentifier).Value = objectIdentifier;
                 connection.Open();
                 command.ExecuteNonQuery();
@@ -41,6 +42,7 @@ namespace API.Tests.AzureApi
             {
                 var command = new SqlCommand(SQL_UNDELETE_OBJECT_BY_GUID, connection);
                 command.CommandType = CommandType.StoredProcedure;
+                command.CommandTimeout = 60;
                 command.Parameters.Add("@ObjectIdentifier", SqlDbType.UniqueIdentifier).Value = objectIdentifier;
                 connection.Open();
                 command.ExecuteNonQuery();

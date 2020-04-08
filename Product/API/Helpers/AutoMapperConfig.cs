@@ -828,6 +828,7 @@ namespace UpDiddyApi.Helpers
                 .ForMember(p => p.CompanyGuid, opt => opt.MapFrom(src => src.Company.CompanyGuid))
                 .ForMember(p => p.EmploymentTypeGuids, opt => opt.MapFrom(src => src.ProfileEmploymentTypes.Select(pet => pet.EmploymentType.EmploymentTypeGuid).ToList()))
                 .ForMember(p => p.ExperienceLevelGuid, opt => opt.MapFrom(src => src.ExperienceLevel.ExperienceLevelGuid))
+                .ForMember(p => p.ContactTypeGuid, opt => opt.MapFrom(src => src.ContactType.ContactTypeGuid))
                 .ForMember(p => p.PostalGuid, opt => opt.MapFrom(src => src.Postal.PostalGuid))
                 .ForMember(p => p.StateGuid, opt => opt.MapFrom(src => src.State.StateGuid))
                 .ForMember(p => p.SubscriberGuid, opt => opt.MapFrom(src => src.Subscriber.SubscriberGuid))
