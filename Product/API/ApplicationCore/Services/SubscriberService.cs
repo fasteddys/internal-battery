@@ -330,15 +330,19 @@ namespace UpDiddyApi.ApplicationCore.Services
                     step = 5;
                     group = await _taggingService.CreateGroup(subscriberDto.ReferrerUrl, partnerGuid, subscriber.SubscriberId);
 
-                    if (butterPage.Data.Fields.isgateddownload && !string.IsNullOrEmpty(gatedDownloadFileUrl))
+                    step = 6;
+                    if (butterPage != null)
                     {
-                        int? groupId = null;
-                        if (group != null)
-                            groupId = group.GroupId;
-                        int? maxAllowedInt = null;
-                        if (maxFileDownloadAttemptsPermitted.HasValue)
-                            maxAllowedInt = Decimal.ToInt16(maxFileDownloadAttemptsPermitted.Value);
-                        await HandleGatedFileDownload(maxAllowedInt, gatedDownloadFileUrl, groupId, subscriber.SubscriberId, subscriber.Email);
+                        if (butterPage.Data.Fields.isgateddownload && !string.IsNullOrEmpty(gatedDownloadFileUrl))
+                        {
+                            int? groupId = null;
+                            if (group != null)
+                                groupId = group.GroupId;
+                            int? maxAllowedInt = null;
+                            if (maxFileDownloadAttemptsPermitted.HasValue)
+                                maxAllowedInt = Decimal.ToInt16(maxFileDownloadAttemptsPermitted.Value);
+                            await HandleGatedFileDownload(maxAllowedInt, gatedDownloadFileUrl, groupId, subscriber.SubscriberId, subscriber.Email);
+                        }
                     }
 
                     if (!string.IsNullOrEmpty(subscriberDto.AssessmentId))
@@ -511,7 +515,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             string downloadUrl = await _fileDownloadTrackerService.CreateFileDownloadLink(fileDownloadTrackerDto);
 
             _hangfireService.Enqueue(() =>
-             _sysEmail.SendTemplatedEmailAsync(
+             _sysEmail.SendTemplatedEmailAsync( 
                  email,
                  _configuration["SysEmail:Transactional:TemplateIds:GatedDownload-LinkEmail"],
                  new
@@ -788,9 +792,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             //get notes for subscriber that are public and visible to recruiters of current logged in recruiter company
             var subscriberPublicNotesQueryable = from subscriberNote in _repository.SubscriberNotesRepository.GetAll()
                                                  join recruiter in _repository.RecruiterRepository.GetAll() on subscriberNote.RecruiterId equals recruiter.RecruiterId
-                                                 join company in _repository.Company.GetAllCompanies() on recruiter.CompanyId equals company.CompanyId
+                                                 join recruiterCompany in _repository.RecruiterCompanyRepository.GetAll() on recruiter.RecruiterId equals recruiterCompany.RecruiterId
+                                                 join company in _repository.Company.GetAllCompanies() on recruiterCompany.CompanyId equals company.CompanyId
                                                  join subscriber in _repository.SubscriberRepository.GetAll() on recruiter.SubscriberId equals subscriber.SubscriberId
-                                                 where subscriberNote.SubscriberId.Equals(subscriberData.SubscriberId) && subscriberNote.IsDeleted.Equals(0) && recruiter.CompanyId.Equals(rec.CompanyId) && subscriberNote.ViewableByOthersInRecruiterCompany.Equals(true)
+                                                 where subscriberNote.SubscriberId.Equals(subscriberData.SubscriberId) && subscriberNote.IsDeleted.Equals(0) && subscriberNote.ViewableByOthersInRecruiterCompany.Equals(true)
                                                  select new SubscriberNotesDto()
                                                  {
                                                      ViewableByOthersInRecruiterCompany = subscriberNote.ViewableByOthersInRecruiterCompany,
@@ -1465,8 +1470,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             orderByList.Add(orderBy);
 
             SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(adminApiKey));
-
-            // Create an index named hotels
             ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(subscriberIndexName);
 
             SearchParameters parameters;

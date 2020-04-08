@@ -1,4 +1,5 @@
-﻿using SendGrid.Helpers.Mail;
+﻿using Microsoft.Extensions.Logging;
+using SendGrid.Helpers.Mail;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ namespace UpDiddyLib.Helpers
             List<Attachment> attachments = null,
             DateTime? sendAt = null,
             int? unsubscribeGroupId = null);
-
+        
         void SendPurchaseReceiptEmail(
             string sendgridTemplateId,
             string profileUrl,

@@ -272,8 +272,7 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsRecruiterPolicy")]
         public async Task<IActionResult> CreateJob([FromBody] JobCrudDto jobPostingDto)
         {
-
-            Guid newJobGuid = await _jobPostingService.CreateJobPosting(GetSubscriberGuid(), jobPostingDto);
+            Guid newJobGuid = await _jobPostingService.CreateJobPostingForSubscriber(GetSubscriberGuid(), jobPostingDto);
             Response.StatusCode = 201;
             return StatusCode(201, newJobGuid);
         }
@@ -281,10 +280,15 @@ namespace UpDiddyApi.Controllers
         [HttpPut]
         [Route("admin/{jobGuid:guid}")]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        public async Task<IActionResult> UpdateJob([FromBody] JobCrudDto jobPostingDto, Guid jobGuid)
+        public async Task<IActionResult> UpdateJob([FromBody] JobCrudDto jobCrudDto, Guid jobGuid)
         {
+            if (jobCrudDto.JobPostingGuid == null || jobCrudDto.JobPostingGuid == Guid.Empty)
+                throw new JobPostingUpdate("jobPostingGuid in request boddy cannot be null or empty");
 
-            await _jobPostingService.UpdateJobPosting(GetSubscriberGuid(), jobGuid, jobPostingDto);
+            if (jobCrudDto.JobPostingGuid != jobGuid)
+                throw new JobPostingUpdate("job property from url does not match jobPostingGuid specified in request body");
+
+            await _jobPostingService.UpdateJobPostingForSubscriber(GetSubscriberGuid(), jobCrudDto);
             return StatusCode(204);
         }
 
@@ -293,7 +297,6 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsRecruiterPolicy")]
         public async Task<IActionResult> DeleteJob(Guid jobGuid)
         {
-
             await _jobPostingService.DeleteJobPosting(GetSubscriberGuid(), jobGuid);
             return StatusCode(204);
         }

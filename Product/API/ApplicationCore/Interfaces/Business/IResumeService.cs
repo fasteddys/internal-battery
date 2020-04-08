@@ -1,14 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
-using Microsoft.AspNetCore.Http;
 using UpDiddyLib.Domain.Models;
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface IResumeService
     {
+        Task<bool> HasSubscriberUploadedResume(Guid subscriberGuid);
+        Task<bool> HasSubscriberUploadedResumeForRecruiter(Guid profileGuid, Guid subscriberGuid);
         Task<Guid> UploadResume(Guid subscriberGuid, FileDto fileDto);
         Task<FileDto> DownloadResume(Guid subscriberGuid);
+        Task<FileDto> DownloadResumeForRecruiter(Guid profileGuid, Guid subscriberGuid);
         Task<Guid> GetResumeParse(Guid subscriberGuid);
         Task<UpDiddyLib.Dto.ResumeParseQuestionnaireDto> GetResumeQuestions(Guid subscriberGuid, Guid resumeParseGuid);
         Task ResolveProfileMerge(List<string> mergeInfo, Guid subscriberGuid, Guid resumeParseGuid);

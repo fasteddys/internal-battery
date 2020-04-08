@@ -25,7 +25,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (stateGuid == null || stateGuid == Guid.Empty)
                 throw new NullReferenceException("stateGuid cannot be null");
-            var state = await _repositoryWrapper.State.GetByGuid(stateGuid);
+            var state = await _repositoryWrapper.State.GetByStateGuid(stateGuid);
             if (state == null)
                 throw new NotFoundException($"State with guid: {stateGuid} does not exist");
             return _mapper.Map<StateDetailDto>(state);
@@ -44,11 +44,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _mapper.Map<StateDetailListDto>(states);
         }
 
-        public async Task<Guid> CreateState(Guid countryGuid, StateDetailDto stateDetailDto)
+        public async Task<Guid> CreateState(StateDetailDto stateDetailDto)
         {
-            if (countryGuid == null || countryGuid == Guid.Empty || stateDetailDto == null)
-                throw new NullReferenceException("StateDetailDto and CountryGuid cannot be null");
-            var country = await _repositoryWrapper.Country.GetbyCountryGuid(countryGuid);
+            if (stateDetailDto == null)
+                throw new NullReferenceException("StateDetailDto cannot be null");
+            var country = await _repositoryWrapper.Country.GetbyCountryGuid(stateDetailDto.CountryGuid);
             if (country == null)
                 throw new NotFoundException("Country not found");
             var state = _mapper.Map<State>(stateDetailDto);
@@ -60,35 +60,27 @@ namespace UpDiddyApi.ApplicationCore.Services
             return state.StateGuid.Value;
         }
 
-        public async Task UpdateState(Guid countryGuid, Guid stateGuid, StateDetailDto stateDetailDto)
+        public async Task UpdateState(StateDetailDto stateDetailDto)
         {
-            if (stateGuid == null || stateGuid == Guid.Empty || countryGuid == null || countryGuid == Guid.Empty)
-                throw new NullReferenceException("StateGuid and CountryGuid cannot be null");
             if (stateDetailDto == null)
                 throw new NullReferenceException("StateDetailDto cannot be null");
-            var country = await _repositoryWrapper.Country.GetbyCountryGuid(countryGuid);
-            if (country == null)
-                throw new NotFoundException("Country not found");
-            var state = await _repositoryWrapper.State.GetByCountryGuidAndStateGuid(countryGuid, stateGuid);
+            var state = await _repositoryWrapper.State.GetByStateGuid(stateDetailDto.StateGuid);
             if (state == null)
                 throw new NotFoundException("State not found");
             state.Name = stateDetailDto.Name;
             state.Sequence = stateDetailDto.Sequence;
             state.Code = stateDetailDto.Code;
-            state.CountryId = country.CountryId;
+            state.CountryId = state.CountryId;
             state.ModifyDate = DateTime.UtcNow;
             _repositoryWrapper.State.Update(state);
             await _repositoryWrapper.SaveAsync();
         }
 
-        public async Task DeleteState(Guid countryGuid, Guid stateGuid)
+        public async Task DeleteState(Guid stateGuid)
         {
-            if (stateGuid == null || stateGuid == Guid.Empty || countryGuid == null || countryGuid == Guid.Empty)
-                throw new NullReferenceException("StateGuid and CountryGuid cannot be null");
-            var country = await _repositoryWrapper.Country.GetbyCountryGuid(countryGuid);
-            if (country == null)
-                throw new NotFoundException("Country not found");
-            var state = await _repositoryWrapper.State.GetByCountryGuidAndStateGuid(countryGuid, stateGuid);
+            if (stateGuid == null || stateGuid == Guid.Empty)
+                throw new NullReferenceException("StateGuid cannot be null");
+            var state = await _repositoryWrapper.State.GetByStateGuid(stateGuid);
             if (state == null)
                 throw new NotFoundException("State not found");
             state.IsDeleted = 1;

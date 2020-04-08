@@ -39,7 +39,24 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return await (from sf in _dbContext.SubscriberFile
                           join s in _dbContext.Subscriber on sf.SubscriberId equals s.SubscriberId
                           where s.SubscriberGuid == subscriberGuid && sf.IsDeleted == 0
+                          orderby sf.CreateDate descending
                           select sf).FirstOrDefaultAsync();
+        }
+
+        public async Task<SubscriberFile> GetMostRecentBySubscriberGuidForRecruiter(Guid profileGuid, Guid subscriberGuid)
+        {
+
+            return await (from p in _dbContext.Profile
+                          join c in _dbContext.Company on p.CompanyId equals c.CompanyId
+                          join rc in _dbContext.RecruiterCompany on c.CompanyId equals rc.CompanyId
+                          join r in _dbContext.Recruiter on rc.RecruiterId equals r.RecruiterId
+                          join rs in _dbContext.Subscriber on r.SubscriberId equals rs.SubscriberId
+                          join s in _dbContext.Subscriber on p.SubscriberId equals s.SubscriberId
+                          join sf in _dbContext.SubscriberFile on s.SubscriberId equals sf.SubscriberId
+                          where p.ProfileGuid == profileGuid && rs.SubscriberGuid == subscriberGuid
+                          orderby sf.CreateDate descending
+                          select sf)
+                          .FirstOrDefaultAsync();
         }
     }
 }

@@ -11,6 +11,8 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyLib.Domain.Models;
 using UpDiddyApi.Models;
 using UpDiddyApi.ApplicationCore.Exceptions;
+using UpDiddyApi.ApplicationCore.Factory;
+
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class SkillService : ISkillService
@@ -48,7 +50,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<List<SkillDto>> GetSkillsByKeyword(string keyword)
         {
-            var skills = await _repositoryWrapper.SkillRepository.GetByConditionAsync(x => x.SkillName.Contains(keyword));            
+            var skills = await _repositoryWrapper.SkillRepository.GetByConditionAsync(x => x.SkillName.Contains(keyword));
             if (skills == null)
                 throw new NotFoundException("Skills not found");
 
@@ -174,7 +176,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
-
         public async Task UpdateSubscriberSkillsByGuid(Guid subscriberGuid, List<Guid> skills)
         {
             var subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
@@ -182,6 +183,54 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new NotFoundException("Subscriber not found");
 
             await _repositoryWrapper.StoredProcedureRepository.UpdateEntitySkills(subscriberGuid, "Subscriber", skills);
+        }
+
+        /// <summary>
+        /// Lifted this logic from the JobPostingFactory. Given a list of skill names, we find the skill in our system and return
+        /// a reference to it. If a skill does not exist, we add it to our system. 
+        /// </summary>
+        /// <param name="skills"></param>
+        /// <returns></returns>
+        public async Task<List<SkillDto>> AddOrUpdateSkillsByName(List<string> skillNames)
+        {
+            var updatedSkills = new List<SkillDto>();
+            foreach (var skillName in skillNames)
+            {
+                var skill = SkillFactory.GetOrAdd(_repositoryWrapper, skillName).Result;
+                if (!updatedSkills.Exists(s => s.SkillGuid == skill.SkillGuid))
+                    updatedSkills.Add(new SkillDto()
+                    {
+                        SkillGuid = skill.SkillGuid.Value,
+                        Name = skill.SkillName
+                    });
+            }
+            return updatedSkills;
+        }
+
+        public async Task UpdateJobPostingSkillsByGuid(Guid jobPostingGuid, List<Guid> skills)
+        {
+            await _repositoryWrapper.StoredProcedureRepository.UpdateJobPostingSkills(jobPostingGuid, skills);
+        }
+
+        public async Task<SkillListDto> GetProfileSkillsForRecruiter(Guid profileGuid, Guid subscriberGuid, int limit, int offset, string sort, string order)
+        {
+            var skills = await _repositoryWrapper.SkillRepository.GetProfileSkillsForRecruiter(profileGuid, subscriberGuid, limit, offset, sort, order);
+            return _mapper.Map<SkillListDto>(skills);
+        }
+
+        public async Task DeleteSkillsFromProfileForRecruiter(Guid subscriberGuid, List<Guid> profileSkillGuids)
+        {
+            await _repositoryWrapper.SkillRepository.DeleteSkillsFromProfileForRecruiter(subscriberGuid, profileSkillGuids);
+        }
+
+        public async Task<List<Guid>> AddSkillsToProfileForRecruiter(Guid subscriberGuid, List<Guid> skillGuids, Guid profileGuid)
+        {
+            return await _repositoryWrapper.SkillRepository.AddSkillsToProfileForRecruiter(subscriberGuid, skillGuids, profileGuid);
+        }
+
+        public async Task UpdateProfileSkillsForRecruiter(Guid subscriberGuid, List<Guid> skillGuids, Guid profileGuid)
+        {
+            await _repositoryWrapper.SkillRepository.UpdateProfileSkillsForRecruiter(subscriberGuid, skillGuids, profileGuid);
         }
     }
 }

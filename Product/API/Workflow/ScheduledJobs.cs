@@ -34,6 +34,10 @@ using UpDiddyApi.ApplicationCore.Services.CourseCrawling.Common;
 using System.Collections.Concurrent;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Caching.Memory;
+using UpDiddyLib.Domain.Models;
+using UpDiddyLib.Domain.AzureSearchDocuments;
+using UpDiddyApi.Models.Views;
+using UpDiddyApi.Models.G2;
 
 namespace UpDiddyApi.Workflow
 {
@@ -52,6 +56,12 @@ namespace UpDiddyApi.Workflow
         private readonly ISitemapService _sitemapService;
         private readonly IEmploymentTypeService _employmentTypeService;
         private readonly IHiringSolvedService _hiringSolvedService;
+        private readonly ISkillService _skillService;
+        private readonly IG2Service _g2Service;
+        private readonly ISendGridService _sendGridService;
+
+
+
 
         public ScheduledJobs(
             UpDiddyDbContext context,
@@ -75,9 +85,11 @@ namespace UpDiddyApi.Workflow
             ICloudTalentService cloudTalentService,
             ISitemapService sitemapService,
             IEmploymentTypeService employmentTypeService,
-            IHiringSolvedService hiringSolvedService
-             
-           )
+            IHiringSolvedService hiringSolvedService,
+            ISkillService skillService,
+            IG2Service g2Service,
+            ISendGridService sendGridService
+            )
         {
             _db = context;
             _mapper = mapper;
@@ -103,8 +115,14 @@ namespace UpDiddyApi.Workflow
             _sitemapService = sitemapService;
             _employmentTypeService = employmentTypeService;
             _hiringSolvedService = hiringSolvedService;
+            _skillService = skillService;
+            _g2Service = g2Service;
+            _sendGridService = sendGridService;
+       
         }
 
+
+        #region Sitemap
 
         [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task GenerateSiteMapAndSaveToBlobStorage()
@@ -128,6 +146,8 @@ namespace UpDiddyApi.Workflow
 
             _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.GenerateSiteMapAndSaveToBlobStorage completed at: {DateTime.UtcNow.ToLongDateString()}");
         }
+
+        #endregion
 
         #region Marketing
 
@@ -162,7 +182,7 @@ namespace UpDiddyApi.Workflow
 
                         if (await _sysEmail.SendTemplatedEmailAsync(
                              reminder.Email,
-                             _configuration["SysEmail:Transactional:TemplateIds:SubscriberNotification-Reminder"].ToString(),
+                             _configuration["SysEmail:NotifySystem:TemplateIds:SubscriberNotification-Reminder"].ToString(),
                              new
                              {
                                  firstName = reminder.FirstName,
@@ -171,7 +191,7 @@ namespace UpDiddyApi.Workflow
                                  notificationsUrl = _configuration["Environment:BaseUrl"].ToString() + "dashboard",
                                  disableNotificationEmailReminders = _configuration["Environment:BaseUrl"].ToString() + "Home/DisableEmailReminders/" + reminder.SubscriberGuid
                              },
-                             SendGridAccount.Transactional,
+                             SendGridAccount.NotifySystem,
                              null,
                              null,
                              executionTime))
@@ -247,7 +267,7 @@ namespace UpDiddyApi.Workflow
                         }
 
                         bool isMailSentSuccessfully =
-                        _sysEmail.SendTemplatedEmailAsync(
+                         _sysEmail.SendTemplatedEmailAsync(
                             leadEmail.Email,
                             leadEmail.EmailTemplateId,
                             new
@@ -303,6 +323,7 @@ namespace UpDiddyApi.Workflow
         [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public async Task ValidateEmailAddress(Guid partnerContactGuid, string email, int verificationFailureLeadStatusId)
         {
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.ValidateEmailAddress started at: {DateTime.UtcNow.ToLongDateString()}");
             // retrieve the partner contact that will be associated with any lead statuses we store and the log of the zero bounce request
             var partnerContact = await _db.PartnerContact.Where(pc => pc.PartnerContactGuid == partnerContactGuid).FirstOrDefaultAsync();
 
@@ -314,19 +335,18 @@ namespace UpDiddyApi.Workflow
             bool? isEmailValid = api.ValidatePartnerContactEmail(partnerContact.PartnerContactId, email, verificationFailureLeadStatusId);
 
             // note that we are not doing anything with the result here. the responsibility for acting on this has been moved to throttled email delivery processing
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.ValidateEmailAddress completed at: {DateTime.UtcNow.ToLongDateString()}");
         }
 
         #endregion
 
         #region Woz
 
-
         public bool UpdateWozStudentLastLogin(string SubscriberGuid)
         {
             try
             {
-
-                _syslog.Log(LogLevel.Information, $"***** UpdateWozStudentLastLogin started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid.ToString()}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateWozStudentLastLogin started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid.ToString()}");
                 Subscriber subscriber = _db.Subscriber
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == Guid.Parse(SubscriberGuid))
                 .FirstOrDefault();
@@ -356,7 +376,6 @@ namespace UpDiddyApi.Workflow
                     _db.SaveChanges();
                 }
 
-                _syslog.Log(LogLevel.Information, $"***** UpdateWozStudentLastLogin completed at: {DateTime.UtcNow.ToLongDateString()}");
                 return true;
             }
             catch (Exception e)
@@ -364,7 +383,10 @@ namespace UpDiddyApi.Workflow
                 _syslog.Log(LogLevel.Error, "UpdateWozStudentLastLogin:GetWozCourseProgress threw an exception -> " + e.Message);
                 return false;
             }
-
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateWozStudentLastLogin completed at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid.ToString()}");
+            }
         }
 
 
@@ -375,7 +397,7 @@ namespace UpDiddyApi.Workflow
         {
             try
             {
-                _syslog.Log(LogLevel.Information, $"***** UpdateAllStudentsProgress started at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateAllStudentsProgress started at: {DateTime.UtcNow.ToLongDateString()}");
                 // get all enrollments that are not complete
                 List<Enrollment> enrollments = _db.Enrollment
                     .Include(s => s.Subscriber)
@@ -400,20 +422,18 @@ namespace UpDiddyApi.Workflow
             }
             finally
             {
-                _syslog.Log(LogLevel.Information, $"***** UpdateAllStudentsProgress completed at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateAllStudentsProgress completed at: {DateTime.UtcNow.ToLongDateString()}");
             }
 
             return true;
-
         }
-
 
         [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public bool UpdateStudentProgress(string SubscriberGuid, int ProgressUpdateAgeThresholdInHours)
         {
             try
             {
-                _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress started for subscriber {SubscriberGuid.ToString()} ProgressUpdateAgeThresholdInHours = {ProgressUpdateAgeThresholdInHours}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateStudentProgress started for subscriber {SubscriberGuid.ToString()} ProgressUpdateAgeThresholdInHours = {ProgressUpdateAgeThresholdInHours}");
                 Subscriber subscriber = _db.Subscriber
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == Guid.Parse(SubscriberGuid))
                 .FirstOrDefault();
@@ -429,11 +449,11 @@ namespace UpDiddyApi.Workflow
 
                 foreach (Enrollment e in enrollments)
                 {
-                    _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress looking to update enrollment {e.EnrollmentGuid}");
+                    _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateStudentProgress looking to update enrollment {e.EnrollmentGuid}");
                     // Only Call woz if the modify date is null or if the modify date older that progress update age threshold
                     if (e.ModifyDate == null || ((DateTime)e.ModifyDate).AddHours(ProgressUpdateAgeThresholdInHours) <= DateTime.UtcNow)
                     {
-                        _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress calling woz for enrollment {e.EnrollmentGuid}");
+                        _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateStudentProgress calling woz for enrollment {e.EnrollmentGuid}");
                         UpdateWozEnrollment(SubscriberGuid, e, ref updatesMade);
                     }
                     else
@@ -441,21 +461,23 @@ namespace UpDiddyApi.Workflow
                         DateTime ModifyDate = (DateTime)e.ModifyDate;
                         DateTime DateThreshold = ((DateTime)e.ModifyDate).AddHours(ProgressUpdateAgeThresholdInHours);
                         _syslog.Log(LogLevel.Information,
-                            $"***** UpdateStudentProgress skipping  update for enrollment {e.EnrollmentGuid} enrollment Modify date is {ModifyDate.ToLongDateString()} {ModifyDate.ToLongTimeString()} Threshold date is {DateThreshold.ToLongDateString()} {DateThreshold.ToLongTimeString()}");
+                            $"***** ScheduledJobs.UpdateStudentProgress skipping  update for enrollment {e.EnrollmentGuid} enrollment Modify date is {ModifyDate.ToLongDateString()} {ModifyDate.ToLongTimeString()} Threshold date is {DateThreshold.ToLongDateString()} {DateThreshold.ToLongTimeString()}");
                     }
                 }
                 if (updatesMade)
                     _db.SaveChanges();
 
-                _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress completed");
                 return true;
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Error, $"UpdateStudentProgress:GetWozCourseProgress threw an exception -> {e.Message} for subscriber {SubscriberGuid}");
+                _syslog.Log(LogLevel.Error, $"ScheduledJobs.GetWozCourseProgress threw an exception -> {e.Message} for subscriber {SubscriberGuid}");
                 return false;
             }
-
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress completed at {DateTime.UtcNow.ToLongDateString()}");
+            }
         }
 
 
@@ -466,7 +488,7 @@ namespace UpDiddyApi.Workflow
             bool result = false;
             try
             {
-                _syslog.Log(LogLevel.Information, $"***** ReconcileFutureEnrollments started at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.ReconcileFutureEnrollments started at: {DateTime.UtcNow.ToLongDateString()}");
                 int MaxReconcilesToProcess = 10;
                 int.TryParse(_configuration["Woz:MaxReconcilesToProcess"], out MaxReconcilesToProcess);
 
@@ -485,12 +507,12 @@ namespace UpDiddyApi.Workflow
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Error, "ScheduledJobs:ReconcileFutureEnrollments threw an exception -> " + e.Message);
+                _syslog.Log(LogLevel.Error, "ScheduledJobs.ReconcileFutureEnrollments threw an exception -> " + e.Message);
                 throw e;
             }
             finally
             {
-                _syslog.Log(LogLevel.Information, $"***** ReconcileFutureEnrollments completed at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.ReconcileFutureEnrollments completed at: {DateTime.UtcNow.ToLongDateString()}");
             }
             return result;
         }
@@ -503,6 +525,7 @@ namespace UpDiddyApi.Workflow
 
         private void AssociateCampaignToCourseCompletion(string SubscriberGuid, Enrollment e)
         {
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.AssociateCampaignToCourseCompletion started at: {DateTime.UtcNow.ToLongDateString()}");
             Guid parsedSubscriberGuid;
             Guid.TryParse(SubscriberGuid, out parsedSubscriberGuid);
 
@@ -549,12 +572,14 @@ namespace UpDiddyApi.Workflow
                     }
                 }
             }
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.AssociateCampaignToCourseCompletion completed at: {DateTime.UtcNow.ToLongDateString()}");
         }
 
 
         // check to see if student has completed the course and set completion date
         private void UpdateWozCourseCompletion(string SubscriberGuid, Enrollment e)
         {
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateWozCourseCompletion started at: {DateTime.UtcNow.ToLongDateString()}");
             // Set the enrollments course completion date if the course has been completed and 
             // a completion date has not been noted
             if (e.PercentComplete == 100 && e.CompletionDate == null)
@@ -563,17 +588,18 @@ namespace UpDiddyApi.Workflow
                 // See if we can 
                 AssociateCampaignToCourseCompletion(SubscriberGuid, e);
             }
-
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateWozCourseCompletion completed at: {DateTime.UtcNow.ToLongDateString()}");
         }
 
         // update the subscribers woz course progress 
         private void UpdateWozEnrollment(string SubscriberGuid, Enrollment e, ref bool updatesMade)
         {
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateWozEnrollment started at: {DateTime.UtcNow.ToLongDateString()}");
             WozCourseProgressDto wcp = null;
             wcp = GetWozCourseProgress(e);
             if (wcp != null && wcp.ActivitiesCompleted > 0 && wcp.ActivitiesTotal > 0)
             {
-                _syslog.Log(LogLevel.Information, $"***** UpdateWozEnrollment updating enrollment {e.EnrollmentGuid}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateWozEnrollment updating enrollment {e.EnrollmentGuid}");
                 int PercentComplete = Convert.ToInt32(((double)wcp.ActivitiesCompleted / (double)wcp.ActivitiesTotal) * 100);
                 // update the percent completion if it's changed 
                 if (e.PercentComplete != PercentComplete)
@@ -581,20 +607,20 @@ namespace UpDiddyApi.Workflow
                     e.PercentComplete = PercentComplete;
                     updatesMade = true;
                     UpdateWozCourseCompletion(SubscriberGuid, e);
-                    _syslog.Log(LogLevel.Information, $"***** UpdateWozEnrollment updating enrollment {e.EnrollmentGuid} set PercentComplete={e.PercentComplete}");
+                    _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateWozEnrollment updating enrollment {e.EnrollmentGuid} set PercentComplete={e.PercentComplete}");
                     e.ModifyDate = DateTime.UtcNow;
                 }
                 else
-                    _syslog.Log(LogLevel.Information, $"***** UpdateWozEnrollment no progress for {e.EnrollmentGuid}");
+                    _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateWozEnrollment no progress for {e.EnrollmentGuid}");
             }
             else
             {
                 if (wcp == null)
-                    _syslog.Log(LogLevel.Information, $"***** UpdateWozEnrollment GetWozCourseProgress returned null for enrollment {e.EnrollmentGuid}");
+                    _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateWozEnrollment returned null for enrollment {e.EnrollmentGuid}");
                 else
-                    _syslog.Log(LogLevel.Information, $"***** UpdateWozEnrollment GetWozCourseProgress returned ActivitiesCompleted = {wcp.ActivitiesCompleted} ActivitiesTotal = {wcp.ActivitiesTotal}");
+                    _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateWozEnrollment returned ActivitiesCompleted = {wcp.ActivitiesCompleted} ActivitiesTotal = {wcp.ActivitiesTotal}");
             }
-
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateWozEnrollment completed at: {DateTime.UtcNow.ToLongDateString()}");
         }
 
 
@@ -603,7 +629,7 @@ namespace UpDiddyApi.Workflow
         {
             try
             {
-                _syslog.Log(LogLevel.Information, $"***** GetWozCourseProgress started at: {DateTime.UtcNow.ToLongDateString()} for enrollment {enrollment.EnrollmentGuid.ToString()}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.GetWozCourseProgress started at: {DateTime.UtcNow.ToLongDateString()} for enrollment {enrollment.EnrollmentGuid.ToString()}");
                 WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
                 WozCourseEnrollment wce = _db.WozCourseEnrollment
                 .Where(
@@ -616,13 +642,16 @@ namespace UpDiddyApi.Workflow
                     return null;
 
                 WozCourseProgressDto Wcp = wi.GetCourseProgress(wce.SectionId, wce.WozEnrollmentId).Result;
-                _syslog.Log(LogLevel.Information, $"***** GetWozCourseProgress completed at: {DateTime.UtcNow.ToLongDateString()}");
                 return Wcp;
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Error, "ScheduledJobs:GetWozCourseProgress threw an exception -> " + e.Message);
+                _syslog.Log(LogLevel.Error, "ScheduledJobs.GetWozCourseProgress threw an exception -> " + e.Message);
                 return null;
+            }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.GetWozCourseProgress completed at: {DateTime.UtcNow.ToLongDateString()}");
             }
         }
 
@@ -631,20 +660,22 @@ namespace UpDiddyApi.Workflow
         {
             try
             {
-                _syslog.Log(LogLevel.Information, $"***** GetWozCourseProgress started at: {DateTime.UtcNow.ToLongDateString()} for woz login {exeterId}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.GetWozStudentLastLogin started at: {DateTime.UtcNow.ToLongDateString()} for woz login {exeterId}");
                 WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
                 WozStudentInfoDto studentLogin = wi.GetStudentInfo(exeterId).Result;
                 if (studentLogin == null)
                     return null;
                 else
                     return studentLogin.LastLoginDate;
-
-
             }
             catch (Exception e)
             {
                 _syslog.Log(LogLevel.Error, "ScheduledJobs:GetWozCourseProgress threw an exception -> " + e.Message);
                 return null;
+            }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.GetWozStudentLastLogin completed at: {DateTime.UtcNow.ToLongDateString()} for woz login {exeterId}");
             }
         }
 
@@ -706,8 +737,11 @@ namespace UpDiddyApi.Workflow
                 _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.CrawlCourseSiteAsync encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                 result = false;
             }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** Crawling course site '{courseSite.Name}'. Completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
 
-            _syslog.Log(LogLevel.Information, $"***** Crawling course site '{courseSite.Name}'. Completed at: {DateTime.UtcNow.ToLongDateString()}");
             return result;
         }
 
@@ -792,8 +826,11 @@ namespace UpDiddyApi.Workflow
                 _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.SyncCourseSiteAsync encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                 result = false;
             }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** Syncing course site '{courseSite.Name}'. Completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
 
-            _syslog.Log(LogLevel.Information, $"***** Syncing course site '{courseSite.Name}'. Completed at: {DateTime.UtcNow.ToLongDateString()}");
             return result;
         }
 
@@ -887,8 +924,11 @@ namespace UpDiddyApi.Workflow
                 _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.JobDataMining encountered an exception for {jobSiteName} after {position}; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                 result = false;
             }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.JobDataMining completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
 
-            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.JobDataMining completed at: {DateTime.UtcNow.ToLongDateString()}");
             return result;
         }
 
@@ -900,6 +940,8 @@ namespace UpDiddyApi.Workflow
         /// <returns></returns>
         private async Task<JobSiteScrapeStatistic> ProcessJobPages(IJobDataMining jobDataMining, List<JobPage> jobPagesToProcess, JobSiteScrapeStatistic jobDataMiningStats)
         {
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.ProcessJobPages for {jobDataMiningStats?.JobSite?.Name} started at: {DateTime.UtcNow.ToLongDateString()}");
+
             // JobPageStatus = 1 / 'Pending' - we want to process these (add new or update existing dbo.JobPosting)                     
             var pendingJobPages = jobPagesToProcess.Where(jp => jp.JobPageStatusId == 1).ToList();
             foreach (var jobPage in pendingJobPages)
@@ -925,8 +967,21 @@ namespace UpDiddyApi.Workflow
                             jobPostingGuid = JobPostingFactory.GetJobPostingById(_repositoryWrapper, jobPage.JobPostingId.Value).Result.JobPostingGuid;
                             // the factory method uses the guid property of the dto for GetJobPostingByGuidWithRelatedObjects - need to set that too
                             jobPostingDto.JobPostingGuid = jobPostingGuid;
+
                             // attempt to update job posting
-                            isJobPostingOperationSuccessful = JobPostingFactory.UpdateJobPosting(_repositoryWrapper, jobPostingGuid, jobPostingDto, ref errorMessage, true, _hangfireService, _configuration);
+                            Recruiter recruiter = await RecruiterFactory.GetAddOrUpdate(_repositoryWrapper, jobPostingDto.Recruiter.Email, jobPostingDto.Recruiter.FirstName, jobPostingDto.Recruiter.LastName, null, null);
+                            Company company = await CompanyFactory.GetCompanyByGuid(_repositoryWrapper, jobPostingDto.Company.CompanyGuid);
+                            await RecruiterCompanyFactory.GetOrAdd(_repositoryWrapper, recruiter.RecruiterId, company.CompanyId, true);
+                            jobPostingDto.Recruiter.RecruiterGuid = recruiter.RecruiterGuid;
+                            JobCrudDto jobCrudDto = _mapper.Map<JobCrudDto>(jobPostingDto);
+
+                            if (jobPostingDto.JobPostingSkills != null && jobPostingDto.JobPostingSkills.Any())
+                            {
+                                var jobPostingSkills = await _skillService.AddOrUpdateSkillsByName(jobPostingDto.JobPostingSkills.Select(jps => jps.SkillName).ToList());
+                                await _skillService.UpdateJobPostingSkillsByGuid(jobPostingGuid, jobPostingSkills.Select(jps => jps.SkillGuid).ToList());
+                            }
+                            isJobPostingOperationSuccessful = await _jobPostingService.UpdateJobPosting(jobCrudDto);
+
                             // increment updated count in stats
                             if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
                                 jobDataMiningStats.NumJobsUpdated += 1;
@@ -937,9 +992,16 @@ namespace UpDiddyApi.Workflow
                             Recruiter recruiter = await RecruiterFactory.GetAddOrUpdate(_repositoryWrapper, jobPostingDto.Recruiter.Email, jobPostingDto.Recruiter.FirstName, jobPostingDto.Recruiter.LastName, null, null);
                             Company company = await CompanyFactory.GetCompanyByGuid(_repositoryWrapper, jobPostingDto.Company.CompanyGuid);
                             await RecruiterCompanyFactory.GetOrAdd(_repositoryWrapper, recruiter.RecruiterId, company.CompanyId, true);
+                            jobPostingDto.Recruiter.RecruiterGuid = recruiter.RecruiterGuid;
 
                             // attempt to create job posting
-                            isJobPostingOperationSuccessful = JobPostingFactory.PostJob(_repositoryWrapper, recruiter.RecruiterId, jobPostingDto, ref jobPostingGuid, ref errorMessage, _syslog, _mapper, _configuration, true, _hangfireService);
+                            JobCrudDto jobCrudDto = _mapper.Map<JobCrudDto>(jobPostingDto);
+                            jobPostingGuid = await _jobPostingService.CreateJobPosting(jobCrudDto); if (jobPostingDto.JobPostingSkills != null && jobPostingDto.JobPostingSkills.Any())
+                            {
+                                var jobPostingSkills = await _skillService.AddOrUpdateSkillsByName(jobPostingDto.JobPostingSkills.Select(jps => jps.SkillName).ToList());
+                                await _skillService.UpdateJobPostingSkillsByGuid(jobPostingGuid, jobPostingSkills.Select(jps => jps.SkillGuid).ToList());
+                            }
+                            isJobPostingOperationSuccessful = jobPostingGuid != null && jobPostingGuid != Guid.Empty;
 
                             // increment added count in stats
                             if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
@@ -1072,6 +1134,7 @@ namespace UpDiddyApi.Workflow
             }
 
             return jobDataMiningStats;
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.ProcessJobPages for {jobDataMiningStats?.JobSite?.Name} completed at: {DateTime.UtcNow.ToLongDateString()}");
         }
 
         #endregion
@@ -1102,7 +1165,7 @@ namespace UpDiddyApi.Workflow
                 ResumeParse resumeParse = await _ImportSubscriberResume(_subscriberService, resume, parsedDocument);
 
                 // Request parse from hiring solved 
-                await _hiringSolvedService.RequestParse(subscriber.SubscriberId,resume.BlobName, base64EncodedString);
+                await _hiringSolvedService.RequestParse(subscriber.SubscriberId, resume.BlobName, base64EncodedString);
 
                 // Callback to client to let them know upload is complete
                 ClientHubHelper hubHelper = new ClientHubHelper(_hub, _cache);
@@ -1110,7 +1173,7 @@ namespace UpDiddyApi.Workflow
                 {
                     NamingStrategy = new CamelCaseNamingStrategy()
                 };
-                SubscriberDto subscriberDto = await SubscriberFactory.GetSubscriber(_repositoryWrapper, (Guid)resume.Subscriber.SubscriberGuid, _syslog, _mapper);
+                UpDiddyLib.Dto.SubscriberDto subscriberDto = await SubscriberFactory.GetSubscriber(_repositoryWrapper, (Guid)resume.Subscriber.SubscriberGuid, _syslog, _mapper);
                 hubHelper.CallClient(resume.Subscriber.SubscriberGuid,
                     Constants.SignalR.ResumeUpLoadVerb,
                     JsonConvert.SerializeObject(
@@ -1153,6 +1216,7 @@ namespace UpDiddyApi.Workflow
         [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public async Task CacheRelatedJobSkillMatrix()
         {
+            _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.CacheRelatedJobSkillMatrix started at {DateTime.UtcNow.ToLongDateString()}");
             try
             {
                 await _repositoryWrapper.StoredProcedureRepository.CacheRelatedJobSkillMatrix();
@@ -1161,11 +1225,16 @@ namespace UpDiddyApi.Workflow
             {
                 _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.CacheRelatedJobSkillMatrix encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.CacheRelatedJobSkillMatrix completed at {DateTime.UtcNow.ToLongDateString()}");
+            }
         }
 
         [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public void ExecuteJobPostingAlert(Guid jobPostingAlertGuid)
         {
+            _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.ExecuteJobPostingAlert for jobPostingAlertGuid {jobPostingAlertGuid.ToString()} started at {DateTime.UtcNow.ToLongDateString()}");
             try
             {
                 JobPostingAlert jobPostingAlert = _repositoryWrapper.JobPostingAlertRepository.GetJobPostingAlert(jobPostingAlertGuid).Result;
@@ -1197,18 +1266,23 @@ namespace UpDiddyApi.Workflow
                         posted = j.PostingDateUTC.ToShortDateString(),
                         url = _configuration["CareerCircle:ViewJobPostingUrl"] + j.JobPostingGuid
                     }).ToList());
-                    _sysEmail.SendTemplatedEmailAsync(
-                        jobPostingAlert.Subscriber.Email,
-                        _configuration["SysEmail:Transactional:TemplateIds:JobPosting-SubscriberAlert"],
-                        templateData,
-                        SendGridAccount.Transactional,
-                        null,
-                        null);
+
+                    var result = _sysEmail.SendTemplatedEmailAsync(
+                       jobPostingAlert.Subscriber.Email,
+                       _configuration["SysEmail:NotifySystem:TemplateIds:JobPosting-SubscriberAlert"],
+                       templateData,
+                       SendGridAccount.NotifySystem,
+                       null,
+                       null).Result;
                 }
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.ExecuteJobPostingAlert encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.ExecuteJobPostingAlert encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}, jobPostingAlertGuid: {jobPostingAlertGuid.ToString()}");
+            }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.ExecuteJobPostingAlert for jobPostingAlertGuid {jobPostingAlertGuid.ToString()} completed at {DateTime.UtcNow.ToLongDateString()}");
             }
         }
 
@@ -1219,6 +1293,7 @@ namespace UpDiddyApi.Workflow
         [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public void SyncJobPostingAlertsBetweenDbAndHangfire()
         {
+            _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.SyncJobPostingAlertsBetweenDbAndHangfire started at {DateTime.UtcNow.ToLongDateString()}");
             try
             {
                 var jobPostingAlerts = _repositoryWrapper.JobPostingAlertRepository.GetByConditionAsync(jpa => jpa.IsDeleted == 0).Result;
@@ -1245,44 +1320,49 @@ namespace UpDiddyApi.Workflow
             {
                 _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.SyncHangfireJobAlerts encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.SyncJobPostingAlertsBetweenDbAndHangfire completed at {DateTime.UtcNow.ToLongDateString()}");
+            }
         }
 
         [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public Boolean DoPromoCodeRedemptionCleanup(int? lookbackPeriodInMinutes = 30)
         {
             bool result = false;
-            using (_syslog.BeginScope("DoPromoCodeRedemptionCleanup"))
+
+            _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.DoPromoCodeRedemptionCleanup started at {DateTime.UtcNow.ToLongDateString()}");
+            try
             {
-                _syslog.LogInformation("Initiating promo code redemption cleanup");
-                try
+
+                // todo: this won't perform very well if there are many records being processed. refactor when/if performance becomes an issue
+                var abandonedPromoCodeRedemptions =
+                    _db.PromoCodeRedemption
+                    .Include(pcr => pcr.RedemptionStatus)
+                    .Where(pcr => pcr.IsDeleted == 0 && pcr.RedemptionStatus.Name == "In Process" && pcr.CreateDate.DateDiff(DateTime.UtcNow).TotalMinutes > lookbackPeriodInMinutes)
+                    .ToList();
+
+                foreach (PromoCodeRedemption abandonedPromoCodeRedemption in abandonedPromoCodeRedemptions)
                 {
-
-                    // todo: this won't perform very well if there are many records being processed. refactor when/if performance becomes an issue
-                    var abandonedPromoCodeRedemptions =
-                        _db.PromoCodeRedemption
-                        .Include(pcr => pcr.RedemptionStatus)
-                        .Where(pcr => pcr.IsDeleted == 0 && pcr.RedemptionStatus.Name == "In Process" && pcr.CreateDate.DateDiff(DateTime.UtcNow).TotalMinutes > lookbackPeriodInMinutes)
-                        .ToList();
-
-                    foreach (PromoCodeRedemption abandonedPromoCodeRedemption in abandonedPromoCodeRedemptions)
-                    {
-                        abandonedPromoCodeRedemption.ModifyDate = DateTime.UtcNow;
-                        abandonedPromoCodeRedemption.ModifyGuid = Guid.Empty;
-                        abandonedPromoCodeRedemption.IsDeleted = 1;
-                        _db.Attach(abandonedPromoCodeRedemption);
-                    }
-
-                    _db.SaveChanges();
-                    _syslog.LogInformation("Saved promo code redemption cleanup");
-
-                    result = true;
+                    abandonedPromoCodeRedemption.ModifyDate = DateTime.UtcNow;
+                    abandonedPromoCodeRedemption.ModifyGuid = Guid.Empty;
+                    abandonedPromoCodeRedemption.IsDeleted = 1;
+                    _db.Attach(abandonedPromoCodeRedemption);
                 }
-                catch (Exception e)
-                {
-                    // todo: create event ids
-                    _syslog.LogError(default(EventId), e, "Error ocurred during processing");
-                    throw e;
-                }
+
+                _db.SaveChanges();
+                _syslog.LogInformation("Saved promo code redemption cleanup");
+
+                result = true;
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.DoPromoCodeRedemptionCleanup encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                result = false;
+            }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.DoPromoCodeRedemptionCleanup completed at {DateTime.UtcNow.ToLongDateString()}");
             }
             return result;
         }
@@ -1291,31 +1371,32 @@ namespace UpDiddyApi.Workflow
         public Boolean DeactivateCampaignPartnerContacts()
         {
             bool result = false;
-            using (_syslog.BeginScope("DeactivateCampaignPartnerContacts"))
+            _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.DeactivateCampaignPartnerContacts started at {DateTime.UtcNow.ToLongDateString()}");
+            try
             {
-                _syslog.LogInformation("Beginning deactivation of old campaign partner contacts");
-                try
-                {
-                    List<CampaignPartnerContact> campaignPartnerContacts = _db.CampaignPartnerContact
-                        .Where(cpc => cpc.IsDeleted == 0 && cpc.CreateDate.DateDiff(DateTime.UtcNow).TotalDays > 60)
-                        .ToList();
+                List<CampaignPartnerContact> campaignPartnerContacts = _db.CampaignPartnerContact
+                    .Where(cpc => cpc.IsDeleted == 0 && cpc.CreateDate.DateDiff(DateTime.UtcNow).TotalDays > 60)
+                    .ToList();
 
-                    foreach (CampaignPartnerContact campaignPartnerContact in campaignPartnerContacts)
-                    {
-                        campaignPartnerContact.ModifyDate = DateTime.UtcNow;
-                        campaignPartnerContact.ModifyGuid = Guid.Empty;
-                        campaignPartnerContact.TinyId = null;
-                        _db.Attach(campaignPartnerContact);
-                    }
-                    _db.SaveChanges();
-                    _syslog.LogInformation($"Deactivated {campaignPartnerContacts.Count} campaign partner contacts");
-
-                    result = true;
-                }
-                catch (Exception e)
+                foreach (CampaignPartnerContact campaignPartnerContact in campaignPartnerContacts)
                 {
-                    _syslog.Log(LogLevel.Error, "ScheduledJobs:DeactivateCampaignPartnerContacts threw an exception -> " + e.Message);
+                    campaignPartnerContact.ModifyDate = DateTime.UtcNow;
+                    campaignPartnerContact.ModifyGuid = Guid.Empty;
+                    campaignPartnerContact.TinyId = null;
+                    _db.Attach(campaignPartnerContact);
                 }
+                _db.SaveChanges();
+                _syslog.LogInformation($"Deactivated {campaignPartnerContacts.Count} campaign partner contacts");
+
+                result = true;
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Error, "ScheduledJobs:DeactivateCampaignPartnerContacts threw an exception -> " + e.Message);
+            }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.DeactivateCampaignPartnerContacts completed at {DateTime.UtcNow.ToLongDateString()}");
             }
             return result;
         }
@@ -1323,6 +1404,7 @@ namespace UpDiddyApi.Workflow
         [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public void StoreTrackingInformation(string tinyId, Guid actionGuid, string campaignPhaseName, string headers)
         {
+            _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.StoreTrackingInformation 1 started at {DateTime.UtcNow.ToLongDateString()}");
             var trackingInfoFromTinyId = _db.CampaignPartnerContact
                 .Include(cpc => cpc.Campaign)
                 .Include(cpc => cpc.PartnerContact)
@@ -1368,10 +1450,12 @@ namespace UpDiddyApi.Workflow
                 }
                 _db.SaveChanges();
             }
+            _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.StoreTrackingInformation 1 completed at {DateTime.UtcNow.ToLongDateString()}");
         }
 
         public void StoreTrackingInformation(Guid campaignGuid, Guid partnerContactGuid, Guid actionGuid, string campaignPhaseName, string headers)
         {
+            _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.StoreTrackingInformation 2 started at {DateTime.UtcNow.ToLongDateString()}");
             var campaignEntity = _db.Campaign.Where(c => c.CampaignGuid == campaignGuid && c.IsDeleted == 0).FirstOrDefault();
             var partnerContactEntity = _db.PartnerContact.Where(pc => pc.PartnerContactGuid == partnerContactGuid && pc.IsDeleted == 0).FirstOrDefault();
             var actionEntity = _db.Action.Where(a => a.ActionGuid == actionGuid && a.IsDeleted == 0).FirstOrDefault();
@@ -1414,10 +1498,12 @@ namespace UpDiddyApi.Workflow
                 }
                 _db.SaveChanges();
             }
+            _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.StoreTrackingInformation 2 completed at {DateTime.UtcNow.ToLongDateString()}");
         }
 
         public async Task<RecruiterAction> StoreRecruiterTrackingInformation(Guid ActorGuid, Guid ActionGuid, Guid JobApplicationGuid)
         {
+            _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.StoreRecruiterTrackingInformation started at {DateTime.UtcNow.ToLongDateString()}");
             var Recruiter = _db.Recruiter.Where(r => r.RecruiterGuid == ActorGuid && r.IsDeleted == 0).FirstOrDefault();
             var JobApplication = _db.JobApplication.Where(j => j.JobApplicationGuid == JobApplicationGuid && j.IsDeleted == 0).FirstOrDefault();
             var EntityType = _db.EntityType.Where(e => e.Name.Equals(Constants.TRACKING_KEY_JOB_APPLICATION) && e.IsDeleted == 0).FirstOrDefault();
@@ -1442,6 +1528,7 @@ namespace UpDiddyApi.Workflow
                     ExistingRecruiterAction.OccurredDate = DateTime.UtcNow;
                     RecruiterActionRepository.Update(ExistingRecruiterAction);
                     await RecruiterActionRepository.SaveAsync();
+                    _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.StoreRecruiterTrackingInformation completed at {DateTime.UtcNow.ToLongDateString()}");
                     return ExistingRecruiterAction;
                 }
                 else
@@ -1462,10 +1549,12 @@ namespace UpDiddyApi.Workflow
                     });
                     await RecruiterActionRepository.Create(NewRecruiterAction);
                     await RecruiterActionRepository.SaveAsync();
+                    _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.StoreRecruiterTrackingInformation completed at {DateTime.UtcNow.ToLongDateString()}");
                     return NewRecruiterAction;
                 }
 
             }
+            _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.StoreRecruiterTrackingInformation completed at {DateTime.UtcNow.ToLongDateString()}");
             return null;
 
         }
@@ -1479,7 +1568,7 @@ namespace UpDiddyApi.Workflow
         {
             try
             {
-                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:_ExecuteJobAbandonmentEmailDelivery started at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs._ExecuteJobAbandonmentEmailDelivery started at: {DateTime.UtcNow.ToLongDateString()}");
                 Dictionary<Subscriber, List<JobPosting>> subscribersToJobPostingMapping = await _trackingService.GetSubscriberAbandonedJobPostingHistoryByDateAsync(DateTime.UtcNow.AddDays(-1));
                 if (subscribersToJobPostingMapping.Count > 0)
                 {
@@ -1503,9 +1592,9 @@ namespace UpDiddyApi.Workflow
                         //Send email to subscriber
                         bool result = await _sysEmail.SendTemplatedEmailAsync(
                                   entry.Key.Email,
-                                  _configuration["SysEmail:Transactional:TemplateIds:JobApplication-AbandonmentAlert"],
+                                  _configuration["SysEmail:NotifySystem:TemplateIds:JobApplication-AbandonmentAlert"],
                                   SendGridHelper.GenerateJobAbandonmentEmailTemplate(entry, similarJobSearchResults.Jobs, jobPostingUrl),
-                                  SendGridAccount.Transactional,
+                                  SendGridAccount.NotifySystem,
                                   null,
                                   null);
                     }
@@ -1516,9 +1605,9 @@ namespace UpDiddyApi.Workflow
                     {
                         await _sysEmail.SendTemplatedEmailAsync(
                               email,
-                              _configuration["SysEmail:Transactional:TemplateIds:JobApplication-AbandonmentAlert-Recruiter"],
+                              _configuration["SysEmail:NotifySystem:TemplateIds:JobApplication-AbandonmentAlert-Recruiter"],
                               SendGridHelper.GenerateJobAbandonmentRecruiterTemplate(subscribersToJobPostingMapping, jobPostingUrl),
-                              SendGridAccount.Transactional,
+                              SendGridAccount.NotifySystem,
                               null,
                               null);
                     }
@@ -1528,8 +1617,11 @@ namespace UpDiddyApi.Workflow
             {
                 _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.ExecuteJobAbandonmentEmailDelivery encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.ExecuteJobAbandonmentEmailDelivery completed at {DateTime.UtcNow.ToLongDateString()}");
+            }
         }
-
 
         #endregion
 
@@ -1542,7 +1634,7 @@ namespace UpDiddyApi.Workflow
         /// <returns></returns>
         private async Task<ResumeParse> _ImportSubscriberResume(ISubscriberService subscriberService, SubscriberFile resumeFile, string resume)
         {
-
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs._ImportSubscriberResume started at: {DateTime.UtcNow.ToLongDateString()}");
             // Delete all existing resume parses for user
             await _repositoryWrapper.ResumeParseRepository.DeleteAllResumeParseForSubscriber(resumeFile.SubscriberId);
             // Create resume parse object 
@@ -1556,6 +1648,7 @@ namespace UpDiddyApi.Workflow
             // Save Resume Parse 
             await _repositoryWrapper.ResumeParseRepository.SaveAsync();
 
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs._ImportSubscriberResume completed at: {DateTime.UtcNow.ToLongDateString()}");
             return resumeParse;
         }
 
@@ -1565,7 +1658,7 @@ namespace UpDiddyApi.Workflow
             {
                 string errMsg = string.Empty;
 
-                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:_ImportSubscriberProfileData started at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs._ImportSubscriberProfileData started at: {DateTime.UtcNow.ToLongDateString()}");
 
                 foreach (SubscriberProfileStagingStore p in profiles)
                 {
@@ -1597,7 +1690,7 @@ namespace UpDiddyApi.Workflow
             }
             finally
             {
-                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:_ImportSubscriberProfileData completed at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs._ImportSubscriberProfileData completed at: {DateTime.UtcNow.ToLongDateString()}");
             }
 
             return true;
@@ -1624,6 +1717,7 @@ namespace UpDiddyApi.Workflow
         [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task<bool> CloudTalentIndexNewProfiles(int numProfilesToProcess)
         {
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.CloudTalentIndexNewProfiles started at: {DateTime.UtcNow.ToLongDateString()}");
             //CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
             int indexVersion = int.Parse(_configuration["CloudTalent:ProfileIndexVersion"]);
             List<Subscriber> subscribers = await _subscriberService.GetSubscribersToIndexIntoGoogle(numProfilesToProcess, indexVersion);
@@ -1632,6 +1726,7 @@ namespace UpDiddyApi.Workflow
                 await _cloudTalentService.AddOrUpdateProfileToCloudTalent(s.SubscriberGuid.Value);
 
             }
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.CloudTalentIndexNewProfiles completed at: {DateTime.UtcNow.ToLongDateString()}");
             return true;
         }
 
@@ -1644,6 +1739,7 @@ namespace UpDiddyApi.Workflow
         [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task PurgeOrphanedSubscribersFromCloudTalent(List<ProfileViewDto> profiles)
         {
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent started at: {DateTime.UtcNow.ToLongDateString()}");
             if (profiles != null && profiles.Count() > 0)
                 _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: {profiles.Count} profiles being checked for orphaned subscribers.");
 
@@ -1656,9 +1752,11 @@ namespace UpDiddyApi.Workflow
                     _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: Subscriber {profile.Email} has a subscriber guid of {profile.SubscriberGuid.Value.ToString()}.");
                     subscriber = await _repositoryWrapper.SubscriberRepository.GetByGuid(profile.SubscriberGuid.Value, false);
 
-                    if (subscriber == null && !string.IsNullOrWhiteSpace(profile.CloudTalentUri))
+                    // Purge profiles from google that have no related subscriber record or have a deleted subscriber record
+                    if ((subscriber == null || subscriber.IsDeleted == 1) && !string.IsNullOrWhiteSpace(profile.CloudTalentUri))
                     {
                         try
+
                         {
                             _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: Subscriber {profile.Email} does not exist in the database, the cloud talent uri to be purged is: {profile.CloudTalentUri}");
                             var response = _cloudTalentService.DeleteProfileFromCloudTalentByUri(profile.CloudTalentUri);
@@ -1671,6 +1769,7 @@ namespace UpDiddyApi.Workflow
                     }
                 }
             }
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent completed at: {DateTime.UtcNow.ToLongDateString()}");
         }
 
         #endregion
@@ -1714,7 +1813,7 @@ namespace UpDiddyApi.Workflow
         [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task<bool> CreateSubscriberNotificationRecords(Notification notification, IList<Subscriber> Subscribers = null)
         {
-
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.CreateSubscriberNotificationRecords started at: {DateTime.UtcNow.ToLongDateString()}");
             if (notification.IsTargeted == 0)
                 Subscribers = _repositoryWrapper.SubscriberRepository.GetByConditionAsync(s => s.IsDeleted == 0).Result.ToList();
             else
@@ -1741,7 +1840,7 @@ namespace UpDiddyApi.Workflow
             }
             await _repositoryWrapper.SubscriberNotificationRepository.CreateRange(SubscriberNotifications.ToArray());
             await _repositoryWrapper.SubscriberNotificationRepository.SaveAsync();
-
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.CreateSubscriberNotificationRecords completed at: {DateTime.UtcNow.ToLongDateString()}");
             return true;
         }
 
@@ -1753,6 +1852,7 @@ namespace UpDiddyApi.Workflow
         [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task<bool> DeleteSubscriberNotificationRecords(Notification Notification)
         {
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.DeleteSubscriberNotificationRecords started at: {DateTime.UtcNow.ToLongDateString()}");
             if (Notification == null)
                 return false;
 
@@ -1774,7 +1874,7 @@ namespace UpDiddyApi.Workflow
 
             _repositoryWrapper.SubscriberNotificationRepository.UpdateRange(SubscriberNotifications.ToArray());
             await _repositoryWrapper.SubscriberNotificationRepository.SaveAsync();
-
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.DeleteSubscriberNotificationRecords completed at: {DateTime.UtcNow.ToLongDateString()}");
             return true;
         }
 
@@ -1785,7 +1885,7 @@ namespace UpDiddyApi.Workflow
         [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public async Task TrackSubscriberActionInformation(Guid subscriberGuid, Guid actionGuid, Guid entityTypeGuid, Guid entityGuid)
         {
-
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.TrackSubscriberActionInformation started at: {DateTime.UtcNow.ToLongDateString()}");
             try
             {
                 // load the subscriber
@@ -1857,6 +1957,10 @@ namespace UpDiddyApi.Workflow
                 // write to syslog
                 _syslog.LogError(e, $"ScheduledJobs.TrackSubscriberActionInformation exception: {e.Message} for Subscriber Guid={subscriberGuid}, EntityTypeGuid={entityTypeGuid} and EntityGuid={entityGuid}");
             }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.TrackSubscriberActionInformation completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
         }
 
         #endregion
@@ -1869,6 +1973,7 @@ namespace UpDiddyApi.Workflow
         [DisableConcurrentExecution(timeoutInSeconds: 60 * 5)]
         public async Task UpdateSubscriberFilesMimeType()
         {
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateSubscriberFilesMimeType started at: {DateTime.UtcNow.ToLongDateString()}");
             //get all SubscriberFiles with Empty MimeType
             var queryableSubscriberFile = _repositoryWrapper.SubscriberFileRepository.GetAllSubscriberFileQueryableAsync();
             var nullMimeTypeFiles = await queryableSubscriberFile.Where(x => x.MimeType == null && x.IsDeleted == 0).ToListAsync();
@@ -1881,6 +1986,7 @@ namespace UpDiddyApi.Workflow
                     await _repositoryWrapper.SubscriberFileRepository.UpdateSubscriberFileAsync(file);
                 }
             }
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateSubscriberFilesMimeType completed at: {DateTime.UtcNow.ToLongDateString()}");
         }
         #endregion
 
@@ -1893,7 +1999,7 @@ namespace UpDiddyApi.Workflow
         {
             try
             {
-                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:UpdateAllegisGroupJobPageRawDataField started at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateAllegisGroupJobPageRawDataField started at: {DateTime.UtcNow.ToLongDateString()}");
                 var jobs = _repositoryWrapper.JobPage.GetAll();
                 var allegisjobs = jobs.Where(x => x.JobSiteId == 3 && x.IsDeleted == 0 && x.JobPageStatusId == 2).ToList();
                 foreach (var job in allegisjobs)
@@ -1912,10 +2018,15 @@ namespace UpDiddyApi.Workflow
             {
                 _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.UpdateAllegisGroupJobPageRawDataField encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.UpdateAllegisGroupJobPageRawDataField completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
         }
 
         public async Task SyncAuth0UserId(Guid subscriberGuid, string auth0UserId)
         {
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.SyncAuth0UserId started at: {DateTime.UtcNow.ToLongDateString()}");
             var currentUtcDateTime = DateTime.UtcNow;
             var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
             if (subscriber != null)
@@ -1925,10 +2036,12 @@ namespace UpDiddyApi.Workflow
                 subscriber.ModifyGuid = Guid.Empty;
                 await _repositoryWrapper.SubscriberRepository.SaveAsync();
             }
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.SyncAuth0UserId completed at: {DateTime.UtcNow.ToLongDateString()}");
         }
 
         public async Task TrackSubscriberSignIn(Guid subscriberGuid)
         {
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.TrackSubscriberSignIn started at: {DateTime.UtcNow.ToLongDateString()}");
             var currentUtcDateTime = DateTime.UtcNow;
             var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
             if (subscriber != null)
@@ -1938,6 +2051,7 @@ namespace UpDiddyApi.Workflow
                 subscriber.ModifyGuid = Guid.Empty;
                 await _repositoryWrapper.SubscriberRepository.SaveAsync();
             }
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.TrackSubscriberSignIn completed at: {DateTime.UtcNow.ToLongDateString()}");
         }
 
         #endregion
@@ -1947,6 +2061,7 @@ namespace UpDiddyApi.Workflow
         [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public async Task PurgeSendGridAuditRecords()
         {
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.PurgeSendGridAuditRecords started at: {DateTime.UtcNow.ToLongDateString()}");
             try
             {
                 int PurgeLookBackDays = int.Parse(_configuration["CareerCircle:SendGridAuditPurgeLookBackDays"]);
@@ -1956,15 +2071,46 @@ namespace UpDiddyApi.Workflow
             {
                 _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.PurgeSendGridAuditRecords encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.PurgeSendGridAuditRecords completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
         }
 
-        #endregion
 
+
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        public async Task SendBulkEmail(Guid TemplateGuid, List<Guid> Profiles, Guid subscriberId)
+        {
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.SendBulkEmail started at: {DateTime.UtcNow.ToLongDateString()}");
+            try
+            { 
+                await _sendGridService.SendBulkEmailByList(TemplateGuid, Profiles, subscriberId);
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.SendBulkEmail encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+            }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.SendBulkEmail completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
+        }
+
+
+
+
+
+
+
+
+        #endregion
 
         #region HiringSolved Resume Parsing 
         [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public async Task GetHiringSolvedResumeParseUpdates()
         {
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.GetHiringSolvedResumeParseUpdates started at: {DateTime.UtcNow.ToLongDateString()}");
             try
             {
                 int BatchSize = int.Parse(_configuration["HiringSolved:UpdateBatchSize"]);
@@ -1973,20 +2119,264 @@ namespace UpDiddyApi.Workflow
                     .Take(BatchSize)
                     .ToListAsync();
 
-                foreach ( HiringSolvedResumeParse p in  Batch)                
-                   await _hiringSolvedService.GetParseStatus(p.JobId);
-                
+                foreach (HiringSolvedResumeParse p in Batch)
+                    await _hiringSolvedService.GetParseStatus(p.JobId);
+
                 //await _repositoryWrapper.StoredProcedureRepository.PurgeSendGridEvents(PurgeLookBackDays);
             }
-            catch (Exception e)
+            catch( Exception e)
             {
                 _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.GetHiringSolvedResumeParseUpdates encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+            }                        
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.GetHiringSolvedResumeParseUpdates completed at: {DateTime.UtcNow.ToLongDateString()}");
             }
+}
+
+
+
+#endregion
+
+#region G2
+
+
+
+
+
+
+/// <summary>
+/// Add or update the G2 into the azure search index 
+/// </summary>
+/// <param name="g2"></param>
+/// <returns></returns>
+public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2Index starting index for g2 {g2.ProfileGuid}");
+            await _g2Service.G2IndexAsync(g2);
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2Index done index for g2 {g2.ProfileGuid}");
+            return true;
+        }
+
+
+        public async Task<bool> G2IndexAddOrUpdateBulk(List<G2SDOC> g2List)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2IndexAddOrUpdateBulk starting index for g2");
+            await _g2Service.G2IndexBulkAsync(g2List);            
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2IndexAddOrUpdateBulk done index for g2");
+            return true;
         }
 
 
 
+
+
+        /// <summary>
+        /// Add or update the G2 into the azure search index 
+        /// </summary>
+        /// <param name="g2"></param>
+        /// <returns></returns>
+        public async Task<bool> G2IndexDeleteBulk(List<G2SDOC> g2List)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2IndexDeleteBulk starting index delete");
+            await _g2Service.G2IndexDeleteBulkAsync(g2List);
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2IndexDeleteBulk done index delete");
+            return true;
+        }
+
+
+
+
+
+        /// <summary>
+        /// Add or update the G2 into the azure search index 
+        /// </summary>
+        /// <param name="g2"></param>
+        /// <returns></returns>
+        public async Task<bool> G2IndexDelete(G2SDOC g2)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2IndexDelete starting index for g2 {g2.ProfileGuid}");
+            await _g2Service.G2IndexDeleteAsync(g2);
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2IndexDelete done index for g2 {g2.ProfileGuid}");
+            return true;
+        }
+
+
+
+        /// <summary>
+        /// Adds a new subscriber to the sql server g2 profile backing store for any subscriber/company commbination that 
+        /// does not currently exist.  If profiles are added, they subscriber's g2 information will be indexed into azure 
+        /// search.
+        /// </summary>
+        /// <param name="g2"></param>
+        /// <returns></returns>
+        public async Task<bool> G2AddNewSubscriber(Guid subscriberGuid)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2AddSubscriber add of subscriber {subscriberGuid}");
+            // call the g2 service to create a new g2 record for the subscriber for every active company
+            int numG2sCreated =  await _g2Service.G2ProfileAddSubscriberAsync(subscriberGuid);
+            if (numG2sCreated > 0)
+                await _g2Service.G2IndexBySubscriberAsync(subscriberGuid);
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2AddSubscriber done index for g2 {subscriberGuid}");
+            return true;
+        }
+
+        /// <summary>
+        /// Logically deletes all records in the G2 sql server backing store for the specified subscriber.  Also will
+        /// remove every document in the Azure search index that references the subscriber 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        public async Task<bool> G2DeleteSubscriber(Guid subscriberGuid)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2DeleteSubscriber add of subscriber {subscriberGuid}");
+            // call the g2 service to remove all g2 profile information for subscriber 
+            int numG2sCreated = await _g2Service.G2ProfileDeleteSubscriberAsync(subscriberGuid);
+            // delete subscriber information from azure search index
+            _g2Service.G2IndexRemoveSubscriberAsync(subscriberGuid);   
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2DeleteSubscriber done index for g2 {subscriberGuid}");
+            return true;
+        }
+
+
+        /// <summary>
+        /// Add a G2 for every active subscriber for the new company 
+        /// </summary>
+        /// <param name="companyGuid"></param>
+        /// <returns></returns>
+        public async Task<bool> G2AddNewCompany(Guid companyGuid)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2AddNewCompany add of subscriber {companyGuid}");
+            // call the g2 service to create a new g2 record for the subscriber for every active company
+            int numG2sCreated = await _g2Service.G2ProfileDeleteSubscriberAsync(companyGuid);
+            if (numG2sCreated > 0)
+                await _g2Service.G2IndexCompanyProflesAsync(companyGuid);
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2AddNewCompany done index for g2 {companyGuid}");
+            return true;
+        }
+
+
+        /// <summary>
+        /// Logically deletes all records in the G2 sql server backing store for the specified subscriber.  Also will
+        /// remove every document in the Azure search index that references the subscriber 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        public async Task<bool> G2DeleteCompany(Guid companyGuid)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2DeleteCompany add of subscriber {companyGuid}");
+            // call the g2 service to remove all g2 profile information for subscriber 
+            
+             int NumCompanyG2s = await _g2Service.G2ProfileDeleteByCompany(companyGuid);
+            
+            
+            // delete company information from azure search index
+            _g2Service.G2IndexRemoveCompanyProflesAsync(companyGuid);
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.G2DeleteCompany done index for g2 {companyGuid}");
+            return true;
+        }
+ 
+        public async Task<bool> G2IndexUnindexedProfiles()
+        {
+            // Get the indexer batch size   
+            int G2IndexUnindexedProfilesBatchSize = int.Parse(_configuration["AzureSearch:G2IndexUnindexedProfilesBatchSize"]);
+            _syslog.LogInformation($"ScheduledJobs.G2IndexUnindexedProfiles: Starting with a batch size of {G2IndexUnindexedProfilesBatchSize}");
+            
+
+            AzureIndexStatus noneStatus = _repositoryWrapper.AzureIndexStatusRepository.GetAll()
+                .Where(s => s.Name == Constants.G2AzureIndexStatus.None)
+                .FirstOrDefault();
+
+            if ( noneStatus == null )
+            {
+                _syslog.LogError($"ScheduledJobs.G2IndexUnindexedProfiles: Unable to locate G2 status for \"None\".");
+                return false;
+            }
+
+            List<v_ProfileAzureSearch> g2Profiles = null;
+            try
+            {
+                g2Profiles = _db.ProfileAzureSearch
+               .Where(p => p.AzureIndexStatusId == null || p.AzureIndexStatusId == noneStatus.AzureIndexStatusId)
+               .Take(G2IndexUnindexedProfilesBatchSize)
+              .ToList();
+            }
+            catch (Exception ex)
+            {
+                _syslog.LogError($"ScheduledJobs.G2IndexUnindexedProfiles: Error processing -> {ex.Message}"); 
+                return false;
+            }
+
+
+            _syslog.LogInformation($"ScheduledJobs.G2IndexUnindexedProfiles: Retreived {g2Profiles.Count} G2s for processing.");
+
+            // short circuit if there is nothing to do
+            if (g2Profiles.Count == 0)
+                return true;
+
+            // Call the G2service to index the batch 
+            await _g2Service.G2IndexBulkByProfileAzureSearchAsync(g2Profiles);
+
+            // if the number of profiles retreived = the batch size, there may be more that needs to be indexed so
+            // schedule this job to run again for another batch
+            if ( g2Profiles.Count == G2IndexUnindexedProfilesBatchSize)
+            {
+                _syslog.LogInformation($"ScheduledJobs.G2IndexUnindexedProfiles: Scheduling recursive call to index additional G2s");
+                //Getrecurse delay variable 
+                int IndexUnidexedG2RecurseDelayInMinutes = int.Parse(_configuration["AzureSearch:IndexUnidexedG2RecurseDelayInMinutes"]); 
+                _hangfireService.Schedule<ScheduledJobs>(j => j.G2IndexUnindexedProfiles(), TimeSpan.FromMinutes(IndexUnidexedG2RecurseDelayInMinutes));
+            }
+       
+            _syslog.LogInformation( $"ScheduledJobs.G2IndexUnindexedProfiles Done");
+            return true;
+        }
+
+        public async Task<bool> G2IndexPurge()
+        {
+            // Get the indexer purge batch size   
+            int G2IndexPurgeBatchSize = int.Parse(_configuration["AzureSearch:G2IndexPurgeBatchSize"]);
+            _syslog.LogInformation($"ScheduledJobs.G2IndexPurge: Starting with a batch size of {G2IndexPurgeBatchSize}");
+
+            // Get some G2s to purge 
+            G2SearchResultDto Docs = await _g2Service.G2SearchGetTopAsync(G2IndexPurgeBatchSize);
+
+            if (Docs.SubscriberCount == 0)
+                return true;
+
+            List<G2SDOC> g2List = new List<G2SDOC>();
+            foreach (G2InfoDto g2 in Docs.G2s)
+            {
+                G2SDOC delDoc = new G2SDOC()
+                {
+                    ProfileGuid = g2.ProfileGuid,
+                };
+                g2List.Add(delDoc);
+ 
+            }; 
+            _syslog.LogInformation($"ScheduledJobs.G2IndexPurge: Retreived {Docs.SubscriberCount} G2s for purging.");
+            await _g2Service.G2IndexPurgeBulkAsync(g2List);
+
+            // if the number of profiles retreived = the batch size, there may be more that needs to be purged so
+            // schedule this job to run again for another batch
+            if (Docs.SubscriberCount == G2IndexPurgeBatchSize)
+            {
+                _syslog.LogInformation($"ScheduledJobs.G2IndexPurge: Scheduling recursive call to purge additional G2s");
+                //Get recurse delay variable
+                int PurgeG2RecurseDelayInMinutes = int.Parse(_configuration["AzureSearch:PurgeG2RecurseDelayInMinutes"]);
+                _hangfireService.Schedule<ScheduledJobs>(j => j.G2IndexPurge(), TimeSpan.FromMinutes(PurgeG2RecurseDelayInMinutes));
+            }
+
+            _syslog.LogInformation($"ScheduledJobs.G2IndexPurge Done");
+            return true;
+        }
+
+
+
+
+
         #endregion
+
+
 
 
 

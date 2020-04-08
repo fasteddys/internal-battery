@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using UpDiddyApi.Models;
 using UpDiddyLib.Domain.AzureSearch;
 using UpDiddyLib.Domain.AzureSearchDocuments;
+using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces
 {
@@ -15,5 +16,12 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
 
         Task<bool> AddOrUpdateRecruiter(Recruiter recruiter);
         Task<bool> DeleteRecruiter(Recruiter recruiter);
+
+        Task<AzureIndexResult> AddOrUpdateG2(G2SDOC g2);
+        Task<AzureIndexResult> DeleteG2(G2SDOC g2);
+        Task<AzureIndexResult> DeleteG2Bulk(List<G2SDOC> g2);
+        Task<AzureIndexResult> AddOrUpdateG2Bulk(List<G2SDOC> g2);
+
+
     }
 }

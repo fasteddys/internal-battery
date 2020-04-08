@@ -180,7 +180,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             bool? isEmailValid = _zeroBounceApi.ValidateEmail(sendTo);
             if (isEmailValid != null && isEmailValid.Value == true)
             {
-                await _sysEmail.SendTemplatedEmailAsync(
+                await _sysEmail.SendTemplatedEmailAsync( 
                                  sendTo,
                                  _config["SysEmail:Transactional:TemplateIds:PersonalityAssessment-ResultsSummary"],
                                  payload,

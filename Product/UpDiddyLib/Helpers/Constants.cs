@@ -15,7 +15,7 @@ namespace UpDiddyLib.Helpers
         public const string TRACKING_KEY_JOB_APPLICATION = "JobApplication";
         public const string TRACKING_KEY_TINY_ID = "TinyId";
 
-        static public string  SubsriberSessionKey = "Subscriber";
+        static public string SubsriberSessionKey = "Subscriber";
         static public readonly string EMPTY_STRING = "";
         static public readonly string HttpGetClientName = "HttpGetClient";
         static public readonly string HttpPostClientName = "HttpPostClient";
@@ -80,24 +80,14 @@ namespace UpDiddyLib.Helpers
             public static readonly string ValidationError_InvalidExperienceLevelMsg = "Invalid experience level";
             public static readonly string ValidationError_InvalidEmploymentTypeMsg = "Invalid employment type";
             public static readonly string ValidationError_SubscriberRequiredMsg = "Subscriber is required";
-            public static readonly string ValidationError_InvalidDescriptionLength= "Posting Description must contain at least {0} characters";
-            public static readonly string ValidationError_JobNotIndexed = "Job has not been indexed";      
-        }
-
-        public static class Appsettings
-        {
-            public static readonly string SendGrid_Transactional_ApiKey = "SysEmail:Transactional:ApiKey";
-            public static readonly string SendGrid_Leads_ApiKey = "SysEmail:Leads:ApiKey";
-            public static readonly string SendGrid_Marketing_ApiKey = "SysEmail:Marketing:ApiKey";
-            public static readonly string SendGrid_InternalLeads_ApiKey = "SysEmail:InternalLeads:ApiKey";
+            public static readonly string ValidationError_InvalidDescriptionLength = "Posting Description must contain at least {0} characters";
+            public static readonly string ValidationError_JobNotIndexed = "Job has not been indexed";
         }
 
         public enum SendGridAccount
         {
             Transactional,
-            Marketing,
-            Leads,
-            InternalLeads
+            NotifySystem
         }
 
         public static class CMS
@@ -136,7 +126,7 @@ namespace UpDiddyLib.Helpers
             public static readonly string JobPosting = "Job posting";
             public static readonly string FileDownloadTracker = "File Download Tracker";
             public static readonly string TraitifyAssessment = "Traitify Assessment";
-            
+
         }
 
         public static class Action
@@ -155,5 +145,17 @@ namespace UpDiddyLib.Helpers
             public static readonly string Finished = "finished";
             public static readonly string Failed = "failed";
         }
+
+        public static class G2AzureIndexStatus
+        {
+            public static readonly string None = "None";
+            public static readonly string Pending = "Pending";
+            public static readonly string Indexed = "Indexed";
+            public static readonly string Deleted = "Deleted";
+            public static readonly string Error = "Error";
+        }
+
+
+ 
     }
 }

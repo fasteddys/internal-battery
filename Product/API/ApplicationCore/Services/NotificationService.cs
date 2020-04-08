@@ -12,7 +12,6 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
 using UpDiddyLib.Domain.Models;
-using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -32,13 +31,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             _subscriberService = subscriberService;
             _hangfireService = hangfireService;
         }
- 
+
 
         // Send notification 
         public async Task<bool> SendNotifcation(Guid subscriberGuid, Guid notificationGuid)
         {
-
-
             Notification notification = await _repositoryWrapper.NotificationRepository.GetByGuid(notificationGuid);
             if (notification == null)
                 throw new NotFoundException($"Could not find notification {notificationGuid}");
@@ -46,35 +43,55 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (notification.SentDate != null)
                 throw new FailedValidationException($"Notification {notification.NotificationGuid} was already sent on {notification.SentDate.Value.ToLongDateString()}");
 
-
             // get the groups for the notification 
             List<NotificationGroup> groups = _repositoryWrapper.NotificationGroupRepository.GetAll()
                 .Include(g => g.Group)
                 .Where(g => g.IsDeleted == 0 && g.NotificationId == notification.NotificationId)
                 .ToList();
 
-            if (groups == null || groups.Count == 0)
-                throw new FailedValidationException($"Notification {notification.NotificationGuid} does not have any groups defined");
+            // create a list of subscribers that will receive the notification 
+            List<Subscriber> subscribersForNotification = new List<Subscriber>();
 
-            // send out notification to each specified grouop
-            foreach (NotificationGroup ng in groups)
+            if (notification.IsTargeted == 1)
             {
-                IList<Subscriber> Subscribers = await _subscriberService.GetSubscribersInGroupAsync(ng.Group.GroupGuid);
-                // Only queue sending the notifications if a valid group which contains members is specified 
-                if (Subscribers != null && Subscribers.Count > 0)
-                    _hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(notification, Subscribers));
-            }
+                if (groups == null || groups.Count == 0)
+                {
+                    throw new FailedValidationException($"Notification {notification.NotificationGuid} does not have any groups defined");
 
+                }       
+                // send out notification to each specified group
+                foreach (NotificationGroup ng in groups)
+                {
+                    IList<Subscriber> subscribersInGroup = await _subscriberService.GetSubscribersInGroupAsync(ng.Group.GroupGuid);
+                    foreach(Subscriber s in subscribersInGroup)
+                    {
+                        // only create the notification to those subscribers who are NOT
+                        // 1) deleted
+                        // 2) opted out of notifications
+                        // 3) already in the list to receive the notification 
+
+                        if (s.IsDeleted == 0 && s.NotificationEmailsEnabled == true && subscribersForNotification.Contains(s) == false)
+                            subscribersForNotification.Add(s);
+                    }                                        
+                }
+                // create the notification for the specified subscribers
+                if (subscribersForNotification != null && subscribersForNotification.Count > 0)
+                    _hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(notification, subscribersForNotification));
+            }
+            else
+            {
+                IEnumerable<Subscriber> subscribers = await _repositoryWrapper.SubscriberRepository.GetByConditionAsync(x => x.IsDeleted == 0 && x.NotificationEmailsEnabled == true);
+                if (subscribers != null && subscribers.Count() > 0)
+                    _hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(notification, subscribers.ToList()));
+            }
 
             notification.SentDate = DateTime.UtcNow;
             notification.ModifyGuid = subscriberGuid;
             notification.ModifyDate = DateTime.UtcNow;
             await _repositoryWrapper.NotificationRepository.SaveAsync();
-
-
             return true;
         }
-        
+
         public async Task<Guid> CreateNotification(Guid subscriberGuid, NotificationCreateDto notificationCreateDto)
         {
 
@@ -82,6 +99,13 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 throw new FailedValidationException("Notifiction information is required");
             }
+
+            // validate IsTargeted = true if groups have been specified
+            if ( notificationCreateDto.Groups?.Count > 0 && notificationCreateDto.IsTargeted == false )
+            {
+                throw new FailedValidationException($"Notification must be targeted if groups are specified");
+            }
+
             // Validate the groups 
             List<Group> NotificationGroups = new List<Group>();
             if (notificationCreateDto.Groups != null && notificationCreateDto.Groups.Count > 0)
@@ -91,10 +115,14 @@ namespace UpDiddyApi.ApplicationCore.Services
                     Group group = await _repositoryWrapper.GroupRepository.GetByGuid(groupGuid);
                     if (group == null)
                         throw new FailedValidationException($"{groupGuid} is not a valid group");
-                    //Prevent group from getting added twice 
-                    Group existingGroup = NotificationGroups.First(g => g.GroupGuid == group.GroupGuid);
-                    if (existingGroup != null)
-                        throw new FailedValidationException($"Redundant group association for group  {group.GroupGuid}");
+
+                    if (NotificationGroups.Count > 0 )
+                    {
+                        //Prevent group from getting added twice 
+                        bool alreadyExists = NotificationGroups.Contains(group);
+                        if (alreadyExists)
+                            throw new FailedValidationException($"Redundant group association for group  \"{group.Name}\"");
+                    }                    
                     NotificationGroups.Add(group);
                 }
             }
@@ -145,8 +173,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (notificationGuid == null)
                 throw new FailedValidationException("Notification guid is required");
-    
-            Notification ExistingNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == notificationGuid).Result.FirstOrDefault();
+
+            Notification ExistingNotification = await _repositoryWrapper.NotificationRepository.GetByGuid(notificationGuid);
 
             if (ExistingNotification == null)
                 throw new NotFoundException($"Unable to location notification {notificationGuid}");
@@ -155,12 +183,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             ExistingNotification.ModifyDate = DateTime.UtcNow;
 
             _repositoryWrapper.NotificationRepository.Update(ExistingNotification);
-                await _repositoryWrapper.NotificationRepository.SaveAsync();
+            await _repositoryWrapper.NotificationRepository.SaveAsync();
 
             _hangfireService.Enqueue<ScheduledJobs>(j => j.DeleteSubscriberNotificationRecords(ExistingNotification));
 
             return;
-                   
+
         }
 
         public async Task UpdateNotification(Guid subscriberGuid, NotificationCreateDto notification, Guid notificationGuid)
@@ -184,7 +212,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             .Select(g => g.Key)
             .ToList();
 
-            if ( duplicates != null && duplicates.Count > 0 )
+            if (duplicates != null && duplicates.Count > 0)
                 throw new FailedValidationException($"One or more groups have been added to the notifcation more than once");
 
 
@@ -194,7 +222,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             ExistingNotification.IsTargeted = notification.IsTargeted == true ? 1 : 0;
             ExistingNotification.ExpirationDate = notification.ExpirationDate;
             ExistingNotification.ModifyDate = DateTime.UtcNow;
-            _repositoryWrapper.NotificationRepository.Update(ExistingNotification);                    
+            _repositoryWrapper.NotificationRepository.Update(ExistingNotification);
             await _repositoryWrapper.NotificationRepository.SaveAsync();
 
             // update groups associated with notification
@@ -217,11 +245,13 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (notificationGuid == null)
                 throw new FailedValidationException("Notification guid is required");
 
-            Notification ExistingNotification = await _repositoryWrapper.NotificationRepository.GetByGuid(notificationGuid);
+            Notification ExistingNotification = await _repositoryWrapper.NotificationRepository.GetAll()
+                .Where(n => n.NotificationGuid == notificationGuid && n.IsDeleted == 0 && (n.ExpirationDate == null || n.ExpirationDate > DateTime.UtcNow))
+                .FirstOrDefaultAsync();
 
             if (ExistingNotification == null)
                 throw new NotFoundException($"Cannot find notification {notificationGuid}");
- 
+
             return _mapper.Map<UpDiddyLib.Domain.Models.NotificationDto>(ExistingNotification);
         }
     }
