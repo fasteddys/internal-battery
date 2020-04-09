@@ -312,6 +312,40 @@ namespace UpDiddyApi.Controllers.V2
         #region G2 Indexing Operations
 
 
+        // items requiring indexing 
+
+        // todo jab index        Mobile Phone 
+        // todo jab index Placement Type(Contract, Hourly, Full Time)
+        // todo jab index Willing to Relocate(Yes, No)
+
+
+
+
+
+
+
+        // todo jab index Course enrollment status
+        // todo jab index Course completion status
+
+        // todo jab put in migration for view changes 
+        // todo jab update azure index documentation 
+        // todo jab update DEV Gateway index paramenters 
+
+
+
+        // items requiring filters 
+
+        // todo jab filter on  Pro-bono assignments – searchable
+        // todo jab filter on  Willing to Travel
+        // todo jab filter on  IsActive Job Seeker 
+        // todo jab filter on IsCurrentlyEmployed 
+
+
+        // items requring searchable 
+
+        // todo jab index Certifications – searchable
+
+
 
         /// <summary>
         /// Re-index subsriber.  This operation will update as well as create documents in the 
