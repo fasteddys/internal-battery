@@ -85,6 +85,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var streetAddress = new SqlParameter { ParameterName = "@StreetAddress", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)profileDto.StreetAddress ?? DBNull.Value };
             var title = new SqlParameter { ParameterName = "@Title", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)profileDto.Title ?? DBNull.Value };
             var isWillingToTravel = new SqlParameter { ParameterName = "@IsWillingToTravel", SqlDbType = SqlDbType.Bit, Direction = ParameterDirection.Input, Value = (object)profileDto.IsWillingToTravel ?? false };
+            var isWillingToRelocate = new SqlParameter { ParameterName = "@IsWillingToRelocate", SqlDbType = SqlDbType.Bit, Direction = ParameterDirection.Input, Value = (object)profileDto.IsWillingToRelocate ?? false };
             var isActiveJobSeeker = new SqlParameter { ParameterName = "@IsActiveJobSeeker", SqlDbType = SqlDbType.Bit, Direction = ParameterDirection.Input, Value = (object)profileDto.IsActiveJobSeeker ?? false };
             var isCurrentlyEmployed = new SqlParameter { ParameterName = "@IsCurrentlyEmployed", SqlDbType = SqlDbType.Bit, Direction = ParameterDirection.Input, Value = (object)profileDto.IsCurrentlyEmployed ?? false };
             var isWillingToWorkProBono = new SqlParameter { ParameterName = "@IsWillingToWorkProBono", SqlDbType = SqlDbType.Bit, Direction = ParameterDirection.Input, Value = (object)profileDto.IsWillingToWorkProBono ?? false };
@@ -95,11 +96,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var skillsNote = new SqlParameter { ParameterName = "@SkillsNote", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)profileDto.SkillsNote ?? DBNull.Value };
             var profileGuid = new SqlParameter { ParameterName = "@ProfileGuid", SqlDbType = SqlDbType.UniqueIdentifier, Size = -1, Direction = ParameterDirection.Output };
             var validationErrors = new SqlParameter { ParameterName = "@ValidationErrors", SqlDbType = SqlDbType.NVarChar, Size = -1, Direction = ParameterDirection.Output };
-            var spParams = new object[] { companyGuid, subscriberGuid, cityGuid, stateGuid, postalGuid, experienceLevelGuid, contactTypeGuid, firstName, lastName, email, phoneNumber, streetAddress, title, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono, currentRate, desiredRate, goals, preferences, skillsNote, employmentTypeGuids, profileGuid, validationErrors };
+            var spParams = new object[] { companyGuid, subscriberGuid, cityGuid, stateGuid, postalGuid, experienceLevelGuid, contactTypeGuid, firstName, lastName, email, phoneNumber, streetAddress, title, isWillingToTravel, isWillingToRelocate, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono, currentRate, desiredRate, goals, preferences, skillsNote, employmentTypeGuids, profileGuid, validationErrors };
 
             try
             {
-                var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Create_Profile] @CompanyGuid, @SubscriberGuid, @CityGuid, @StateGuid, @PostalGuid, @ExperienceLevelGuid, @ContactTypeGuid, @FirstName, @LastName, @Email, @PhoneNumber, @StreetAddress, @Title, @IsWillingToTravel, @IsActiveJobSeeker, @IsCurrentlyEmployed, @IsWillingToWorkProBono, @CurrentRate, @DesiredRate, @Goals, @Preferences, @SkillsNote, @EmploymentTypeGuids, @ProfileGuid OUTPUT, @ValidationErrors OUTPUT", spParams);
+                var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Create_Profile] @CompanyGuid, @SubscriberGuid, @CityGuid, @StateGuid, @PostalGuid, @ExperienceLevelGuid, @ContactTypeGuid, @FirstName, @LastName, @Email, @PhoneNumber, @StreetAddress, @Title, @IsWillingToTravel, @IsWillingToRelocate, @IsActiveJobSeeker, @IsCurrentlyEmployed, @IsWillingToWorkProBono, @CurrentRate, @DesiredRate, @Goals, @Preferences, @SkillsNote, @EmploymentTypeGuids, @ProfileGuid OUTPUT, @ValidationErrors OUTPUT", spParams);
             }
             catch (Exception e)
             {
@@ -143,6 +144,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var streetAddress = new SqlParameter { ParameterName = "@StreetAddress", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)profileDto.StreetAddress ?? DBNull.Value };
             var title = new SqlParameter { ParameterName = "@Title", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)profileDto.Title ?? DBNull.Value };
             var isWillingToTravel = new SqlParameter { ParameterName = "@IsWillingToTravel", SqlDbType = SqlDbType.Bit, Direction = ParameterDirection.Input, Value = (object)profileDto.IsWillingToTravel ?? false };
+            var isWillingToRelocate = new SqlParameter { ParameterName = "@IsWillingToRelocate", SqlDbType = SqlDbType.Bit, Direction = ParameterDirection.Input, Value = (object)profileDto.IsWillingToRelocate ?? false };
             var isActiveJobSeeker = new SqlParameter { ParameterName = "@IsActiveJobSeeker", SqlDbType = SqlDbType.Bit, Direction = ParameterDirection.Input, Value = (object)profileDto.IsActiveJobSeeker ?? false };
             var isCurrentlyEmployed = new SqlParameter { ParameterName = "@IsCurrentlyEmployed", SqlDbType = SqlDbType.Bit, Direction = ParameterDirection.Input, Value = (object)profileDto.IsCurrentlyEmployed ?? false };
             var isWillingToWorkProBono = new SqlParameter { ParameterName = "@IsWillingToWorkProBono", SqlDbType = SqlDbType.Bit, Direction = ParameterDirection.Input, Value = (object)profileDto.IsWillingToWorkProBono ?? false };
@@ -152,11 +154,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var preferences = new SqlParameter { ParameterName = "@Preferences", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)profileDto.Preferences ?? DBNull.Value };
             var skillsNote = new SqlParameter { ParameterName = "@SkillsNote", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Value = (object)profileDto.SkillsNote ?? DBNull.Value };
             var validationErrors = new SqlParameter { ParameterName = "@ValidationErrors", SqlDbType = SqlDbType.NVarChar, Size = -1, Direction = ParameterDirection.Output };
-            var spParams = new object[] { recruiterSubscriberGuid, profileGuid, companyGuid, subscriberGuid, cityGuid, stateGuid, postalGuid, experienceLevelGuid, contactTypeGuid, firstName, lastName, email, phoneNumber, streetAddress, title, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono, currentRate, desiredRate, goals, preferences, skillsNote, employmentTypeGuids, validationErrors };
+            var spParams = new object[] { recruiterSubscriberGuid, profileGuid, companyGuid, subscriberGuid, cityGuid, stateGuid, postalGuid, experienceLevelGuid, contactTypeGuid, firstName, lastName, email, phoneNumber, streetAddress, title, isWillingToTravel, isWillingToRelocate, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono, currentRate, desiredRate, goals, preferences, skillsNote, employmentTypeGuids, validationErrors };
 
             try
             {
-                var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Update_Profile] @RecruiterSubscriberGuid, @ProfileGuid, @CompanyGuid, @SubscriberGuid, @CityGuid, @StateGuid, @PostalGuid, @ExperienceLevelGuid, @ContactTypeGuid, @FirstName, @LastName, @Email, @PhoneNumber, @StreetAddress, @Title, @IsWillingToTravel, @IsActiveJobSeeker, @IsCurrentlyEmployed, @IsWillingToWorkProBono, @CurrentRate, @DesiredRate, @Goals, @Preferences, @SkillsNote, @EmploymentTypeGuids, @ValidationErrors OUTPUT", spParams);
+                var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Update_Profile] @RecruiterSubscriberGuid, @ProfileGuid, @CompanyGuid, @SubscriberGuid, @CityGuid, @StateGuid, @PostalGuid, @ExperienceLevelGuid, @ContactTypeGuid, @FirstName, @LastName, @Email, @PhoneNumber, @StreetAddress, @Title, @IsWillingToTravel, @IsWillingToRelocate, @IsActiveJobSeeker, @IsCurrentlyEmployed, @IsWillingToWorkProBono, @CurrentRate, @DesiredRate, @Goals, @Preferences, @SkillsNote, @EmploymentTypeGuids, @ValidationErrors OUTPUT", spParams);
             }
             catch (Exception e)
             {
