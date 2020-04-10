@@ -58,11 +58,11 @@ steps:
 
 # Publish test results for devops to be able to display
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/test/publish-test-results?view=azure-devops&tabs=yaml
-- task: PublishTestResults@2
-  inputs: 
-    testRunner: VSTest
-    testResultsFiles: '**/*.trx' 
-    searchFolder: '$(Agent.TempDirectory)'
+#- task: PublishTestResults@2
+#  inputs: 
+#   testRunner: VSTest
+#   testResultsFiles: '**/*.trx' 
+#   searchFolder: '$(Agent.TempDirectory)'
 
 # package up all dlls and compiled code
 - script: |
