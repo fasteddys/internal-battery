@@ -301,7 +301,7 @@ namespace UpDiddyApi.Controllers.V2
         [HttpGet]
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("profiles/query")]
-        public async Task<IActionResult> SearchG2(Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0)
+        public async Task<IActionResult> SearchG2(Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, bool? x = null)
         {
             var rVal = await _g2Service.G2SearchAsync(GetSubscriberGuid(), cityGuid, limit, offset, sort, order, keyword, sourcePartnerGuid, radius);
             return Ok(rVal);
@@ -310,9 +310,6 @@ namespace UpDiddyApi.Controllers.V2
         #endregion
 
         #region G2 Indexing Operations
-
-
-
         /// <summary>
         /// Re-index subsriber.  This operation will update as well as create documents in the 
         /// azure g2 index 
