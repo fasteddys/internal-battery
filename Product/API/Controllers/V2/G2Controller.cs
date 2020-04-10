@@ -310,7 +310,7 @@ namespace UpDiddyApi.Controllers.V2
         #endregion
 
         #region G2 Indexing Operations
-  
+ 
         /// <summary>
         /// Re-index subsriber.  This operation will update as well as create documents in the 
         /// azure g2 index 

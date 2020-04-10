@@ -70,11 +70,21 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             if (recruiter.RecruiterCompanies == null || recruiter.RecruiterCompanies.FirstOrDefault() == null)
                 throw new FailedValidationException($"Recruiter {recruiter.RecruiterGuid} is not associated with a company");
 
-            // get company guid for the recruiter 
-            Guid companyGuid = recruiter.RecruiterCompanies.First().Company.CompanyGuid;
+            // limit search to only the careercircle company for now....  
+            string CCCompanySearchGuid = _configuration["AzureSearch:CCCompanySearchGuid"];
+
+            List<Guid> companyGuids =  recruiter.RecruiterCompanies
+                .Where(g => g.IsDeleted == 0 & g.Company.CompanyGuid == Guid.Parse(CCCompanySearchGuid))
+                .Select(g => g.Company.CompanyGuid)
+                .ToList();
+            
+
+            if (companyGuids == null || companyGuids.FirstOrDefault() == null)
+                throw new FailedValidationException($"Recruiter {recruiter.RecruiterGuid} is not associated with the default carreer circle search company");
+ 
             // handle case of non geo search 
             if (cityGuid == null || cityGuid == Guid.Empty)
-                return await SearchG2Async(companyGuid, limit, offset, sort, order, keyword, sourcePartnerGuid, 0, 0, 0, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
+                return await SearchG2Async(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, 0, 0, 0, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
 
             // pick a random postal code for the city to get the last and long 
             Postal postal = _repository.PostalRepository.GetAll()
@@ -86,7 +96,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             if (postal == null)
                 throw new NotFoundException($"A city with an Guid of {cityGuid} cannot be found.");
 
-            return await SearchG2Async(companyGuid, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, (double)postal.Latitude, (double)postal.Longitude, isWillingToRelocate,isWillingToTravel,isActiveJobSeeker,isCurrentlyEmployed,isWillingToWorkProBono);
+            return await SearchG2Async(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, (double)postal.Latitude, (double)postal.Longitude, isWillingToRelocate,isWillingToTravel,isActiveJobSeeker,isCurrentlyEmployed,isWillingToWorkProBono);
         }
 
 
@@ -810,8 +820,12 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         }
  
  
-        private async Task<G2SearchResultDto> SearchG2Async(Guid companyGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, double lat = 0, double lng = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
+        private async Task<G2SearchResultDto> SearchG2Async(List<Guid> companyGuids, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, double lat = 0, double lng = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
         {
+
+            if (companyGuids == null || companyGuids.Count == 0)
+                throw new FailedValidationException("G2Service:SearchG2Async: At least one company must be specified for searching G2s");
+
             DateTime startSearch = DateTime.Now;
             G2SearchResultDto searchResults = new G2SearchResultDto();
 
@@ -841,8 +855,17 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
                     IncludeTotalResultCount = true,
                 };
 
-            // IMPORTANT!!!!   Filter quereies to be withing the specified company id for security reasons 
-            parameters.Filter = $"CompanyGuid eq '{companyGuid}'";
+
+            string companyFilter = string.Empty;
+            foreach ( Guid g in companyGuids )
+            {
+                if ( string.IsNullOrEmpty(companyFilter) )
+                    companyFilter = $"( CompanyGuid eq '{g}'";
+                else
+                    companyFilter += $" or CompanyGuid eq '{g}'";
+            }
+            companyFilter += ") "; 
+            parameters.Filter = companyFilter;
 
             // Add partner filter if one has been specified
             if (sourcePartnerGuid != null)
