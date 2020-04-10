@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-
+ 
 namespace UpDiddyLib.Domain.Models
 {
     public class G2InfoDto
@@ -29,6 +29,10 @@ namespace UpDiddyLib.Domain.Models
         public Guid SubscriberGuid { get; set; }
 
         public string AvatarUrl { get; set; }
+
+       public DateTime? CreateDate { get; set; }
+
+       public DateTime? ModifyDate { get; set; }
 
     }
 }

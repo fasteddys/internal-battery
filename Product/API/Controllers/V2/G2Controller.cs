@@ -32,6 +32,7 @@ namespace UpDiddyApi.Controllers.V2
         private readonly G2Interfaces.ICommentService _commentService;
         private readonly ISkillService _skillService;
         private readonly ITagService _tagService;
+        private readonly IResumeService _resumeService;
 
         public G2Controller(IServiceProvider services)
         {
@@ -43,6 +44,7 @@ namespace UpDiddyApi.Controllers.V2
             _commentService = services.GetService<G2Interfaces.ICommentService>();
             _skillService = services.GetService<ISkillService>();
             _tagService = services.GetService<ITagService>();
+            _resumeService = services.GetService<IResumeService>();
         }
  
         #region Recruiter Profile Operations
@@ -64,6 +66,25 @@ namespace UpDiddyApi.Controllers.V2
             profileDto.ProfileGuid = profileGuid;
             await _profileService.UpdateProfileForRecruiter(profileDto, GetSubscriberGuid());
             return StatusCode(204);
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("profiles/{profileGuid:guid}/resume/is-exists")]
+        public async Task<IActionResult> HasSubscriberUploadedResumeForRecruiter(Guid profileGuid)
+        {
+            var resume = await _resumeService.HasSubscriberUploadedResumeForRecruiter(profileGuid, GetSubscriberGuid());
+            return Ok(resume);
+        }
+
+
+        [HttpGet]
+        [Authorize]
+        [Route("profiles/{profileGuid:guid}/resume")]
+        public async Task<IActionResult> DownloadResumeForRecruiter(Guid profileGuid)
+        {
+            var resume = await _resumeService.DownloadResumeForRecruiter(profileGuid, GetSubscriberGuid());
+            return Ok(resume);
         }
 
         #endregion
@@ -276,12 +297,11 @@ namespace UpDiddyApi.Controllers.V2
 
         #endregion
 
-        #region G2 Query Functions
-
+        #region G2 Query Functions 
         [HttpGet]
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("profiles/query")]
-        public async Task<IActionResult> SearchG2(Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0)
+        public async Task<IActionResult> SearchG2(Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, bool? x = null)
         {
             var rVal = await _g2Service.G2SearchAsync(GetSubscriberGuid(), cityGuid, limit, offset, sort, order, keyword, sourcePartnerGuid, radius);
             return Ok(rVal);
@@ -290,9 +310,6 @@ namespace UpDiddyApi.Controllers.V2
         #endregion
 
         #region G2 Indexing Operations
-
-
-
         /// <summary>
         /// Re-index subsriber.  This operation will update as well as create documents in the 
         /// azure g2 index 
@@ -344,8 +361,7 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         #endregion ContactTypes
-
-
+               
         #region Admin Functions 
 
         // Admin functions will not be made public throught the APi gateway.  They are here for dev administration of the 

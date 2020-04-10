@@ -2333,41 +2333,53 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
 
         public async Task<bool> G2IndexPurge()
         {
-            // Get the indexer purge batch size   
-            int G2IndexPurgeBatchSize = int.Parse(_configuration["AzureSearch:G2IndexPurgeBatchSize"]);
-            _syslog.LogInformation($"ScheduledJobs.G2IndexPurge: Starting with a batch size of {G2IndexPurgeBatchSize}");
 
-            // Get some G2s to purge 
-            G2SearchResultDto Docs = await _g2Service.G2SearchGetTopAsync(G2IndexPurgeBatchSize);
-
-            if (Docs.SubscriberCount == 0)
-                return true;
-
-            List<G2SDOC> g2List = new List<G2SDOC>();
-            foreach (G2InfoDto g2 in Docs.G2s)
+            try
             {
-                G2SDOC delDoc = new G2SDOC()
+                // Get the indexer purge batch size   
+                int G2IndexPurgeBatchSize = int.Parse(_configuration["AzureSearch:G2IndexPurgeBatchSize"]);
+                _syslog.LogInformation($"ScheduledJobs.G2IndexPurge: Starting with a batch size of {G2IndexPurgeBatchSize}");
+
+                // Get some G2s to purge 
+                G2SearchResultDto Docs = await _g2Service.G2SearchGetTopAsync(G2IndexPurgeBatchSize);
+
+                if (Docs.SubscriberCount == 0)
+                    return true;
+
+                List<G2SDOC> g2List = new List<G2SDOC>();
+                foreach (G2InfoDto g2 in Docs.G2s)
                 {
-                    ProfileGuid = g2.ProfileGuid,
-                };
-                g2List.Add(delDoc);
- 
-            }; 
-            _syslog.LogInformation($"ScheduledJobs.G2IndexPurge: Retreived {Docs.SubscriberCount} G2s for purging.");
-            await _g2Service.G2IndexPurgeBulkAsync(g2List);
+                    G2SDOC delDoc = new G2SDOC()
+                    {
+                        ProfileGuid = g2.ProfileGuid,
+                    };
+                    g2List.Add(delDoc);
 
-            // if the number of profiles retreived = the batch size, there may be more that needs to be purged so
-            // schedule this job to run again for another batch
-            if (Docs.SubscriberCount == G2IndexPurgeBatchSize)
+                };
+                _syslog.LogInformation($"ScheduledJobs.G2IndexPurge: Retreived {Docs.SubscriberCount} G2s for purging.");
+                await _g2Service.G2IndexPurgeBulkAsync(g2List);
+
+                // if the number of profiles retreived = the batch size, there may be more that needs to be purged so
+                // schedule this job to run again for another batch
+                if (Docs.SubscriberCount == G2IndexPurgeBatchSize)
+                {
+                    _syslog.LogInformation($"ScheduledJobs.G2IndexPurge: Scheduling recursive call to purge additional G2s");
+                    //Get recurse delay variable
+                    int PurgeG2RecurseDelayInMinutes = int.Parse(_configuration["AzureSearch:PurgeG2RecurseDelayInMinutes"]);
+                    _hangfireService.Schedule<ScheduledJobs>(j => j.G2IndexPurge(), TimeSpan.FromMinutes(PurgeG2RecurseDelayInMinutes));
+                }
+
+                _syslog.LogInformation($"ScheduledJobs.G2IndexPurge Done");
+                return true;
+            }
+            catch ( Exception ex )
             {
-                _syslog.LogInformation($"ScheduledJobs.G2IndexPurge: Scheduling recursive call to purge additional G2s");
-                //Get recurse delay variable
-                int PurgeG2RecurseDelayInMinutes = int.Parse(_configuration["AzureSearch:PurgeG2RecurseDelayInMinutes"]);
-                _hangfireService.Schedule<ScheduledJobs>(j => j.G2IndexPurge(), TimeSpan.FromMinutes(PurgeG2RecurseDelayInMinutes));
+
+                _syslog.LogError($"ScheduledJobs.G2IndexPurge Error {ex.Message}");
+                throw ex;
             }
 
-            _syslog.LogInformation($"ScheduledJobs.G2IndexPurge Done");
-            return true;
+            
         }
 
 

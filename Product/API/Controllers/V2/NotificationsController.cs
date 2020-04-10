@@ -96,7 +96,7 @@ namespace UpDiddyApi.Controllers.V2
         #endregion
 
         #region notifications
-
+ 
         [HttpPost]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> CreateNotification([FromBody] NotificationCreateDto newNotification)

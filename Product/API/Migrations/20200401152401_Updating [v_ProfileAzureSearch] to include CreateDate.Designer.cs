@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
@@ -10,9 +11,10 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200401152401_Updating [v_ProfileAzureSearch] to include CreateDate")]
+    partial class Updatingv_ProfileAzureSearchtoincludeCreateDate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1629,8 +1631,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsDeleted");
 
-                    b.Property<bool?>("IsWillingToRelocate");
-
                     b.Property<bool?>("IsWillingToTravel");
 
                     b.Property<bool?>("IsWillingToWorkProBono");
@@ -1651,9 +1651,6 @@ namespace UpDiddyApi.Migrations
                         .HasMaxLength(500);
 
                     b.Property<Guid>("ProfileGuid");
-
-                    b.Property<string>("SkillsNote")
-                        .HasMaxLength(500);
 
                     b.Property<int?>("StateId");
 

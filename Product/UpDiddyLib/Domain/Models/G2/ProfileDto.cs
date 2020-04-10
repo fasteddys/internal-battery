@@ -6,9 +6,9 @@ namespace UpDiddyLib.Domain.Models.G2
 {
     public class ProfileDto
     {
-        public Guid ProfileGuid { get; set; } 
+        public Guid ProfileGuid { get; set; }
         [Required]
-        public Guid CompanyGuid { get; set; } 
+        public Guid CompanyGuid { get; set; }
         [Required]
         public Guid SubscriberGuid { get; set; }
         [StringLength(100)]
@@ -29,6 +29,7 @@ namespace UpDiddyLib.Domain.Models.G2
         [StringLength(100)]
         public string Title { get; set; }
         public bool? IsWillingToTravel { get; set; }
+        public bool? IsWillingToRelocate { get; set; }
         public bool? IsActiveJobSeeker { get; set; }
         public bool? IsCurrentlyEmployed { get; set; }
         public bool? IsWillingToWorkProBono { get; set; }
@@ -40,7 +41,31 @@ namespace UpDiddyLib.Domain.Models.G2
         public string Preferences { get; set; }
         [StringLength(500)]
         public string SkillsNote { get; set; }
-
         public List<Guid> EmploymentTypeGuids { get; set; }
+        /// <summary>
+        /// Profile's Twitter url.
+        /// </summary>
+        public string TwitterUrl { get; set; }
+
+        /// <summary>
+        /// Profile's StackOverflow Url.
+        /// </summary>
+        public string StackOverflowUrl { get; set; }
+
+        /// <summary>
+        /// Profile's Facebook Url.
+        /// </summary>
+        public string FacebookUrl { get; set; }
+
+        /// <summary>
+        /// Profile's GitHub Url.
+        /// </summary>
+        public string GitHubUrl { get; set; }
+
+        /// <summary>
+        /// Profile's LinkedIn Url.
+        /// </summary>
+        public string LinkedInUrl { get; set; }
+        public string AvatarUrl { get; set; }
     }
 }

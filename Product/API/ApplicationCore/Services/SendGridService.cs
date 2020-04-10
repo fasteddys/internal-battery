@@ -1,38 +1,38 @@
-﻿using System.Net;
-using System;
-using System.Threading.Tasks;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using UpDiddyApi.ApplicationCore.Interfaces.Business;
-using G2Interfaces = UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
-using UpDiddyApi.Authorization;
-using UpDiddyLib.Domain.Models;
-using UpDiddyLib.Dto.User;
-using Microsoft.AspNetCore.Authorization;
-using UpDiddyApi.ApplicationCore.Interfaces;
-using UpDiddyLib.Domain.AzureSearchDocuments;
-using UpDiddyLib.Domain.AzureSearch;
-using UpDiddyApi.Models;
-using UpDiddyApi.Workflow;
-using UpDiddyLib.Domain.Models.G2;
-using System.Collections.Generic;
-using UpDiddyApi.ApplicationCore.Interfaces.Repository;
-using AutoMapper;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Reflection;
+using System.Reflection.Emit;
+using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
-using static UpDiddyLib.Helpers.Constants;
-using UpDiddyLib.Helpers;
+using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.Authorization;
+using UpDiddyApi.Models;
 using UpDiddyApi.Models;
 using UpDiddyApi.Models.G2;
-using Newtonsoft.Json.Linq;
-using System.Reflection.Emit;
-using System.Reflection;
+using UpDiddyApi.Workflow;
+using UpDiddyLib.Domain.AzureSearch;
+using UpDiddyLib.Domain.AzureSearchDocuments;
+using UpDiddyLib.Domain.Models;
+using UpDiddyLib.Domain.Models.G2;
+using UpDiddyLib.Dto.User;
+using UpDiddyLib.Helpers;
+using static UpDiddyLib.Helpers.Constants;
+using G2Interfaces = UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
-
-
     public class SendGridService : ISendGridService
     {
         private readonly IConfiguration _configuration;
@@ -47,7 +47,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly ILogger _syslog;
         private readonly ISysEmail _sysEmail;
-
 
         public SendGridService(IServiceProvider services, IRepositoryWrapper repositoryWrapper, IMapper mapper, IHangfireService hangfireService, IConfiguration configuration, ILogger<SendGridService> logger, ISysEmail sysEmail)
         {
@@ -66,8 +65,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             _sysEmail = sysEmail;
         }
 
-
-        public async Task<bool> SendBulkEmailByList(Guid TemplateGuid, List<Guid> Profiles, Guid subscriberId)
+   
+        public async Task<bool> SendBulkEmailByList(Guid TemplateGuid, List<Guid> Profiles, Guid recruiterSubscriberGuid)
         {
             // validate profiles have been specified 
             if (Profiles == null || Profiles.Count == 0)
@@ -79,11 +78,23 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (template == null)
                 throw new FailedValidationException($"SendGridService:SendBulkEmailsByList {TemplateGuid} is not a valid bulk email template");
 
+            var recruiter = await _repositoryWrapper.RecruiterRepository.GetRecruiterBySubscriberGuid(recruiterSubscriberGuid);
+
+            // except out oif recruiter is not found 
+            if (recruiter == null)
+                throw new FailedValidationException($"SendGridService:SendBulkEmailsByList Subscriber {recruiterSubscriberGuid} is not a recruiter");
+
+            // get list of recruiters companies 
+            List<RecruiterCompany> recruiterCompanies  = _repositoryWrapper.RecruiterCompanyRepository.GetAll()   
+                 .Include(c => c.Company)
+                 .Where(rc => rc.IsDeleted == 0 && rc.RecruiterId == recruiter.RecruiterId)
+                 .ToList();
+      
             // validate the api key 
             if (ValidateSendgridSubAccount(template.SendGridSubAccount) == false)
                 throw new FailedValidationException($"SendGridService:SendBulkEmailsByList {template.SendGridSubAccount} is not a valid SendGrid subaccount");
 
-            // get the list of email associated with the profiles 
+            // get the list of email associated with the profiles irregardless of if they are associated with the recruiters company 
             List<UpDiddyApi.Models.G2.Profile> profiles = await _profileService.GetProfilesByGuidList(Profiles);
 
             foreach (Models.G2.Profile p in profiles)
@@ -91,7 +102,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 dynamic templateData = null;
                 try
                 {
-                    templateData = BuildEmailTemplateData(p, template.TemplateParams);
+                    templateData = BuildEmailTemplateData(template.TemplateParams, p, recruiter);
                 }
                 catch (Exception ex)
                 {
@@ -105,9 +116,16 @@ namespace UpDiddyApi.ApplicationCore.Services
                     Profiles.Remove(p.ProfileGuid);
                     // map account type to enum 
                     SendGridAccount accountType = (SendGridAccount)Enum.Parse(typeof(SendGridAccount), template.SendGridSubAccount);
-                    // send the email 
-                    _sysEmail.SendTemplatedEmailAsync(p.Email, template.SendGridTemplateId, templateData, accountType);
-          
+                    // send the email if the profile is associated with the recruiters company                    
+                   if ( recruiterCompanies.Any(c => c.CompanyId == p.CompanyId)  )
+                   {
+                        _sysEmail.SendTemplatedEmailAsync(p.Email, template.SendGridTemplateId, templateData, accountType);
+                        // add note about email being sent 
+                        await LogBulkEmailNotes(template.Name, recruiterSubscriberGuid, p.Subscriber.SubscriberId);
+                    }
+                      
+                   else
+                      _syslog.LogError($"SendGridService:SendbulkEmailByList  Profile {p.ProfileGuid} is asscociated with any of recruiters {recruiter.RecruiterGuid} companies.  Email not sent for this profile.");
                 }
                 catch (Exception ex)
                 {
@@ -119,8 +137,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             // they are processed for bulk emails sends.  We will remove them from the azure index now so they will no longer appear
             // in queries
             _g2Service.G2IndexBulkDeleteByGuidAsync(Profiles);
-
-            await LogBulkEmailNotes(template.Name, subscriberId);
+            
             return true;
         }
 
@@ -132,43 +149,52 @@ namespace UpDiddyApi.ApplicationCore.Services
             return rval;
         }
 
-        private async Task LogBulkEmailNotes(string templateName, Guid subscriberId)
+        private async Task LogBulkEmailNotes(string templateName, Guid recruiterSubscriberGuid, int subscriberId)
         {
-            var recruiter = await _repositoryWrapper.RecruiterRepository.GetRecruiterBySubscriberGuid(subscriberId);
-
+            var recruiter = await _repositoryWrapper.RecruiterRepository.GetRecruiterBySubscriberGuid(recruiterSubscriberGuid);
             if (recruiter?.SubscriberId == null) { return; }
 
             await _repositoryWrapper.SubscriberNotesRepository.AddNotes(new SubscriberNotes
             {
                 SubscriberNotesGuid = Guid.NewGuid(),
-                SubscriberId = recruiter.SubscriberId.Value,
+                SubscriberId = subscriberId,
                 RecruiterId = recruiter.RecruiterId,
                 IsDeleted = 0,
                 ViewableByOthersInRecruiterCompany = true,
-                Notes = $"Template {templateName} bulk email sent by {recruiter.LastName}, {recruiter.FirstName} on {DateTime.UtcNow:G}.",
+                Notes = $"Template {templateName} bulk email sent by {recruiter.LastName}, {recruiter.FirstName} on {DateTime.Now:G}.",
             });
         }
 
         #region Private Helpers
 
-        private dynamic BuildEmailTemplateData(Models.G2.Profile p, string TemplateParams)
+        private dynamic BuildEmailTemplateData(string templateParams, Models.G2.Profile profile, Recruiter recruiter)
         {
-            string[] props = TemplateParams.Split(';');
+            var props = templateParams.Split(';')
+                .SkipWhile(string.IsNullOrEmpty)
+                .Select(s => s.Split(':'))
+                .Where(s => s.Length == 2)
+                .ToDictionary(s => s[1], s => s[0]);
+
             JObject rval = new JObject();
 
-            foreach (string prop in props)
+            foreach (var keyValuePair in props)
             {
-                if (string.IsNullOrEmpty(prop) == false)
+                var objectToTest =
+                    keyValuePair.Value.StartsWith("recruiter.", StringComparison.CurrentCultureIgnoreCase) ? recruiter
+                    : keyValuePair.Value.StartsWith("profile.", StringComparison.CurrentCultureIgnoreCase) ? profile
+                    : null as object;
+
+                if (objectToTest == null)
                 {
-                    string[] info = prop.Split(':');
-                    string path = info[0];
-                    string paramName = info[1];
-                    var val = GetPropertyValue(p, path);
-                    if (val != null)
-                    {
-                        JToken paramVal = JToken.FromObject(val);
-                        rval.Add(paramName, paramVal);
-                    }
+                    _syslog.LogError($"SendGridService:GetPropertyValue: {keyValuePair.Value} is NOT a valid profile navigation property, skipping...");
+                    continue;
+                }
+
+                var val = GetPropertyValue(objectToTest, keyValuePair.Value.Remove(0, keyValuePair.Value.IndexOf('.') + 1));
+                if (val != null)
+                {
+                    JToken paramVal = JToken.FromObject(val);
+                    rval.Add(keyValuePair.Key, paramVal);
                 }
             }
             return rval;

@@ -380,12 +380,15 @@ namespace UpDiddyApi.Helpers
                 .ForMember(x => x.MetaTitle, opt => opt.Ignore())
                 .ReverseMap();
 
-
-
-
             CreateMap<JobPosting, JobDetailDto>()
                 .ForMember(x => x.CompanyName, opt => opt.MapFrom(src => src.Company.CompanyName))
                 .ForMember(x => x.CommuteTime, opt => opt.Ignore())
+                .ForMember(x => x.EmploymentType, opt => opt.MapFrom(src => src.EmploymentType.Name))
+                .ForMember(x => x.EducationLevel, opt => opt.MapFrom(src => src.EducationLevel.Level))
+                .ForMember(x => x.ExperienceLevel, opt => opt.MapFrom(src => src.ExperienceLevel.DisplayName))
+                .ForMember(x => x.Industry, opt => opt.MapFrom(src => src.Industry.Name))
+                .ForMember(x => x.JobCategory, opt => opt.MapFrom(src => src.JobCategory.Name))
+                .ForMember(x => x.Skills, opt => opt.MapFrom(src => src.JobPostingSkills.Select(s => s.Skill.SkillName).ToList()))
                 .ReverseMap();
 
 
@@ -828,6 +831,12 @@ namespace UpDiddyApi.Helpers
                 .ForMember(p => p.PostalGuid, opt => opt.MapFrom(src => src.Postal.PostalGuid))
                 .ForMember(p => p.StateGuid, opt => opt.MapFrom(src => src.State.StateGuid))
                 .ForMember(p => p.SubscriberGuid, opt => opt.MapFrom(src => src.Subscriber.SubscriberGuid))
+                .ForMember(p => p.FacebookUrl, opt => opt.MapFrom(src => src.Subscriber.FacebookUrl))
+                .ForMember(p => p.TwitterUrl, opt => opt.MapFrom(src => src.Subscriber.TwitterUrl))
+                .ForMember(p => p.GitHubUrl, opt => opt.MapFrom(src => src.Subscriber.GithubUrl))
+                .ForMember(p => p.LinkedInUrl, opt => opt.MapFrom(src => src.Subscriber.LinkedInUrl))
+                .ForMember(p => p.StackOverflowUrl, opt => opt.MapFrom(src => src.Subscriber.StackOverflowUrl))
+                .ForMember(p => p.AvatarUrl, opt => opt.MapFrom(src => src.Subscriber.AvatarUrl))
                 .ReverseMap();
 
             CreateMap<List<WishlistDto>, WishlistListDto>()
