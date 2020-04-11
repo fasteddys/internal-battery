@@ -42,13 +42,16 @@ namespace UpDiddyLib.Domain.AzureSearchDocuments
 
         public string Title { get; set; }
 
-        public bool IsWillingToTravel { get; set; }
+        public bool? IsWillingToTravel { get; set; }
 
-        public bool IsActiveJobSeeker { get; set; }
+        public bool? IsActiveJobSeeker { get; set; }
 
-        public bool IsCurrentlyEmployed { get; set; }
+        public bool? IsCurrentlyEmployed { get; set; }
 
-        public bool IsWillingToWorkProBono { get; set; }
+        public bool? IsWillingToWorkProBono { get; set; }
+
+        public bool? IsWillingToRelocate { get; set; }
+
 
         public float CurrentRate { get; set; }
 

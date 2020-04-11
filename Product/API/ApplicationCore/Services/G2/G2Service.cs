@@ -54,7 +54,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
 
         #region G2 Searching 
 
-        public async Task<G2SearchResultDto> G2SearchAsync(Guid subscriberGuid, Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0)
+        public async Task<G2SearchResultDto> G2SearchAsync(Guid subscriberGuid, Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
         {
 
             // validate the the user provides a city if they also provided a radius
@@ -84,7 +84,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
  
             // handle case of non geo search 
             if (cityGuid == null || cityGuid == Guid.Empty)
-                return await SearchG2Async(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, 0, 0, 0 );
+                return await SearchG2Async(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, 0, 0, 0, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
 
             // pick a random postal code for the city to get the last and long 
             Postal postal = _repository.PostalRepository.GetAll()
@@ -96,7 +96,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             if (postal == null)
                 throw new NotFoundException($"A city with an Guid of {cityGuid} cannot be found.");
 
-            return await SearchG2Async(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, (double)postal.Latitude, (double)postal.Longitude);
+            return await SearchG2Async(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, (double)postal.Latitude, (double)postal.Longitude, isWillingToRelocate,isWillingToTravel,isActiveJobSeeker,isCurrentlyEmployed,isWillingToWorkProBono);
         }
 
 
@@ -820,7 +820,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         }
  
  
-        private async Task<G2SearchResultDto> SearchG2Async(List<Guid> companyGuids, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, double lat = 0, double lng = 0)
+        private async Task<G2SearchResultDto> SearchG2Async(List<Guid> companyGuids, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, double lat = 0, double lng = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
         {
 
             if (companyGuids == null || companyGuids.Count == 0)
@@ -870,6 +870,18 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             // Add partner filter if one has been specified
             if (sourcePartnerGuid != null)
                 parameters.Filter += $" and PartnerGuid eq '{sourcePartnerGuid}'";
+
+            // Add filter for is.... properties 
+            if (isWillingToRelocate != null)
+                parameters.Filter += $" and IsWillingToRelocate eq " + (isWillingToRelocate.Value ? "true" : "false");
+            if (isWillingToTravel != null)
+                parameters.Filter += $" and IsWillingToTravel eq " + (isWillingToTravel.Value ? "true" : "false");
+            if (isWillingToWorkProBono != null)
+                parameters.Filter += $" and IsWillingToWorkProBono eq " + (isWillingToWorkProBono.Value ? "true" : "false");
+            if (isCurrentlyEmployed != null)
+                parameters.Filter += $" and IsCurrentlyEmployed eq " + (isCurrentlyEmployed.Value ? "true" : "false");
+            if (isActiveJobSeeker != null)
+                parameters.Filter += $" and IsActiveJobSeeker eq " + (isActiveJobSeeker.Value ? "true" : "false");
 
             double radiusKm = 0;
             // check to see if radius is in play
