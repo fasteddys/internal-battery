@@ -30,6 +30,7 @@ namespace API.Tests.AzureApi
             {
                 var command = new SqlCommand(SQL_DELETE_OBJECT_BY_GUID, connection);
                 command.CommandType = CommandType.StoredProcedure;
+                command.CommandTimeout = 60;
                 command.Parameters.Add("@ObjectIdentifier", SqlDbType.UniqueIdentifier).Value = objectIdentifier;
                 connection.Open();
                 command.ExecuteNonQuery();
@@ -41,6 +42,7 @@ namespace API.Tests.AzureApi
             {
                 var command = new SqlCommand(SQL_UNDELETE_OBJECT_BY_GUID, connection);
                 command.CommandType = CommandType.StoredProcedure;
+                command.CommandTimeout = 60;
                 command.Parameters.Add("@ObjectIdentifier", SqlDbType.UniqueIdentifier).Value = objectIdentifier;
                 connection.Open();
                 command.ExecuteNonQuery();
@@ -58,6 +60,7 @@ namespace API.Tests.AzureApi
 
             // emit some basic information about the test
             _output.WriteLine($"Operation Name: {apiOperationTest.Object.Name}");
+            _output.WriteLine($"Operation Url: {apiOperationTest.Object.Uri}");
             _output.WriteLine($"Api Version: {apiOperationTest.Object.ApiVersion}");
             _output.WriteLine($"Http Verb: {apiOperationTest.Object.HttpMethod.Method}");
             _output.WriteLine($"Expected Status Code: {apiOperationTest.Object.ExpectedStatusCode}");
