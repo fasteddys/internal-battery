@@ -824,7 +824,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         {
 
             if (companyGuids == null || companyGuids.Count == 0)
-                throw new FailedValidationException("G2Service:SearchG2Async: At least one company must be specified for searching G2s");
+                throw new FailedValidationException("G2Service:SearchG2Async: Recruiter is not associated with the CareerCircle search company");
 
             DateTime startSearch = DateTime.Now;
             G2SearchResultDto searchResults = new G2SearchResultDto();
