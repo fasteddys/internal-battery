@@ -906,7 +906,14 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
                 parameters.Filter += $" and geo.distance(Location, geography'POINT({lng} {lat})') le {radiusKm}";
  
             }
-            
+            // double quote email to ensure direct hit 
+            // todo: Build out with filters to support complex queries such as "ikoplowitz@populusgroup.com jabrazil@archisinccom  brentferree@hotmail.com"
+            if ( Utils.ValidateEmail(keyword.Trim()))
+            {
+                keyword = "\"" + keyword.Trim() + "\"";
+            }
+           
+
             results = indexClient.Documents.Search<G2InfoDto>(keyword, parameters);
 
             DateTime startMap = DateTime.Now;
