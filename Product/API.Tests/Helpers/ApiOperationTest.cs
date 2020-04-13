@@ -144,6 +144,14 @@ namespace API.Tests.Helpers
                                 else
                                     this.ResponseSchema = jschema;
                             }
+                            else if (responseExampleType == typeof(JValue))
+                            {
+                                JValue example = responseSchema["example"].Value<JValue>();
+                                if (!example.IsValid(jschema))
+                                    this.DefinitionErrors.Add("The response example is not valid according to the schema definition.");
+                                else
+                                    this.ResponseSchema = jschema;
+                            }
                             else
                             {
                                 throw new ApplicationException($"Unsupported type in response example: {responseExampleType.ToString()}");
