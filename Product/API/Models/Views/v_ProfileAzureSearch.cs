@@ -25,6 +25,7 @@ namespace UpDiddyApi.Models.Views
         public string ExperienceLevel { get; set; }
         public string EmploymentTypes { get; set; }
         public string Title { get; set; }
+        public bool? IsWillingToRelocate { get; set; }
         public bool? IsWillingToTravel { get; set; }
         public bool? IsActiveJobSeeker { get; set; }
         public bool? IsCurrentlyEmployed { get; set; }
