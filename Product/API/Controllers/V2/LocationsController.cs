@@ -47,6 +47,14 @@ namespace UpDiddyApi.Controllers.V2
             return Ok(countries);
         }
 
+        [HttpGet]
+        [Route("cities/keyword")]
+        public async Task<IActionResult> GetCityByKeyword([FromQuery] string value)
+        {
+            var cities = await _cityService.GetCityByKeyword(value);
+            return Ok(cities);
+        }
+
         [HttpPost]
         [Route("countries")]
         [Authorize(Policy = "IsCareerCircleAdmin")]

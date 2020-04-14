@@ -13,5 +13,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task UpdateCity(CityDetailDto cityDetailDto);
         Task<Guid> CreateCity(CityDetailDto cityDetailDto);
         Task DeleteCity(Guid cityGuid);
+        Task<List<CityStateSearchDto>> GetCityByKeyword(string keyword);
     }
 }
