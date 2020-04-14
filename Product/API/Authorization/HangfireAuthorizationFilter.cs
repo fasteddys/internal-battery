@@ -23,7 +23,7 @@ namespace UpDiddyApi.Authorization
 
         public bool Authorize(DashboardContext context)
         {
-            if (_environment.IsDevelopment())
+            if (_environment.IsEnvironment("LocalDevelopment"))
                 return true;
 
             string HangfireUnlockedCookie = string.Empty;

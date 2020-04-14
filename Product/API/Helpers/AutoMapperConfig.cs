@@ -821,6 +821,7 @@ namespace UpDiddyApi.Helpers
 
             CreateMap<v_ProfileAzureSearch, G2SDOC>()
               .ForMember(x => x.Location, opt => opt.Ignore())
+              .ForMember(x => x.EmploymentTypes, opt => opt.MapFrom(src => src.EmploymentTypes.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList().Select(s => s.Trim()).ToList()))
               .ReverseMap();
 
             CreateMap<Models.G2.Profile, ProfileDto>()

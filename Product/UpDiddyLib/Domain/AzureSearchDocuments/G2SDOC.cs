@@ -38,7 +38,10 @@ namespace UpDiddyLib.Domain.AzureSearchDocuments
 
         public string ExperienceLevel { get; set; }
 
-        public string EmploymentTypes { get; set; }
+        //Note: When indexes are created it works without the new list.
+        //we need the new list initialization because when we delete the indexes the code 
+        //throws a null exception as azure json defines the null collection as an empty collection "[]".
+        public List<string> EmploymentTypes { get; set; } = new List<string>(); 
 
         public string Title { get; set; }
 
