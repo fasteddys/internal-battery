@@ -12,11 +12,17 @@ namespace UpDiddyLib.Domain.Models
     }
 
     public class CityDetailDto
-    {   
+    {
         public Guid StateGuid { get; set; }
         public Guid CityGuid { get; set; }
         public string Name { get; set; }
         [JsonIgnore]
         public int TotalRecords { get; set; }
+    }
+
+    public class CityStateSearchDto
+    {
+        public Guid CityGuid { get; set; }
+        public string Name { get; set; }
     }
 }
