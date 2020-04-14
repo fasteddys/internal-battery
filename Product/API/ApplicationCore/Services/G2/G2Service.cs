@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces;
@@ -906,14 +907,9 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
                 parameters.Filter += $" and geo.distance(Location, geography'POINT({lng} {lat})') le {radiusKm}";
  
             }
-            // double quote email to ensure direct hit 
-            // todo: Build out with filters to support complex queries such as "ikoplowitz@populusgroup.com jabrazil@archisinccom  brentferree@hotmail.com"
-            if ( Utils.ValidateEmail(keyword.Trim()))
-            {
-                keyword = "\"" + keyword.Trim() + "\"";
-            }
-           
-
+            // double quote email to ensure direct hit         
+            keyword = Utils.EscapeQuoteEmailsInString(keyword);
+                 
             results = indexClient.Documents.Search<G2InfoDto>(keyword, parameters);
 
             DateTime startMap = DateTime.Now;
@@ -944,6 +940,13 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
 
         #endregion
 
+
+        #region private helpers 
+
+
+
+
+        #endregion
 
     }
 }
