@@ -924,7 +924,6 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             searchResults.PageNum = (offset / limit) + 1;
 
             DateTime stopMap = DateTime.Now;
-
             // calculate search timing metrics 
             TimeSpan intervalTotalSearch = stopMap - startSearch;
             TimeSpan intervalSearchTime = startMap - startSearch;
@@ -937,16 +936,6 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
 
             return searchResults;
         }
-
         #endregion
-
-
-        #region private helpers 
-
-
-
-
-        #endregion
-
     }
 }

@@ -144,7 +144,8 @@ namespace UpDiddyLib.Helpers
             {
                 //Console.WriteLine(m.Groups[0].Value);
                 return @"""" + m.Groups[0].Value + @"""";
-            });
+            }
+            , RegexOptions.IgnoreCase);
 
             return s;
         }
