@@ -27,5 +27,7 @@ namespace UpDiddyLib.Domain.Models.G2
 
         [JsonIgnore]
         public int TotalRecords { get; set; }
+        public DateTime? CreateDate { get; set; }
+        public DateTime? ModifyDate { get; set; }
     }
 }
