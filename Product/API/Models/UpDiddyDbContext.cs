@@ -275,6 +275,7 @@ namespace UpDiddyApi.Models
         public DbQuery<UpDiddyLib.Domain.Models.TagDto> Tags { get; set; }
         public DbQuery<ProfileTagDto> ProfileTags { get; set; }
         public DbQuery<UpDiddyLib.Domain.Models.CityDetailDto> Cities { get; set; }
+        public DbQuery<UpDiddyLib.Domain.Models.CityStateSearchDto> CityStates { get; set; }
         public DbQuery<UpDiddyLib.Domain.Models.PostalDetailDto> Postals { get; set; }
         public DbQuery<EmailTemplateDto> EmailTemplates { get; set; }
  

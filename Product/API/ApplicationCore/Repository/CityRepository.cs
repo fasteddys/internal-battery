@@ -49,5 +49,21 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 .Where(c => c.IsDeleted == 0 && c.State.StateGuid == state)
                 .ToListAsync();
         }
+
+         public async Task<List<CityStateSearchDto>> SearchByKeyword()
+        {
+            return await (from c in _dbContext.City
+                          join s in _dbContext.State on c.StateId equals s.StateId
+                          join co in _dbContext.Country on s.CountryId equals co.CountryId
+                          where co.CountryGuid ==  new Guid("8b5dec9a-b5cf-4bdc-b015-ccfd4339d32b") 
+                          && s.IsDeleted == 0 && co.IsDeleted == 0
+                          orderby c.Name
+                          select new CityStateSearchDto()
+                          {
+                              Name = c.Name + ", " + s.Name,
+                              CityGuid = c.CityGuid.Value
+                          }).ToListAsync();
+
+        }
     }
 }
