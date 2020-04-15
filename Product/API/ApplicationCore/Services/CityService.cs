@@ -8,6 +8,9 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyLib.Domain.Models;
+using UpDiddyApi.ApplicationCore.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -15,14 +18,16 @@ namespace UpDiddyApi.ApplicationCore.Services
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IMapper _mapper;
+        private readonly IMemoryCacheService _memoryCacheService;
 
-        public CityService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
+        public CityService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IMemoryCacheService memoryCacheService)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
+            _memoryCacheService = memoryCacheService;
         }
 
-        public async  Task<Guid> CreateCity(CityDetailDto cityDetailDto)
+        public async Task<Guid> CreateCity(CityDetailDto cityDetailDto)
         {
             if (cityDetailDto == null)
                 throw new NullReferenceException("cityDetailDto cannot be null");
@@ -73,7 +78,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 return new CityDetailListDto() { Cities = new List<CityDetailDto>(), TotalRecords = 0 };
             return _mapper.Map<CityDetailListDto>(cities);
         }
-        
+
         public async Task UpdateCity(CityDetailDto cityDetailDto)
         {
             if (cityDetailDto == null)
@@ -85,6 +90,28 @@ namespace UpDiddyApi.ApplicationCore.Services
             city.ModifyDate = DateTime.UtcNow;
             _repositoryWrapper.CityRepository.Update(city);
             await _repositoryWrapper.SaveAsync();
+        }
+
+        public async Task<List<CityStateSearchDto>> GetCityByKeyword(string keyword)
+        {
+            if (string.IsNullOrEmpty(keyword))
+                throw new NullReferenceException("Value cannot be null or empty");
+            keyword = keyword.ToLower();
+            string searchCacheKey = $"GetCityStateSearchTerm" + keyword;
+            List<CityStateSearchDto> rval = (List<CityStateSearchDto>)_memoryCacheService.GetCacheValue(searchCacheKey);
+            if (rval == null)
+            {
+                string cacheKey = $"GetCityStateSearchTerm";
+                List<CityStateSearchDto> searchList = (List<CityStateSearchDto>)_memoryCacheService.GetCacheValue(cacheKey);
+                if (searchList == null)
+                {
+                    searchList = await _repositoryWrapper.CityRepository.SearchByKeyword();
+                    _memoryCacheService.SetCacheValue(cacheKey, searchList);
+                }
+                rval = searchList?.Where(v => v.Name.ToLower().Contains(keyword))?.ToList();
+                _memoryCacheService.SetCacheValue(searchCacheKey, rval);
+            }
+            return rval;
         }
     }
 }

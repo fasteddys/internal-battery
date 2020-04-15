@@ -79,7 +79,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task UpdateWishlistForRecruiter(Guid subscriberGuid, WishlistDto wishlistDto)
         {
-            bool isWishlistOwnedBySubscriber = (from w in _dbContext.Wishlist 
+            bool isWishlistOwnedBySubscriber = (from w in _dbContext.Wishlist
                                                 join r in _dbContext.Recruiter on w.RecruiterId equals r.RecruiterId
                                                 join s in _dbContext.Subscriber on r.SubscriberId equals s.SubscriberId
                                                 where s.SubscriberGuid == subscriberGuid && w.WishlistGuid == wishlistDto.WishlistGuid
@@ -103,7 +103,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task DeleteWishlistForRecruiter(Guid subscriberGuid, Guid wishlistGuid)
         {
-            bool isWishlistOwnedBySubscriber = (from w in _dbContext.Wishlist 
+            bool isWishlistOwnedBySubscriber = (from w in _dbContext.Wishlist
                                                 join r in _dbContext.Recruiter on w.RecruiterId equals r.RecruiterId
                                                 join s in _dbContext.Subscriber on r.SubscriberId equals s.SubscriberId
                                                 where s.SubscriberGuid == subscriberGuid && w.WishlistGuid == wishlistGuid
@@ -140,64 +140,50 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<List<Guid>> AddProfileWishlistsForRecruiter(Guid subscriberGuid, Guid wishlistGuid, List<Guid> profileGuids)
         {
-            bool isWishlistOwnedBySubscriber = (from w in _dbContext.Wishlist 
-                                                join r in _dbContext.Recruiter on w.RecruiterId equals r.RecruiterId
-                                                join s in _dbContext.Subscriber on r.SubscriberId equals s.SubscriberId
-                                                where s.SubscriberGuid == subscriberGuid && w.WishlistGuid == wishlistGuid
-                                                select w.WishlistId).Any();
-            if (!isWishlistOwnedBySubscriber)
+            var wishList = await _dbContext.Wishlist
+                .Include(wl => wl.Recruiter)
+                .ThenInclude(r => r.Subscriber)
+                .FirstOrDefaultAsync(wl => wl.WishlistGuid == wishlistGuid && wl.IsDeleted == 0);
+
+            if (wishList == null)
+                throw new NotFoundException("Wishlist not found");
+
+            if (wishList.Recruiter?.Subscriber?.SubscriberGuid != subscriberGuid)
                 throw new FailedValidationException($"recruiter does not have permission to modify wishlist");
 
-            List<Guid> profileWishlistGuids = new List<Guid>();
-            foreach (Guid profileGuid in profileGuids)
+            var profiles = await _dbContext.Profile
+                .Where(p => p.IsDeleted == 0 && profileGuids.Contains(p.ProfileGuid))
+                .ToListAsync();
+
+            var profileWishlistGuids = new List<Guid>();
+            foreach (var profile in profiles)
             {
-                Guid profileWishlistGuid = Guid.NewGuid();
-                profileWishlistGuids.Add(profileWishlistGuid);
+                var existingWishListProfile = await _dbContext.ProfileWishlist
+                    .FirstOrDefaultAsync(pwl => pwl.ProfileId == profile.ProfileId && pwl.WishlistId == wishList.WishlistId);
 
-                bool isProfileAlreadyAddedToWishlist = (from pw in _dbContext.ProfileWishlist
-                                                        join p in _dbContext.Profile on pw.ProfileId equals p.ProfileId
-                                                        join w in _dbContext.Wishlist on pw.WishlistId equals w.WishlistId
-                                                        where w.WishlistGuid == wishlistGuid && p.ProfileGuid == profileGuid && pw.IsDeleted == 0
-                                                        select pw.ProfileWishlistId).Any();
-                if (isProfileAlreadyAddedToWishlist)
-                    throw new FailedValidationException($"profile '{profileGuid}' is already associated with this wishlist");
-
-                var wishlistId = (from w in _dbContext.Wishlist
-                                  where w.WishlistGuid == wishlistGuid && w.IsDeleted == 0
-                                  select w.WishlistId).FirstOrDefault();
-                if (wishlistId == null || wishlistId == 0)
-                    throw new FailedValidationException("wishlist not found");
-
-                var profileId = (from p in _dbContext.Profile
-                                 where p.ProfileGuid == profileGuid && p.IsDeleted == 0
-                                 select p.ProfileId).FirstOrDefault();
-                if (profileId == null || profileId == 0)
-                    throw new FailedValidationException("profile not found");
-
-                ProfileWishlist profileDeletedFromWishlist = (from pw in _dbContext.ProfileWishlist
-                                                        join p in _dbContext.Profile on pw.ProfileId equals p.ProfileId
-                                                        join w in _dbContext.Wishlist on pw.WishlistId equals w.WishlistId
-                                                        where w.WishlistGuid == wishlistGuid && p.ProfileGuid == profileGuid && pw.IsDeleted == 1
-                                                        select pw).FirstOrDefault();
-
-                if (profileDeletedFromWishlist != null)
+                if (existingWishListProfile == null)
                 {
-                    profileDeletedFromWishlist.IsDeleted = 0;
-                    profileDeletedFromWishlist.ModifyDate = DateTime.UtcNow;
-                    profileDeletedFromWishlist.ModifyGuid = Guid.Empty;
-                    _dbContext.ProfileWishlist.Update(profileDeletedFromWishlist);
-                }
-                else
-                {
-                    _dbContext.ProfileWishlist.Add(new ProfileWishlist()
+                    var newWishListItem = new ProfileWishlist
                     {
                         CreateDate = DateTime.UtcNow,
                         CreateGuid = Guid.Empty,
                         IsDeleted = 0,
-                        ProfileId = profileId,
-                        WishlistId = wishlistId,
-                        ProfileWishlistGuid = profileWishlistGuid
-                    });
+                        ProfileId = profile.ProfileId,
+                        WishlistId = wishList.WishlistId,
+                        ProfileWishlistGuid = Guid.NewGuid()
+                    };
+                    _dbContext.ProfileWishlist.Add(newWishListItem);
+                    profileWishlistGuids.Add(newWishListItem.ProfileWishlistGuid);
+                }
+                else
+                {
+                    if (existingWishListProfile.IsDeleted == 1)
+                    {
+                        existingWishListProfile.IsDeleted = 0;
+                        existingWishListProfile.ModifyDate = DateTime.UtcNow;
+
+                        profileWishlistGuids.Add(existingWishListProfile.ProfileWishlistGuid);
+                    }
                 }
             }
             await _dbContext.SaveChangesAsync();

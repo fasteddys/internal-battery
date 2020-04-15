@@ -12,5 +12,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<CityDetailDto>> GetCities(Guid state, int limit, int offset, string sort, string order);
         Task<IEnumerable<City>> GetCitiesByStateGuid(Guid state);
         Task<City> GetByCityGuid(Guid city);
+        Task <List<CityStateSearchDto>> SearchByKeyword();
     }
 }
