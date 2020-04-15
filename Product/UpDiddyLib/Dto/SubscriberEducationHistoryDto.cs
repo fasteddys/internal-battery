@@ -12,7 +12,7 @@ namespace UpDiddyLib.Dto
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public DateTime? DegreeDate { get; set; }
-        public Guid EducationalDegreeTypeGuid { get; set; } 
+        public Guid? EducationalDegreeTypeGuid { get; set; } 
         public string EducationalDegreeType { get; set; } 
         public string EducationalDegree  { get; set; }        
     }
