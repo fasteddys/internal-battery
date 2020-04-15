@@ -311,8 +311,8 @@ namespace UpDiddyApi.Models
                 .IsUnique(true);
 
             modelBuilder.Entity<Wishlist>()
-                .HasIndex(w => new { w.RecruiterId, w.Name })
-                .HasName("UIX_Wishlist_Recruiter_Name")
+                .HasIndex(w => new { w.RecruiterId, w.Name, w.IsDeleted })
+                .HasName("UIX_Wishlist_Recruiter_Name_IsDeleted")
                 .IsUnique(true);
 
             modelBuilder
