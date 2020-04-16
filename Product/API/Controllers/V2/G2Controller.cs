@@ -301,9 +301,10 @@ namespace UpDiddyApi.Controllers.V2
         [HttpGet]
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("profiles/query")]
-        public async Task<IActionResult> SearchG2(Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
+        public async Task<IActionResult> SearchG2(Guid cityGuid, List<string> employmentTypes, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null,
+                                                   int radius = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
         {
-            var rVal = await _g2Service.G2SearchAsync(GetSubscriberGuid(), cityGuid, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, isWillingToRelocate,isWillingToTravel,isActiveJobSeeker,isCurrentlyEmployed,isWillingToWorkProBono );
+            var rVal = await _g2Service.G2SearchAsync(GetSubscriberGuid(), cityGuid, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, isWillingToRelocate,isWillingToTravel,isActiveJobSeeker,isCurrentlyEmployed,isWillingToWorkProBono, employmentTypes);
             return Ok(rVal);
         }
 

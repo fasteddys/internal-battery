@@ -54,9 +54,10 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
 
         #region G2 Searching 
 
-        public async Task<G2SearchResultDto> G2SearchAsync(Guid subscriberGuid, Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
+        public async Task<G2SearchResultDto> G2SearchAsync(Guid subscriberGuid, Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", 
+            Guid? sourcePartnerGuid = null, int radius = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, 
+            bool? isWillingToWorkProBono = null, List<string> employmentTypes = null)
         {
-
             // validate the the user provides a city if they also provided a radius
             if ((cityGuid == null ||cityGuid == Guid.Empty) && radius != 0)
                 throw new FailedValidationException("A city guid must be provided if a radius is specifed");
@@ -84,7 +85,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
  
             // handle case of non geo search 
             if (cityGuid == null || cityGuid == Guid.Empty)
-                return await SearchG2Async(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, 0, 0, 0, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
+                return await SearchG2Async(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, 0, 0, 0, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono, employmentTypes);
 
             // pick a random postal code for the city to get the last and long 
             Postal postal = _repository.PostalRepository.GetAll()
@@ -96,7 +97,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             if (postal == null)
                 throw new NotFoundException($"A city with an Guid of {cityGuid} cannot be found.");
 
-            return await SearchG2Async(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, (double)postal.Latitude, (double)postal.Longitude, isWillingToRelocate,isWillingToTravel,isActiveJobSeeker,isCurrentlyEmployed,isWillingToWorkProBono);
+            return await SearchG2Async(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, (double)postal.Latitude, (double)postal.Longitude, isWillingToRelocate,isWillingToTravel,isActiveJobSeeker,isCurrentlyEmployed,isWillingToWorkProBono, employmentTypes);
         }
 
 
@@ -820,9 +821,10 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         }
  
  
-        private async Task<G2SearchResultDto> SearchG2Async(List<Guid> companyGuids, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, double lat = 0, double lng = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
+        private async Task<G2SearchResultDto> SearchG2Async(List<Guid> companyGuids, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", 
+            Guid? sourcePartnerGuid = null, int radius = 0, double lat = 0, double lng = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, 
+            bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null, List<string> employmentTypes = null)
         {
-
             if (companyGuids == null || companyGuids.Count == 0)
                 throw new FailedValidationException("G2Service:SearchG2Async: Recruiter is not associated with the CareerCircle search company");
 
@@ -882,6 +884,12 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
                 parameters.Filter += $" and IsCurrentlyEmployed eq " + (isCurrentlyEmployed.Value ? "true" : "false");
             if (isActiveJobSeeker != null)
                 parameters.Filter += $" and IsActiveJobSeeker eq " + (isActiveJobSeeker.Value ? "true" : "false");
+            if(employmentTypes != null && employmentTypes.Count > 0)
+            {
+                var employmentTypesFilterExpression = employmentTypes.Select(s => $"employmenttype eq '{s}'").ToList();
+                var employmentTypesFilterString = string.Join(" or ", employmentTypesFilterExpression);
+                parameters.Filter += $" and EmploymentTypes/any(employmenttype: {employmentTypesFilterString})";
+            }
 
             double radiusKm = 0;
             // check to see if radius is in play
