@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.Models;
 using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.ApplicationCore.Services
@@ -30,6 +31,11 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         }
 
-
+        public async Task<IEnumerable<HydratedEmailBody>> HydrateEmailTemplate(string template, Guid recruiterGuid, IEnumerable<Guid> profileGuids)
+        {
+            // STUB!
+            await Task.Yield();
+            return Enumerable.Empty<HydratedEmailBody>();
+        }
     }
 }
