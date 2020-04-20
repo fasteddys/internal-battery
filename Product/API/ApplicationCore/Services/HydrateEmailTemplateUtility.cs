@@ -13,7 +13,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private const string OpenDelimiter = "{{";
         private const string CloseDelimiter = "}}";
 
-        public static List<HydratedEmailTemplate> HydratedEmailTemplates(string template, Recruiter recruiter, List<Profile> profiles)
+        public static List<HydratedEmailTemplate> HydrateEmailTemplates(string template, Recruiter recruiter, List<Profile> profiles)
         {
             var parsedTokens = ParseTemplate(template);
 
@@ -65,7 +65,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     tokens.Add(ParseToken(value.Substring(index + OpenDelimiter.Length, index2 - index - CloseDelimiter.Length)));
                 }
 
-                return recursive(value.Substring(index + CloseDelimiter.Length), tokens);
+                return recursive(value.Substring(index2 + CloseDelimiter.Length), tokens);
             }
 
             return recursive(template, new List<Token>());
