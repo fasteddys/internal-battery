@@ -11,6 +11,7 @@ using UpDiddyLib.Domain.Models;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using UpDiddyLib.Dto;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -112,6 +113,23 @@ namespace UpDiddyApi.ApplicationCore.Services
                 _memoryCacheService.SetCacheValue(searchCacheKey, rval);
             }
             return rval;
+        }
+
+        public async Task<List<CityStateLookupDto>> GetCitiesAndStatesLookup(string value)
+        {
+            if (value == null || value.Length < 2)
+                throw new FailedValidationException("lookup value must be at least two characters in length");
+            string cacheKey = "AllUSCitiesAndStates";
+            List<CityStateLookupDto> cachedUSCitiesAndStates = (List<CityStateLookupDto>)_memoryCacheService.GetCacheValue(cacheKey);
+            if(cachedUSCitiesAndStates == null)
+            {
+                cachedUSCitiesAndStates = await _repositoryWrapper.CityRepository.GetAllUSCitiesAndStates();
+                _memoryCacheService.SetCacheValue(cacheKey, cachedUSCitiesAndStates, 60 * 24);
+            }
+            if (value.Length == 2)
+                return cachedUSCitiesAndStates.Where(x => x.StateCode.EqualsInsensitive(value)).ToList();
+            else
+                return cachedUSCitiesAndStates.Where(x => x.CityName.Contains(value, StringComparison.OrdinalIgnoreCase) || x.StateName.Contains(value, StringComparison.OrdinalIgnoreCase)).ToList();
         }
     }
 }
