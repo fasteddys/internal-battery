@@ -4,10 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
+using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyLib.Domain.Models;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -15,11 +17,13 @@ namespace UpDiddyApi.ApplicationCore.Services
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IMapper _mapper;
+        private readonly IMemoryCacheService _memoryCacheService;
 
-        public PostalService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
+        public PostalService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IMemoryCacheService memoryCacheService)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
+            _memoryCacheService = memoryCacheService;
         }
 
         public async Task<Guid> CreatePostal(PostalDetailDto postalDetailDto)
@@ -87,6 +91,20 @@ namespace UpDiddyApi.ApplicationCore.Services
             postal.ModifyDate = DateTime.UtcNow;
             _repositoryWrapper.PostalRepository.Update(postal);
             await _repositoryWrapper.SaveAsync();
+        }
+
+        public async Task<List<PostalLookupDto>> GetPostalsLookup(string value)
+        {
+            if (value == null || value.Length != 5 || !value.All(c => c >= '0' && c <= '9'))
+                throw new FailedValidationException("lookup value must be five characters in length and may only contain digits");
+            string cacheKey = "AllUSPostals";
+            List<PostalLookupDto> cachedUSPostals = (List<PostalLookupDto>)_memoryCacheService.GetCacheValue(cacheKey);
+            if (cachedUSPostals == null)
+            {
+                cachedUSPostals = await _repositoryWrapper.PostalRepository.GetAllUSPostals();
+                _memoryCacheService.SetCacheValue(cacheKey, cachedUSPostals, 60 * 24);
+            }
+            return cachedUSPostals.Where(x => x.PostalCode == value).ToList();
         }
     }
 }

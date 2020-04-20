@@ -15,12 +15,13 @@ namespace UpDiddyApi.ApplicationCore.Services
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IMapper _mapper;
+
         public StateService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
         }
-
+        
         public async Task<StateDetailDto> GetStateDetail(Guid stateGuid)
         {
             if (stateGuid == null || stateGuid == Guid.Empty)
