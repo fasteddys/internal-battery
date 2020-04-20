@@ -79,5 +79,13 @@ namespace UpDiddyApi.Models
 
         #endregion
 
+
+
+        #region hubspot
+
+        public long? HubSpotVid { get; set; }
+
+        #endregion
+
     }
 }
