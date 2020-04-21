@@ -162,7 +162,8 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
 
 
         public async Task<bool> G2IndexBulkDeleteByGuidAsync(List<Guid> guidList)
-        {          
+        {
+            if (guidList == null || guidList.Count <= 0) return true;
             List<G2SDOC> Docs = new List<G2SDOC>();
             foreach (Guid g in guidList)
             {

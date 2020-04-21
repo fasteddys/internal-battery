@@ -141,7 +141,7 @@ namespace UpDiddyApi.Workflow
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.GenerateSiteMapAndSaveToBlobStorage encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                _syslog.Log(LogLevel.Error, $"**** ScheduledJobs.GenerateSiteMapAndSaveToBlobStorage encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }
 
             _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.GenerateSiteMapAndSaveToBlobStorage completed at: {DateTime.UtcNow.ToLongDateString()}");
@@ -1046,7 +1046,7 @@ namespace UpDiddyApi.Workflow
                 }
                 catch (Exception e)
                 {
-                    _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.ProcessJobPages add/update encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                    _syslog.Log(LogLevel.Error, $"***** ScheduledJobs.ProcessJobPages add/update encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                     // remove added/modified/deleted entities that are currently in the change tracker to prevent them from being retried
                     foreach (EntityEntry entityEntry in _db.ChangeTracker.Entries().ToArray())
                     {
@@ -1116,7 +1116,7 @@ namespace UpDiddyApi.Workflow
                 }
                 catch (Exception e)
                 {
-                    _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.ProcessJobPages delete/error encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                    _syslog.Log(LogLevel.Error, $"***** ScheduledJobs.ProcessJobPages delete/error encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                     // remove added/modified/deleted entities that are currently in the change tracker to prevent them from being retried
                     foreach (EntityEntry entityEntry in _db.ChangeTracker.Entries().ToArray())
                     {
@@ -1223,7 +1223,7 @@ namespace UpDiddyApi.Workflow
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.CacheRelatedJobSkillMatrix encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                _syslog.Log(LogLevel.Error, $"**** ScheduledJobs.CacheRelatedJobSkillMatrix encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }
             finally
             {
@@ -1278,7 +1278,7 @@ namespace UpDiddyApi.Workflow
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.ExecuteJobPostingAlert encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}, jobPostingAlertGuid: {jobPostingAlertGuid.ToString()}");
+                _syslog.Log(LogLevel.Error, $"**** ScheduledJobs.ExecuteJobPostingAlert encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}, jobPostingAlertGuid: {jobPostingAlertGuid.ToString()}");
             }
             finally
             {
@@ -1318,7 +1318,7 @@ namespace UpDiddyApi.Workflow
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.SyncHangfireJobAlerts encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                _syslog.Log(LogLevel.Error, $"**** ScheduledJobs.SyncHangfireJobAlerts encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }
             finally
             {
@@ -1357,7 +1357,7 @@ namespace UpDiddyApi.Workflow
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.DoPromoCodeRedemptionCleanup encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                _syslog.Log(LogLevel.Error, $"**** ScheduledJobs.DoPromoCodeRedemptionCleanup encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                 result = false;
             }
             finally
@@ -1615,7 +1615,7 @@ namespace UpDiddyApi.Workflow
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.ExecuteJobAbandonmentEmailDelivery encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                _syslog.Log(LogLevel.Error, $"**** ScheduledJobs.ExecuteJobAbandonmentEmailDelivery encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }
             finally
             {
@@ -1764,7 +1764,7 @@ namespace UpDiddyApi.Workflow
                         }
                         catch (Exception e)
                         {
-                            _syslog.LogInformation($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: An exception occurred; message={e.Message}, source={e.Source}, stack trace={e.StackTrace}");
+                            _syslog.LogError($"ScheduledJobs.PurgeOrphanedSubscribersFromCloudTalent: An exception occurred; message={e.Message}, source={e.Source}, stack trace={e.StackTrace}");
                         }
                     }
                 }
@@ -1959,7 +1959,7 @@ namespace UpDiddyApi.Workflow
             }
             finally
             {
-                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.TrackSubscriberActionInformation completed at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Error, $"***** ScheduledJobs.TrackSubscriberActionInformation completed at: {DateTime.UtcNow.ToLongDateString()}");
             }
         }
 
@@ -2016,7 +2016,7 @@ namespace UpDiddyApi.Workflow
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.UpdateAllegisGroupJobPageRawDataField encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                _syslog.Log(LogLevel.Error, $"**** ScheduledJobs.UpdateAllegisGroupJobPageRawDataField encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }
             finally
             {
@@ -2069,7 +2069,7 @@ namespace UpDiddyApi.Workflow
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.PurgeSendGridAuditRecords encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                _syslog.Log(LogLevel.Error, $"**** ScheduledJobs.PurgeSendGridAuditRecords encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }
             finally
             {
@@ -2089,11 +2089,29 @@ namespace UpDiddyApi.Workflow
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.SendBulkEmail encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                _syslog.Log(LogLevel.Error, $"**** ScheduledJobs.SendBulkEmail encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }
             finally
             {
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.SendBulkEmail completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
+        }
+
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        public async Task SendUserDefinedBulkEmail(UserDefinedEmailDto userDefinedEmailDto, Guid subscriberId)
+        {
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.SendUserDefinedBulkEmail started at: {DateTime.UtcNow.ToLongDateString()}");
+            try
+            {
+                await _sendGridService.SendUserDefinedBulkEmailByList(userDefinedEmailDto, subscriberId);
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Error, $"**** ScheduledJobs.SendUserDefinedBulkEmail encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+            }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.SendUserDefinedBulkEmail completed at: {DateTime.UtcNow.ToLongDateString()}");
             }
         }
 
@@ -2126,7 +2144,7 @@ namespace UpDiddyApi.Workflow
             }
             catch( Exception e)
             {
-                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.GetHiringSolvedResumeParseUpdates encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                _syslog.Log(LogLevel.Error, $"**** ScheduledJobs.GetHiringSolvedResumeParseUpdates encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }                        
             finally
             {

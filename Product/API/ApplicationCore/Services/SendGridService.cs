@@ -17,6 +17,7 @@ using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.ApplicationCore.Services;
 using UpDiddyApi.Authorization;
 using UpDiddyApi.Models;
 using UpDiddyApi.Models;
@@ -26,6 +27,7 @@ using UpDiddyLib.Domain.AzureSearch;
 using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.G2;
+using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Helpers;
 using static UpDiddyLib.Helpers.Constants;
@@ -121,7 +123,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                    {
                         _sysEmail.SendTemplatedEmailAsync(p.Email, template.SendGridTemplateId, templateData, accountType);
                         // add note about email being sent 
-                        await LogBulkEmailNotes(template.Name, recruiterSubscriberGuid, p.Subscriber.SubscriberId);
+                        await AddActivityNote(template.Name, recruiterSubscriberGuid, p.Subscriber.SubscriberId);
                     }
                       
                    else
@@ -141,6 +143,92 @@ namespace UpDiddyApi.ApplicationCore.Services
             return true;
         }
 
+        public async Task<bool> SendUserDefinedBulkEmailByList(UserDefinedEmailDto userDefinedEmailDto, Guid recruiterSubscriberGuid)
+        {
+            // validate profiles have been specified 
+            if (userDefinedEmailDto.Profiles == null || userDefinedEmailDto.Profiles.Count == 0)
+                throw new FailedValidationException($"SendGridService:SendUserDefinedBulkEmailByList - One or more profiles must be specified for bulk email");
+
+            if (String.IsNullOrWhiteSpace(userDefinedEmailDto.EmailTemplate))
+                throw new FailedValidationException($"SendGridService:SendUserDefinedBulkEmailByList - EmailTemplate is missing or invalid");
+
+            if (String.IsNullOrWhiteSpace(userDefinedEmailDto.Subject))
+                throw new FailedValidationException($"SendGridService:SendUserDefinedBulkEmailByList - Subject is missing or invalid");
+
+            if (String.IsNullOrWhiteSpace(userDefinedEmailDto.ReplyToEmailAddress))
+                throw new FailedValidationException($"SendGridService:SendUserDefinedBulkEmailByList - ReplyToEmailAddress is missing or invalid");
+
+            // validate the email template 
+            var sendGridTemplateId = _configuration[$"SysEmail:Transactional:TemplateIds:AdHocEmail"];
+
+            if (String.IsNullOrWhiteSpace(sendGridTemplateId)) 
+                throw new FailedValidationException($"SendGridService:SendUserDefinedBulkEmailByList - 'sendGridTemplateId' cannot be null or empty");
+            
+            var recruiter = await _repositoryWrapper.RecruiterRepository.GetRecruiterBySubscriberGuid(recruiterSubscriberGuid);
+
+            // except out oif recruiter is not found 
+            if (recruiter == null)
+                throw new FailedValidationException($"SendGridService:SendUserDefinedBulkEmailByList Subscriber {recruiterSubscriberGuid} is not a recruiter");
+
+            // get list of recruiters companies 
+            List<RecruiterCompany> recruiterCompanies = _repositoryWrapper.RecruiterCompanyRepository.GetAll()
+                 .Include(c => c.Company)
+                 .Where(rc => rc.IsDeleted == 0 && rc.RecruiterId == recruiter.RecruiterId)
+                 .ToList();
+
+            // validate the SendGrid api key 
+            var sendGridSubAccount = SendGridAccount.Transactional;
+            if (ValidateSendgridSubAccount(sendGridSubAccount.ToString()) == false)
+                throw new FailedValidationException($"SendGridService:SendUserDefinedBulkEmailByList sendGridSubAccount - {sendGridSubAccount} is not a valid SendGrid subaccount");
+
+            // get the list of email associated with the profiles irregardless of if they are associated with the recruiters company 
+            List<UpDiddyApi.Models.G2.Profile> profiles = await _profileService.GetProfilesByGuidList(userDefinedEmailDto.Profiles);
+
+            //Get hydrated emails
+            var hydratedEmailTemplates = Services.HydrateEmailTemplateUtility.HydrateEmailTemplates(userDefinedEmailDto.EmailTemplate, recruiter, profiles);
+
+            foreach (HydratedEmailTemplate hydratedEmailTemplate in hydratedEmailTemplates) {
+                var profile = profiles.FirstOrDefault(p => hydratedEmailTemplate.Profile != null && p.ProfileGuid == hydratedEmailTemplate.Profile.ProfileGuid);
+
+                if (profile == null) throw new FailedValidationException($"SendGridService:SendUserDefinedBulkEmailByList - 'hydratedEmailTemplates' list contains unwanted profile. 'hydratedEmailTemplate.Profile.ProfileGuid' is not as requested.");
+
+                dynamic templateData = null;
+                try
+                {
+                    // remove the profile that have been found from the list of passed profiles.  Do this first to make extra sure its done just 
+                    // in some of the following code excepts out.
+                    userDefinedEmailDto.Profiles.Remove(profile.ProfileGuid);
+
+                    // send the email if the profile is associated with the recruiters company                    
+                    if (recruiterCompanies.Any(c => c.CompanyId == profile.CompanyId))
+                    {
+                        templateData = new
+                        {
+                            content = hydratedEmailTemplate.Value,
+                            subject = userDefinedEmailDto.Subject
+                        };
+                        _sysEmail.SendTemplatedEmailWithReplyToAsync(profile.Email, sendGridTemplateId, templateData, sendGridSubAccount, replyToEmail: userDefinedEmailDto.ReplyToEmailAddress);
+                        // add note about email being sent 
+                        await AddActivityNote("AdHocEmail", recruiterSubscriberGuid, profile.Subscriber.SubscriberId, userDefinedEmailDto.ActivityNote);
+                    }
+
+                    else
+                        _syslog.LogError($"SendGridService:SendUserDefinedBulkEmailByList - Profile {profile.ProfileGuid} is asscociated with any of recruiters {recruiter.RecruiterGuid} companies.  Email not sent for this profile.");
+                }
+                catch (Exception ex)
+                {
+                    _syslog.LogError($"SendGridService:SendUserDefinedBulkEmailByList - Error sending email to  {profile.Email} Error = {ex.Message} ");
+                }
+            }
+
+            // Any guids left in the passed list of profiles at this point are Zombies cuz there is code above that removes them as
+            // they are processed for bulk emails sends.  We will remove them from the azure index now so they will no longer appear
+            // in queries
+            _g2Service.G2IndexBulkDeleteByGuidAsync(userDefinedEmailDto.Profiles);
+
+            return true;
+        }
+
         public async Task<EmailTemplateListDto> GetEmailTemplates(int limit, int offset, string sort, string order)
         {
             // get the list of available email templates 
@@ -149,7 +237,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return rval;
         }
 
-        private async Task LogBulkEmailNotes(string templateName, Guid recruiterSubscriberGuid, int subscriberId)
+        private async Task AddActivityNote(string templateName, Guid recruiterSubscriberGuid, int subscriberId, string activityNote = null)
         {
             var recruiter = await _repositoryWrapper.RecruiterRepository.GetRecruiterBySubscriberGuid(recruiterSubscriberGuid);
             if (recruiter?.SubscriberId == null) { return; }
@@ -161,7 +249,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 RecruiterId = recruiter.RecruiterId,
                 IsDeleted = 0,
                 ViewableByOthersInRecruiterCompany = true,
-                Notes = $"Template {templateName} bulk email sent by {recruiter.LastName}, {recruiter.FirstName} on {DateTime.Now:G}.",
+                Notes = activityNote ?? $"Template {templateName} bulk email sent by {recruiter.LastName}, {recruiter.FirstName} on {DateTime.Now:G}.",
             });
         }
 
@@ -199,6 +287,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             return rval;
         }
+
 
         private object GetPropertyValue(object src, string propName)
         {

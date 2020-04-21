@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.Authorization;
 using UpDiddyLib.Domain.Models;
+using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.User;
 using Microsoft.AspNetCore.Authorization;
 using System.Collections.Generic;
@@ -92,11 +93,25 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("template/{TemplateGuid}")]
         public async Task<IActionResult> SendEmailByList([FromBody] List<Guid> Profiles, Guid TemplateGuid)
-        {
+        { 
             var subscriberId = base.GetSubscriberGuid();
 
             // Fire and forget bulk emails 
-            _hangfireService.Enqueue<ScheduledJobs>(j => j.SendBulkEmail(TemplateGuid, Profiles, subscriberId));            
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.SendBulkEmail(TemplateGuid, Profiles, subscriberId));
+
+            return StatusCode(202);
+        }
+
+        [HttpPost]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Route("AdhocEmail")]
+        public async Task<IActionResult> SendUserDefinedEmailByList(UserDefinedEmailDto request)
+        {
+            var subscriberId = base.GetSubscriberGuid();
+
+            // Fire and forget user defined bulk emails 
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.SendUserDefinedBulkEmail(request, subscriberId));
+
             return StatusCode(202);
         }
 
