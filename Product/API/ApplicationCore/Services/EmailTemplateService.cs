@@ -30,12 +30,5 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _mapper.Map<EmailTemplateListDto>(templates);
 
         }
-
-        public async Task<IEnumerable<HydratedEmailBody>> HydrateEmailTemplate(string template, Guid recruiterGuid, IEnumerable<Guid> profileGuids)
-        {
-            // STUB!
-            await Task.Yield();
-            return Enumerable.Empty<HydratedEmailBody>();
-        }
     }
 }

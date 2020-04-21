@@ -9,7 +9,5 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     public interface IEmailTemplateService
     {
         Task<EmailTemplateListDto> GetEmailTemplates( int limit, int offset, string sort, string order);
-
-        Task<IEnumerable<HydratedEmailBody>> HydrateEmailTemplate(string template, Guid recruiterGuid, IEnumerable<Guid> profileGuids);
     }
 }
