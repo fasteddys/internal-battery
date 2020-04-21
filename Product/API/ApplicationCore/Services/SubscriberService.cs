@@ -49,7 +49,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private ISysEmail _sysEmail;
         private readonly IButterCMSService _butterCMSService;
         private readonly ZeroBounceApi _zeroBounceApi;
-
+        private readonly IG2Service _g2Service;
 
         public SubscriberService(UpDiddyDbContext context,
             IConfiguration configuration,
@@ -61,7 +61,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             IHangfireService hangfireService,
             IFileDownloadTrackerService fileDownloadTrackerService,
             ISysEmail sysEmail,
-            IButterCMSService butterCMSService)
+            IButterCMSService butterCMSService,
+            IG2Service g2Service)
         {
             _db = context;
             _configuration = configuration;
@@ -75,7 +76,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _sysEmail = sysEmail;
             _zeroBounceApi = new ZeroBounceApi(_configuration, _repository, _logger);
             _butterCMSService = butterCMSService;
-            
+            _g2Service = g2Service;
         }
 
         public async Task<Subscriber> GetSubscriberByEmail(string email)
@@ -270,6 +271,9 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             // add the user to the Google Talent Cloud
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriberGuid));
+            // add the user to the G2 profile for search
+            await _g2Service.G2AddSubscriberAsync(subscriberGuid);
+
 
             if (!string.IsNullOrWhiteSpace(subscriberDto.ReferrerUrl) && subscriberDto.PartnerGuid != null && subscriberDto.PartnerGuid != Guid.Empty)
             {
@@ -279,7 +283,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             else if (!string.IsNullOrWhiteSpace(subscriberDto.ReferrerUrl))
             {
-
                 _logger.LogInformation($"SubscriberService:CreateSubscriberAsync looking up partnerguid from ReferrerUrl");
                 Guid partnerGuid = Guid.Empty;
                 bool isGatedDownload = false;
