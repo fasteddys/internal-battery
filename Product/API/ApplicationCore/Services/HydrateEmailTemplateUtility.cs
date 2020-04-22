@@ -24,6 +24,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             return hydrated;
         }
 
+        public static string TestEmailTemplate(string template)
+            => Flatten(ParseTemplate(template));
+
         private static HydratedEmailTemplate GetHydratedEmailTemplate(List<Token> tokens, Recruiter recruiter, Profile profile)
         {
             Hydrate(tokens, recruiter, profile);
