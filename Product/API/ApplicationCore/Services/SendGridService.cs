@@ -171,10 +171,10 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new FailedValidationException($"SendGridService:SendUserDefinedBulkEmailByList Subscriber {recruiterSubscriberGuid} is not a recruiter");
 
             // get list of recruiters companies 
-            List<RecruiterCompany> recruiterCompanies = _repositoryWrapper.RecruiterCompanyRepository.GetAll()
+            List<RecruiterCompany> recruiterCompanies = await _repositoryWrapper.RecruiterCompanyRepository.GetAll()
                  .Include(c => c.Company)
                  .Where(rc => rc.IsDeleted == 0 && rc.RecruiterId == recruiter.RecruiterId)
-                 .ToList();
+                 .ToListAsync();
 
             // validate the SendGrid api key 
             var sendGridSubAccount = SendGridAccount.Transactional;
@@ -204,7 +204,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     {
                         templateData = new
                         {
-                            content = hydratedEmailTemplate.Value,
+                            content = ConvertNewLineCharacters(hydratedEmailTemplate.Value),
                             subject = userDefinedEmailDto.Subject
                         };
                         _sysEmail.SendTemplatedEmailWithReplyToAsync(profile.Email, sendGridTemplateId, templateData, sendGridSubAccount, replyToEmail: userDefinedEmailDto.ReplyToEmailAddress);
@@ -327,6 +327,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             string apiKey = _configuration[$"SysEmail:{accountName}:ApiKey"];
             return apiKey != null;
         }
+
+        private static string ConvertNewLineCharacters(string emailTemplate) => emailTemplate
+            .Replace("\r\n", "<br />")
+            .Replace("\r", "<br />");
 
         #endregion
 
