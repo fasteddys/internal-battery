@@ -50,12 +50,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 .ToListAsync();
         }
 
-         public async Task<List<CityStateSearchDto>> SearchByKeyword()
+        public async Task<List<CityStateSearchDto>> SearchByKeyword()
         {
             return await (from c in _dbContext.City
                           join s in _dbContext.State on c.StateId equals s.StateId
                           join co in _dbContext.Country on s.CountryId equals co.CountryId
-                          where co.CountryGuid ==  new Guid("8b5dec9a-b5cf-4bdc-b015-ccfd4339d32b") 
+                          where co.CountryGuid == new Guid("8b5dec9a-b5cf-4bdc-b015-ccfd4339d32b")
                           && s.IsDeleted == 0 && co.IsDeleted == 0
                           orderby c.Name
                           select new CityStateSearchDto()
@@ -64,6 +64,22 @@ namespace UpDiddyApi.ApplicationCore.Repository
                               CityGuid = c.CityGuid.Value
                           }).ToListAsync();
 
+        }
+
+        public async Task<List<CityStateLookupDto>> GetAllUSCitiesAndStates()
+        {
+            return await (from co in _dbContext.Country
+                          join s in _dbContext.State on co.CountryId equals s.CountryId
+                          join ci in _dbContext.City on s.StateId equals ci.StateId
+                          where co.Code3 == "USA" && s.IsDeleted == 0 && co.IsDeleted == 0 && ci.IsDeleted == 0
+                          select new CityStateLookupDto()
+                          {
+                              CityGuid = ci.CityGuid.Value,
+                              CityName = ci.Name,
+                              StateGuid = s.StateGuid.Value,
+                              StateName = s.Name,
+                              StateCode = s.Code
+                          }).ToListAsync();
         }
     }
 }

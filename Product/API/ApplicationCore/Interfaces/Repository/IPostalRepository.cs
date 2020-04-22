@@ -12,5 +12,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<PostalDetailDto>> GetPostals(Guid city, int limit, int offset, string sort, string order);
         Task<IEnumerable<Postal>> GetPostalsByCityGuid(Guid city);
         Task<Postal> GetByPostalGuid(Guid PostalGuid);
+        Task<List<PostalLookupDto>> GetAllUSPostals();
     }
 }

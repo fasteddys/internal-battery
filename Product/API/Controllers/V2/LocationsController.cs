@@ -47,14 +47,6 @@ namespace UpDiddyApi.Controllers.V2
             return Ok(countries);
         }
 
-        [HttpGet]
-        [Route("cities/keyword")]
-        public async Task<IActionResult> GetCityByKeyword([FromQuery] string value)
-        {
-            var cities = await _cityService.GetCityByKeyword(value);
-            return Ok(cities);
-        }
-
         [HttpPost]
         [Route("countries")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
@@ -94,6 +86,14 @@ namespace UpDiddyApi.Controllers.V2
         #endregion
 
         #region States
+
+        [HttpGet]
+        [Route("states/cities/lookup")]
+        public async Task<IActionResult> GetCitiesAndStatesLookup([FromQuery] string value)
+        {
+            var citiesAndStates = await _cityService.GetCitiesAndStatesLookup(value);
+            return Ok(citiesAndStates);
+        }
 
         [HttpGet]
         [Route("countries/{country:guid}/states")]
@@ -145,6 +145,14 @@ namespace UpDiddyApi.Controllers.V2
         #region Cities
 
         [HttpGet]
+        [Route("cities/keyword")]
+        public async Task<IActionResult> GetCityByKeyword([FromQuery] string value)
+        {
+            var cities = await _cityService.GetCityByKeyword(value);
+            return Ok(cities);
+        }
+
+        [HttpGet]
         [Route("states/{state:guid}/cities")]
         public async Task<IActionResult> GetCities(Guid state, int limit = 100, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
@@ -192,6 +200,14 @@ namespace UpDiddyApi.Controllers.V2
         #endregion
 
         #region Postals
+
+        [HttpGet]
+        [Route("postals/lookup")]
+        public async Task<IActionResult> GetPostalsLookup([FromQuery] string value)
+        {
+            var citiesAndStates = await _postalService.GetPostalsLookup(value);
+            return Ok(citiesAndStates);
+        }
 
         [HttpGet]
         [Route("cities/{city:guid}/postals")]

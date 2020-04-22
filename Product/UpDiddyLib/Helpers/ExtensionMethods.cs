@@ -16,6 +16,11 @@ namespace UpDiddyLib.Helpers
 
         public static bool EqualsInsensitive(this string str, string value) => string.Equals(str, value, StringComparison.CurrentCultureIgnoreCase);
 
+        public static bool Contains(this string source, string toCheck, StringComparison comp)
+        {
+            return source != null && toCheck != null && source.IndexOf(toCheck, comp) >= 0;
+        }
+
         public static bool ContainsKeyValue<TKey, TVal>(this Dictionary<TKey, TVal> dssdd,
                                    TKey expectedKey,
                                    TVal expectedValue) where TVal : IComparable

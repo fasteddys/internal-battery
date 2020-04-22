@@ -13,5 +13,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task UpdatePostal(PostalDetailDto postalDetailDto);
         Task<Guid> CreatePostal(PostalDetailDto postalDetailDto);
         Task DeletePostal(Guid postalGuid);
+        Task<List<PostalLookupDto>> GetPostalsLookup(string value);
     }
 }
