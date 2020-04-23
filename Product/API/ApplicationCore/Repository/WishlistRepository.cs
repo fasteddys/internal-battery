@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using UpDiddyLib.Domain.Models.G2;
 using System.Data.SqlClient;
 using UpDiddyApi.ApplicationCore.Exceptions;
+using System.Text.RegularExpressions;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -55,13 +56,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                                where s.SubscriberGuid == subscriberGuid
                                select r.RecruiterId).FirstOrDefault();
 
-            bool isDuplicateWishlistByRecruiterAndNameExists = (from w in _dbContext.Wishlist
-                                                                join r in _dbContext.Recruiter on w.RecruiterId equals r.RecruiterId
-                                                                join s in _dbContext.Subscriber on r.SubscriberId equals s.SubscriberId
-                                                                where s.SubscriberGuid == subscriberGuid && w.Name == wishlistDto.Name
-                                                                select w.WishlistId).Any();
-            if (isDuplicateWishlistByRecruiterAndNameExists)
-                throw new FailedValidationException("A wishlist with the same name already exists for this recruiter");
+            wishlistDto.Name = GetAutoIncrementedWishlistName(wishlistDto.Name, subscriberGuid, wishlistDto.WishlistGuid);
 
             this.Create(new Wishlist()
             {
@@ -95,7 +90,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             wishlist.ModifyDate = DateTime.UtcNow;
             wishlist.ModifyGuid = Guid.Empty;
-            wishlist.Name = wishlistDto.Name;
+            wishlist.Name = GetAutoIncrementedWishlistName(wishlistDto.Name, subscriberGuid, wishlistDto.WishlistGuid);
             wishlist.Description = wishlistDto.Description;
             this.Update(wishlist);
             await this.SaveAsync();
@@ -215,6 +210,85 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 _dbContext.Update(profileWishlist);
             }
             await _dbContext.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// This method was created to satisfy the requirements here: https://allegisdigital.visualstudio.com/UpDiddy/_workitems/edit/2044
+        /// It may seem overly complicated at first glance; please consider the following cases which needed to be considered and handled:
+        ///     1. Create Wishlist - requested name exists (exact match)
+        ///     2. Create Wishlist - requested name exists and there are other auto-incremented variations of it too
+        ///     3. Create Wishlist - requested name has been logically deleted name(exact match)
+        ///     4. Create Wishlist - requested name has been logically deleted with auto-incremented variations 
+        ///     5. Create Wishlist - requested name exists with auto-increment value(exact match)
+        ///     6. Update Wishlist - requested name exists for another wishlist guid(exact match)
+        ///     7. Update Wishlist - requested name exists for another wishlist guid and there are other auto-incremented variations of it too
+        ///     8. Update Wishlist - requested name exists for another wishlist guid that has been logically deleted name(exact match)
+        ///     9. Update Wishlist - requested name exists for another wishlist guid that has been logically deleted with auto-incremented variations 
+        ///     10. Update Wishlist - requested name exists for another wishlist guid that has an auto-increment value(exact match)
+        /// </summary>
+        /// <param name="wishlistName"></param>
+        /// <param name="subscriberGuid"></param>
+        /// <param name="wishlistGuid"></param>
+        /// <returns>A wishlist name that has been adjusted to avoid back-end validation</returns>
+        private string GetAutoIncrementedWishlistName(string wishlistName, Guid subscriberGuid, Guid wishlistGuid)
+        {
+            // check if there is an active wishlist for the recruiter with the same exact name that is being requested for creation
+            var duplicateWishlistByNameForRecruiter = (from w in _dbContext.Wishlist
+                                                       join r in _dbContext.Recruiter on w.RecruiterId equals r.RecruiterId
+                                                       join s in _dbContext.Subscriber on r.SubscriberId equals s.SubscriberId
+                                                       where s.SubscriberGuid == subscriberGuid && w.Name == wishlistName && w.IsDeleted == 0 && w.WishlistGuid != wishlistGuid
+                                                       select w).FirstOrDefault();
+
+            // if a duplicate exists, make changes to the requested wishlist name
+            if (duplicateWishlistByNameForRecruiter != null)
+            {
+                int autoIncrementValue = 1;
+                Regex autoIncrement = new Regex(@"\([0-9]+\)$");
+
+                // check to see if wishlists were created on behalf of the user that have auto-incremented values appended to their name
+                var wishlistsThatContainRequestedName = (from w in _dbContext.Wishlist
+                                                         join r in _dbContext.Recruiter on w.RecruiterId equals r.RecruiterId
+                                                         join s in _dbContext.Subscriber on r.SubscriberId equals s.SubscriberId
+                                                         where s.SubscriberGuid == subscriberGuid && w.Name.Contains(wishlistName) && w.IsDeleted == 0 && w.WishlistGuid != wishlistGuid
+                                                         select w).ToList();
+
+                // if there are any active wishlists for the recruiter which have auto-incremented values appended to them, pick the one with the highest number, add one to it, and use that for the new auto increment value
+                foreach (var wishlist in wishlistsThatContainRequestedName)
+                {
+                    if (autoIncrement.IsMatch(wishlist.Name))
+                    {
+                        int existingAutoIncrementValue = 1;
+                        var firstAutoIncrementMatch = autoIncrement.Match(wishlist.Name);
+                        var numberOnly = firstAutoIncrementMatch.Value.Replace("(", string.Empty).Replace(")", string.Empty);
+                        if (int.TryParse(numberOnly, out existingAutoIncrementValue))
+                        {
+                            if (existingAutoIncrementValue >= autoIncrementValue)
+                                autoIncrementValue = ++existingAutoIncrementValue;
+                        }
+                    }
+                }
+
+                // check to see if the name being requested by the user contains an auto-incremented value. if it does, increment it (taking into consideration the auto-increment logic above)
+                int newAutoIncrementValue = 1;
+                if (autoIncrement.IsMatch(wishlistName))
+                {
+                    var firstAutoIncrementMatch = autoIncrement.Match(wishlistName);
+
+                    var numberOnly = firstAutoIncrementMatch.Value.Replace("(", string.Empty).Replace(")", string.Empty);
+                    if (int.TryParse(numberOnly, out newAutoIncrementValue) && newAutoIncrementValue >= autoIncrementValue)
+                        autoIncrementValue = ++newAutoIncrementValue;
+                    else
+                        autoIncrementValue++;
+
+                    wishlistName = wishlistName.Replace(firstAutoIncrementMatch.Value, $"({autoIncrementValue.ToString()})");
+                }
+                else
+                {
+                    wishlistName += $" ({autoIncrementValue.ToString()})";
+                }
+            }
+
+            return wishlistName;
         }
     }
 }

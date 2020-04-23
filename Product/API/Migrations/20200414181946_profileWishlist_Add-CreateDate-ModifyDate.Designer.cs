@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
@@ -10,9 +11,10 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200414181946_profileWishlist_Add-CreateDate-ModifyDate")]
+    partial class profileWishlist_AddCreateDateModifyDate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1961,9 +1963,9 @@ namespace UpDiddyApi.Migrations
 
                     b.HasKey("WishlistId");
 
-                    b.HasIndex("RecruiterId", "Name", "IsDeleted")
+                    b.HasIndex("RecruiterId", "Name")
                         .IsUnique()
-                        .HasName("UIX_Wishlist_Recruiter_Name_IsDeleted");
+                        .HasName("UIX_Wishlist_Recruiter_Name");
 
                     b.ToTable("Wishlists","G2");
                 });
@@ -4151,8 +4153,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<string>("GithubUrl");
 
                     b.Property<int>("HasOnboarded");
-
-                    b.Property<long?>("HubSpotVid");
 
                     b.Property<int>("IsDeleted");
 
