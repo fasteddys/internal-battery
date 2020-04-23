@@ -1,0 +1,30 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace UpDiddyLib.Domain.Models.HubSpot
+{
+    public class HubSpotContactDto
+    {
+   
+        public Guid? SubscriberGuid { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+ 
+        public string Email { get; set; }
+     
+        public long? HubSpotVid { get; set; }
+
+        public DateTime? DateJoined { get; set; }
+
+        public DateTime? LastLoginDate  { get; set; }
+
+        public string SelfCuratedSkills { get; set; }
+
+        public string G2Skills { get; set; }
+
+        public string SourcePartner { get; set; }
+
+ 
+    }
+}

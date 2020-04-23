@@ -125,10 +125,10 @@ namespace UpDiddyApi.Controllers.V2
             var transactionalResult = await _sysEmail.SendEmailAsync(debugEmail, "Test for Transactional SendGrid Account", "test", Constants.SendGridAccount.Transactional);
 
             var transactionalTemplateResult = await _sysEmail.SendTemplatedEmailAsync(
-               debugEmail,
+               debugEmail,               
                _configuration["SysEmail:Transactional:TemplateIds:CourseReferral-ReferAFriend"],
                new
-               {
+               {        
                    firstName = "TestFirstName",
                    description = "Test Description",
                    courseUrl = "https://www.careercircle.com"
@@ -139,7 +139,6 @@ namespace UpDiddyApi.Controllers.V2
               null,
               null
                );
-
  
             return new JsonResult(new { NotifySystem = notifySystemResult, Transactional = transactionalResult, TransactionalTemplate = transactionalTemplateResult});
         }

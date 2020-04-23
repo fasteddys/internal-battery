@@ -49,6 +49,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         private ISysEmail _sysEmail;
         private readonly IButterCMSService _butterCMSService;
         private readonly ZeroBounceApi _zeroBounceApi;
+        private IG2Service _g2Service;
+        private IHubSpotService _hubSpotService;
 
 
         public SubscriberService(UpDiddyDbContext context,
@@ -61,7 +63,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             IHangfireService hangfireService,
             IFileDownloadTrackerService fileDownloadTrackerService,
             ISysEmail sysEmail,
-            IButterCMSService butterCMSService)
+            IButterCMSService butterCMSService,
+            IG2Service g2Service,
+            IHubSpotService hubSpotService)
         {
             _db = context;
             _configuration = configuration;
@@ -75,6 +79,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             _sysEmail = sysEmail;
             _zeroBounceApi = new ZeroBounceApi(_configuration, _repository, _logger);
             _butterCMSService = butterCMSService;
+            _g2Service = g2Service;
+            _hubSpotService = hubSpotService;
             
         }
 
@@ -95,6 +101,16 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         }
 
+
+        // get the parter attributed with source attribution (i.e. caused the subscriber to join cc )
+        public async Task<SubscriberSourceDto> GetSubscriberSource(int subscriberId)
+        {
+            var sources = await _repository.StoredProcedureRepository.GetSubscriberSources(subscriberId);
+            return sources
+                .Where(s => s.PartnerRank == 1 && s.GroupRank == 1)
+                .FirstOrDefault();               
+        }
+ 
         public async Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numSubscribers, int indexVersion)
         {
             var querableSubscribers = _repository.SubscriberRepository.GetAllSubscribersAsync();
@@ -267,6 +283,15 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             // todo: if we remove the dependency for INT PKs from other services (tagging, file download) then we can remove the following line of code
             var subscriber = _repository.SubscriberRepository.GetSubscriberByGuid(subscriberGuid);
+
+
+            // add user to hubspot
+            long hubspotVid = await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid, false);
+            // TODO Task2104   Save the hubspotVid to the database 
+
+            // Add the new user to the azure index 
+            await _g2Service.G2AddSubscriberAsync(subscriberGuid);
+
 
             // add the user to the Google Talent Cloud
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriberGuid));
