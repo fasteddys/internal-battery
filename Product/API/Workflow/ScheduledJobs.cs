@@ -2098,12 +2098,12 @@ namespace UpDiddyApi.Workflow
         }
 
         [DisableConcurrentExecution(timeoutInSeconds: 60)]
-        public async Task SendUserDefinedBulkEmail(UserDefinedEmailDto userDefinedEmailDto, Guid subscriberId)
+        public async Task SendUserDefinedBulkEmail(UserDefinedEmailDto userDefinedEmailDto, Guid subscriberId, bool isTestEmail)
         {
             _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.SendUserDefinedBulkEmail started at: {DateTime.UtcNow.ToLongDateString()}");
             try
             {
-                await _sendGridService.SendUserDefinedBulkEmailByList(userDefinedEmailDto, subscriberId);
+                await _sendGridService.SendUserDefinedBulkEmailByList(userDefinedEmailDto, subscriberId, isTestEmail);
             }
             catch (Exception e)
             {

@@ -143,10 +143,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             return true;
         }
 
-        public async Task<bool> SendUserDefinedBulkEmailByList(UserDefinedEmailDto userDefinedEmailDto, Guid recruiterSubscriberGuid)
+        public async Task<bool> SendUserDefinedBulkEmailByList(UserDefinedEmailDto userDefinedEmailDto, Guid recruiterSubscriberGuid, bool isTestEmail)
         {
-            // validate profiles have been specified 
-            if (userDefinedEmailDto.Profiles == null || userDefinedEmailDto.Profiles.Count == 0)
+            // validate profiles that have been specified when not in test mode {isTestEmail = false}
+            if ( !isTestEmail && (userDefinedEmailDto.Profiles == null || userDefinedEmailDto.Profiles.Count == 0))
                 throw new FailedValidationException($"SendGridService:SendUserDefinedBulkEmailByList - One or more profiles must be specified for bulk email");
 
             if (String.IsNullOrWhiteSpace(userDefinedEmailDto.EmailTemplate))
@@ -181,18 +181,34 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (ValidateSendgridSubAccount(sendGridSubAccount.ToString()) == false)
                 throw new FailedValidationException($"SendGridService:SendUserDefinedBulkEmailByList sendGridSubAccount - {sendGridSubAccount} is not a valid SendGrid subaccount");
 
-            // get the list of email associated with the profiles irregardless of if they are associated with the recruiters company 
-            List<UpDiddyApi.Models.G2.Profile> profiles = await _profileService.GetProfilesByGuidList(userDefinedEmailDto.Profiles);
+            // get the list of email associated with the profiles irregardless of if they are associated with the recruiters company
+            List<UpDiddyApi.Models.G2.Profile> profiles = null;
+            List<HydratedEmailTemplate> hydratedEmailTemplates = null;
+            if (!isTestEmail)
+            {
+                profiles = await _profileService.GetProfilesByGuidList(userDefinedEmailDto.Profiles);
+                hydratedEmailTemplates = Services.HydrateEmailTemplateUtility.HydrateEmailTemplates(userDefinedEmailDto.EmailTemplate, recruiter, profiles);
+            }
 
             //Get hydrated emails
-            var hydratedEmailTemplates = Services.HydrateEmailTemplateUtility.HydrateEmailTemplates(userDefinedEmailDto.EmailTemplate, recruiter, profiles);
+            dynamic templateData = null;
+
+            if (isTestEmail)
+            {
+                templateData = new
+                {
+                    content = ConvertNewLineCharacters(Services.HydrateEmailTemplateUtility.TestEmailTemplate(userDefinedEmailDto.EmailTemplate)),
+                    subject = userDefinedEmailDto.Subject
+                };
+                _sysEmail.SendTemplatedEmailWithReplyToAsync(userDefinedEmailDto.ReplyToEmailAddress, sendGridTemplateId, templateData, sendGridSubAccount, subject: userDefinedEmailDto.Subject, replyToEmail: userDefinedEmailDto.ReplyToEmailAddress);
+
+                return true;
+            }
 
             foreach (HydratedEmailTemplate hydratedEmailTemplate in hydratedEmailTemplates) {
                 var profile = profiles.FirstOrDefault(p => hydratedEmailTemplate.Profile != null && p.ProfileGuid == hydratedEmailTemplate.Profile.ProfileGuid);
 
                 if (profile == null) throw new FailedValidationException($"SendGridService:SendUserDefinedBulkEmailByList - 'hydratedEmailTemplates' list contains unwanted profile. 'hydratedEmailTemplate.Profile.ProfileGuid' is not as requested.");
-
-                dynamic templateData = null;
                 try
                 {
                     // remove the profile that have been found from the list of passed profiles.  Do this first to make extra sure its done just 

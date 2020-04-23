@@ -8,11 +8,12 @@ namespace UpDiddyLib.Dto
     {
         /// <summary>
         /// These profiles are the email recipients. Required.
+        /// Optional, only when test/preview email is requested.
         /// </summary>
         public List<Guid> Profiles { get; set; }
 
         /// <summary>
-        /// This is the email's body/content. Required.
+        /// This is the email's body/content. This could be HTML content. Required.
         /// </summary>
         public String EmailTemplate { get; set; }
 

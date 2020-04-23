@@ -11,7 +11,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     {
         Task<bool> SendBulkEmailByList(Guid TemplateGuid, List<Guid> profiles, Guid recruiterSubscriberGuid);
 
-        Task<bool> SendUserDefinedBulkEmailByList(UserDefinedEmailDto userDefinedEmailDto, Guid recruiterSubscriberGuid);
+        Task<bool> SendUserDefinedBulkEmailByList(UserDefinedEmailDto userDefinedEmailDto, Guid recruiterSubscriberGuid, bool isTestEmail);
 
         Task<EmailTemplateListDto> GetEmailTemplates(int limit, int offset, string sort, string order);
 

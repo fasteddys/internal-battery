@@ -105,12 +105,12 @@ namespace UpDiddyApi.Controllers.V2
         [HttpPost]
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("AdhocEmail")]
-        public async Task<IActionResult> SendUserDefinedEmailByList(UserDefinedEmailDto request)
+        public async Task<IActionResult> SendUserDefinedEmailByList(UserDefinedEmailDto request, bool isTestEmail)
         {
             var subscriberId = base.GetSubscriberGuid();
 
             // Fire and forget user defined bulk emails 
-            _hangfireService.Enqueue<ScheduledJobs>(j => j.SendUserDefinedBulkEmail(request, subscriberId));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.SendUserDefinedBulkEmail(request, subscriberId, isTestEmail));
 
             return StatusCode(202);
         }
