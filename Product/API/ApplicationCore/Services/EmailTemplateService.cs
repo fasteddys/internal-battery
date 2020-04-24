@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.Models;
 using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.ApplicationCore.Services
@@ -29,7 +30,5 @@ namespace UpDiddyApi.ApplicationCore.Services
             return _mapper.Map<EmailTemplateListDto>(templates);
 
         }
-
-
     }
 }

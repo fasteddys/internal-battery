@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using UpDiddyLib.Domain.Models;
 using UpDiddyApi.ApplicationCore.Exceptions;
@@ -176,8 +177,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
             foreach (Guid profileSkillGuid in profileSkillGuids)
             {
                 var profileSkill = (from ps in _dbContext.ProfileSkill
-                                       where ps.ProfileSkillGuid == profileSkillGuid && ps.IsDeleted == 0
-                                       select ps).FirstOrDefault();
+                                    where ps.ProfileSkillGuid == profileSkillGuid && ps.IsDeleted == 0
+                                    select ps).FirstOrDefault();
                 if (profileSkill == null)
                     throw new NotFoundException($"profile skill '{profileSkillGuid}' not found");
 
@@ -204,7 +205,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
             var skills = new SqlParameter("@SkillGuids", skillsTable);
             skills.SqlDbType = SqlDbType.Structured;
-            skills.TypeName = "dbo.GuidList";            
+            skills.TypeName = "dbo.GuidList";
             var validationErrors = new SqlParameter { ParameterName = "@ValidationErrors", SqlDbType = SqlDbType.NVarChar, Size = -1, Direction = ParameterDirection.Output };
             var spParams = new object[] { recruiterSubscriber, profile, skills, validationErrors };
 
@@ -212,6 +213,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             if (!string.IsNullOrWhiteSpace(validationErrors.Value.ToString()))
                 throw new FailedValidationException(validationErrors.Value.ToString());
+        }
+        public async Task<Guid> GetProfileGuidByProfileSkillGuids(List<Guid> profileSkillGuids)
+        {
+            return await (from ps in _dbContext.ProfileSkill.Where(x => profileSkillGuids.Contains(x.ProfileSkillGuid))
+                          join p in _dbContext.Profile on ps.ProfileId equals p.ProfileId
+                          select p.ProfileGuid).FirstOrDefaultAsync();
         }
     }
 }

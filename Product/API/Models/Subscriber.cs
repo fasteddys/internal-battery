@@ -79,13 +79,18 @@ namespace UpDiddyApi.Models
 
         #endregion
 
-
-
         #region hubspot
 
         public long? HubSpotVid { get; set; }
 
         #endregion
 
+        #region Computed Columns
+
+        public Guid? StateGuid { get; set; }
+        public Guid? CityGuid { get; set; }
+        public Guid? PostalGuid { get; set; }
+
+        #endregion
     }
 }

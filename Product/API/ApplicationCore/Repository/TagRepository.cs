@@ -146,5 +146,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
             await _dbContext.SaveChangesAsync();
         }
+
+        public async Task<Guid> GetProfileGuidByProfileTagGuids(List<Guid> profileTagGuids)
+        {
+            return await (from ps in _dbContext.ProfileTag.Where(x => profileTagGuids.Contains(x.ProfileTagGuid))
+                          join p in _dbContext.Profile on ps.ProfileId equals p.ProfileId
+                          select p.ProfileGuid).FirstOrDefaultAsync();
+        }
     }
 }
