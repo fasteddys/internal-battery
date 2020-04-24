@@ -92,10 +92,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return subscriberResult;
         }
 
-
-
-
-
         public async Task<IList<Partner>> GetPartnersAssociatedWithSubscriber(int subscriberId)
         {
 
@@ -147,5 +143,27 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return await queryableSubscribers.Where(s => s.IsDeleted == 0).CountAsync();
         }
 
+        public async Task UpdateHubSpotDetails(Guid subscriberId, long hubSpotVid)
+        {
+            var subscriber = await _dbContext.Subscriber
+                .SingleOrDefaultAsync(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberId);
+
+            await UpdateHubSpotDetails(subscriber, hubSpotVid);
+        }
+
+        public async Task UpdateHubSpotDetails(int subscriberId, long hubSpotVid)
+        {
+            var subscriber = await _dbContext.Subscriber
+                .SingleOrDefaultAsync(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId);
+
+            await UpdateHubSpotDetails(subscriber, hubSpotVid);
+        }
+
+        private async Task UpdateHubSpotDetails(Subscriber subscriber, long hubSpotVid)
+        {
+            subscriber.HubSpotVid = hubSpotVid;
+            subscriber.HubSpotModifyDate = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync();
+        }
     }
 }
