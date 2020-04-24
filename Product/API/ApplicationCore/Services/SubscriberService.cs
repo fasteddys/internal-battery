@@ -100,16 +100,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await _repository.StoredProcedureRepository.GetSubscriberSources(subscriberId);
 
         }
-
-
-        // get the parter attributed with source attribution (i.e. caused the subscriber to join cc )
-        public async Task<SubscriberSourceDto> GetSubscriberSource(int subscriberId)
-        {
-            var sources = await _repository.StoredProcedureRepository.GetSubscriberSources(subscriberId);
-            return sources
-                .Where(s => s.PartnerRank == 1 && s.GroupRank == 1)
-                .FirstOrDefault();               
-        }
  
         public async Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numSubscribers, int indexVersion)
         {

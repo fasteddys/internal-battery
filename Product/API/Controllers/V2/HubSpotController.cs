@@ -45,10 +45,10 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> test([FromBody] HubSpotContactDto contactDto)
         {
 
-           long vid = await  _hubSpotService.AddOrUpdateContactBySubscriberGuid(Guid.Parse("71A7156E-173F-4054-83ED-AD6127BAFE87"),false);
+           long vid = await  _hubSpotService.AddOrUpdateContactBySubscriberGuid(Guid.Parse("CE5F121A-C129-4BE5-B005-EEEB48339677"),false);
 
 
-            return Ok();
+            return Ok(vid);
         }
 
 

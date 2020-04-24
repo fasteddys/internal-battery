@@ -146,9 +146,5 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         Task<SubscriberSearchResultDto> SearchSubscribersAsync(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*");
 
-
-        // get partner attibuted to sourcing the subscriber 
-        Task<SubscriberSourceDto> GetSubscriberSource(int subscriberId);
-
     }
 }

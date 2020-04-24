@@ -288,7 +288,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             {
                 if (_subscriberRepository == null)
                 {
-                    _subscriberRepository = new SubscriberRepository(_dbContext, SubscriberGroupRepository, GroupPartnerRepository, PartnerRepository);
+                    _subscriberRepository = new SubscriberRepository(_dbContext, SubscriberGroupRepository, GroupPartnerRepository, PartnerRepository, StoredProcedureRepository);
                 }
                 return _subscriberRepository;
             }
