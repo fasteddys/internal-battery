@@ -13,6 +13,7 @@ using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
+using UpDiddyApi.Models.Views;
 using UpDiddyLib.Domain.Models.HubSpot;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
@@ -25,18 +26,16 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly UpDiddyDbContext _db = null;
         private readonly ILogger _syslog;
         private IConfiguration _configuration { get; set; }
-        private readonly ISubscriberService _subscriberService;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IHangfireService _hangfireService;
         private readonly IHttpClientFactory _httpClientFactory;
 
-        public HubSpotService(UpDiddyDbContext db, ILogger<HubSpotService> sysLog, IRepositoryWrapper repositoryWrapper, IHangfireService hangfireService, ISubscriberService subscriberService, IConfiguration configuration, IHttpClientFactory httpClientFactory )
+        public HubSpotService(UpDiddyDbContext db, ILogger<HubSpotService> sysLog, IRepositoryWrapper repositoryWrapper, IHangfireService hangfireService, IConfiguration configuration, IHttpClientFactory httpClientFactory )
         {            
             _db = db;
             _syslog = sysLog;            
             _repositoryWrapper = repositoryWrapper;
             _hangfireService = hangfireService;
-            _subscriberService = subscriberService;
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
         }
@@ -46,18 +45,18 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<long> AddOrUpdateContactBySubscriberGuid(Guid subscriberGuid, bool nonBlocking = true)
         {
 
-            _syslog.LogInformation($"HubSpotService.AddOrUpdateContactBySubscribterGuid: Starting for subscriber {subscriberGuid}");          
-           // Fire off background job if non-block has been requested
-            if (nonBlocking)
+            _syslog.LogInformation($"HubSpotService.AddOrUpdateContactBySubscribterGuid: Starting for subscriber {subscriberGuid}");
+            // Fire off background job if non-block has been requested
+            if (nonBlocking && bool.Parse(_configuration["Hangfire:IsProcessingServer"]))
             {
                 _syslog.LogInformation($"HubSpotService.AddOrUpdateContactBySubscribterGuid: Background job starting for subscriber {subscriberGuid}");
-                _hangfireService.Enqueue<HubSpotService>(j => j._AddOrUpdateContact(subscriberGuid));
+                _hangfireService.Enqueue<HubSpotService>(j => j._AddOrUpdateContactBySubscriberGuid(subscriberGuid));
                 return 0;
             }
             else
             {
                 _syslog.LogInformation($"HubSpotService.AddOrUpdateContactBySubscribterGuid: Invoking non-blocking _AddOrUpdateContact for subscriber {subscriberGuid}");
-                long hubSpotVid = await _AddOrUpdateContact(subscriberGuid);
+                long hubSpotVid = await _AddOrUpdateContactBySubscriberGuid(subscriberGuid);
                 _syslog.LogInformation($"HubSpotService.AddOrUpdateContactBySubscribterGuid: Subscriber {subscriberGuid} has hubSpotVid = {hubSpotVid}");
                 return hubSpotVid;
             }                            
@@ -65,7 +64,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
         // add or update the current subsscriber in hubspot
-        public async Task<long> _AddOrUpdateContact(Guid subscriberGuid)
+        public async Task<long> _AddOrUpdateContactBySubscriberGuid(Guid subscriberGuid)
         {
 
             _syslog.LogInformation($"HubSpotService._AddOrUpdateContact: starting");
@@ -85,10 +84,19 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 // get list of self curated skills as string with new lines 
                 string selfCuratedSkills = string.Join("\n", s.SubscriberSkills.Select(u => u.Skill.SkillName).ToArray());
-                // todo task2103 add g2 skills 
+
+                Guid publicDataCompanyGuid = Guid.Parse(_configuration["CareerCircle:PublicDataCompanyGuid"]);
+
+                // Get all non-public G2s for subscriber 
+                //List<v_ProfileAzureSearch> 
+                    var g2Profile = _db.ProfileAzureSearch
+                            .Where(p => p.SubscriberGuid == subscriberGuid && p.CompanyGuid != publicDataCompanyGuid)
+                            .FirstOrDefault();
+
+                string g2PublicSkills = g2Profile?.PublicSkills.Replace(';', '\n');
 
                 // get the source partner for the subscriber 
-                SubscriberSourceDto sourcePartner = await _subscriberService.GetSubscriberSource(s.SubscriberId);
+                SubscriberSourceDto sourcePartner = await _repositoryWrapper.SubscriberRepository.GetSubscriberSource(s.SubscriberId);
 
                 HubSpotContactDto contact = new HubSpotContactDto()
                 {
@@ -100,7 +108,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                     DateJoined = s.CreateDate,
                     LastLoginDate = s.LastSignIn.Value,
                     SelfCuratedSkills = selfCuratedSkills,
-                    SourcePartner = sourcePartner != null ?  sourcePartner.PartnerName : null
+                    SourcePartner = sourcePartner != null ?  sourcePartner.PartnerName : null,
+                    SkillsG2 = g2PublicSkills
                 };
 
                 // map the contact dto to a hubspot property dto and serialize it
@@ -204,7 +213,15 @@ namespace UpDiddyApi.ApplicationCore.Services
                 rVal.properties.Add(p);
             }
 
-
+            if (string.IsNullOrEmpty(hubSpotContactDto.SkillsG2) == false)
+            {
+                p = new HubSpotProperty()
+                {
+                    property = "skillsg2",
+                    value = hubSpotContactDto.SkillsG2
+                };
+                rVal.properties.Add(p);
+            }
 
             if (string.IsNullOrEmpty(hubSpotContactDto.SourcePartner) == false)
             {

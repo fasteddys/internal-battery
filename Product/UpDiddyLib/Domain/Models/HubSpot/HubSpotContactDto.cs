@@ -21,7 +21,7 @@ namespace UpDiddyLib.Domain.Models.HubSpot
 
         public string SelfCuratedSkills { get; set; }
 
-        public string G2Skills { get; set; }
+        public string SkillsG2 { get; set; }
 
         public string SourcePartner { get; set; }
 
