@@ -22,17 +22,20 @@ namespace UpDiddyApi.ApplicationCore.Services
         private ILogger _logger { get; set; }
         private IRepositoryWrapper _repositoryWrapper { get; set; }
         private readonly IMapper _mapper;
+        private readonly IG2Service _g2Service;
 
         public TagService(
             IConfiguration configuration,
             IRepositoryWrapper repository,
             ILogger<SubscriberService> logger,
-            IMapper mapper)
+            IMapper mapper,
+            IG2Service g2Service)
         {
             _configuration = configuration;
             _repositoryWrapper = repository;
             _logger = logger;
             _mapper = mapper;
+            _g2Service = g2Service;
         }
 
         public async Task<TagListDto> GetTags(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
@@ -106,11 +109,14 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task DeleteTagsFromProfileForRecruiter(Guid subscriberGuid, List<Guid> profileTagGuids)
         {
             await _repositoryWrapper.Tag.DeleteTagsFromProfileForRecruiter(subscriberGuid, profileTagGuids);
+            Guid profileGuid = await _repositoryWrapper.Tag.GetProfileGuidByProfileTagGuids(profileTagGuids);
+            await _g2Service.G2IndexProfileByGuidAsync(profileGuid);
         }
 
         public async Task<List<Guid>> AddTagsToProfileForRecruiter(Guid subscriberGuid, List<Guid> tagGuids, Guid profileGuid)
         {
             return await _repositoryWrapper.Tag.AddTagsToProfileForRecruiter(subscriberGuid, tagGuids, profileGuid);
+            await _g2Service.G2IndexProfileByGuidAsync(profileGuid);
         }
     }
 }
