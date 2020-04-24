@@ -161,7 +161,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 if (!string.IsNullOrEmpty(Value)) { return Value; }
                 if (!string.IsNullOrEmpty(FallbackValue)) { return FallbackValue; }
-                return Property;
+                return String.Empty;
             }
         }
 
