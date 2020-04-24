@@ -83,6 +83,61 @@ namespace UpDiddyLib.Helpers
             if (subject != null)
                 message.SetSubject(subject);
 
+
+            // Add custom property that will be sent to the webhook. For templated emails, we will use the templated ID as the subject since the actual
+            // subject of the template is not readily available 
+            string webhookSubject = $"CC Template: {templateId}";
+            if (subject != null)
+                webhookSubject += $" with a subject of {subject}";
+            message.CustomArgs = new Dictionary<string, string>()
+            {
+                { "Subject", webhookSubject }
+            };
+
+            var response = await client.SendEmailAsync(message);
+            int statusCode = (int)response.StatusCode;
+
+            return statusCode >= 200 && statusCode <= 299;
+        }
+
+
+        public async Task<bool> SendTemplatedEmailWithReplyToAsync(string email, string templateId, dynamic templateData, Constants.SendGridAccount SendGridAccount, string subject = null, List<Attachment> attachments = null, DateTime? sendAt = null, int? unsubscribeGroupId = null, string replyToEmail = null)
+        {
+            bool isDebugMode = _configuration[$"SysEmail:DebugMode"] == "true";
+            string SendGridAccountType = Enum.GetName(typeof(Constants.SendGridAccount), SendGridAccount);
+
+            var client = new SendGridClient(_configuration[$"SysEmail:{SendGridAccountType}:ApiKey"]);
+            var message = new SendGridMessage();
+            if (sendAt.HasValue)
+                message.SendAt = Utils.ToUnixTimeInSeconds(sendAt.Value);
+            message.SetFrom(new EmailAddress(_configuration[$"SysEmail:{SendGridAccountType}:FromEmailAddress"], "CareerCircle"));
+
+            EmailAddress replyToEmailAddress = String.IsNullOrWhiteSpace(replyToEmail) ? 
+                                               new EmailAddress(_configuration[$"SysEmail:{SendGridAccountType}:ReplyToEmailAddress"]) :
+                                               new EmailAddress(replyToEmail);
+
+            message.SetReplyTo(replyToEmailAddress);
+
+            // check debug mode to only send emails to actual users in the system is not in debug mode 
+            if (isDebugMode == false)
+                message.AddTo(new EmailAddress(email));
+            else
+                message.AddTo(new EmailAddress(_configuration[$"SysEmail:SystemDebugEmailAddress"]));
+
+            message.SetTemplateId(templateId);
+            message.SetTemplateData(templateData);
+
+            // include the unsubscribe group for the sub-account if one is specified. 
+            // note that it is not possible to associate unsubscribe groups from the parent account or other sub-accounts. 
+            // (attempting to do this causes the email to be dropped by SendGrid with the following error message: This email was not sent because the SMTPAPI header was invalid.)
+            if (unsubscribeGroupId.HasValue)
+                message.SetAsm(unsubscribeGroupId.Value, new List<int>() { unsubscribeGroupId.Value });
+
+            if (attachments != null)
+                message.AddAttachments(attachments);
+            if (subject != null)
+                message.SetSubject(subject);
+
   
             // Add custom property that will be sent to the webhook. For templated emails, we will use the templated ID as the subject since the actual
             // subject of the template is not readily available 
