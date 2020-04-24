@@ -59,7 +59,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         {
 
             // validate the the user provides a city if they also provided a radius
-            if ((cityGuid == null ||cityGuid == Guid.Empty) && radius != 0)
+            if ((cityGuid == null || cityGuid == Guid.Empty) && radius != 0)
                 throw new FailedValidationException("A city guid must be provided if a radius is specifed");
 
             Recruiter recruiter = await _repository.RecruiterRepository.GetRecruiterAndCompanyBySubscriberGuid(subscriberGuid);
@@ -74,30 +74,30 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             // limit search to only the careercircle company for now....  
             string CCCompanySearchGuid = _configuration["AzureSearch:CCCompanySearchGuid"];
 
-            List<Guid> companyGuids =  recruiter.RecruiterCompanies
+            List<Guid> companyGuids = recruiter.RecruiterCompanies
                 .Where(g => g.IsDeleted == 0 & g.Company.CompanyGuid == Guid.Parse(CCCompanySearchGuid))
                 .Select(g => g.Company.CompanyGuid)
                 .ToList();
-            
+
 
             if (companyGuids == null || companyGuids.FirstOrDefault() == null)
                 throw new FailedValidationException($"Recruiter {recruiter.RecruiterGuid} is not associated with the default carreer circle search company");
- 
+
             // handle case of non geo search 
             if (cityGuid == null || cityGuid == Guid.Empty)
                 return await SearchG2Async(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, 0, 0, 0, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
 
             // pick a random postal code for the city to get the last and long 
             Postal postal = _repository.PostalRepository.GetAll()
-                .Include( c => c.City)
-                .Where(p =>  p.City.CityGuid == cityGuid && p.IsDeleted == 0)
+                .Include(c => c.City)
+                .Where(p => p.City.CityGuid == cityGuid && p.IsDeleted == 0)
                 .FirstOrDefault();
 
             // validate that the city has a postal code 
             if (postal == null)
                 throw new NotFoundException($"A city with an Guid of {cityGuid} cannot be found.");
 
-            return await SearchG2Async(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, (double)postal.Latitude, (double)postal.Longitude, isWillingToRelocate,isWillingToTravel,isActiveJobSeeker,isCurrentlyEmployed,isWillingToWorkProBono);
+            return await SearchG2Async(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, (double)postal.Latitude, (double)postal.Longitude, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
         }
 
 
@@ -442,7 +442,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
                 return true;
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexBulkAsync starting index for g2");
             AzureIndexResult info = await _azureSearchService.AddOrUpdateG2Bulk(g2List);
-            await UpdateG2Status(info, Constants.G2AzureIndexStatus.Indexed, info.StatusMsg);
+            await UpdateG2Status(info, ResolveIndexStatusMessage(info.StatusMsg), info.StatusMsg);
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexBulkAsync done index for g2");
             return true;
         }
@@ -514,7 +514,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             // call stored procedure to create a g2 recordsfor the specified subscriber.  1 record per 
             // active company will be created and return the number of records created 
             int rVal = await _repository.StoredProcedureRepository.CreateSubscriberG2Profiles(subscriberGuid);
-        
+
             return rVal;
         }
 
@@ -580,7 +580,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             _hangfireService.Enqueue<ScheduledJobs>(j => j.G2AddNewSubscriber(subscriberGuid));
             return true;
         }
-    
+
         /// <summary>
         /// Removes  all of the subscribers g2.profile information in sql/server  and removes them from the azure search
         /// // index
@@ -589,7 +589,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         /// <returns></returns>
         public async Task<bool> G2DeleteSubscriberAsync(Guid subscriberGuid)
         {
-            _hangfireService.Enqueue<ScheduledJobs>(j => j.G2DeleteSubscriber(subscriberGuid));    
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.G2DeleteSubscriber(subscriberGuid));
             return true;
         }
 
@@ -616,7 +616,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         public async Task<bool> G2DeleteCompanyAsync(Guid compmapnyGuid)
         {
 
-           _hangfireService.Enqueue<ScheduledJobs>(j => j.G2DeleteCompany(compmapnyGuid));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.G2DeleteCompany(compmapnyGuid));
             return true;
         }
 
@@ -651,20 +651,18 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
 
         #region private helper functions 
 
-        private async Task<bool> UpdateG2Status( AzureIndexResult results, string statusName, string info)
-        {   
+        private async Task<bool> UpdateG2Status(AzureIndexResult results, string statusName, string info)
+        {
             // Call stored procedure 
             try
             {
-                _repository.StoredProcedureRepository.UpdateG2AzureIndexStatuses(results.DOCResults.Value, statusName, info);
+                _repository.StoredProcedureRepository.UpdateG2AzureIndexStatuses(results?.DOCResults?.Value ?? new List<AzureIndexResultStatus>(), statusName, info);
             }
-            catch ( Exception ex )
+            catch (Exception ex)
             {
                 _logger.LogError($"G2Service:UpdateG2Status Error updating index statuses; message: {ex.Message}, stack trace: {ex.StackTrace}");
                 throw;
             }
-            
-            
             return true;
         }
 
@@ -731,7 +729,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
 
 
 
- 
+
 
 
 
@@ -751,7 +749,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             string adminApiKey = _configuration["AzureSearch:SearchServiceQueryApiKey"];
             string g2IndexName = _configuration["AzureSearch:G2IndexName"];
 
- 
+
 
             SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(adminApiKey));
             ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(g2IndexName);
@@ -776,10 +774,10 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
                 .ToList();
 
             searchResults.TotalHits = results.Count.Value;
-            searchResults.PageSize =  (int) results.Count.Value;
+            searchResults.PageSize = (int)results.Count.Value;
             searchResults.NumPages = searchResults.PageSize != 0 ? (int)Math.Ceiling((double)searchResults.TotalHits / searchResults.PageSize) : 0;
             searchResults.SubscriberCount = searchResults.G2s.Count;
-            searchResults.PageNum =  1;
+            searchResults.PageNum = 1;
 
             DateTime stopMap = DateTime.Now;
 
@@ -803,7 +801,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             try
             {
                 G2SDOC indexDoc = _mapper.Map<G2SDOC>(g2);
-                if ( g2.Location != null )
+                if (g2.Location != null)
                 {
                     Double lat = (double)g2.Location.Lat;
                     Double lng = (double)g2.Location.Long;
@@ -814,14 +812,14 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
                 // manually map the location.  todo find a way for automapper to do this 
                 return indexDoc;
             }
-            catch ( Exception ex )
+            catch (Exception ex)
             {
                 _logger.LogError($"G2Service:MapToG2SDOC Exception for profile {g2.ProfileGuid}; error: {ex.Message}, stack trace: {ex.StackTrace}");
                 throw;
             }
         }
- 
- 
+
+
         private async Task<G2SearchResultDto> SearchG2Async(List<Guid> companyGuids, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, double lat = 0, double lng = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
         {
 
@@ -859,14 +857,14 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
 
 
             string companyFilter = string.Empty;
-            foreach ( Guid g in companyGuids )
+            foreach (Guid g in companyGuids)
             {
-                if ( string.IsNullOrEmpty(companyFilter) )
+                if (string.IsNullOrEmpty(companyFilter))
                     companyFilter = $"( CompanyGuid eq '{g}'";
                 else
                     companyFilter += $" or CompanyGuid eq '{g}'";
             }
-            companyFilter += ") "; 
+            companyFilter += ") ";
             parameters.Filter = companyFilter;
 
             // Add partner filter if one has been specified
@@ -900,17 +898,17 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
                 // start this clause with "and" since the companyfilter MUST be specified above 
                 parameters.Filter += $" and geo.distance(Location, geography'POINT({lng} {lat})') le {radiusKm}";
             }
-            else if ( radius == 0 && lat != 0 && lng != 0)
+            else if (radius == 0 && lat != 0 && lng != 0)
             {
                 // In the case of searching for a single city with no radius, set the default radius to 1 mile since most larger
                 // cities have more than one postal records, each of which contains varying lat/lng data
                 radiusKm = 1 * 1.60934; ;
                 parameters.Filter += $" and geo.distance(Location, geography'POINT({lng} {lat})') le {radiusKm}";
- 
+
             }
             // double quote email to ensure direct hit         
             keyword = Utils.EscapeQuoteEmailsInString(keyword);
-                 
+
             results = indexClient.Documents.Search<G2InfoDto>(keyword, parameters);
 
             DateTime startMap = DateTime.Now;
@@ -936,6 +934,17 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             searchResults.SearchMappingTimeInTicks = intervalMapTime.Ticks;
 
             return searchResults;
+        }
+
+        private static string ResolveIndexStatusMessage(string statusMsg)
+        {
+            if (string.IsNullOrEmpty(statusMsg)) { return Constants.G2AzureIndexStatus.None; }
+            if (statusMsg.StartsWith("Indexed On")) { return Constants.G2AzureIndexStatus.Indexed; }
+            if (statusMsg.StartsWith("Deleted On")) { return Constants.G2AzureIndexStatus.Deleted; }
+            if (statusMsg.StartsWith("StatusCode = ")) { return Constants.G2AzureIndexStatus.Error; }
+            if (statusMsg.Contains("error", StringComparison.CurrentCultureIgnoreCase)) { return Constants.G2AzureIndexStatus.Error; }
+
+            return Constants.G2AzureIndexStatus.Pending;
         }
         #endregion
     }
