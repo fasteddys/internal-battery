@@ -85,6 +85,15 @@ namespace UpDiddyApi.Models
 
         #endregion
 
+        #region Connected
+        public string  ConnectedId { get; set; }
+        public DateTime? ConnectedModifyDate { get; set; }
+        #endregion
+
+
+
+
+
         #region Computed Columns
 
         public Guid? StateGuid { get; set; }
