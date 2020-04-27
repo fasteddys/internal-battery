@@ -200,7 +200,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 templateData = new
                 {
-                    content = ConvertNewLineCharacters(Services.HydrateEmailTemplateUtility.TestEmailTemplate(userDefinedEmailDto.EmailTemplate)),
+                    content = ConvertNewLineCharacters(Services.HydrateEmailTemplateUtility.TestEmailTemplate(userDefinedEmailDto.EmailTemplate, recruiter)),
                     subject = userDefinedEmailDto.Subject
                 };
                 _syslog.LogInformation($"SendGridService:SendUserDefinedBulkEmailByList Sending Test Email Email = {userDefinedEmailDto.ReplyToEmailAddress} Subject = {userDefinedEmailDto.Subject} ReplyTo = {userDefinedEmailDto.ReplyToEmailAddress} TemplateId = {sendGridTemplateId} SubAccount = {sendGridSubAccount} Content = {templateData} ");
@@ -361,7 +361,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         private static string ConvertNewLineCharacters(string emailTemplate) => emailTemplate
             .Replace("\r\n", "<br />")
-            .Replace("\r", "<br />");
+            .Replace("\n", "<br />");
 
         #endregion
 
