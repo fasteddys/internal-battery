@@ -313,7 +313,7 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<Wishlist>()
                 .HasIndex(w => new { w.RecruiterId, w.Name, w.IsDeleted })
                 .HasName("UIX_Wishlist_Recruiter_Name_IsDeleted")
-                .IsUnique(true);
+                .IsUnique(false);
 
             modelBuilder
                 .Query<v_ProfileAzureSearch>()
