@@ -70,6 +70,8 @@ namespace UpDiddyApi.ApplicationCore.Services
    
         public async Task<bool> SendBulkEmailByList(Guid TemplateGuid, List<Guid> Profiles, Guid recruiterSubscriberGuid)
         {
+      
+
             // validate profiles have been specified 
             if (Profiles == null || Profiles.Count == 0)
                 throw new FailedValidationException($"SendGridService:SendBulkEmailsByList  One or more profiles must be specified for bulk email");
@@ -145,6 +147,8 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<bool> SendUserDefinedBulkEmailByList(UserDefinedEmailDto userDefinedEmailDto, Guid recruiterSubscriberGuid, bool isTestEmail)
         {
+            _syslog.LogInformation($"SendGridService:SendUserDefinedBulkEmailByList: starting with isTestEmail = {isTestEmail}");
+
             // validate profiles that have been specified when not in test mode {isTestEmail = false}
             if ( !isTestEmail && (userDefinedEmailDto.Profiles == null || userDefinedEmailDto.Profiles.Count == 0))
                 throw new FailedValidationException($"SendGridService:SendUserDefinedBulkEmailByList - One or more profiles must be specified for bulk email");
@@ -192,7 +196,6 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             //Get hydrated emails
             dynamic templateData = null;
-
             if (isTestEmail)
             {
                 templateData = new
@@ -200,6 +203,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     content = ConvertNewLineCharacters(Services.HydrateEmailTemplateUtility.TestEmailTemplate(userDefinedEmailDto.EmailTemplate)),
                     subject = userDefinedEmailDto.Subject
                 };
+                _syslog.LogInformation($"SendGridService:SendUserDefinedBulkEmailByList Sending Test Email Email = {userDefinedEmailDto.ReplyToEmailAddress} Subject = {userDefinedEmailDto.Subject} ReplyTo = {userDefinedEmailDto.ReplyToEmailAddress} TemplateId = {sendGridTemplateId} SubAccount = {sendGridSubAccount} Content = {templateData} ");
                 _sysEmail.SendTemplatedEmailWithReplyToAsync(userDefinedEmailDto.ReplyToEmailAddress, sendGridTemplateId, templateData, sendGridSubAccount, subject: userDefinedEmailDto.Subject, replyToEmail: userDefinedEmailDto.ReplyToEmailAddress);
 
                 return true;
@@ -223,6 +227,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                             content = ConvertNewLineCharacters(hydratedEmailTemplate.Value),
                             subject = userDefinedEmailDto.Subject
                         };
+                        _syslog.LogInformation($"SendGridService:SendUserDefinedBulkEmailByList Sending Profile Sent To = {profile.ProfileGuid} Subject = {userDefinedEmailDto.Subject} ReplyTo = {userDefinedEmailDto.ReplyToEmailAddress} TemplateId = {sendGridTemplateId} SubAccount = {sendGridSubAccount} Content = {templateData} ");
                         _sysEmail.SendTemplatedEmailWithReplyToAsync(profile.Email, sendGridTemplateId, templateData, sendGridSubAccount, replyToEmail: userDefinedEmailDto.ReplyToEmailAddress);
                         // add note about email being sent 
                         await AddActivityNote("AdHocEmail", recruiterSubscriberGuid, profile.Subscriber.SubscriberId, userDefinedEmailDto.ActivityNote);
@@ -240,8 +245,18 @@ namespace UpDiddyApi.ApplicationCore.Services
             // Any guids left in the passed list of profiles at this point are Zombies cuz there is code above that removes them as
             // they are processed for bulk emails sends.  We will remove them from the azure index now so they will no longer appear
             // in queries
-            _g2Service.G2IndexBulkDeleteByGuidAsync(userDefinedEmailDto.Profiles);
+            if ( userDefinedEmailDto.Profiles.Count > 0 )
+            {
 
+                string zombieList = string.Join(",", userDefinedEmailDto.Profiles.Select(x => x.ToString()).ToArray());
+                _syslog.LogInformation($"SendGridService:SendUserDefinedBulkEmailByList:  zombies = {zombieList}");
+                _g2Service.G2IndexBulkDeleteByGuidAsync(userDefinedEmailDto.Profiles);
+
+            }
+            else
+                _syslog.LogInformation($"SendGridService:SendUserDefinedBulkEmailByList: no zombies found");
+
+            _syslog.LogInformation($"SendGridService:SendUserDefinedBulkEmailByList: done");
             return true;
         }
 
