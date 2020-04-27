@@ -49,7 +49,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             string location = HttpUtility.HtmlEncode(string.IsNullOrEmpty(hireTalentDto.Location) ? "No location entered." : hireTalentDto.Location);
             string comments = HttpUtility.HtmlEncode(string.IsNullOrEmpty(hireTalentDto.Comments) ? "No comment entered." : hireTalentDto.Comments);
             var emailBody = FormatHireTalentEmail(companyName, firstName, lastName, title, email, phone, pipeline, skillset, location, comments);
-            await _sysEmail.SendEmailAsync(_configuration["SysEmail:ContactUs:Recipient"], subject, emailBody, Constants.SendGridAccount.Transactional);
+            await _sysEmail.SendEmailAsync(_configuration["SysEmail:ContactUs:HireTalentRecipient"], subject, emailBody, Constants.SendGridAccount.Transactional);
         }
 
         private string FormatContactEmail(string ContactUsFirstName,

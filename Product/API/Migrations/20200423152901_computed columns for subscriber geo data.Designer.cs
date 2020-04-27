@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
@@ -10,9 +11,10 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200423152901_computed columns for subscriber geo data")]
+    partial class computedcolumnsforsubscribergeodata
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1962,6 +1964,7 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("WishlistId");
 
                     b.HasIndex("RecruiterId", "Name", "IsDeleted")
+                        .IsUnique()
                         .HasName("UIX_Wishlist_Recruiter_Name_IsDeleted");
 
                     b.ToTable("Wishlists","G2");
@@ -4133,10 +4136,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<int>("CloudTalentIndexVersion");
 
                     b.Property<string>("CloudTalentUri");
-
-                    b.Property<string>("ConnectedId");
-
-                    b.Property<DateTime?>("ConnectedModifyDate");
 
                     b.Property<DateTime>("CreateDate");
 

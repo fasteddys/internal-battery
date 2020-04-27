@@ -313,7 +313,7 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<Wishlist>()
                 .HasIndex(w => new { w.RecruiterId, w.Name, w.IsDeleted })
                 .HasName("UIX_Wishlist_Recruiter_Name_IsDeleted")
-                .IsUnique(true);
+                .IsUnique(false);
 
             modelBuilder
                 .Query<v_ProfileAzureSearch>()
@@ -649,6 +649,14 @@ namespace UpDiddyApi.Models
                 .Property(s => s.NotificationEmailsEnabled)
                 .HasDefaultValue(true);
 
+            modelBuilder.Entity<Subscriber>()
+                .Property(s => s.StateGuid).HasComputedColumnSql("[dbo].[fn_GetStateGuidForSubscriber]([StateId])");
+
+            modelBuilder.Entity<Subscriber>()
+                .Property(s => s.CityGuid).HasComputedColumnSql("[dbo].[fn_GetCityGuidForSubscriber]([City], [StateId])");
+
+            modelBuilder.Entity<Subscriber>()
+                .Property(s => s.PostalGuid).HasComputedColumnSql("[dbo].[fn_GetPostalGuidForSubscriber]([PostalCode], [City], [StateId])");
 
             modelBuilder.Entity<NotificationGroup>()
                .HasIndex(p => new { p.NotificationGroupId, p.GroupId })
