@@ -276,12 +276,10 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
             // add user to hubspot
-            long hubspotVid = await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid, false);
-            // TODO Task2104   Save the hubspotVid to the database 
+            await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid, lastLoginDateTime: null, nonBlocking: false);
 
             // Add the new user to the azure index 
             await _g2Service.G2AddSubscriberAsync(subscriberGuid);
-
 
             // add the user to the Google Talent Cloud
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriberGuid));
@@ -371,8 +369,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                     _logger.LogError($"SubscriberService:CreateSubscriberAsync Error at step {step} getting partner guid from url.  Msg = {ex.Message}");
                 }
             }
-
-
 
             return subscriberGuid;
         }

@@ -23,6 +23,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IMapper _mapper;
         private readonly ISubscriberService _subscriberService;
         private readonly ICourseService _courseService;
+        private readonly IHubSpotService _hubSpotService;
+
 
         public SkillService(
             IConfiguration configuration,
@@ -30,6 +32,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             ILogger<SubscriberService> logger,
             ISubscriberService subscriberService,
             ICourseService courseService,
+            IHubSpotService hubSpotService,
             IMapper mapper)
         {
             _configuration = configuration;
@@ -38,6 +41,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _mapper = mapper;
             _subscriberService = subscriberService;
             _courseService = courseService;
+            _hubSpotService = hubSpotService;
         }
 
         public async Task<SkillListDto> GetSkills(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
@@ -173,6 +177,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (_repositoryWrapper.SubscriberSkillRepository.HasUnsavedChanges())
             {
                 await _repositoryWrapper.SaveAsync();
+                //Call Hubspot to update skills
+                await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid);
             }
         }
 
@@ -183,6 +189,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new NotFoundException("Subscriber not found");
 
             await _repositoryWrapper.StoredProcedureRepository.UpdateEntitySkills(subscriberGuid, "Subscriber", skills);
+            //Call Hubspot to update skills
+            await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid);
         }
 
         /// <summary>
@@ -225,12 +233,18 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<List<Guid>> AddSkillsToProfileForRecruiter(Guid subscriberGuid, List<Guid> skillGuids, Guid profileGuid)
         {
-            return await _repositoryWrapper.SkillRepository.AddSkillsToProfileForRecruiter(subscriberGuid, skillGuids, profileGuid);
+            var addedSkillGuids = await _repositoryWrapper.SkillRepository.AddSkillsToProfileForRecruiter(subscriberGuid, skillGuids, profileGuid);
+            //Call Hubspot to update skills
+            await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid);
+
+            return addedSkillGuids;
         }
 
         public async Task UpdateProfileSkillsForRecruiter(Guid subscriberGuid, List<Guid> skillGuids, Guid profileGuid)
         {
             await _repositoryWrapper.SkillRepository.UpdateProfileSkillsForRecruiter(subscriberGuid, skillGuids, profileGuid);
+            //Call Hubspot to update skills
+            await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid);
         }
     }
 }

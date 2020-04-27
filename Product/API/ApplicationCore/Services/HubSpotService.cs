@@ -17,6 +17,7 @@ using UpDiddyApi.Models.Views;
 using UpDiddyLib.Domain.Models.HubSpot;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
+using Newtonsoft.Json;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -42,21 +43,24 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-        public async Task<long> AddOrUpdateContactBySubscriberGuid(Guid subscriberGuid, bool nonBlocking = true)
+        public async Task<long> AddOrUpdateContactBySubscriberGuid(Guid subscriberGuid, DateTime? lastLoginDateTime = null, bool nonBlocking = true)
         {
+            //for testing 
+            //subscriberGuid = Guid.Parse("CE5F121A-C129-4BE5-B005-EEEB48339677");
+
 
             _syslog.LogInformation($"HubSpotService.AddOrUpdateContactBySubscribterGuid: Starting for subscriber {subscriberGuid}");
             // Fire off background job if non-block has been requested
             if (nonBlocking && bool.Parse(_configuration["Hangfire:IsProcessingServer"]))
             {
                 _syslog.LogInformation($"HubSpotService.AddOrUpdateContactBySubscribterGuid: Background job starting for subscriber {subscriberGuid}");
-                _hangfireService.Enqueue<HubSpotService>(j => j._AddOrUpdateContactBySubscriberGuid(subscriberGuid));
+                _hangfireService.Enqueue<HubSpotService>(j => j._AddOrUpdateContactBySubscriberGuid(subscriberGuid, lastLoginDateTime));
                 return 0;
             }
             else
             {
                 _syslog.LogInformation($"HubSpotService.AddOrUpdateContactBySubscribterGuid: Invoking non-blocking _AddOrUpdateContact for subscriber {subscriberGuid}");
-                long hubSpotVid = await _AddOrUpdateContactBySubscriberGuid(subscriberGuid);
+                long hubSpotVid = await _AddOrUpdateContactBySubscriberGuid(subscriberGuid, lastLoginDateTime);
                 _syslog.LogInformation($"HubSpotService.AddOrUpdateContactBySubscribterGuid: Subscriber {subscriberGuid} has hubSpotVid = {hubSpotVid}");
                 return hubSpotVid;
             }                            
@@ -64,7 +68,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
         // add or update the current subsscriber in hubspot
-        public async Task<long> _AddOrUpdateContactBySubscriberGuid(Guid subscriberGuid)
+        public async Task<long> _AddOrUpdateContactBySubscriberGuid(Guid subscriberGuid, DateTime? lastLoginDateTime)
         {
 
             _syslog.LogInformation($"HubSpotService._AddOrUpdateContact: starting");
@@ -73,47 +77,50 @@ namespace UpDiddyApi.ApplicationCore.Services
             string json = string.Empty;
             try
             {
-                Subscriber s = _repositoryWrapper.SubscriberRepository.GetAll()
+                Subscriber subscriber = _repositoryWrapper.SubscriberRepository.GetAll()
                         .Include(s1 => s1.SubscriberSkills)
                         .ThenInclude(ss => ss.Skill)
                         .Where(x => x.IsDeleted == 0 && x.SubscriberGuid == subscriberGuid)
                         .FirstOrDefault();
 
-                if (s == null)
+                if (subscriber == null)
                     throw new DllNotFoundException($"HubSpotService._AddOrUpdateContactBySubscribterGuid: cannot locate subscriber {subscriberGuid}");
 
                 // get list of self curated skills as string with new lines 
-                string selfCuratedSkills = string.Join("\n", s.SubscriberSkills.Select(u => u.Skill.SkillName).ToArray());
+                string selfCuratedSkills = string.Join("\n", subscriber.SubscriberSkills.Select(u => u.Skill.SkillName).ToArray());
 
                 Guid publicDataCompanyGuid = Guid.Parse(_configuration["CareerCircle:PublicDataCompanyGuid"]);
 
                 // Get all non-public G2s for subscriber 
-                //List<v_ProfileAzureSearch> 
-                    var g2Profile = _db.ProfileAzureSearch
+                var g2Profile = _db.ProfileAzureSearch
                             .Where(p => p.SubscriberGuid == subscriberGuid && p.CompanyGuid != publicDataCompanyGuid)
                             .FirstOrDefault();
 
                 string g2PublicSkills = g2Profile?.PublicSkills.Replace(';', '\n');
 
+                //Get LastResumeUploadDate for subscriber
+                var lastResumeUploadDate = await _repositoryWrapper.SubscriberFileRepository.GetMostRecentCreatedDate(subscriberGuid);
+
                 // get the source partner for the subscriber 
-                SubscriberSourceDto sourcePartner = await _repositoryWrapper.SubscriberRepository.GetSubscriberSource(s.SubscriberId);
+                SubscriberSourceDto sourcePartner = await _repositoryWrapper.SubscriberRepository.GetSubscriberSource(subscriber.SubscriberId);
 
                 HubSpotContactDto contact = new HubSpotContactDto()
                 {
                     SubscriberGuid = subscriberGuid,
-                    FirstName = s.FirstName,
-                    LastName = s.LastName,
-                    Email = s.Email,
-                    HubSpotVid = s.HubSpotVid,
-                    DateJoined = s.CreateDate,
-                    LastLoginDate = s.LastSignIn.Value,
+                    FirstName = subscriber.FirstName,
+                    LastName = subscriber.LastName,
+                    Email = subscriber.Email,
+                    HubSpotVid = subscriber.HubSpotVid,
+                    DateJoined = subscriber.CreateDate,
+                    LastLoginDate = lastLoginDateTime.HasValue ? lastLoginDateTime.Value : subscriber.LastSignIn.Value,
                     SelfCuratedSkills = selfCuratedSkills,
                     SourcePartner = sourcePartner != null ?  sourcePartner.PartnerName : null,
-                    SkillsG2 = g2PublicSkills
+                    SkillsG2 = g2PublicSkills,
+                    LastResumeUploadDate = lastResumeUploadDate
                 };
 
                 // map the contact dto to a hubspot property dto and serialize it
-                json = Newtonsoft.Json.JsonConvert.SerializeObject(MapToHubSpotPropertiesDto(contact));
+                json = JsonConvert.SerializeObject(MapToHubSpotPropertiesDto(contact));
                 _syslog.LogInformation($"HubSpotService._AddOrUpdateContact: json = {json}");
                 string BaseUrl = _configuration["HubSpot:BaseUrl"];
                 string ApiKey = _configuration["HubSpot:ApiKey"];
@@ -128,7 +135,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                 HttpResponseMessage SearchResponse = AsyncHelper.RunSync<HttpResponseMessage>(() => client.SendAsync(request));
                 string ResponseJson = AsyncHelper.RunSync<string>(() => SearchResponse.Content.ReadAsStringAsync());
-                _syslog.LogInformation($"HubSpotService:_AddOrUpdateContact: response = {ResponseJson}");
+                _syslog.LogInformation($"HubSpotService:_AddOrUpdateContactBySubscriberGuid: response = {ResponseJson}");
                 // if all went well capture the returned vid   
                 if (SearchResponse.StatusCode == System.Net.HttpStatusCode.OK)
                 {
@@ -137,16 +144,27 @@ namespace UpDiddyApi.ApplicationCore.Services
                     JObject responseObject = JObject.Parse(ResponseJson);
                     string vidString = (string)responseObject["vid"];                    
                     rval = long.Parse(vidString);
-                    _syslog.LogInformation($"HubSpotService._AddOrUpdateContact: Vid returned {rval}");
+                    _syslog.LogInformation($"HubSpotService._AddOrUpdateContactBySubscriberGuid: Vid returned {rval}");
+
+                    //Update Hubspotvid
+                    await _repositoryWrapper.SubscriberRepository.UpdateHubSpotDetails(subscriberGuid, rval);
+                }
+                else
+                {
+                    _syslog.LogError($"HubSpotService._AddOrUpdateContactBySubscriberGuid: See details below;\n\r "+ 
+                        $"Hubspot API request: {JsonConvert.SerializeObject(request)}\n\r" +
+                        $"Hubspot API http response: {JsonConvert.SerializeObject(SearchResponse) ?? "null"}\n\r" +
+                        $"Hubspot API response content: {ResponseJson ?? "null"}");
+                    throw new Exception($"HubSpot service failure with statuscode {SearchResponse.StatusCode}");
                 }
             }
             catch ( Exception ex )
             {
-                _syslog.LogError($"HubSpotService._AddOrUpdateContact: Error {ex.Message}");
+                _syslog.LogError($"HubSpotService._AddOrUpdateContactBySubscriberGuid: Error {ex.Message}");
             }
             finally
             {
-                _syslog.LogInformation($"HubSpotService._AddOrUpdateContact: Done");
+                _syslog.LogInformation($"HubSpotService._AddOrUpdateContactBySubscriberGuid: Done");
             }                                      
             return rval;
         }
@@ -203,6 +221,17 @@ namespace UpDiddyApi.ApplicationCore.Services
                 rVal.properties.Add(p);
             }
 
+            //LastResumeUploadDate
+            if (hubSpotContactDto.LastResumeUploadDate.HasValue)
+            {
+                p = new HubSpotProperty()
+                {
+                    property = "lastresumeuploaddate",
+                    value = Utils.ToUnixTimeInMilliseconds(Utils.ToMidnight(hubSpotContactDto.LastResumeUploadDate.Value)).ToString()
+                };
+                rVal.properties.Add(p);
+            }
+
             if ( string.IsNullOrEmpty(hubSpotContactDto.SelfCuratedSkills) == false )
             {
                 p = new HubSpotProperty()
@@ -213,7 +242,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 rVal.properties.Add(p);
             }
 
-            if (string.IsNullOrEmpty(hubSpotContactDto.SkillsG2) == false)
+            if (!string.IsNullOrEmpty(hubSpotContactDto.SkillsG2))
             {
                 p = new HubSpotProperty()
                 {

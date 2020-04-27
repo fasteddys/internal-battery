@@ -19,6 +19,8 @@ namespace UpDiddyLib.Domain.Models.HubSpot
 
         public DateTime? LastLoginDate  { get; set; }
 
+        public DateTime? LastResumeUploadDate { get; set; }
+
         public string SelfCuratedSkills { get; set; }
 
         public string SkillsG2 { get; set; }
