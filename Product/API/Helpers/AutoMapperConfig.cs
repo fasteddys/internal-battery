@@ -789,7 +789,7 @@ namespace UpDiddyApi.Helpers
             .ForMember(c => c.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
             .ForMember(c => c.Email, opt => opt.MapFrom(src => src.Email))
             .ForAllOtherMembers(opt => opt.Ignore());
-            
+
             CreateMap<List<RecruiterStatDto>, RecruiterStatListDto>()
                   .AfterMap((src, dest) =>
                   {
@@ -838,6 +838,27 @@ namespace UpDiddyApi.Helpers
                 .ForMember(p => p.LinkedInUrl, opt => opt.MapFrom(src => src.Subscriber.LinkedInUrl))
                 .ForMember(p => p.StackOverflowUrl, opt => opt.MapFrom(src => src.Subscriber.StackOverflowUrl))
                 .ForMember(p => p.AvatarUrl, opt => opt.MapFrom(src => src.Subscriber.AvatarUrl))
+                .AfterMap((src, dest) =>
+                {
+                    if (string.IsNullOrWhiteSpace(dest.FirstName) && !string.IsNullOrWhiteSpace(src.Subscriber.FirstName))
+                        dest.FirstName = src.Subscriber.FirstName;
+                    if (string.IsNullOrWhiteSpace(dest.LastName) && !string.IsNullOrWhiteSpace(src.Subscriber.LastName))
+                        dest.LastName = src.Subscriber.LastName;
+                    if (string.IsNullOrWhiteSpace(dest.Email) && !string.IsNullOrWhiteSpace(src.Subscriber.Email))
+                        dest.Email = src.Subscriber.Email;
+                    if (string.IsNullOrWhiteSpace(dest.PhoneNumber) && !string.IsNullOrWhiteSpace(src.Subscriber.PhoneNumber))
+                        dest.PhoneNumber = src.Subscriber.PhoneNumber;
+                    if (string.IsNullOrWhiteSpace(dest.StreetAddress) && !string.IsNullOrWhiteSpace(src.Subscriber.Address))
+                        dest.StreetAddress = src.Subscriber.Address;
+                    if (!dest.CityGuid.HasValue && src.Subscriber.CityGuid.HasValue)
+                        dest.CityGuid = src.Subscriber.CityGuid;
+                    if (!dest.StateGuid.HasValue && src.Subscriber.StateGuid.HasValue)
+                        dest.StateGuid = src.Subscriber.StateGuid;
+                    if (!dest.PostalGuid.HasValue && src.Subscriber.PostalGuid.HasValue)
+                        dest.PostalGuid = src.Subscriber.PostalGuid;
+                    if (string.IsNullOrWhiteSpace(dest.Title) && !string.IsNullOrWhiteSpace(src.Subscriber.Title))
+                        dest.Title = src.Subscriber.Title;
+                })
                 .ReverseMap();
 
             CreateMap<List<WishlistDto>, WishlistListDto>()
@@ -918,7 +939,7 @@ namespace UpDiddyApi.Helpers
                    dest.TotalRecords = src.FirstOrDefault().TotalRecords;
                else
                    dest.TotalRecords = 0;
-           })         
+           })
          .ForMember(dest => dest.EmailTemplates, opt => opt.MapFrom(src => src.ToList()))
          .ReverseMap();
 

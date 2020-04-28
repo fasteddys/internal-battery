@@ -167,7 +167,7 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
         {
             // fire and forget 
             Task.Run(() => {
-                string index = _configuration["AzureSearch:SubscriberIndexName"];
+                string index = _configuration["AzureSearch:G2IndexName"];
                 SDOCRequest<SubscriberSDOC> docs = new SDOCRequest<SubscriberSDOC>();
                 SubscriberSDOC doc = _mapper.Map<SubscriberSDOC>(subscriber);
                 doc.SearchAction = cmd;

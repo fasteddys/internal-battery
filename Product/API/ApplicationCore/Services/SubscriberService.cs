@@ -52,7 +52,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         private IG2Service _g2Service;
         private IHubSpotService _hubSpotService;
 
-
         public SubscriberService(UpDiddyDbContext context,
             IConfiguration configuration,
             ICloudStorage cloudStorage,
@@ -283,6 +282,9 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             // add the user to the Google Talent Cloud
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriberGuid));
+            // add the user to the G2 profile for search
+            await _g2Service.G2AddSubscriberAsync(subscriberGuid);
+
 
             if (!string.IsNullOrWhiteSpace(subscriberDto.ReferrerUrl) && subscriberDto.PartnerGuid != null && subscriberDto.PartnerGuid != Guid.Empty)
             {
@@ -292,7 +294,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             else if (!string.IsNullOrWhiteSpace(subscriberDto.ReferrerUrl))
             {
-
                 _logger.LogInformation($"SubscriberService:CreateSubscriberAsync looking up partnerguid from ReferrerUrl");
                 Guid partnerGuid = Guid.Empty;
                 bool isGatedDownload = false;

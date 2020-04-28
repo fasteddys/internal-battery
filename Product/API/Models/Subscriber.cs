@@ -79,8 +79,6 @@ namespace UpDiddyApi.Models
 
         #endregion
 
-
-
         #region hubspot
 
         public long? HubSpotVid { get; set; }
@@ -88,5 +86,21 @@ namespace UpDiddyApi.Models
 
         #endregion
 
+        #region Connected
+        public string  ConnectedId { get; set; }
+        public DateTime? ConnectedModifyDate { get; set; }
+        #endregion
+
+
+
+
+
+        #region Computed Columns
+
+        public Guid? StateGuid { get; set; }
+        public Guid? CityGuid { get; set; }
+        public Guid? PostalGuid { get; set; }
+
+        #endregion
     }
 }
