@@ -49,5 +49,24 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 .Where(p => p.IsDeleted == 0 && p.City.CityGuid == city)
                 .ToListAsync();
         }
+
+        public async Task<List<PostalLookupDto>> GetAllUSPostals()
+        {
+            return await (from co in _dbContext.Country
+                          join s in _dbContext.State on co.CountryId equals s.CountryId
+                          join ci in _dbContext.City on s.StateId equals ci.StateId
+                          join p in _dbContext.Postal on ci.CityId equals p.CityId
+                          where co.Code3 == "USA" && s.IsDeleted == 0 && co.IsDeleted == 0 && ci.IsDeleted == 0
+                          select new PostalLookupDto()
+                          {
+                              CityGuid = ci.CityGuid.Value,
+                              CityName = ci.Name,
+                              StateGuid = s.StateGuid.Value,
+                              StateName = s.Name,
+                              StateCode = s.Code,
+                              PostalGuid = p.PostalGuid.Value,
+                              PostalCode = p.Code
+                          }).ToListAsync();
+        }
     }
 }
