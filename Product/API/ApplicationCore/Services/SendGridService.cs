@@ -230,7 +230,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                         _syslog.LogInformation($"SendGridService:SendUserDefinedBulkEmailByList Sending Profile Sent To = {profile.ProfileGuid} Subject = {userDefinedEmailDto.Subject} ReplyTo = {userDefinedEmailDto.ReplyToEmailAddress} TemplateId = {sendGridTemplateId} SubAccount = {sendGridSubAccount} Content = {templateData} ");
                         _sysEmail.SendTemplatedEmailWithReplyToAsync(profile.Email, sendGridTemplateId, templateData, sendGridSubAccount, replyToEmail: userDefinedEmailDto.ReplyToEmailAddress);
                         // add note about email being sent 
-                        await AddActivityNote("AdHocEmail", recruiterSubscriberGuid, profile.Subscriber.SubscriberId, userDefinedEmailDto.ActivityNote);
+                        await AddRecruiterCommentForProfile("AdHocEmail", recruiterSubscriberGuid, profile.ProfileGuid, userDefinedEmailDto.ActivityNote);
                     }
 
                     else
@@ -282,6 +282,28 @@ namespace UpDiddyApi.ApplicationCore.Services
                 ViewableByOthersInRecruiterCompany = true,
                 Notes = activityNote ?? $"Template {templateName} bulk email sent by {recruiter.LastName}, {recruiter.FirstName} on {DateTime.Now:G}.",
             });
+        }
+
+        private async Task AddRecruiterCommentForProfile(string templateName, Guid recruiterSubscriberGuid, Guid profileGuid, string recuiterComment = null)
+        {
+            var recruiter = await _repositoryWrapper.RecruiterRepository.GetRecruiterBySubscriberGuid(recruiterSubscriberGuid);
+            if (recruiter?.SubscriberId == null)
+            {
+                //add logging to record short circuit
+                _syslog.LogInformation($"SendGridService.AddRecruiterCommentsForProfile did not add recruiter comments to profile, recruiter.SubscriberId is null for recruiterSubscriberGuid = {recruiterSubscriberGuid}");
+
+                return; 
+            }
+            var commentsDto = new CommentsDto
+            {
+                RecruiterGuid = recruiter.RecruiterGuid,
+                Value = recuiterComment ?? $"Template {templateName} bulk email sent by {recruiter.LastName}, {recruiter.FirstName} on {DateTime.Now:G}.",
+                IsVisibleToCompany = true,
+                //TotalRecords = Not required
+                ProfileGuids = new List<Guid> { profileGuid }
+                };
+
+            await _commentService.CreateCommentsForRecruiter(recruiterSubscriberGuid, commentsDto);
         }
 
         #region Private Helpers
