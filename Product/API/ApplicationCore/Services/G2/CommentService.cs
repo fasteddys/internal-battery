@@ -84,7 +84,8 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
                 .ToArray();
 
             await _repositoryWrapper.CommentRepository.CreateRange(comments);
-
+            await _repositoryWrapper.CommentRepository.SaveAsync();
+            
             var orphanedProfileIds = commentsDto.ProfileGuids
                 .Where(id => !validProfiles.Select(validProfile => validProfile.ProfileGuid).Contains(id))
                 .ToList();
