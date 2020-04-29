@@ -82,6 +82,7 @@ namespace UpDiddyApi.Models
         #region hubspot
 
         public long? HubSpotVid { get; set; }
+        public DateTime? HubSpotModifyDate { get; set; }
 
         #endregion
 

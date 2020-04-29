@@ -13,5 +13,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<SubscriberFile>> GetAllSubscriberFilesBySubscriberGuid(Guid subscriberFile);
         Task<SubscriberFile> GetMostRecentBySubscriberGuid(Guid subscriberGuid);
         Task<SubscriberFile> GetMostRecentBySubscriberGuidForRecruiter(Guid profileGuid, Guid subscriberGuid);
+        Task<DateTime?> GetMostRecentCreatedDate(Guid subscriberGuid);
     }
 }

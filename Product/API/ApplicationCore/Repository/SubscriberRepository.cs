@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
+using UpDiddyLib.Dto;
 using Microsoft.EntityFrameworkCore.Extensions;
  
 
@@ -16,11 +17,14 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private readonly ISubscriberGroupRepository _subscriberGroupRepository;
         private readonly IGroupPartnerRepository _groupPartnerRepository;
         private readonly IPartnerRepository _partnerRepository;
-        public SubscriberRepository(UpDiddyDbContext dbContext, ISubscriberGroupRepository subscriberGroupRepository, IGroupPartnerRepository groupPartnerRepository, IPartnerRepository partnerRepository) : base(dbContext)
+        private readonly IStoredProcedureRepository _storedProcedureRepository;
+
+        public SubscriberRepository(UpDiddyDbContext dbContext, ISubscriberGroupRepository subscriberGroupRepository, IGroupPartnerRepository groupPartnerRepository, IPartnerRepository partnerRepository, IStoredProcedureRepository storedProcedureRepository) : base(dbContext)
         {
             _subscriberGroupRepository = subscriberGroupRepository;
             _groupPartnerRepository = groupPartnerRepository;
             _partnerRepository = partnerRepository;
+            _storedProcedureRepository = storedProcedureRepository;
             _dbContext = dbContext;
         }
 
@@ -36,6 +40,15 @@ namespace UpDiddyApi.ApplicationCore.Repository
                               .FirstOrDefaultAsync();
 
             return subscriberResult;
+        }
+
+        // get the parter attributed with source attribution (i.e. caused the subscriber to join cc )
+        public async Task<SubscriberSourceDto> GetSubscriberSource(int subscriberId)
+        {
+            var sources = await _storedProcedureRepository.GetSubscriberSources(subscriberId);
+            return sources
+                .Where(s => s.PartnerRank == 1 && s.GroupRank == 1)
+                .FirstOrDefault();
         }
 
 
@@ -78,10 +91,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             return subscriberResult;
         }
-
-
-
-
 
         public async Task<IList<Partner>> GetPartnersAssociatedWithSubscriber(int subscriberId)
         {
@@ -134,5 +143,27 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return await queryableSubscribers.Where(s => s.IsDeleted == 0).CountAsync();
         }
 
+        public async Task UpdateHubSpotDetails(Guid subscriberId, long hubSpotVid)
+        {
+            var subscriber = await _dbContext.Subscriber
+                .SingleOrDefaultAsync(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberId);
+
+            await UpdateHubSpotDetails(subscriber, hubSpotVid);
+        }
+
+        public async Task UpdateHubSpotDetails(int subscriberId, long hubSpotVid)
+        {
+            var subscriber = await _dbContext.Subscriber
+                .SingleOrDefaultAsync(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId);
+
+            await UpdateHubSpotDetails(subscriber, hubSpotVid);
+        }
+
+        private async Task UpdateHubSpotDetails(Subscriber subscriber, long hubSpotVid)
+        {
+            subscriber.HubSpotVid = hubSpotVid;
+            subscriber.HubSpotModifyDate = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync();
+        }
     }
 }

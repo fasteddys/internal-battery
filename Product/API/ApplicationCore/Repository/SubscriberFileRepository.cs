@@ -58,5 +58,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
                           select sf)
                           .FirstOrDefaultAsync();
         }
+
+        public async Task<DateTime?> GetMostRecentCreatedDate(Guid subscriberGuid) => await _dbContext.SubscriberFile
+            .Include(sf => sf.Subscriber)
+            .Where(sf => sf.IsDeleted == 0 && sf.Subscriber.IsDeleted == 0 && sf.Subscriber.SubscriberGuid == subscriberGuid)
+            .OrderByDescending(sf => sf.CreateDate)
+            .Select(sf => (DateTime?)sf.CreateDate) //Returns nullable DateTime with casting
+            .FirstOrDefaultAsync();
     }
 }

@@ -26,6 +26,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         private ITaggingService _taggingService { get; set; }
         private IHangfireService _hangfireService { get; set; }
         private ISubscriberService _subscriberService { get; set; }
+        private readonly IG2Service _g2Service;
+        private readonly IHubSpotService _hubSpotService;
 
         public ProfileService(UpDiddyDbContext context,
         IConfiguration configuration,
@@ -35,7 +37,10 @@ namespace UpDiddyApi.ApplicationCore.Services
         IMapper mapper,
         ITaggingService taggingService,
         IHangfireService hangfireService,
-        ISubscriberService subscriberService)
+        ISubscriberService subscriberService,        
+        IG2Service g2Service,
+        IHubSpotService hubSpotService
+        )
         {
             _db = context;
             _configuration = configuration;
@@ -46,6 +51,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             _taggingService = taggingService;
             _hangfireService = hangfireService;
             _subscriberService = subscriberService;
+            _g2Service = g2Service;
+            _hubSpotService = hubSpotService;
         }
 
         #region basic profile 
@@ -69,20 +76,21 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, $"SubscriberService.UpdateSubscriberProfileBasicAsync: An error occured while attempting to create a subscriber. Message: {e.Message}", e);
-                throw e;
+                _logger.Log(LogLevel.Error, $"ProfileService.GetSubscriberProfileBasicAsync: An error occured while attempting to get a subscriber. Message: {e.Message}", e);
+                throw;
             }
             return rVal;
         }
 
         public async Task<bool> UpdateSubscriberProfileBasicAsync(SubscribeProfileBasicDto subscribeProfileBasicDto, Guid subscriberGuid)
         {
+            int step = 0;
             try
             {
+                
                 var Subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
                 if (Subscriber == null)
                     throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
-
 
 
                 int? StateId = null;
@@ -111,13 +119,21 @@ namespace UpDiddyApi.ApplicationCore.Services
                 await _repository.SubscriberRepository.SaveAsync();
 
                 // add the user to the Google Talent Cloud
+                step = 1;
                 _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriberGuid));
+                step = 2;
+                // update the user's g2 information 
+                await _g2Service.G2IndexBySubscriberAsync(subscriberGuid);
+                step = 3;
+                //Call Hubspot to catpture any first or last name changes 
+                await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid);
+                step = 4;
 
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, $"SubscriberService.UpdateSubscriberProfileBasicAsync: An error occured while attempting to create a subscriber. Message: {e.Message}", e);
-                throw e;
+                _logger.Log(LogLevel.Error, $"ProfileService.UpdateSubscriberProfileBasicAsync: An error occured while attempting to update a subscriber at step {step}. Message: {e.Message}", e);
+                throw;
             }
             return true;
         }
@@ -180,8 +196,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, $"SubscriberService.CreateNewSubscriberAsync: An error occured while attempting to create a subscriber. Message: {e.Message}", e);
-                throw (e);
+                _logger.Log(LogLevel.Error, $"ProfileService.CreateNewSubscriberAsync: An error occured while attempting to create a subscriber. Message: {e.Message}", e);
+                throw;
             }
 
             return isSubscriberCreatedSuccessfully;
@@ -204,8 +220,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, $"SubscriberService.UpdateSubscriberProfileBasicAsync: An error occured while attempting to create a subscriber. Message: {e.Message}", e);
-                throw e;
+                _logger.Log(LogLevel.Error, $"ProfileService.GetSubscriberProfileSocialAsync: An error occured while attempting to get a subscriber's social data. Message: {e.Message}", e);
+                throw;
             }
             return rVal;
         }
@@ -239,8 +255,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, $"SubscriberService.UpdateSubscriberProfileBasicAsync: An error occured while attempting to create a subscriber. Message: {e.Message}", e);
-                throw e;
+                _logger.Log(LogLevel.Error, $"ProfileService.UpdateSubscriberProfileSocialAsync: An error occured while attempting to update a subscriber's social data. Message: {e.Message}", e);
+                throw;
             }
             return true;
         }

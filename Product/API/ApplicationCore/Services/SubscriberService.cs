@@ -49,7 +49,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         private ISysEmail _sysEmail;
         private readonly IButterCMSService _butterCMSService;
         private readonly ZeroBounceApi _zeroBounceApi;
-        private readonly IG2Service _g2Service;
+        private IG2Service _g2Service;
+        private IHubSpotService _hubSpotService;
 
         public SubscriberService(UpDiddyDbContext context,
             IConfiguration configuration,
@@ -62,7 +63,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             IFileDownloadTrackerService fileDownloadTrackerService,
             ISysEmail sysEmail,
             IButterCMSService butterCMSService,
-            IG2Service g2Service)
+            IG2Service g2Service,
+            IHubSpotService hubSpotService)
         {
             _db = context;
             _configuration = configuration;
@@ -77,6 +79,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             _zeroBounceApi = new ZeroBounceApi(_configuration, _repository, _logger);
             _butterCMSService = butterCMSService;
             _g2Service = g2Service;
+            _hubSpotService = hubSpotService;
+            
         }
 
         public async Task<Subscriber> GetSubscriberByEmail(string email)
@@ -95,7 +99,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await _repository.StoredProcedureRepository.GetSubscriberSources(subscriberId);
 
         }
-
+ 
         public async Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numSubscribers, int indexVersion)
         {
             var querableSubscribers = _repository.SubscriberRepository.GetAllSubscribersAsync();
@@ -269,6 +273,13 @@ namespace UpDiddyApi.ApplicationCore.Services
             // todo: if we remove the dependency for INT PKs from other services (tagging, file download) then we can remove the following line of code
             var subscriber = _repository.SubscriberRepository.GetSubscriberByGuid(subscriberGuid);
 
+
+            // add user to hubspot
+            await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid, lastLoginDateTime: null);
+
+            // Add the new user to the azure index 
+            await _g2Service.G2AddSubscriberAsync(subscriberGuid);
+
             // add the user to the Google Talent Cloud
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriberGuid));
             // add the user to the G2 profile for search
@@ -359,8 +370,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                     _logger.LogError($"SubscriberService:CreateSubscriberAsync Error at step {step} getting partner guid from url.  Msg = {ex.Message}");
                 }
             }
-
-
 
             return subscriberGuid;
         }

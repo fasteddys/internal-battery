@@ -59,7 +59,7 @@ namespace UpDiddyApi.Workflow
         private readonly ISkillService _skillService;
         private readonly IG2Service _g2Service;
         private readonly ISendGridService _sendGridService;
-
+        private readonly IHubSpotService _hubSpotService;
 
 
 
@@ -88,7 +88,8 @@ namespace UpDiddyApi.Workflow
             IHiringSolvedService hiringSolvedService,
             ISkillService skillService,
             IG2Service g2Service,
-            ISendGridService sendGridService
+            ISendGridService sendGridService,
+            IHubSpotService hubSpotService
             )
         {
             _db = context;
@@ -118,7 +119,7 @@ namespace UpDiddyApi.Workflow
             _skillService = skillService;
             _g2Service = g2Service;
             _sendGridService = sendGridService;
-       
+            _hubSpotService = hubSpotService;
         }
 
 
@@ -2051,6 +2052,9 @@ namespace UpDiddyApi.Workflow
                 subscriber.ModifyGuid = Guid.Empty;
                 await _repositoryWrapper.SubscriberRepository.SaveAsync();
             }
+            // update hubspot with subscriber last signin 
+            await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid, lastLoginDateTime: currentUtcDateTime);
+
             _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.TrackSubscriberSignIn completed at: {DateTime.UtcNow.ToLongDateString()}");
         }
 
@@ -2155,6 +2159,11 @@ namespace UpDiddyApi.Workflow
 
 
 #endregion
+
+
+
+
+
 
 #region G2
 
