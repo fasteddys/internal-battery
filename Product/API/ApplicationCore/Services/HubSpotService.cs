@@ -48,7 +48,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _syslog.LogInformation($"HubSpotService.AddOrUpdateContactBySubscribterGuid: Starting for subscriber {subscriberGuid} nonBlocking = {nonBlocking}");
 
             // Fire off background job if non-block has been requested and hangfire is enabled 
-            if (nonBlocking && bool.Parse(_configuration["Hangfire:IsProcessingServer"]))
+            if (nonBlocking )
             {
                 _syslog.LogInformation($"HubSpotService.AddOrUpdateContactBySubscribterGuid: Background job starting for subscriber {subscriberGuid}");
                 _hangfireService.Enqueue<HubSpotService>(j => j._AddOrUpdateContactBySubscriberGuid(subscriberGuid, lastLoginDateTime));
@@ -71,8 +71,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             _syslog.LogInformation($"HubSpotService._AddOrUpdateContact: starting");
             long rval = -1;
             string json = string.Empty;
+            int step = 0;
             try
             {
+
+
                 Subscriber subscriber = _repositoryWrapper.SubscriberRepository.GetAll()
                         .Include(s1 => s1.SubscriberSkills)
                         .ThenInclude(ss => ss.Skill)
@@ -82,6 +85,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (subscriber == null)
                     throw new DllNotFoundException($"HubSpotService._AddOrUpdateContactBySubscribterGuid: cannot locate subscriber {subscriberGuid}");
 
+                step = 1;
                 // get list of self curated skills as string with new lines 
                 string selfCuratedSkills = string.Join("\n", subscriber.SubscriberSkills.Select(u => u.Skill.SkillName).ToArray());
 
@@ -92,14 +96,15 @@ namespace UpDiddyApi.ApplicationCore.Services
                             .Where(p => p.SubscriberGuid == subscriberGuid && p.CompanyGuid != publicDataCompanyGuid)
                             .FirstOrDefault();
 
+                step = 2;
                 string g2PublicSkills = g2Profile?.PublicSkills.Replace(';', '\n');
 
                 //Get LastResumeUploadDate for subscriber
                 var lastResumeUploadDate = await _repositoryWrapper.SubscriberFileRepository.GetMostRecentCreatedDate(subscriberGuid);
-
+                step = 3;
                 // get the source partner for the subscriber 
                 SubscriberSourceDto sourcePartner = await _repositoryWrapper.SubscriberRepository.GetSubscriberSource(subscriber.SubscriberId);
-
+                step = 4;
                 HubSpotContactDto contact = new HubSpotContactDto()
                 {
                     SubscriberGuid = subscriberGuid,
@@ -114,24 +119,27 @@ namespace UpDiddyApi.ApplicationCore.Services
                     SkillsG2 = g2PublicSkills,
                     LastResumeUploadDate = lastResumeUploadDate
                 };
-
+                step = 5;
                 // map the contact dto to a hubspot property dto and serialize it
                 json = JsonConvert.SerializeObject(MapToHubSpotPropertiesDto(contact));
                 _syslog.LogInformation($"HubSpotService._AddOrUpdateContact: json = {json}");
                 string BaseUrl = _configuration["HubSpot:BaseUrl"];
                 string ApiKey = _configuration["HubSpot:ApiKey"];
                 string Url = BaseUrl + "/contacts/v1/contact/createOrUpdate/email/" + contact.Email + "?hapikey=" + ApiKey;
-
+                step = 6;
                 // call hubspot  
                 HttpClient client = _httpClientFactory.CreateClient(Constants.HttpPostClientName);
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, Url)
                 {
                     Content = new StringContent(json)
                 };
+
+                step = 6;
                 request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                 HttpResponseMessage SearchResponse = AsyncHelper.RunSync<HttpResponseMessage>(() => client.SendAsync(request));
                 string ResponseJson = AsyncHelper.RunSync<string>(() => SearchResponse.Content.ReadAsStringAsync());
                 _syslog.LogInformation($"HubSpotService:_AddOrUpdateContactBySubscriberGuid: response = {ResponseJson}");
+                step = 7;
                 // if all went well capture the returned vid   
                 if (SearchResponse.StatusCode == System.Net.HttpStatusCode.OK)
                 {
@@ -156,7 +164,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             catch ( Exception ex )
             {
-                _syslog.LogError($"HubSpotService._AddOrUpdateContactBySubscriberGuid: Error {ex.Message}");
+                _syslog.LogError($"HubSpotService._AddOrUpdateContactBySubscriberGuid: Error {ex.ToString()} step = {step}");
             }
             finally
             {
