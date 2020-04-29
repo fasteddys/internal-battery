@@ -2052,6 +2052,7 @@ namespace UpDiddyApi.Workflow
                 subscriber.ModifyGuid = Guid.Empty;
                 await _repositoryWrapper.SubscriberRepository.SaveAsync();
             }
+            // update hubspot with subscriber last signin 
             await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid, lastLoginDateTime: currentUtcDateTime);
 
             _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.TrackSubscriberSignIn completed at: {DateTime.UtcNow.ToLongDateString()}");

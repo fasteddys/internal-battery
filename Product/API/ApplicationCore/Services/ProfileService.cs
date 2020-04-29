@@ -26,6 +26,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         private ITaggingService _taggingService { get; set; }
         private IHangfireService _hangfireService { get; set; }
         private ISubscriberService _subscriberService { get; set; }
+        private readonly IG2Service _g2Service;
+        private readonly IHubSpotService _hubSpotService;
 
         public ProfileService(UpDiddyDbContext context,
         IConfiguration configuration,
@@ -35,7 +37,10 @@ namespace UpDiddyApi.ApplicationCore.Services
         IMapper mapper,
         ITaggingService taggingService,
         IHangfireService hangfireService,
-        ISubscriberService subscriberService)
+        ISubscriberService subscriberService,        
+        IG2Service g2Service,
+        IHubSpotService hubSpotService
+        )
         {
             _db = context;
             _configuration = configuration;
@@ -46,6 +51,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             _taggingService = taggingService;
             _hangfireService = hangfireService;
             _subscriberService = subscriberService;
+            _g2Service = g2Service;
+            _hubSpotService = hubSpotService;
         }
 
         #region basic profile 
@@ -84,7 +91,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                     throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
 
 
-
                 int? StateId = null;
                 if (string.IsNullOrWhiteSpace(subscribeProfileBasicDto.ProvinceCode) == false)
                 {
@@ -112,6 +118,14 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 // add the user to the Google Talent Cloud
                 _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriberGuid));
+
+                // update the user's g2 information 
+                await _g2Service.G2IndexBySubscriberAsync(subscriberGuid);
+                //Call Hubspot to catpture any first or last name changes 
+                await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid);
+
+
+
 
             }
             catch (Exception e)

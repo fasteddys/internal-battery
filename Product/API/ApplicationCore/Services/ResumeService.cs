@@ -27,6 +27,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly ILogger _syslog;
         private readonly ISovrenAPI _sovrenApi;
         private readonly IHiringSolvedService _hiringSolvedService;
+        private readonly IHubSpotService _hubSpotService;
 
         public ResumeService(IHangfireService hangfireService
         , IRepositoryWrapper repositoryWrapper
@@ -36,6 +37,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         , ILogger<ResumeService> syslog
         , ISovrenAPI sovrenApi
         , IHiringSolvedService hiringSolvedService
+        , IHubSpotService hubSpotService
            )
         {
             _repositoryWrapper = repositoryWrapper;
@@ -46,6 +48,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _syslog = syslog;
             _sovrenApi = sovrenApi;
             _hiringSolvedService = hiringSolvedService;
+            _hubSpotService = hubSpotService;
         }
 
         public async Task<bool> HasSubscriberUploadedResumeForRecruiter(Guid profileGuid, Guid subscriberGuid)
@@ -115,6 +118,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _repositoryWrapper.SubscriberFileRepository.Create(subscriberFileResume);
             await _repositoryWrapper.SaveAsync();
             var resumeParseGuid = await ResumeHelper.ImportSubscriberProfileDataAsync(_hiringSolvedService, _subscriberService, _repositoryWrapper, _sovrenApi, subscriber, subscriberFileResume, fileDto.Base64EncodedData);
+
+            //Call Hubspot to catpture last resume update date 
+            await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid);
+
+
             return resumeParseGuid;
         }
 

@@ -275,7 +275,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
             // add user to hubspot
-            await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid, lastLoginDateTime: null, nonBlocking: false);
+            await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid, lastLoginDateTime: null);
 
             // Add the new user to the azure index 
             await _g2Service.G2AddSubscriberAsync(subscriberGuid);
