@@ -31,7 +31,7 @@ namespace UpDiddyApi.Authorization
             {
                 HangfireUnlockedCookie = Crypto.Decrypt(_configuration["Crypto:Key"], context.GetHttpContext().Request.Cookies["HangfireUnlocked"]);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return false;
             }
@@ -39,11 +39,8 @@ namespace UpDiddyApi.Authorization
                 return false;
 
             bool IsUnlocked = HangfireUnlockedCookie.Equals(_configuration["Hangfire:UnlockToken"]);
-            
 
-            if ((_environment.IsProduction() || _environment.IsStaging()) && IsUnlocked)
-                return true;
-            return false;
+            return IsUnlocked;
         }
     }
 }
