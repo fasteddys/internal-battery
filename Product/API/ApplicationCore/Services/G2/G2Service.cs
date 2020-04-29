@@ -180,12 +180,9 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
 
         public async Task<bool> G2IndexBySubscriberAsync(Guid subscriberGuid, Guid companyGuid)
         {
-            // Get the public company guid for 
-            Guid publicDataCompanyGuid = Guid.Parse(_configuration["CareerCircle:PublicDataCompanyGuid"]);
-
-            // Get all non-public G2s for subscriber 
+            // Get the G2 for the subscriber and recruiter company
             List<v_ProfileAzureSearch> g2Profiles = _db.ProfileAzureSearch
-            .Where(p => p.SubscriberGuid == subscriberGuid && p.CompanyGuid != publicDataCompanyGuid && p.CompanyGuid == companyGuid)
+            .Where(p => p.SubscriberGuid == subscriberGuid && p.CompanyGuid == companyGuid)
             .ToList();
 
             if (g2Profiles.Count == 0)
