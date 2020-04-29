@@ -297,7 +297,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             var commentsDto = new CommentsDto
             {
                 RecruiterGuid = recruiter.RecruiterGuid,
-                Value = recuiterComment ?? $"Template {templateName} bulk email sent by {recruiter.LastName}, {recruiter.FirstName} on {DateTime.Now:G}.",
+                Value = String.IsNullOrWhiteSpace(recuiterComment) ? 
+                        $"Template {templateName} bulk email sent by {recruiter.LastName}, {recruiter.FirstName} on {DateTime.Now:G}." :
+                        recuiterComment,
                 IsVisibleToCompany = true,
                 //TotalRecords = Not required
                 ProfileGuids = new List<Guid> { profileGuid }
