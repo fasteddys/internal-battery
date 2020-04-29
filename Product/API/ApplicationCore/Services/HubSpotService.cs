@@ -100,11 +100,20 @@ namespace UpDiddyApi.ApplicationCore.Services
                 string g2PublicSkills = g2Profile?.PublicSkills.Replace(';', '\n');
 
                 //Get LastResumeUploadDate for subscriber
-                var lastResumeUploadDate = await _repositoryWrapper.SubscriberFileRepository.GetMostRecentCreatedDate(subscriberGuid);
                 step = 3;
+                
+                DateTime? lastResumeUploadDate = null;
+                try
+                {
+                    await _repositoryWrapper.SubscriberFileRepository.GetMostRecentCreatedDate(subscriberGuid);
+                }
+                catch { }
+
+             
+                step = 4;
                 // get the source partner for the subscriber 
                 SubscriberSourceDto sourcePartner = await _repositoryWrapper.SubscriberRepository.GetSubscriberSource(subscriber.SubscriberId);
-                step = 4;
+                step = 5;
                 HubSpotContactDto contact = new HubSpotContactDto()
                 {
                     SubscriberGuid = subscriberGuid,
@@ -119,14 +128,14 @@ namespace UpDiddyApi.ApplicationCore.Services
                     SkillsG2 = g2PublicSkills,
                     LastResumeUploadDate = lastResumeUploadDate
                 };
-                step = 5;
+                step = 6;
                 // map the contact dto to a hubspot property dto and serialize it
                 json = JsonConvert.SerializeObject(MapToHubSpotPropertiesDto(contact));
                 _syslog.LogInformation($"HubSpotService._AddOrUpdateContact: json = {json}");
                 string BaseUrl = _configuration["HubSpot:BaseUrl"];
                 string ApiKey = _configuration["HubSpot:ApiKey"];
                 string Url = BaseUrl + "/contacts/v1/contact/createOrUpdate/email/" + contact.Email + "?hapikey=" + ApiKey;
-                step = 6;
+                step = 7;
                 // call hubspot  
                 HttpClient client = _httpClientFactory.CreateClient(Constants.HttpPostClientName);
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, Url)
@@ -134,12 +143,12 @@ namespace UpDiddyApi.ApplicationCore.Services
                     Content = new StringContent(json)
                 };
 
-                step = 6;
+                step = 8;
                 request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                 HttpResponseMessage SearchResponse = AsyncHelper.RunSync<HttpResponseMessage>(() => client.SendAsync(request));
                 string ResponseJson = AsyncHelper.RunSync<string>(() => SearchResponse.Content.ReadAsStringAsync());
                 _syslog.LogInformation($"HubSpotService:_AddOrUpdateContactBySubscriberGuid: response = {ResponseJson}");
-                step = 7;
+                step = 9;
                 // if all went well capture the returned vid   
                 if (SearchResponse.StatusCode == System.Net.HttpStatusCode.OK)
                 {
