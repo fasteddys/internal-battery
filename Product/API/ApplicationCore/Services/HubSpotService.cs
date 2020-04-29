@@ -45,12 +45,9 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<long> AddOrUpdateContactBySubscriberGuid(Guid subscriberGuid, DateTime? lastLoginDateTime = null, bool nonBlocking = true)
         {
-            //for testing 
-            //subscriberGuid = Guid.Parse("CE5F121A-C129-4BE5-B005-EEEB48339677");
+            _syslog.LogInformation($"HubSpotService.AddOrUpdateContactBySubscribterGuid: Starting for subscriber {subscriberGuid} nonBlocking = {nonBlocking}");
 
-
-            _syslog.LogInformation($"HubSpotService.AddOrUpdateContactBySubscribterGuid: Starting for subscriber {subscriberGuid}");
-            // Fire off background job if non-block has been requested
+            // Fire off background job if non-block has been requested and hangfire is enabled 
             if (nonBlocking && bool.Parse(_configuration["Hangfire:IsProcessingServer"]))
             {
                 _syslog.LogInformation($"HubSpotService.AddOrUpdateContactBySubscribterGuid: Background job starting for subscriber {subscriberGuid}");
@@ -70,9 +67,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         // add or update the current subsscriber in hubspot
         public async Task<long> _AddOrUpdateContactBySubscriberGuid(Guid subscriberGuid, DateTime? lastLoginDateTime)
         {
-
             _syslog.LogInformation($"HubSpotService._AddOrUpdateContact: starting");
-
             long rval = -1;
             string json = string.Empty;
             try
