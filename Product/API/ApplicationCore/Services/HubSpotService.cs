@@ -106,7 +106,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     FirstName = subscriber.FirstName,
                     LastName = subscriber.LastName,
                     Email = subscriber.Email,
-                    HubSpotVid = subscriber.HubSpotVid,
+                    HubSpotVid = subscriber?.HubSpotVid,
                     DateJoined = subscriber.CreateDate,
                     LastLoginDate = lastLoginDateTime.HasValue ? lastLoginDateTime.Value : subscriber.LastSignIn.Value,
                     SelfCuratedSkills = selfCuratedSkills,
