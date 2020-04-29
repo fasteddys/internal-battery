@@ -60,7 +60,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 long hubSpotVid = await _AddOrUpdateContactBySubscriberGuid(subscriberGuid, lastLoginDateTime);
                 _syslog.LogInformation($"HubSpotService.AddOrUpdateContactBySubscribterGuid: Subscriber {subscriberGuid} has hubSpotVid = {hubSpotVid}");
                 return hubSpotVid;
-            }                            
+            }
+            
         }
 
 

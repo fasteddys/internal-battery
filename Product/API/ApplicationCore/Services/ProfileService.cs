@@ -84,8 +84,10 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<bool> UpdateSubscriberProfileBasicAsync(SubscribeProfileBasicDto subscribeProfileBasicDto, Guid subscriberGuid)
         {
+            int step = 0;
             try
             {
+                
                 var Subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
                 if (Subscriber == null)
                     throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
@@ -117,21 +119,21 @@ namespace UpDiddyApi.ApplicationCore.Services
                 await _repository.SubscriberRepository.SaveAsync();
 
                 // add the user to the Google Talent Cloud
+                step = 1;
                 _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriberGuid));
-
+                step = 2;
                 // update the user's g2 information 
                 await _g2Service.G2IndexBySubscriberAsync(subscriberGuid);
+                step = 3;
                 //Call Hubspot to catpture any first or last name changes 
                 await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid);
-
-
-
+                step = 4;
 
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, $"SubscriberService.UpdateSubscriberProfileBasicAsync: An error occured while attempting to create a subscriber. Message: {e.Message}", e);
-                throw e;
+                _logger.Log(LogLevel.Error, $"SubscriberService.UpdateSubscriberProfileBasicAsync: An error occured while attempting to update a subscriber at step {step}. Message: {e.Message}", e);
+              
             }
             return true;
         }
