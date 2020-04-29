@@ -76,8 +76,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, $"SubscriberService.UpdateSubscriberProfileBasicAsync: An error occured while attempting to create a subscriber. Message: {e.Message}", e);
-                throw e;
+                _logger.Log(LogLevel.Error, $"ProfileService.GetSubscriberProfileBasicAsync: An error occured while attempting to get a subscriber. Message: {e.Message}", e);
+                throw;
             }
             return rVal;
         }
@@ -132,8 +132,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, $"SubscriberService.UpdateSubscriberProfileBasicAsync: An error occured while attempting to update a subscriber at step {step}. Message: {e.Message}", e);
-              
+                _logger.Log(LogLevel.Error, $"ProfileService.UpdateSubscriberProfileBasicAsync: An error occured while attempting to update a subscriber at step {step}. Message: {e.Message}", e);
+                throw;
             }
             return true;
         }
@@ -196,8 +196,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, $"SubscriberService.CreateNewSubscriberAsync: An error occured while attempting to create a subscriber. Message: {e.Message}", e);
-                throw (e);
+                _logger.Log(LogLevel.Error, $"ProfileService.CreateNewSubscriberAsync: An error occured while attempting to create a subscriber. Message: {e.Message}", e);
+                throw;
             }
 
             return isSubscriberCreatedSuccessfully;
@@ -220,8 +220,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, $"SubscriberService.UpdateSubscriberProfileBasicAsync: An error occured while attempting to create a subscriber. Message: {e.Message}", e);
-                throw e;
+                _logger.Log(LogLevel.Error, $"ProfileService.GetSubscriberProfileSocialAsync: An error occured while attempting to get a subscriber's social data. Message: {e.Message}", e);
+                throw;
             }
             return rVal;
         }
@@ -255,8 +255,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, $"SubscriberService.UpdateSubscriberProfileBasicAsync: An error occured while attempting to create a subscriber. Message: {e.Message}", e);
-                throw e;
+                _logger.Log(LogLevel.Error, $"ProfileService.UpdateSubscriberProfileSocialAsync: An error occured while attempting to update a subscriber's social data. Message: {e.Message}", e);
+                throw;
             }
             return true;
         }
