@@ -97,7 +97,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                             .FirstOrDefault();
 
                 step = 2;
-                string g2PublicSkills = g2Profile?.PublicSkills.Replace(';', '\n');
+                string g2PublicSkills = string.Empty;                   
+                if (g2Profile?.PublicSkills != null)
+                {
+                    g2Profile?.PublicSkills.Replace(';', '\n');
+                }
 
                 //Get LastResumeUploadDate for subscriber
                 step = 3;
