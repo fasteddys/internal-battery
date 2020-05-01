@@ -182,16 +182,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
-
-
-
         public async Task<RecruiterInfoListDto> GetRecruiters(int limit, int offset, string sort, string order)
         {
             List<RecruiterInfoDto> rVal = null;
             rVal = await _repositoryWrapper.StoredProcedureRepository.GetRecruiters(limit, offset, sort, order);
             return _mapper.Map<RecruiterInfoListDto>(rVal);
         }
-
 
         public async Task<Guid> AddRecruiterAsync(RecruiterInfoDto recruiterDto)
         {
@@ -242,7 +238,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     PhoneNumber = recruiterDto.PhoneNumber,
                     Email = recruiterDto.Email,
                     RecruiterGuid = recruiterGuid,
-                    SubscriberId = subscriber.SubscriberId                    
+                    SubscriberId = subscriber.SubscriberId
                 };
                 BaseModelFactory.SetDefaultsForAddNew(newRecruiter);
                 var newRecruiterCompany = new RecruiterCompany()
@@ -266,15 +262,15 @@ namespace UpDiddyApi.ApplicationCore.Services
             //Assign permission to recruiter
             if (recruiterDto.IsInAuth0RecruiterGroup != null && recruiterDto.IsInAuth0RecruiterGroup.Value == true)
                 await AssignRecruiterPermissionsAsync(recruiterDto.SubscriberGuid.Value);
-            
+
             return recruiterGuid;
         }
-        
+
         public async Task EditRecruiterAsync(RecruiterInfoDto recruiterDto, Guid Recruiter)
         {
-            if ( Recruiter != recruiterDto.RecruiterGuid)
+            if (Recruiter != recruiterDto.RecruiterGuid)
                 throw new FailedValidationException($"Recruiter specified in URL does not match recruiter specified in body");
-            
+
             var recruiter = await _repositoryWrapper.RecruiterRepository.GetRecruiterByRecruiterGuid(recruiterDto.RecruiterGuid);
             if (recruiter == null)
                 throw new FailedValidationException($"{recruiterDto.RecruiterGuid} is not a valid recruiter");
@@ -285,7 +281,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(recruiterDto.SubscriberGuid.Value);
             if (subscriber == null)
                 throw new FailedValidationException($"{recruiterDto.SubscriberGuid.Value} is not a valid subscriber");
-            
+
             if (recruiterDto.CompanyGuid == null)
                 throw new FailedValidationException($"Recruiters company is not specified");
 
@@ -367,6 +363,23 @@ namespace UpDiddyApi.ApplicationCore.Services
                 .Include(s => s.Subscriber)
                 .Include(c => c.RecruiterCompanies).ThenInclude(rc => rc.Company)
                 .Where(r => r.IsDeleted == 0 && r.RecruiterGuid == RecruiterGuid)
+                .Select(r => new Recruiter
+                {
+                    CreateDate = r.CreateDate,
+                    CreateGuid = r.CreateGuid,
+                    Email = r.Subscriber != null ? r.Subscriber.Email : r.Email,
+                    FirstName = r.Subscriber != null ? r.Subscriber.FirstName : r.FirstName,
+                    IsDeleted = r.IsDeleted,
+                    LastName = r.Subscriber != null ? r.Subscriber.LastName : r.LastName,
+                    ModifyDate = r.ModifyDate,
+                    ModifyGuid = r.ModifyGuid,
+                    PhoneNumber = r.Subscriber != null ? r.Subscriber.PhoneNumber : r.PhoneNumber,
+                    RecruiterGuid = r.RecruiterGuid,
+                    RecruiterCompanies = r.RecruiterCompanies,
+                    RecruiterId = r.RecruiterId,
+                    Subscriber = r.Subscriber,
+                    SubscriberId = r.SubscriberId
+                })
                 .FirstOrDefault();
 
             if (recruiter == null)
@@ -378,13 +391,29 @@ namespace UpDiddyApi.ApplicationCore.Services
             return rVal;
         }
 
-
         public async Task<RecruiterInfoDto> GetRecruiterBySubscriberAsync(Guid SubscriberGuid)
         {
             var recruiter = _repositoryWrapper.RecruiterRepository.GetAll()
                 .Include(s => s.Subscriber)
                 .Include(c => c.RecruiterCompanies).ThenInclude(rc => rc.Company)
                 .Where(r => r.IsDeleted == 0 && r.Subscriber.SubscriberGuid == SubscriberGuid)
+                .Select(r => new Recruiter
+                {
+                    CreateDate = r.CreateDate,
+                    CreateGuid = r.CreateGuid,
+                    Email = r.Subscriber != null ? r.Subscriber.Email : r.Email,
+                    FirstName = r.Subscriber != null ? r.Subscriber.FirstName : r.FirstName,
+                    IsDeleted = r.IsDeleted,
+                    LastName = r.Subscriber != null ? r.Subscriber.LastName : r.LastName,
+                    ModifyDate = r.ModifyDate,
+                    ModifyGuid = r.ModifyGuid,
+                    PhoneNumber = r.Subscriber != null ? r.Subscriber.PhoneNumber : r.PhoneNumber,
+                    RecruiterGuid = r.RecruiterGuid,
+                    RecruiterCompanies = r.RecruiterCompanies,
+                    RecruiterId = r.RecruiterId,
+                    Subscriber = r.Subscriber,
+                    SubscriberId = r.SubscriberId
+                })
                 .FirstOrDefault();
 
             if (recruiter == null)
@@ -395,8 +424,6 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             return rVal;
         }
-
-
 
         public async Task<RecruiterSearchResultDto> SearchRecruitersAsync(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", string companyName = "")
         {
@@ -434,7 +461,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             //todo implement case insensitive filtering if it becomes necessary - strategry would be to index the companyname as lowercase into a filter field
             if (companyName != "")
-                parameters.Filter = $"CompanyName eq '{companyName}'"; 
+                parameters.Filter = $"CompanyName eq '{companyName}'";
 
             results = indexClient.Documents.Search<RecruiterInfoDto>(keyword, parameters);
 
@@ -462,8 +489,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             searchResults.SearchMappingTimeInTicks = intervalMapTime.Ticks;
             return searchResults;
         }
-
-
 
         #region Private methods
 
@@ -501,7 +526,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
-
         private async Task<bool> CheckRecruiterPermissionAsync(Recruiter recruiter)
         {
             var response = await _userService.GetUsersInRoleAsync(Role.Recruiter);
@@ -516,11 +540,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                 return false;
 
         }
-
-
-
-
-
 
         #endregion
     }

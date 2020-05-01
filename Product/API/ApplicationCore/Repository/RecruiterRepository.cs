@@ -26,7 +26,19 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             return await (from r in _dbContext.Recruiter.Include(r => r.Subscriber).Include(r => r.RecruiterCompanies).ThenInclude(rc => rc.Company)
                           where r.Subscriber != null && r.RecruiterCompanies.Any() && r.IsDeleted == 0
-                          select r).ToListAsync();
+                          select new Recruiter
+                          {
+                              CreateDate = r.CreateDate,
+                              CreateGuid = r.CreateGuid,
+                              Email = r.Subscriber.Email,
+                              FirstName = r.Subscriber.FirstName ?? r.FirstName,
+                              LastName = r.Subscriber.LastName ?? r.LastName,
+                              IsDeleted = r.IsDeleted,
+                              ModifyDate = r.ModifyDate,
+                              ModifyGuid = r.ModifyGuid,
+                              PhoneNumber = r.Subscriber.PhoneNumber ?? r.PhoneNumber,
+                              RecruiterGuid = r.RecruiterGuid
+                          }).ToListAsync();
         }
 
         public async Task<Recruiter> GetRecruiterByRecruiterGuid(Guid recruiterGuid)
