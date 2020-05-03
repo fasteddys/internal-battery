@@ -20,11 +20,7 @@ namespace UpDiddyLib.Helpers
             DateTime? sendAt = null,
             int? unsubscribeGroupId = null);
 
-
-        Task<bool> SendEmailAsync(ILogger syslog, string email, string subject, string htmlContent, Constants.SendGridAccount SendGridAccount);
-
-        Task<bool> SendTemplatedEmailAsync(
-            ILogger syslog,
+        Task<bool> SendTemplatedEmailWithReplyToAsync(
             string email,
             string templateId,
             dynamic templateData,
@@ -32,7 +28,10 @@ namespace UpDiddyLib.Helpers
             string subject = null,
             List<Attachment> attachments = null,
             DateTime? sendAt = null,
-            int? unsubscribeGroupId = null);
+            int? unsubscribeGroupId = null,
+            string replyToEmail = null);
+
+
 
         void SendPurchaseReceiptEmail(
             string sendgridTemplateId,

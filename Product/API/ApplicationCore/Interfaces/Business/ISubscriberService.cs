@@ -145,5 +145,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task SyncAuth0UserId(Guid subscriberGuid, string auth0UserId);
 
         Task<SubscriberSearchResultDto> SearchSubscribersAsync(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*");
+
     }
 }

@@ -69,7 +69,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(_repository, EducationHistoryDto.EducationalDegree);
             int educationalDegreeId = educationalDegree.EducationalDegreeId;
             // Find or create the degree type 
-            EducationalDegreeType educationalDegreeType = await _repository.EducationalDegreeTypeRepository.GetByGuid(EducationHistoryDto.EducationalDegreeTypeGuid);
+            EducationalDegreeType educationalDegreeType = await _repository.EducationalDegreeTypeRepository.GetByGuid(EducationHistoryDto.EducationalDegreeTypeGuid.Value);
             int educationalDegreeTypeId = 0;
             if (educationalDegreeType == null)
                 educationalDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(_repository, UpDiddyLib.Helpers.Constants.NotSpecifedOption);
@@ -125,7 +125,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             EducationalDegree educationalDegree = await EducationalDegreeFactory.GetOrAdd(_repository, EducationHistoryDto.EducationalDegree);
             int educationalDegreeId = educationalDegree.EducationalDegreeId;
             // Find or create the degree type 
-            EducationalDegreeType educationalDegreeType =  await _repository.EducationalDegreeTypeRepository.GetByGuid(EducationHistoryDto.EducationalDegreeTypeGuid);
+            EducationalDegreeType educationalDegreeType =  await _repository.EducationalDegreeTypeRepository.GetByGuid(EducationHistoryDto.EducationalDegreeTypeGuid.Value);
 
             int educationalDegreeTypeId = 0;
             if (educationalDegreeType == null)

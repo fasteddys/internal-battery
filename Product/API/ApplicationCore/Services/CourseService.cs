@@ -246,8 +246,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             orderByList.Add(orderBy);
 
             SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(adminApiKey));
-
-            // Create an index named hotels
             ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(courseIndexName);
 
             SearchParameters parameters;

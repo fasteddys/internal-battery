@@ -271,8 +271,6 @@ namespace UpDiddyApi.Controllers
                 {
                     _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync
                     (
-
-                        _syslog,
                         Email,
                         _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter" +
                             (EmailAddressesToSend[Email] == true ? "-External" : string.Empty)],
@@ -298,11 +296,6 @@ namespace UpDiddyApi.Controllers
                                 Content = resumeEncoded,
                                 Filename = Path.GetFileName(subscriber.SubscriberFile.FirstOrDefault().BlobName),
                                 Type=subscriber.SubscriberFile.FirstOrDefault().MimeType
-                            },
-                            new Attachment
-                            {
-                                Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(jobApplicationDto.CoverLetter)),
-                                Filename = "CoverLetter.txt"
                             }
                         },
                         null,

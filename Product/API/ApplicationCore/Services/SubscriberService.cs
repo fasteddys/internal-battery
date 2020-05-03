@@ -49,7 +49,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         private ISysEmail _sysEmail;
         private readonly IButterCMSService _butterCMSService;
         private readonly ZeroBounceApi _zeroBounceApi;
-
+        private IG2Service _g2Service;
+        private IHubSpotService _hubSpotService;
 
         public SubscriberService(UpDiddyDbContext context,
             IConfiguration configuration,
@@ -61,7 +62,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             IHangfireService hangfireService,
             IFileDownloadTrackerService fileDownloadTrackerService,
             ISysEmail sysEmail,
-            IButterCMSService butterCMSService)
+            IButterCMSService butterCMSService,
+            IG2Service g2Service,
+            IHubSpotService hubSpotService)
         {
             _db = context;
             _configuration = configuration;
@@ -75,6 +78,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             _sysEmail = sysEmail;
             _zeroBounceApi = new ZeroBounceApi(_configuration, _repository, _logger);
             _butterCMSService = butterCMSService;
+            _g2Service = g2Service;
+            _hubSpotService = hubSpotService;
             
         }
 
@@ -94,7 +99,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await _repository.StoredProcedureRepository.GetSubscriberSources(subscriberId);
 
         }
-
+ 
         public async Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numSubscribers, int indexVersion)
         {
             var querableSubscribers = _repository.SubscriberRepository.GetAllSubscribersAsync();
@@ -268,8 +273,18 @@ namespace UpDiddyApi.ApplicationCore.Services
             // todo: if we remove the dependency for INT PKs from other services (tagging, file download) then we can remove the following line of code
             var subscriber = _repository.SubscriberRepository.GetSubscriberByGuid(subscriberGuid);
 
+
+            // add user to hubspot
+            await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid, lastLoginDateTime: null);
+
+            // Add the new user to the azure index 
+            await _g2Service.G2AddSubscriberAsync(subscriberGuid);
+
             // add the user to the Google Talent Cloud
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriberGuid));
+            // add the user to the G2 profile for search
+            await _g2Service.G2AddSubscriberAsync(subscriberGuid);
+
 
             if (!string.IsNullOrWhiteSpace(subscriberDto.ReferrerUrl) && subscriberDto.PartnerGuid != null && subscriberDto.PartnerGuid != Guid.Empty)
             {
@@ -279,7 +294,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             else if (!string.IsNullOrWhiteSpace(subscriberDto.ReferrerUrl))
             {
-
                 _logger.LogInformation($"SubscriberService:CreateSubscriberAsync looking up partnerguid from ReferrerUrl");
                 Guid partnerGuid = Guid.Empty;
                 bool isGatedDownload = false;
@@ -356,8 +370,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                     _logger.LogError($"SubscriberService:CreateSubscriberAsync Error at step {step} getting partner guid from url.  Msg = {ex.Message}");
                 }
             }
-
-
 
             return subscriberGuid;
         }
@@ -516,7 +528,6 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             _hangfireService.Enqueue(() =>
              _sysEmail.SendTemplatedEmailAsync( 
-                 _logger,
                  email,
                  _configuration["SysEmail:Transactional:TemplateIds:GatedDownload-LinkEmail"],
                  new
@@ -793,9 +804,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             //get notes for subscriber that are public and visible to recruiters of current logged in recruiter company
             var subscriberPublicNotesQueryable = from subscriberNote in _repository.SubscriberNotesRepository.GetAll()
                                                  join recruiter in _repository.RecruiterRepository.GetAll() on subscriberNote.RecruiterId equals recruiter.RecruiterId
-                                                 join company in _repository.Company.GetAllCompanies() on recruiter.CompanyId equals company.CompanyId
+                                                 join recruiterCompany in _repository.RecruiterCompanyRepository.GetAll() on recruiter.RecruiterId equals recruiterCompany.RecruiterId
+                                                 join company in _repository.Company.GetAllCompanies() on recruiterCompany.CompanyId equals company.CompanyId
                                                  join subscriber in _repository.SubscriberRepository.GetAll() on recruiter.SubscriberId equals subscriber.SubscriberId
-                                                 where subscriberNote.SubscriberId.Equals(subscriberData.SubscriberId) && subscriberNote.IsDeleted.Equals(0) && recruiter.CompanyId.Equals(rec.CompanyId) && subscriberNote.ViewableByOthersInRecruiterCompany.Equals(true)
+                                                 where subscriberNote.SubscriberId.Equals(subscriberData.SubscriberId) && subscriberNote.IsDeleted.Equals(0) && subscriberNote.ViewableByOthersInRecruiterCompany.Equals(true)
                                                  select new SubscriberNotesDto()
                                                  {
                                                      ViewableByOthersInRecruiterCompany = subscriberNote.ViewableByOthersInRecruiterCompany,
@@ -1470,8 +1482,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             orderByList.Add(orderBy);
 
             SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(adminApiKey));
-
-            // Create an index named hotels
             ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(subscriberIndexName);
 
             SearchParameters parameters;

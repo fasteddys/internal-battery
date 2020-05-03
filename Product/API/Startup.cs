@@ -42,6 +42,9 @@ using UpDiddyApi.ApplicationCore.Services.Identity;
 using UpDiddyApi.ApplicationCore.ActionFilter;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using UpDiddyApi.ApplicationCore.Services.AzureSearch;
+using G2Services = UpDiddyApi.ApplicationCore.Services.G2;
+using G2Interfaces = UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
+using UpDiddyApi.ApplicationCore.Services.G2;
 
 namespace UpDiddyApi
 {
@@ -67,15 +70,15 @@ namespace UpDiddyApi
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
 
-            // if environment is set to development then add user secrets
-            if (env.IsDevelopment())
+            // if environment is set to LocalDevelopment then add user secrets
+            if (env.IsEnvironment("LocalDevelopment"))
             {
                 builder.AddUserSecrets<Startup>();
             }
-
-            // if environment is set to staging or production then add vault keysF
+            
+            // if environment is set to anything other than local development, add secrets from the key vault
             var config = builder.Build();
-            if (env.IsStaging() || env.IsProduction())
+            if (!env.IsEnvironment("LocalDevelopment"))
             {
                 builder.AddAzureKeyVault(config["Vault:Url"],
                     config["Vault:ClientId"],
@@ -283,7 +286,7 @@ namespace UpDiddyApi
 
             services.AddTransient<IB2CGraph, B2CGraphClient>();
             services.AddHttpClient<IB2CGraph, B2CGraphClient>();
-            services.AddScoped<IProfileService, ProfileService>();
+            services.AddScoped<IProfileService, ApplicationCore.Services.ProfileService>();
             services.AddScoped<ISubscriberService, SubscriberService>();
             services.AddScoped<ISubscriberEducationalHistoryService, SubscriberEducationalHistoryService>();
             services.AddScoped<ISubscriberWorkHistoryService, SubscriberWorkHistoryService>();
@@ -349,7 +352,16 @@ namespace UpDiddyApi
             services.AddScoped<ISendGridEventService, SendgridEventService>();
             services.AddScoped<ISubscriberEmailService, SubscriberEmailService>();
             services.AddScoped<IHiringSolvedService, HiringSolvedService>();
-
+            services.AddScoped<IG2Service, G2Service>();
+            services.AddScoped<G2Interfaces.IProfileService, G2Services.ProfileService>();
+            services.AddScoped<G2Interfaces.IWishlistService, G2Services.WishlistService>();
+            services.AddScoped<G2Interfaces.ICommentService, G2Services.CommentService>();
+            services.AddScoped<ITagService, TagService>();
+            services.AddScoped<ICityService, CityService>();
+            services.AddScoped<IPostalService, PostalService>();
+            services.AddScoped<ISendGridService, SendGridService>();
+            services.AddScoped<IEmailTemplateService, EmailTemplateService>();
+            services.AddScoped<IHubSpotService, HubSpotService>();
 
             #endregion
 
