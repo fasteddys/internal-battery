@@ -111,6 +111,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 var objectToTest =
                     parsedToken.Property.StartsWith("recruiter.", StringComparison.CurrentCultureIgnoreCase) ? recruiter
+                    : parsedToken.Property.StartsWith("subscriber.", StringComparison.CurrentCultureIgnoreCase) ? profile?.Subscriber
                     : parsedToken.Property.StartsWith("profile.", StringComparison.CurrentCultureIgnoreCase) ? profile
                     : null as object;
 
