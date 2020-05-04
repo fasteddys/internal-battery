@@ -82,5 +82,21 @@ namespace UpDiddyApi.Controllers.V2
             var rVal = await _subscriberService.SearchSubscribersAsync(limit, offset, sort, order, keyword);
             return Ok(rVal);
         }
+
+        [HttpPut]
+        [Authorize]
+        [Route("hiring-manager")]
+        public async Task<IActionResult> AddHiringManager()
+        {
+
+
+            var rVal = await _subscriberService.AddHiringManager(GetSubscriberGuid());
+            return Ok(rVal);
+        }
+
+
+
+
+
     }
 }

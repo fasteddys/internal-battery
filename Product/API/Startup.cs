@@ -45,6 +45,8 @@ using UpDiddyApi.ApplicationCore.Services.AzureSearch;
 using G2Services = UpDiddyApi.ApplicationCore.Services.G2;
 using G2Interfaces = UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
 using UpDiddyApi.ApplicationCore.Services.G2;
+using UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager;
+using UpDiddyApi.ApplicationCore.Services.HiringManager;
 
 namespace UpDiddyApi
 {
@@ -131,6 +133,7 @@ namespace UpDiddyApi
                 options.AddPolicy("IsRecruiterPolicy", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Recruiter" }, domain)));
                 options.AddPolicy("IsCareerCircleAdmin", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Career Circle Administrator" }, domain)));
                 options.AddPolicy("IsRecruiterOrAdmin", policy => policy.Requirements.Add(new HasScopeRequirement(new string[] { "Recruiter", "Career Circle Administrator" }, domain)));
+                // todo jab add HiringManager Policy 
             });
 
             services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
@@ -362,6 +365,7 @@ namespace UpDiddyApi
             services.AddScoped<ISendGridService, SendGridService>();
             services.AddScoped<IEmailTemplateService, EmailTemplateService>();
             services.AddScoped<IHubSpotService, HubSpotService>();
+            services.AddScoped<IHiringManagerService, HiringManagerService>();
 
             #endregion
 
