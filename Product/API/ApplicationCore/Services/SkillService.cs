@@ -25,7 +25,9 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly ICourseService _courseService;
         private readonly IG2Service _g2Service;
         private readonly IHubSpotService _hubSpotService;
+        private readonly IMemoryCacheService _memoryCacheService;
 
+        private const string allSkillsCacheKey = "AllSkills";
 
         public SkillService(
             IConfiguration configuration,
@@ -35,7 +37,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             ICourseService courseService,
             IMapper mapper,
             IG2Service g2Service,
-            IHubSpotService hubSpotService)
+            IHubSpotService hubSpotService,
+            IMemoryCacheService memoryCacheService)
         {
             _configuration = configuration;
             _repositoryWrapper = repository;
@@ -45,6 +48,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _courseService = courseService;
             _g2Service = g2Service;
             _hubSpotService = hubSpotService;
+            _memoryCacheService = memoryCacheService;
         }
 
         public async Task<SkillListDto> GetSkills(int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
@@ -57,11 +61,18 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<List<SkillDto>> GetSkillsByKeyword(string keyword)
         {
-            var skills = await _repositoryWrapper.SkillRepository.GetByConditionAsync(x => x.SkillName.Contains(keyword));
-            if (skills == null)
-                throw new NotFoundException("Skills not found");
+            List<SkillDto> cachedAllSkills = (List<SkillDto>)_memoryCacheService.GetCacheValue(allSkillsCacheKey);
+            if (cachedAllSkills == null)
+            {
+                cachedAllSkills = await _repositoryWrapper.StoredProcedureRepository.GetSkills(limit: 30000, offset: 0, sort: "modifyDate", order: "descending");
 
-            return _mapper.Map<List<SkillDto>>(skills);
+                if (cachedAllSkills == null)
+                    throw new NotFoundException("Skills not found");
+
+                _memoryCacheService.SetCacheValue(allSkillsCacheKey, cachedAllSkills, 60 * 24);
+
+            }
+            return cachedAllSkills.Where(s => s.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase)).ToList();
         }
 
         public async Task<SkillDto> GetSkill(Guid skillGuid)
@@ -81,6 +92,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             skill.SkillGuid = Guid.NewGuid();
             await _repositoryWrapper.SkillRepository.Create(skill);
             await _repositoryWrapper.SaveAsync();
+            //Clear cache
+            _memoryCacheService.ClearCacheByKey(allSkillsCacheKey);
             return skill.SkillGuid.Value;
         }
 
@@ -94,6 +107,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             skill.SkillName = skillDto.Name;
             skill.ModifyDate = DateTime.UtcNow;
             await _repositoryWrapper.SaveAsync();
+            //Clear cache
+            _memoryCacheService.ClearCacheByKey(allSkillsCacheKey);
         }
 
         public async Task DeleteSkill(Guid skillGuid)
@@ -106,6 +121,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             skill.ModifyDate = DateTime.UtcNow;
             skill.IsDeleted = 1;
             await _repositoryWrapper.SaveAsync();
+            //Clear cache
+            _memoryCacheService.ClearCacheByKey(allSkillsCacheKey);
         }
 
         public async Task<List<SkillDto>> GetSkillsByCourseGuid(Guid courseGuid)
@@ -209,7 +226,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var updatedSkills = new List<SkillDto>();
             foreach (var skillName in skillNames)
             {
-                var skill = SkillFactory.GetOrAdd(_repositoryWrapper, skillName).Result;
+                var skill = SkillFactory.GetOrAdd(_repositoryWrapper, _memoryCacheService, skillName).Result;
                 if (!updatedSkills.Exists(s => s.SkillGuid == skill.SkillGuid))
                     updatedSkills.Add(new SkillDto()
                     {
