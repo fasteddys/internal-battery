@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace UpDiddyApi.Models.B2B
 {
-    [Table("HiringManagers", Schema = "G2")]
+    [Table("HiringManagers", Schema = "B2B")]
     public class HiringManager : BaseModel
     {
         public int HiringManagerId { get; set; }
