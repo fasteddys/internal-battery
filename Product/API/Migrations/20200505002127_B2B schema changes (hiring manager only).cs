@@ -8,6 +8,8 @@ namespace UpDiddyApi.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.EnsureSchema("B2B");
+
             migrationBuilder.AddColumn<string>(
                 name: "Description",
                 table: "Company",
