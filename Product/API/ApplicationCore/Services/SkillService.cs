@@ -64,10 +64,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             List<SkillDto> cachedAllSkills = (List<SkillDto>)_memoryCacheService.GetCacheValue(allSkillsCacheKey);
             if (cachedAllSkills == null)
             {
-                cachedAllSkills = await _repositoryWrapper.StoredProcedureRepository.GetSkills(limit: 30000, offset: 0, sort: "modifyDate", order: "descending");
-
-                if (cachedAllSkills == null)
+                var skills = _repositoryWrapper.SkillRepository.GetAll().ToList();
+                if (skills == null)
                     throw new NotFoundException("Skills not found");
+
+                cachedAllSkills = _mapper.Map<List<SkillDto>>(skills);
 
                 _memoryCacheService.SetCacheValue(allSkillsCacheKey, cachedAllSkills, 60 * 24);
 
