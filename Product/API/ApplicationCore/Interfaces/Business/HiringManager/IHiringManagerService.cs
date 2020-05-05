@@ -9,7 +9,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager
 {
     public interface IHiringManagerService
     {
-        Task<bool> AddHiringManager(Guid subscriberGuid);
+        Task<bool> AddHiringManager(Guid subscriberGuid, bool nonBlocking = true);
     }
 }
 

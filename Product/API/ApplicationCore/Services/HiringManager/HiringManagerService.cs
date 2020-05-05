@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
+using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Services.Identity;
@@ -23,59 +24,76 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
         private readonly IConfiguration _configuration;
         private readonly IUserService _userService;
         private readonly ILogger _logger;
+        private readonly IHangfireService _hangfireService;
 
 
-        public HiringManagerService(IConfiguration configuration, IRepositoryWrapper repositoryWrapper, IMapper mapper, IUserService userService, ILogger<HiringManagerService> logger)
+        public HiringManagerService(IConfiguration configuration, IRepositoryWrapper repositoryWrapper, IMapper mapper, IUserService userService, ILogger<HiringManagerService> logger, IHangfireService hangfireService)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
             _configuration = configuration;
             _userService = userService;
             _logger = logger;
+            _hangfireService = hangfireService;
         }
 
 
 
 
-        // TODO JAB Move to hiring manager service 
-        public async Task<bool> AddHiringManager(Guid subscriberGuid)
+        
+        public async Task<bool> AddHiringManager(Guid subscriberGuid, bool nonBlocking = true)
         {
+            _logger.LogInformation($"HiringManagerService:AddHiringManager  Starting for subscriber {subscriberGuid} ");
+            // validate the subscriber is valid
+            var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+            if (subscriber == null)
+                throw new FailedValidationException($"HiringManagerService:AddHiringManager Cannot locate subscriber {subscriberGuid}");
 
-            _logger.LogInformation($"HiringManagerService:AdHiringManager  Starting for subscriber {subscriberGuid} ");
+            // TODO Vivek
+            // validate the subscriber is not already a hiring manager
+            // if already hiring manager 
+            //     throw new FailedValidationException($"HiringManagerService:AddHiringManager {subscriberGuid} is already a hiring manger");
+
+
             try
             {
-                // validate that the subscriber is real
-                var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
-                if ( subscriber == null )
-                    throw new FailedValidationException($"HiringManagerService:AdHiringManager Cannot locate subscriber {subscriberGuid}")
-
-
-
-                // todo jab validate that the subscriber is not already a hiring manager 
-
-                // todo call Auth0 admin endpoint to add role to subscriber 
-                await AssignRecruiterPermissionsAsync(subscriber);
-
+                if (nonBlocking)
+                {
+                    _logger.LogInformation($"HiringManagerService:AddHiringManager : Background job starting for subscriber {subscriberGuid}");
+                    _hangfireService.Enqueue<HiringManagerService>(j => j._AddHiringManager(subscriber));
+                    return true;
+                }
+                else
+                {
+                    _logger.LogInformation($"HiringManagerService:AddHiringManager : awaiting _AddHiringManager for subscriber {subscriberGuid}");
+                    await _AddHiringManager(subscriber);
+                }            
             }
             catch (Exception ex )
             {
-                _logger.LogError($"HiringManagerService:AdHiringManager  Error: {ex.ToString()} ");
+                _logger.LogError($"HiringManagerService:AddHiringManager  Error: {ex.ToString()} ");
             }
+            _logger.LogInformation($"HiringManagerService:AddHiringManager  Done for subscriber {subscriberGuid} ");
 
-            _logger.LogInformation($"HiringManagerService:AdHiringManager  Done for subscriber {subscriberGuid} ");
+            return true;
+        }
+
+
+        public  async Task<bool> _AddHiringManager(Subscriber subscriber)
+        {
+            _logger.LogInformation($"HiringManagerService:_AddHiringManager  Starting for subscriber {subscriber.SubscriberGuid} ");
+            var getUserResponse = await _userService.GetUserByEmailAsync(subscriber.Email);
+            if (!getUserResponse.Success || string.IsNullOrWhiteSpace(getUserResponse.User.UserId))
+                throw new ApplicationException("User could not be found in Auth0");
+            _logger.LogInformation($"HiringManagerService:_AddHiringManager  Calling user service for  {getUserResponse.User.UserId} ");
+            _userService.AssignRoleToUserAsync(getUserResponse.User.UserId, Role.HiringManager);
+            _logger.LogInformation($"HiringManagerService:_AddHiringManager  Done");
 
             return true;
         }
 
 
 
-        private async Task AssignRecruiterPermissionsAsync(Subscriber subscriber)
-        { 
-            var getUserResponse = await _userService.GetUserByEmailAsync(subscriber.Email);
-            if (!getUserResponse.Success || string.IsNullOrWhiteSpace(getUserResponse.User.UserId))
-                throw new ApplicationException("User could not be found in Auth0");
-            _userService.AssignRoleToUserAsync(getUserResponse.User.UserId, Role.HiringManager);
-        }
 
 
 

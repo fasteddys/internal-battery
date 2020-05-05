@@ -13,6 +13,7 @@ using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyLib.Domain.AzureSearch;
 using UpDiddyApi.Models;
+using UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager;
 
 namespace UpDiddyApi.Controllers.V2
 {
@@ -22,11 +23,14 @@ namespace UpDiddyApi.Controllers.V2
         private readonly IConfiguration _configuration;
         private readonly ISubscriberService _subscriberService;
         private readonly IAzureSearchService _azureSearchService;
+        private readonly IHiringManagerService _hiringManagerService;
+
         public SubscribersController(IServiceProvider services)
         {
             _configuration = services.GetService<IConfiguration>();
             _subscriberService = services.GetService<ISubscriberService>();
             _azureSearchService = services.GetService<IAzureSearchService>();
+            _hiringManagerService = services.GetService<IHiringManagerService>();
         }
 
         [HttpPost]
@@ -90,7 +94,7 @@ namespace UpDiddyApi.Controllers.V2
         {
 
 
-            var rVal = await _subscriberService.AddHiringManager(GetSubscriberGuid());
+            var rVal = await _hiringManagerService.AddHiringManager(GetSubscriberGuid(), true);
             return Ok(rVal);
         }
 
