@@ -45,17 +45,18 @@ BEGIN
             COALESCE(p.Title, s.Title) AS Title,
             pwl.CreateDate,
             pwl.ModifyDate
-        FROM dbo.Subscriber s
-            JOIN dbo.Recruiter r ON r.SubscriberId = s.SubscriberId
+        FROM dbo.Subscriber me
+            JOIN dbo.Recruiter r ON r.SubscriberId = me.SubscriberId
             JOIN G2.Wishlists wl ON r.RecruiterId = wl.RecruiterId
             JOIN G2.ProfileWishlists pwl ON wl.WishlistId = pwl.WishlistId
             JOIN G2.Profiles p ON pwl.ProfileId = p.ProfileId
+            JOIN dbo.Subscriber s ON p.SubscriberId = s.SubscriberId
             LEFT JOIN dbo.City pC ON p.CityId = pC.CityId
             LEFT JOIN dbo.[State] pS ON p.StateId = pS.StateId
             LEFT JOIN dbo.[State] sS on s.StateId = sS.StateId
             LEFT JOIN dbo.Postal pP ON p.PostalId = pP.PostalId
-        WHERE s.IsDeleted = 0 AND r.IsDeleted = 0 AND wl.IsDeleted = 0 AND pwl.IsDeleted = 0 AND p.IsDeleted = 0
-            AND s.SubscriberGuid = @SubscriberGuid
+        WHERE me.IsDeleted = 0 AND r.IsDeleted = 0 AND wl.IsDeleted = 0 AND pwl.IsDeleted = 0 AND p.IsDeleted = 0 AND s.IsDeleted = 0
+            AND me.SubscriberGuid = @SubscriberGuid
             AND wl.WishlistGuid = @WishlistGuid
     )
     SELECT
