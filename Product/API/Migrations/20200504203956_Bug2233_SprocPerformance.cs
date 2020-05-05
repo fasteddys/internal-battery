@@ -6,8 +6,8 @@ namespace UpDiddyApi.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-			migrationBuilder.Sql(@"EXEC('/*     
-<remarks>     
+            migrationBuilder.Sql(@"EXEC('/*
+<remarks>
 2020.03.10 - Bill Koenig - Created
 2020.03.29 - Joey Herrington - Added PhoneNumber, City, State, Postal, and Title to the SELECT list
 2020.04.14 - Joey Herrington - Added CreatedDate and ModifiedDate to the SELECT list
@@ -76,25 +76,25 @@ BEGIN
         (SELECT COUNT(1) FROM allRecords) AS TotalRecords
     FROM allRecords
     ORDER BY  
-        CASE WHEN @Order = 'ascending' AND @Sort = 'firstName' THEN FirstName END,
-        CASE WHEN @Order = 'ascending' AND @Sort = 'lastName' THEN LastName END,
-        CASE WHEN @Order = 'ascending' AND @Sort = 'createDate' THEN CreateDate END,
-        CASE WHEN @Order = 'ascending' AND @Sort = 'modifyDate' THEN ModifyDate END, 
-        CASE WHEN @Order = 'ascending' AND @Sort = 'email' THEN Email END, 
-        CASE WHEN @Order = 'descending' AND @Sort = 'firstName' THEN FirstName END DESC ,
-        CASE WHEN @Order = 'descending' AND @Sort = 'lastName' THEN LastName END DESC ,
-        CASE WHEN @Order = 'descending' AND @Sort = 'createDate' THEN CreateDate END DESC ,
-        CASE WHEN @Order = 'descending' AND @Sort = 'modifyDate' THEN ModifyDate END DESC ,
-        CASE WHEN @Order = 'descending' AND @Sort = 'email' THEN Email END DESC 
+        CASE WHEN @Order = ''ascending'' AND @Sort = ''firstName'' THEN FirstName END,
+        CASE WHEN @Order = ''ascending'' AND @Sort = ''lastName'' THEN LastName END,
+        CASE WHEN @Order = ''ascending'' AND @Sort = ''createDate'' THEN CreateDate END,
+        CASE WHEN @Order = ''ascending'' AND @Sort = ''modifyDate'' THEN ModifyDate END, 
+        CASE WHEN @Order = ''ascending'' AND @Sort = ''email'' THEN Email END, 
+        CASE WHEN @Order = ''descending'' AND @Sort = ''firstName'' THEN FirstName END DESC ,
+        CASE WHEN @Order = ''descending'' AND @Sort = ''lastName'' THEN LastName END DESC ,
+        CASE WHEN @Order = ''descending'' AND @Sort = ''createDate'' THEN CreateDate END DESC ,
+        CASE WHEN @Order = ''descending'' AND @Sort = ''modifyDate'' THEN ModifyDate END DESC ,
+        CASE WHEN @Order = ''descending'' AND @Sort = ''email'' THEN Email END DESC 
     OFFSET @Offset ROWS
     FETCH FIRST @Limit ROWS ONLY
 END')");
-		}
+        }
 
-		protected override void Down(MigrationBuilder migrationBuilder)
+        protected override void Down(MigrationBuilder migrationBuilder)
         {
-			migrationBuilder.Sql(@"EXEC('/*     
-<remarks>     
+            migrationBuilder.Sql(@"EXEC('/*
+<remarks>
 2020.03.10 - Bill Koenig - Created
 2020.03.29 - Joey Herrington - Added PhoneNumber, City, State, Postal, and Title to the SELECT list
 2020.04.14 - Joey Herrington - Added CreatedDate and ModifiedDate to the SELECT list
@@ -167,6 +167,6 @@ BEGIN
     OFFSET @Offset ROWS
     FETCH FIRST @Limit ROWS ONLY
 END')");
-		}
-	}
+        }
+    }
 }
