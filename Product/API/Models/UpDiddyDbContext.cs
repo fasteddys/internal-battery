@@ -12,6 +12,7 @@ using UpDiddyLib.Domain.Models.Reports;
 using UpDiddyApi.Models.G2;
 using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyLib.Domain.Models.G2;
+using UpDiddyApi.Models.B2B;
 
 namespace UpDiddyApi.Models
 {
@@ -207,8 +208,8 @@ namespace UpDiddyApi.Models
         public DbSet<AzureIndexStatus> AzureIndexStatus { get; set; }
         public DbSet<RecruiterStat> RecruiterStat { get; set; }
         public DbSet<ProfileEmploymentType> ProfileEmploymentType { get; set; }
-
         public DbSet<EmailTemplate> EmailTemplate { get; set; }
+        public DbSet<HiringManager> HiringManager { get; set; }
 
         #endregion
 
