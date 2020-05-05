@@ -31,7 +31,7 @@ namespace UpDiddyApi.Migrations
 
             migrationBuilder.CreateTable(
                 name: "HiringManagers",
-                schema: "G2",
+                schema: "B2B",
                 columns: table => new
                 {
                     HiringManagerId = table.Column<int>(nullable: false)
@@ -69,13 +69,13 @@ namespace UpDiddyApi.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_HiringManagers_CompanyId",
-                schema: "G2",
+                schema: "B2B",
                 table: "HiringManagers",
                 column: "CompanyId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_HiringManagers_SubscriberId",
-                schema: "G2",
+                schema: "B2B",
                 table: "HiringManagers",
                 column: "SubscriberId");
 
@@ -96,7 +96,7 @@ namespace UpDiddyApi.Migrations
 
             migrationBuilder.DropTable(
                 name: "HiringManagers",
-                schema: "G2");
+                schema: "B2B");
 
             migrationBuilder.DropIndex(
                 name: "IX_Company_IndustryId",
