@@ -7,7 +7,7 @@ using UpDiddyApi.Models.B2B;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
-    public interface IHiringManagerRepository
+    public interface IHiringManagerRepository : IUpDiddyRepositoryBase<HiringManager>
     {
         /// <summary>
         /// 

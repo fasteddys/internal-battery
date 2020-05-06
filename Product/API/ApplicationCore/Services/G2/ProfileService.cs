@@ -96,6 +96,12 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             return profiles;
         }
 
+        public async Task<UpDiddyApi.Models.G2.Profile> GetProfileByGuid(Guid profileGuid)
+        {
+            var profile = await _repositoryWrapper.ProfileRepository.GetByGuid(profileGuid);
+            return profile;
+        }
+
         #region ContactTypes
 
         public async Task<ContactTypeListDto> GetContactTypeList()
