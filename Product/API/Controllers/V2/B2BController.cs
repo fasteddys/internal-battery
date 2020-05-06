@@ -20,7 +20,6 @@ namespace UpDiddyApi.Controllers.V2
     public class B2BController : BaseApiController
     {
 
-        //Can we implement all service calls talk through HiringManagerService???
         private readonly IHiringManagerService _hiringManagerService;
 
         public B2BController(IServiceProvider services)
@@ -35,8 +34,8 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> UpdateHiringManager([FromBody] HiringManagerDto request)
         {
             //HM update
-            var rVal = await _hiringManagerService.AddHiringManager(GetSubscriberGuid(), true);
-            return Ok(rVal);
+            await _hiringManagerService.UpdateHiringManager(GetSubscriberGuid(), request);
+            return Ok();
         }
 
     }

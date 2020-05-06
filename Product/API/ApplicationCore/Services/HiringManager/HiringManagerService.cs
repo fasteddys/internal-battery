@@ -13,6 +13,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Services.Identity;
 using UpDiddyApi.ApplicationCore.Services.Identity.Interfaces;
 using UpDiddyApi.Models;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 {
@@ -38,11 +39,21 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
         }
 
 
-        public async Task UpdateHiringManager() { }
+        public async Task UpdateHiringManager(Guid subscriberGuid, HiringManagerDto hiringManager) 
+        {
+            _logger.LogInformation($"HiringManagerService:UpdateHiringManager  Starting for subscriber {subscriberGuid} ");
+            // validate the subscriber is valid
+            var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+            if (subscriber == null)
+                throw new FailedValidationException($"HiringManagerService:UpdateHiringManager Cannot locate subscriber {subscriberGuid}");
+            var hiringManagerEntity = await _repositoryWrapper.HiringManagerRepository.GetHiringManagerBySubscriberId(subscriber.SubscriberId);
 
-        public async Task GetHiringManager() { }
+            if (hiringManagerEntity != null) throw new FailedValidationException($"HiringManagerService:AddHiringManager {subscriberGuid} is already a hiring manger");
+            
 
-        public async Task RemoveHiringManager() { }
+
+
+        }
 
 
         public async Task<bool> AddHiringManager(Guid subscriberGuid, bool nonBlocking = true)
@@ -57,6 +68,9 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             // validate the subscriber is not already a hiring manager
             // if already hiring manager 
             //     throw new FailedValidationException($"HiringManagerService:AddHiringManager {subscriberGuid} is already a hiring manger");
+            var hiringManager = await _repositoryWrapper.HiringManagerRepository.GetHiringManagerBySubscriberId(subscriber.SubscriberId);
+
+            if(hiringManager != null) throw new FailedValidationException($"HiringManagerService:AddHiringManager {subscriberGuid} is already a hiring manger");
 
 
             try
