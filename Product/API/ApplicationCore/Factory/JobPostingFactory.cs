@@ -145,14 +145,14 @@ namespace UpDiddyApi.ApplicationCore.Factory
         }
 
         [Obsolete("Use JobPostingService for job updates moving forward", true)]
-        public static bool PostJob(IRepositoryWrapper repositoryWrapper, int recruiterId, JobPostingDto jobPostingDto, ref Guid newPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, bool isAcceptsNewSkills, IHangfireService _hangfireService)
+        public static bool PostJob(IRepositoryWrapper repositoryWrapper, IMemoryCacheService memoryCacheService, int recruiterId, JobPostingDto jobPostingDto, ref Guid newPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, bool isAcceptsNewSkills, IHangfireService _hangfireService)
         {
             if (isAcceptsNewSkills && jobPostingDto?.JobPostingSkills != null)
             {
                 var updatedSkills = new List<SkillDto>();
                 foreach (var skillDto in jobPostingDto.JobPostingSkills)
                 {
-                    var skill = SkillFactory.GetOrAdd(repositoryWrapper, skillDto.SkillName).Result;
+                    var skill = SkillFactory.GetOrAdd(repositoryWrapper, memoryCacheService, skillDto.SkillName).Result;
                     if (!updatedSkills.Exists(s => s.SkillGuid == skill.SkillGuid))
                         updatedSkills.Add(new SkillDto()
                         {
@@ -645,14 +645,14 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return jobPosting;
         }
         [Obsolete("Use JobPostingService for job updates moving forward", true)]
-        public static bool UpdateJobPosting(IRepositoryWrapper repositoryWrapper, Guid jobPostingGuid, JobPostingDto jobPostingDto, ref string ErrorMsg, bool isAcceptsNewSkills, IHangfireService _hangfireService, IConfiguration config)
+        public static bool UpdateJobPosting(IRepositoryWrapper repositoryWrapper, IMemoryCacheService memoryCacheService, Guid jobPostingGuid, JobPostingDto jobPostingDto, ref string ErrorMsg, bool isAcceptsNewSkills, IHangfireService _hangfireService, IConfiguration config)
         {
             if (isAcceptsNewSkills && jobPostingDto?.JobPostingSkills != null)
             {
                 var updatedSkills = new List<SkillDto>();
                 foreach (var skillDto in jobPostingDto.JobPostingSkills)
                 {
-                    var skill = SkillFactory.GetOrAdd(repositoryWrapper, skillDto.SkillName).Result;
+                    var skill = SkillFactory.GetOrAdd(repositoryWrapper, memoryCacheService, skillDto.SkillName).Result;
                     if (!updatedSkills.Exists(s => s.SkillGuid == skill.SkillGuid))
                         updatedSkills.Add(new SkillDto()
                         {

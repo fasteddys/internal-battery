@@ -259,7 +259,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         }
 
 
-        public static ProfileDataStatus ImportLinkedIn(IRepositoryWrapper repositoryWrapper, ISovrenAPI sovrenApi, SubscriberProfileStagingStore info, ref string msg)
+        public static ProfileDataStatus ImportLinkedIn(IRepositoryWrapper repositoryWrapper, ISovrenAPI sovrenApi, IMemoryCacheService memoryCacheService, SubscriberProfileStagingStore info, ref string msg)
         {
             try
             {
@@ -278,7 +278,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 String parsedDocument = sovrenApi.SubmitResumeAsync(subscriber.SubscriberId, base64Resume).Result;
 
                 List<string> skills = Utils.ParseSkillsFromHrXML(parsedDocument);
-                _AddSubscriberSkills(repositoryWrapper, subscriber, skills).Wait();
+                _AddSubscriberSkills(repositoryWrapper, memoryCacheService,subscriber, skills).Wait();
 
                 return ProfileDataStatus.Processed;
             }
@@ -291,7 +291,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         }
 
 
-        public static ProfileDataStatus ImportSovren(IRepositoryWrapper repositoryWrapper, SubscriberProfileStagingStore info, ref string msg, ILogger syslog)
+        public static ProfileDataStatus ImportSovren(IRepositoryWrapper repositoryWrapper, IMemoryCacheService memoryCache, SubscriberProfileStagingStore info, ref string msg, ILogger syslog)
         {
             try
             {
@@ -306,7 +306,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 // Import Contact Info 
                 _ImportSovrenContactInfo(repositoryWrapper, subscriber, info.ProfileData, syslog).Wait();
                 // Import skills 
-                _ImportSovrenSkills(repositoryWrapper, subscriber, info.ProfileData, syslog).Wait();
+                _ImportSovrenSkills(repositoryWrapper, memoryCache, subscriber, info.ProfileData, syslog).Wait();
                 // Import work history  
                 _ImportSovrenWorkHistory(repositoryWrapper, subscriber, info.ProfileData, syslog).Wait();
                 // Import education history  
@@ -424,12 +424,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
 
 
-        private static async Task<bool> _ImportSovrenSkills(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, string profileData, ILogger syslog)
+        private static async Task<bool> _ImportSovrenSkills(IRepositoryWrapper repositoryWrapper, IMemoryCacheService memoryCache, Subscriber subscriber, string profileData, ILogger syslog)
         {
             try
             {
                 List<string> skills = Utils.ParseSkillsFromHrXML(profileData);
-                await _AddSubscriberSkills(repositoryWrapper, subscriber, skills);
+                await _AddSubscriberSkills(repositoryWrapper, memoryCache, subscriber, skills);
                 return true;
             }
             catch (Exception e)
@@ -463,11 +463,11 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
 
 
-        private static async Task _AddSubscriberSkills(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, List<string> skills)
+        private static async Task _AddSubscriberSkills(IRepositoryWrapper repositoryWrapper, IMemoryCacheService memoryCacheService, Subscriber subscriber, List<string> skills)
         {
             foreach (string skillName in skills)
             {
-                Skill skill = await SkillFactory.GetOrAdd(repositoryWrapper, skillName);
+                Skill skill = await SkillFactory.GetOrAdd(repositoryWrapper, memoryCacheService, skillName);
                 // Check to see if the subscriber already has that skill 
                 SubscriberSkill subscriberSkill = await SubscriberSkillFactory.GetSkillForSubscriber(repositoryWrapper, subscriber, skill);
                 // If the subscriber does not have the skill, add it to their profile 
