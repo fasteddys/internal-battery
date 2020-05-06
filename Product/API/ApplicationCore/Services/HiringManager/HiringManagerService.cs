@@ -38,9 +38,13 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
         }
 
 
+        public async Task UpdateHiringManager() { }
+
+        public async Task GetHiringManager() { }
+
+        public async Task RemoveHiringManager() { }
 
 
-        
         public async Task<bool> AddHiringManager(Guid subscriberGuid, bool nonBlocking = true)
         {
             _logger.LogInformation($"HiringManagerService:AddHiringManager  Starting for subscriber {subscriberGuid} ");
