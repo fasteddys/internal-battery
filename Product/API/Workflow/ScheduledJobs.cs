@@ -52,6 +52,7 @@ namespace UpDiddyApi.Workflow
         private readonly IMimeMappingService _mimeMappingService;
         private readonly IHangfireService _hangfireService;
         private readonly IMemoryCache _memoryCache;
+        private readonly IMemoryCacheService _memoryCacheService;
         private readonly ICourseService _courseService;
         private readonly ISitemapService _sitemapService;
         private readonly IEmploymentTypeService _employmentTypeService;
@@ -89,7 +90,8 @@ namespace UpDiddyApi.Workflow
             ISkillService skillService,
             IG2Service g2Service,
             ISendGridService sendGridService,
-            IHubSpotService hubSpotService
+            IHubSpotService hubSpotService,
+            IMemoryCacheService memoryCacheService
             )
         {
             _db = context;
@@ -120,6 +122,7 @@ namespace UpDiddyApi.Workflow
             _g2Service = g2Service;
             _sendGridService = sendGridService;
             _hubSpotService = hubSpotService;
+            _memoryCacheService = memoryCacheService;
         }
 
 
@@ -1664,9 +1667,9 @@ namespace UpDiddyApi.Workflow
                 foreach (SubscriberProfileStagingStore p in profiles)
                 {
                     if (p.ProfileSource == Constants.DataSource.LinkedIn)
-                        p.Status = (int)SubscriberFactory.ImportLinkedIn(_repositoryWrapper, _sovrenApi, p, ref errMsg);
+                        p.Status = (int)SubscriberFactory.ImportLinkedIn(_repositoryWrapper, _sovrenApi, _memoryCacheService, p, ref errMsg);
                     else if (p.ProfileSource == Constants.DataSource.Sovren)
-                        p.Status = (int)SubscriberFactory.ImportSovren(_repositoryWrapper, p, ref errMsg, _syslog);
+                        p.Status = (int)SubscriberFactory.ImportSovren(_repositoryWrapper, _memoryCacheService, p, ref errMsg, _syslog);
                     else
                     {
                         // Report on unknown source error

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
@@ -10,9 +11,10 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200504185051_post-release G2 fixes")]
+    partial class postreleaseG2fixes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -46,37 +48,6 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("ActionId");
 
                     b.ToTable("Action");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.B2B.HiringManager", b =>
-                {
-                    b.Property<int>("HiringManagerId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int?>("CompanyId");
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<Guid>("HiringManagerGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<int>("SubscriberId");
-
-                    b.HasKey("HiringManagerId");
-
-                    b.HasIndex("CompanyId");
-
-                    b.HasIndex("SubscriberId");
-
-                    b.ToTable("HiringManagers","G2");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Badge", b =>
@@ -561,13 +532,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(500);
-
-                    b.Property<int?>("EmployeeSize");
-
-                    b.Property<int?>("IndustryId");
-
                     b.Property<int>("IsDeleted");
 
                     b.Property<int>("IsHiringAgency");
@@ -580,11 +544,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("ModifyGuid");
 
-                    b.Property<string>("WebsiteUrl");
-
                     b.HasKey("CompanyId");
-
-                    b.HasIndex("IndustryId");
 
                     b.ToTable("Company");
                 });
@@ -5219,18 +5179,6 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("RecruiterStat");
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.B2B.HiringManager", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.Company", "Company")
-                        .WithMany()
-                        .HasForeignKey("CompanyId");
-
-                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany()
-                        .HasForeignKey("SubscriberId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
             modelBuilder.Entity("UpDiddyApi.Models.CampaignCourseVariant", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.Campaign", "Campaign")
@@ -5293,13 +5241,6 @@ namespace UpDiddyApi.Migrations
                         .WithMany()
                         .HasForeignKey("StateId")
                         .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.Company", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.Industry", "Industry")
-                        .WithMany()
-                        .HasForeignKey("IndustryId");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Contact", b =>
