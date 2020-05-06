@@ -13,6 +13,7 @@ using UpDiddyApi.Models.G2;
 using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyLib.Domain.Models.G2;
 using UpDiddyApi.Models.B2B;
+using UpDiddyLib.Domain.Models.B2B;
 
 namespace UpDiddyApi.Models
 {
@@ -210,6 +211,8 @@ namespace UpDiddyApi.Models
         public DbSet<ProfileEmploymentType> ProfileEmploymentType { get; set; }
         public DbSet<EmailTemplate> EmailTemplate { get; set; }
         public DbSet<HiringManager> HiringManager { get; set; }
+        public DbSet<Pipeline> Pipeline { get; set; }
+        public DbSet<PipelineProfile> PipelineProfile { get; set; }
 
         #endregion
 
@@ -279,13 +282,22 @@ namespace UpDiddyApi.Models
         public DbQuery<UpDiddyLib.Domain.Models.CityStateSearchDto> CityStates { get; set; }
         public DbQuery<UpDiddyLib.Domain.Models.PostalDetailDto> Postals { get; set; }
         public DbQuery<EmailTemplateDto> EmailTemplates { get; set; }
- 
-
-
+        public DbQuery<PipelineProfileDto> PipelineProfiles { get; set; }
+        public DbQuery<PipelineDto> Pipelines { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<PipelineProfile>()
+                .HasIndex(pp => new { pp.ProfileId, pp.PipelineId })
+                .HasName("UIX_PipelineProfile_Profile_Pipeline")
+                .IsUnique(true);
+
+            modelBuilder.Entity<Pipeline>()
+                .HasIndex(p => new { p.HiringManagerId, p.Name, p.IsDeleted })
+                .HasName("UIX_Pipeline_HiringManager_Name_IsDeleted")
+                .IsUnique(false);
+
             modelBuilder.Entity<ProfileEmploymentType>()
                 .HasIndex(pet => new { pet.ProfileId, pet.EmploymentTypeId })
                 .HasName("UIX_ProfileEmploymentType_Profile_EmploymentType")
