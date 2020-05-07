@@ -34,11 +34,10 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpPut]
         [Authorize]
-        //[Authorize(Policy = "IsHiringManager")]
+        //[Authorize(Policy = "IsHiringManager")] ???
         [Route("hiring-manager")]
         public async Task<IActionResult> UpdateHiringManager([FromBody] HiringManagerDto request)
         {
-            //HM update
             await _hiringManagerService.UpdateHiringManager(GetSubscriberGuid(), request);
             return Ok();
         }
