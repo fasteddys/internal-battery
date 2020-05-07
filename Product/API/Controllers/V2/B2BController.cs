@@ -1,20 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyApi.ApplicationCore.Interfaces.Business.B2B;
+using UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
+using UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager;
 using UpDiddyApi.Authorization;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Dto;
-using Microsoft.AspNetCore.Authorization;
-using UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager;
-using UpDiddyApi.ApplicationCore.Interfaces.Business.B2B;
-using UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
-using UpDiddyApi.ApplicationCore.Exceptions;
 
 namespace UpDiddyApi.Controllers.V2
 {
@@ -42,15 +41,17 @@ namespace UpDiddyApi.Controllers.V2
             return Ok();
         }
 
-        [HttpPost("requestInterview/{profileGuid}")]
+        [HttpPost("request-interview/{profileGuid}")]
+        [Authorize(/*Policy = "IsHiringManager"*/)]
         public async Task<IActionResult> SubmitInterviewRequest(Guid profileGuid)
         {
-            var hiringManager = Guid.Empty;
-            // TODO: await _hiringManagerService.GetBySubscriberGuid(GetSubscriberGuid());
-            // TODO:     Above method should return HiringManagerDto
-            // TODO:     HiringManagerDto should include Guid identifier.
+            var hiringManager = await _hiringManagerService
+                .GetHiringManagerBySubscriberGuid(GetSubscriberGuid());
 
-            _interviewRequestService.SubmitInterviewRequest(hiringManager, profileGuid);
+            var interviewRequestId = await _interviewRequestService
+                .SubmitInterviewRequest(hiringManager, profileGuid);
+
+            return Ok(interviewRequestId);
         }
     }
 }

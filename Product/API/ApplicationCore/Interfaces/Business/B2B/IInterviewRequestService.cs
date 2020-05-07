@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business.B2B
 {
     public interface IInterviewRequestService
     {
-        Task SubmitInterviewRequest(Guid hiringManagerGuid, Guid profileGuid);
+        Task<Guid> SubmitInterviewRequest(HiringManagerDto hiringManager, Guid profileGuid, bool nonBlocking = true);
     }
 }
