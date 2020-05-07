@@ -22,6 +22,7 @@ using UpDiddyLib.Domain.Models.Reports;
 using UpDiddyLib.Domain.AzureSearch;
 using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyLib.Domain.Models.G2;
+using UpDiddyLib.Domain.Models.B2B;
 
 namespace UpDiddyApi.Helpers
 {
@@ -859,6 +860,33 @@ namespace UpDiddyApi.Helpers
                     if (string.IsNullOrWhiteSpace(dest.Title) && !string.IsNullOrWhiteSpace(src.Subscriber.Title))
                         dest.Title = src.Subscriber.Title;
                 })
+                .ReverseMap();
+
+            CreateMap<Models.B2B.Pipeline, PipelineDto>()
+                .ForMember(p => p.HiringManagerGuid, opt => opt.MapFrom(src => src.HiringManager.HiringManagerGuid))
+                .ForMember(p => p.TotalRecords, opt => opt.Ignore())
+                .ReverseMap();
+
+            CreateMap<List<PipelineDto>, PipelineListDto>()
+                .AfterMap((src, dest) =>
+                {
+                    if (src != null && src.Count() > 0)
+                        dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                    else
+                        dest.TotalRecords = 0;
+                })
+                .ForMember(dest => dest.Pipelines, opt => opt.MapFrom(src => src.ToList()))
+                .ReverseMap();
+
+            CreateMap<List<PipelineProfileDto>, PipelineProfileListDto>()
+                    .AfterMap((src, dest) =>
+                    {
+                        if (src != null && src.Count() > 0)
+                            dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                        else
+                            dest.TotalRecords = 0;
+                    })
+                .ForMember(dest => dest.PipelineProfiles, opt => opt.MapFrom(src => src.ToList()))
                 .ReverseMap();
 
             CreateMap<List<WishlistDto>, WishlistListDto>()
