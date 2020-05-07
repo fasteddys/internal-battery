@@ -27,10 +27,21 @@ namespace UpDiddyApi.Controllers.V2
             _hiringManagerService = services.GetService<IHiringManagerService>();
         }
 
+        [HttpGet]
+        [Authorize]
+        //[Authorize(Policy = "IsHiringManager")] ???
+        [Route("hiring-managers")]
+        public async Task<IActionResult> GetHiringManager()
+        {
+
+            var rval = await _hiringManagerService.GetHiringManagerBySubscriberGuid(GetSubscriberGuid());
+            return Ok(rval);
+        }
+
         [HttpPut]
         [Authorize]
         //[Authorize(Policy = "IsHiringManager")] ???
-        [Route("hiring-manager")]
+        [Route("hiring-managers")]
         public async Task<IActionResult> UpdateHiringManager([FromBody] HiringManagerDto request)
         {
             await _hiringManagerService.UpdateHiringManager(GetSubscriberGuid(), request);

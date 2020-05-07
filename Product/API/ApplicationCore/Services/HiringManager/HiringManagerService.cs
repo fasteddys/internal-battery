@@ -89,7 +89,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 
             var hiringManagerEntity = await _repositoryWrapper.HiringManagerRepository.GetHiringManagerBySubscriberId(subscriber.SubscriberId);
 
-            if (hiringManagerEntity != null) throw new FailedValidationException($"HiringManagerService:UpdateHiringManager {subscriberGuid} is not a hiring manager");
+            if (hiringManagerEntity == null) throw new FailedValidationException($"HiringManagerService:UpdateHiringManager {subscriberGuid} is not a hiring manager");
 
             //update the subscriber and company record for the HM in DB
             try
