@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
@@ -110,7 +111,7 @@ namespace UpDiddyApi.Migrations
 
                     b.HasIndex("ProfileId");
 
-                    b.ToTable("InterviewRequest");
+                    b.ToTable("InterviewRequest","B2B");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Badge", b =>

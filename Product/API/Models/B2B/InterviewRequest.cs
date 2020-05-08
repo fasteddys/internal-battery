@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 using UpDiddyApi.Models.G2;
 
 namespace UpDiddyApi.Models.B2B
 {
+    [Table("InterviewRequest", Schema = "B2B")]
     public class InterviewRequest : BaseModel
     {
         public int InterviewRequestId { get; set; }

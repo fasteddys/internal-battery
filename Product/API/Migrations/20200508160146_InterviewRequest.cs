@@ -8,8 +8,12 @@ namespace UpDiddyApi.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.EnsureSchema(
+                name: "B2B");
+
             migrationBuilder.CreateTable(
                 name: "InterviewRequest",
+                schema: "B2B",
                 columns: table => new
                 {
                     InterviewRequestId = table.Column<int>(nullable: false)
@@ -45,11 +49,13 @@ namespace UpDiddyApi.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_InterviewRequest_HiringManagerId",
+                schema: "B2B",
                 table: "InterviewRequest",
                 column: "HiringManagerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_InterviewRequest_ProfileId",
+                schema: "B2B",
                 table: "InterviewRequest",
                 column: "ProfileId");
         }
@@ -57,7 +63,8 @@ namespace UpDiddyApi.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "InterviewRequest");
+                name: "InterviewRequest",
+                schema: "B2B");
         }
     }
 }

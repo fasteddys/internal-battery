@@ -11,7 +11,7 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    [Migration("20200508141841_InterviewRequest")]
+    [Migration("20200508160146_InterviewRequest")]
     partial class InterviewRequest
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -113,7 +113,7 @@ namespace UpDiddyApi.Migrations
 
                     b.HasIndex("ProfileId");
 
-                    b.ToTable("InterviewRequest");
+                    b.ToTable("InterviewRequest","B2B");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Badge", b =>
