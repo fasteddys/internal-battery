@@ -58,7 +58,7 @@ namespace UpDiddyApi.ApplicationCore.Services.B2B
             {
                 if (nonBlocking)
                 {
-                    _logger.LogInformation($"{nameof(SubmitInterviewRequest)} : Background job starting for hiring manager {hiringManager.HiringManagerGuid}");
+                    _logger.LogInformation($"{nameof(InterviewRequestService)}:{nameof(SubmitInterviewRequest)} : Background job starting for hiring manager {hiringManager.HiringManagerGuid}");
                     _hangfireService.Enqueue<InterviewRequestService>(s => s.ProcessEmailRequests(hiringManager, profile, hiringManagerEntity.Subscriber.Email));
                 }
                 else
