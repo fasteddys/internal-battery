@@ -13,11 +13,11 @@ namespace UpDiddyApi.Models.B2B
 
         public Guid InterviewRequestGuid { get; set; }
 
-        public int HiringManagerId { get; set; }
+        public int? HiringManagerId { get; set; }
 
         public virtual HiringManager HiringManager { get; set; }
 
-        public int ProfileId { get; set; }
+        public int? ProfileId { get; set; }
 
         public virtual Profile Profile { get; set; }
 

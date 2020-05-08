@@ -53,7 +53,7 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         [HttpPost("request-interview/{profileGuid}")]
-        [Authorize(/*Policy = "IsHiringManager"*/)]
+        [Authorize(Policy = "IsHiringManager")]
         public async Task<IActionResult> SubmitInterviewRequest(Guid profileGuid)
         {
             var hiringManager = await _hiringManagerService

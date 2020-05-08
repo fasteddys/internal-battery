@@ -11,8 +11,8 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    [Migration("20200506191740_2188_InterviewRequest")]
-    partial class _2188_InterviewRequest
+    [Migration("20200508141841_InterviewRequest")]
+    partial class InterviewRequest
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -95,7 +95,7 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<int>("HiringManagerId");
+                    b.Property<int?>("HiringManagerId");
 
                     b.Property<Guid>("InterviewRequestGuid");
 
@@ -105,7 +105,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("ModifyGuid");
 
-                    b.Property<int>("ProfileId");
+                    b.Property<int?>("ProfileId");
 
                     b.HasKey("InterviewRequestId");
 
@@ -5272,13 +5272,11 @@ namespace UpDiddyApi.Migrations
                 {
                     b.HasOne("UpDiddyApi.Models.B2B.HiringManager", "HiringManager")
                         .WithMany()
-                        .HasForeignKey("HiringManagerId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("HiringManagerId");
 
                     b.HasOne("UpDiddyApi.Models.G2.Profile", "Profile")
                         .WithMany()
-                        .HasForeignKey("ProfileId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("ProfileId");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.CampaignCourseVariant", b =>

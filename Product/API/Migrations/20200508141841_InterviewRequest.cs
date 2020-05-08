@@ -4,19 +4,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace UpDiddyApi.Migrations
 {
-    public partial class _2188_InterviewRequest : Migration
+    public partial class InterviewRequest : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.EnsureSchema(
-                name: "B2B");
-
-            migrationBuilder.RenameTable(
-                name: "HiringManagers",
-                schema: "G2",
-                newName: "HiringManagers",
-                newSchema: "B2B");
-
             migrationBuilder.CreateTable(
                 name: "InterviewRequest",
                 columns: table => new
@@ -29,8 +20,8 @@ namespace UpDiddyApi.Migrations
                     CreateGuid = table.Column<Guid>(nullable: false),
                     ModifyGuid = table.Column<Guid>(nullable: true),
                     InterviewRequestGuid = table.Column<Guid>(nullable: false),
-                    HiringManagerId = table.Column<int>(nullable: false),
-                    ProfileId = table.Column<int>(nullable: false),
+                    HiringManagerId = table.Column<int>(nullable: true),
+                    ProfileId = table.Column<int>(nullable: true),
                     DateRequested = table.Column<DateTime>(nullable: false, defaultValueSql: "GETUTCDATE()")
                 },
                 constraints: table =>
@@ -42,14 +33,14 @@ namespace UpDiddyApi.Migrations
                         principalSchema: "B2B",
                         principalTable: "HiringManagers",
                         principalColumn: "HiringManagerId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_InterviewRequest_Profiles_ProfileId",
                         column: x => x.ProfileId,
                         principalSchema: "G2",
                         principalTable: "Profiles",
                         principalColumn: "ProfileId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -67,12 +58,6 @@ namespace UpDiddyApi.Migrations
         {
             migrationBuilder.DropTable(
                 name: "InterviewRequest");
-
-            migrationBuilder.RenameTable(
-                name: "HiringManagers",
-                schema: "B2B",
-                newName: "HiringManagers",
-                newSchema: "G2");
         }
     }
 }

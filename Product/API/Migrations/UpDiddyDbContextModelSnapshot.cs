@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
@@ -93,7 +92,7 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<int>("HiringManagerId");
+                    b.Property<int?>("HiringManagerId");
 
                     b.Property<Guid>("InterviewRequestGuid");
 
@@ -103,7 +102,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("ModifyGuid");
 
-                    b.Property<int>("ProfileId");
+                    b.Property<int?>("ProfileId");
 
                     b.HasKey("InterviewRequestId");
 
@@ -5270,13 +5269,11 @@ namespace UpDiddyApi.Migrations
                 {
                     b.HasOne("UpDiddyApi.Models.B2B.HiringManager", "HiringManager")
                         .WithMany()
-                        .HasForeignKey("HiringManagerId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("HiringManagerId");
 
                     b.HasOne("UpDiddyApi.Models.G2.Profile", "Profile")
                         .WithMany()
-                        .HasForeignKey("ProfileId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("ProfileId");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.CampaignCourseVariant", b =>
