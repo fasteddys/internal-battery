@@ -11,7 +11,7 @@ using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
-    public class HiringManagerRepository: UpDiddyRepositoryBase<HiringManager>, IHiringManagerRepository
+    public class HiringManagerRepository : UpDiddyRepositoryBase<HiringManager>, IHiringManagerRepository
     {
         private readonly UpDiddyDbContext _dbContext;
 
@@ -39,7 +39,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 CreateDate = DateTime.UtcNow,
             });
 
-           await  _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task UpdateHiringManager(int subscriberId, HiringManagerDto hiringManagerDto)
@@ -52,45 +52,40 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 .FirstOrDefault();
 
             //add/update Company details
-            if (!String.IsNullOrWhiteSpace(hiringManagerDto.CompanyName) || hiringManagerDto.CompanySize.HasValue ||
-                !String.IsNullOrWhiteSpace(hiringManagerDto.CompanyDescription) || hiringManagerDto.CompanyIndustryGuid.HasValue)
+
+            var industry = _dbContext.Industry.FirstOrDefault(i => hiringManagerDto.CompanyIndustryGuid.HasValue && i.IndustryGuid == hiringManagerDto.CompanyIndustryGuid.Value);
+            if (hiringManager.Company == null)
             {
-                var industry = _dbContext.Industry.FirstOrDefault(i=> hiringManagerDto.CompanyIndustryGuid.HasValue && i.IndustryGuid == hiringManagerDto.CompanyIndustryGuid.Value);
-                if (hiringManager.Company == null)
+                hiringManager.Company = new Company
                 {
-                    hiringManager.Company = new Company { 
-                        CompanyGuid = Guid.NewGuid(),
-                        CreateDate = DateTime.UtcNow,
-                        CreateGuid = Guid.NewGuid(),
-                        WebsiteUrl = hiringManagerDto.CompanyWebsiteUrl,
-                        CompanyName = hiringManagerDto.CompanyName,
-                        EmployeeSize = hiringManagerDto.CompanySize,
-                        Description = hiringManagerDto.CompanyDescription,
-                        IndustryId = industry?.IndustryId
-                    };
-                }
-                else
-                {
-                    hiringManager.Company.CompanyName = hiringManagerDto.CompanyName;
-                    hiringManager.Company.EmployeeSize = hiringManagerDto.CompanySize;
-                    hiringManager.Company.WebsiteUrl = hiringManagerDto.CompanyWebsiteUrl;
-                    hiringManager.Company.Description = hiringManagerDto.CompanyDescription;
-                    hiringManager.Company.ModifyGuid = Guid.NewGuid();
-                    hiringManager.Company.ModifyDate = DateTime.UtcNow;
-                    hiringManager.Company.IndustryId = industry?.IndustryId;
-                }
+                    CompanyGuid = Guid.NewGuid(),
+                    CreateDate = DateTime.UtcNow,
+                    CreateGuid = Guid.NewGuid(),
+                    WebsiteUrl = hiringManagerDto.CompanyWebsiteUrl,
+                    CompanyName = hiringManagerDto.CompanyName,
+                    EmployeeSize = hiringManagerDto.CompanySize,
+                    Description = hiringManagerDto.CompanyDescription,
+                    IndustryId = industry?.IndustryId
+                };
+            }
+            else
+            {
+                hiringManager.Company.CompanyName = hiringManagerDto.CompanyName;
+                hiringManager.Company.EmployeeSize = hiringManagerDto.CompanySize;
+                hiringManager.Company.WebsiteUrl = hiringManagerDto.CompanyWebsiteUrl;
+                hiringManager.Company.Description = hiringManagerDto.CompanyDescription;
+                hiringManager.Company.ModifyGuid = Guid.NewGuid();
+                hiringManager.Company.ModifyDate = DateTime.UtcNow;
+                hiringManager.Company.IndustryId = industry?.IndustryId;
             }
 
             //update subscribers record
-            if(!String.IsNullOrWhiteSpace(hiringManagerDto.Name) || !String.IsNullOrWhiteSpace(hiringManagerDto.PhoneNumber) ||
-                !String.IsNullOrWhiteSpace(hiringManagerDto.Title))
-            {
-                hiringManager.Subscriber.ModifyDate = DateTime.UtcNow;
-                hiringManager.Subscriber.ModifyGuid = Guid.NewGuid();
-                hiringManager.Subscriber.Title = hiringManagerDto.Title;
-                hiringManager.Subscriber.PhoneNumber = hiringManagerDto.PhoneNumber;
-                //update name later
-            }
+
+            hiringManager.Subscriber.ModifyDate = DateTime.UtcNow;
+            hiringManager.Subscriber.ModifyGuid = Guid.NewGuid();
+            hiringManager.Subscriber.Title = hiringManagerDto.Title;
+            hiringManager.Subscriber.PhoneNumber = hiringManagerDto.PhoneNumber;
+            //update name later
 
 
             await _dbContext.SaveChangesAsync();
