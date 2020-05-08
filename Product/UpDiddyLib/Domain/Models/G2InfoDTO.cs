@@ -34,5 +34,10 @@ namespace UpDiddyLib.Domain.Models
 
        public DateTime? ModifyDate { get; set; }
 
+       public string Title { get; set; }
+
+       public string PublicSkills { get; set; }
+
+
     }
 }
