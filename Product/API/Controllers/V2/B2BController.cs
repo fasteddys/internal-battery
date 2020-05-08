@@ -52,7 +52,7 @@ namespace UpDiddyApi.Controllers.V2
             return Ok();
         }
 
-        [HttpPost("request-interview/{profileGuid}")]
+        [HttpPost("hiring-managers/request-interview/{profileGuid}")]
         [Authorize(Policy = "IsHiringManager")]
         public async Task<IActionResult> SubmitInterviewRequest(Guid profileGuid)
         {
