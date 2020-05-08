@@ -96,6 +96,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IWishlistRepository WishlistRepository { get; }
         ICommentRepository CommentRepository { get; }
         IEmailTemplateRepository EmailTemplateRepository { get; }
+        IHiringManagerRepository HiringManagerRepository { get; }
 
     }
 }

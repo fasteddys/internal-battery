@@ -20,7 +20,6 @@ namespace UpDiddyApi.Controllers.V2
     public class B2BController : BaseApiController
     {
 
-        //Can we implement all service calls talk through HiringManagerService???
         private readonly IHiringManagerService _hiringManagerService;
         private readonly IG2Service _g2Service;
 
@@ -30,17 +29,23 @@ namespace UpDiddyApi.Controllers.V2
             _g2Service = services.GetService<IG2Service>();
         }
 
+        [HttpGet]
+        [Authorize(Policy = "IsHiringManager")]
+        [Route("hiring-managers")]
+        public async Task<IActionResult> GetHiringManager()
+        {
 
+            var rval = await _hiringManagerService.GetHiringManagerBySubscriberGuid(GetSubscriberGuid());
+            return Ok(rval);
+        }
 
         [HttpPut]
-        [Authorize]
-        //[Authorize(Policy = "IsHiringManager")]
-        [Route("hiring-manager")]
+        [Authorize(Policy = "IsHiringManager")]
+        [Route("hiring-managers")]
         public async Task<IActionResult> UpdateHiringManager([FromBody] HiringManagerDto request)
         {
-            //HM update
-            var rVal = await _hiringManagerService.AddHiringManager(GetSubscriberGuid(), true);
-            return Ok(rVal);
+            await _hiringManagerService.UpdateHiringManager(GetSubscriberGuid(), request);
+            return Ok();
         }
 
         #region Hiring  Query Functions 

@@ -104,6 +104,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IWishlistRepository _wishlistRepository;
         private ICommentRepository _commentRepository;
         private IEmailTemplateRepository _emailTemplateRepository;
+        private IHiringManagerRepository _hiringManagerRepository;
 
 
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
@@ -1228,6 +1229,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _emailTemplateRepository = new EmailTemplateRepository(_dbContext);
                 }
                 return _emailTemplateRepository;
+            }
+        }
+
+        public IHiringManagerRepository HiringManagerRepository
+        {
+            get
+            {
+                if (_hiringManagerRepository == null)
+                {
+                    _hiringManagerRepository = new HiringManagerRepository(_dbContext);
+                }
+                return _hiringManagerRepository;
             }
         }
 

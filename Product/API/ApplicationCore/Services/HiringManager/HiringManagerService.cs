@@ -13,6 +13,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Services.Identity;
 using UpDiddyApi.ApplicationCore.Services.Identity.Interfaces;
 using UpDiddyApi.Models;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 {
@@ -37,12 +38,72 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             _hangfireService = hangfireService;
         }
 
+        public async Task<HiringManagerDto> GetHiringManagerBySubscriberGuid(Guid subscriberGuid)
+        {
+            if (subscriberGuid == Guid.Empty)
+                throw new FailedValidationException($"HiringManagerService:GetHiringManagerBySubscriberGuid subscriber guid cannot be empty({subscriberGuid})");
 
-        public async Task UpdateHiringManager() { }
 
-        public async Task GetHiringManager() { }
+            // validate the subscriber is valid
+            var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
 
-        public async Task RemoveHiringManager() { }
+            if (subscriber == null)
+                throw new FailedValidationException($"HiringManagerService:GetHiringManagerBySubscriberGuid Cannot locate subscriber {subscriberGuid}");
+
+            HiringManagerDto hiringManagerDto = null;
+            try
+            {
+                var hiringManagerEntity = await _repositoryWrapper.HiringManagerRepository.GetHiringManagerBySubscriberId(subscriber.SubscriberId); 
+
+                if(hiringManagerEntity == null)
+                {
+                    throw new FailedValidationException($"HiringManagerService:GetHiringManagerBySubscriberGuid Cannot locate hiring manager for subscriber: {subscriberGuid}");
+                }
+
+                //map hiring manage entity to dto
+                hiringManagerDto = _mapper.Map<HiringManagerDto>(hiringManagerEntity);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"HiringManagerService:GetHiringManagerBySubscriberGuid  Error: {ex.ToString()} ");
+            }
+
+            return hiringManagerDto;
+        }
+
+
+        public async Task UpdateHiringManager(Guid subscriberGuid, HiringManagerDto hiringManager) 
+        {
+            _logger.LogInformation($"HiringManagerService:UpdateHiringManager  Starting for subscriber {subscriberGuid} ");
+            if(subscriberGuid == Guid.Empty)
+                throw new FailedValidationException($"HiringManagerService:UpdateHiringManager subscriber guid cannot be empty({subscriberGuid})");
+
+            if (hiringManager == null)
+                throw new FailedValidationException($"HiringManagerService:UpdateHiringManager HiringManagerDto cannot be null");
+
+            // validate the subscriber is valid
+            var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+
+            if (subscriber == null)
+                throw new FailedValidationException($"HiringManagerService:UpdateHiringManager Cannot locate subscriber {subscriberGuid}");
+
+            var hiringManagerEntity = await _repositoryWrapper.HiringManagerRepository.GetHiringManagerBySubscriberId(subscriber.SubscriberId);
+
+            if (hiringManagerEntity == null) throw new FailedValidationException($"HiringManagerService:UpdateHiringManager {subscriberGuid} is not a hiring manager");
+
+            //update the subscriber and company record for the HM in DB
+            try
+            {
+                await _repositoryWrapper.HiringManagerRepository.UpdateHiringManager(subscriber.SubscriberId, hiringManager);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"HiringManagerService:UpdateHiringManager  Error: {ex.ToString()} ");
+            }
+
+            _logger.LogInformation($"HiringManagerService:UpdateHiringManager  Done for Hiring Manager with subscriber: {subscriberGuid} ");
+
+        }
 
 
         public async Task<bool> AddHiringManager(Guid subscriberGuid, bool nonBlocking = true)
@@ -53,14 +114,14 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             if (subscriber == null)
                 throw new FailedValidationException($"HiringManagerService:AddHiringManager Cannot locate subscriber {subscriberGuid}");
 
-            // TODO Vivek
-            // validate the subscriber is not already a hiring manager
-            // if already hiring manager 
-            //     throw new FailedValidationException($"HiringManagerService:AddHiringManager {subscriberGuid} is already a hiring manger");
-
-
             try
             {
+                //check if hiring manager for subscriberid exists
+                var hiringManager = await _repositoryWrapper.HiringManagerRepository.GetHiringManagerBySubscriberId(subscriber.SubscriberId);
+
+                if (hiringManager == null)
+                    await _repositoryWrapper.HiringManagerRepository.AddHiringManager(subscriber.SubscriberId);
+
                 if (nonBlocking)
                 {
                     _logger.LogInformation($"HiringManagerService:AddHiringManager : Background job starting for subscriber {subscriberGuid}");
