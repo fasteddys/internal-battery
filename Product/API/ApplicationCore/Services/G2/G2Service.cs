@@ -77,7 +77,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             if (cityGuid == null || cityGuid == Guid.Empty)
             {
                 results =  await _SearchG2BySkillsAsync(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, 0, 0, 0, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
-                //todo jab obfucscate 
+                // Obfucscate the results 
                 Obfuscate(results);
                 return results;
             }
@@ -94,7 +94,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
                 throw new NotFoundException($"A city with an Guid of {cityGuid} cannot be found.");
 
             results = await _SearchG2BySkillsAsync(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, (double)postal.Latitude, (double)postal.Longitude, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
-            //todo jab obfucscate 
+            // Obfucscate  the results 
             Obfuscate(results);
             return results;
 
@@ -1035,9 +1035,9 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             {
                 profile.FirstName = profile.SubscriberGuid.ToString();
                 profile.LastName = profile.SubscriberGuid.ToString();
-                profile.Email = "hidden";
+                profile.Email = string.Empty;
                 if (profile.PhoneNumber != null)
-                    profile.PhoneNumber = "hidden";
+                    profile.PhoneNumber = string.Empty;
 
             }
 
