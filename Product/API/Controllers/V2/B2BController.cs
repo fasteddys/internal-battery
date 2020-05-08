@@ -28,8 +28,7 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         [HttpGet]
-        [Authorize]
-        //[Authorize(Policy = "IsHiringManager")] ???
+        [Authorize(Policy = "IsHiringManager")]
         [Route("hiring-managers")]
         public async Task<IActionResult> GetHiringManager()
         {
@@ -39,8 +38,7 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         [HttpPut]
-        [Authorize]
-        //[Authorize(Policy = "IsHiringManager")] ???
+        [Authorize(Policy = "IsHiringManager")]
         [Route("hiring-managers")]
         public async Task<IActionResult> UpdateHiringManager([FromBody] HiringManagerDto request)
         {
