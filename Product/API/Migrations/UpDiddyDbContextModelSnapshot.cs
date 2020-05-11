@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
@@ -77,45 +76,6 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("SubscriberId");
 
                     b.ToTable("HiringManagers","B2B");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.B2B.InterviewRequest", b =>
-                {
-                    b.Property<int>("InterviewRequestId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<DateTime>("DateRequested")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("Details");
-
-                    b.Property<int?>("HiringManagerId");
-
-                    b.Property<Guid>("InterviewRequestGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<int?>("ProfileId");
-
-                    b.Property<bool>("Successful");
-
-                    b.HasKey("InterviewRequestId");
-
-                    b.HasIndex("HiringManagerId");
-
-                    b.HasIndex("ProfileId");
-
-                    b.ToTable("InterviewRequest","B2B");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Badge", b =>
@@ -5268,17 +5228,6 @@ namespace UpDiddyApi.Migrations
                         .WithMany()
                         .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.B2B.InterviewRequest", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.B2B.HiringManager", "HiringManager")
-                        .WithMany()
-                        .HasForeignKey("HiringManagerId");
-
-                    b.HasOne("UpDiddyApi.Models.G2.Profile", "Profile")
-                        .WithMany()
-                        .HasForeignKey("ProfileId");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.CampaignCourseVariant", b =>
