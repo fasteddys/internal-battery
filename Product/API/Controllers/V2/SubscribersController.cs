@@ -92,8 +92,6 @@ namespace UpDiddyApi.Controllers.V2
         [Route("hiring-manager")]
         public async Task<IActionResult> AddHiringManager()
         {
-
-
             var rVal = await _hiringManagerService.AddHiringManager(GetSubscriberGuid(), true);
             return Ok(rVal);
         }

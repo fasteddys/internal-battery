@@ -971,6 +971,19 @@ namespace UpDiddyApi.Helpers
          .ForMember(dest => dest.EmailTemplates, opt => opt.MapFrom(src => src.ToList()))
          .ReverseMap();
 
+        CreateMap<UpDiddyApi.Models.B2B.HiringManager, HiringManagerDto > ()
+        .ForMember(hm => hm.HiringManagerGuid, opt => opt.MapFrom(src => src.HiringManagerGuid))
+        .ForMember(s => s.FirstName, opt => opt.MapFrom(src => src.Subscriber.FirstName))
+        .ForMember(s => s.LastName, opt => opt.MapFrom(src => src.Subscriber.LastName))
+        .ForMember(s => s.Title, opt => opt.MapFrom(src => src.Subscriber.Title))
+        .ForMember(s => s.PhoneNumber, opt => opt.MapFrom(src => src.Subscriber.PhoneNumber))
+        .ForMember(c => c.CompanyName, opt => opt.MapFrom(src => src.Company.CompanyName))
+        .ForMember(c => c.CompanyDescription, opt => opt.MapFrom(src => src.Company.Description))
+        .ForMember(c => c.CompanySize, opt => opt.MapFrom(src => src.Company.EmployeeSize))
+        .ForMember(c => c.CompanyWebsiteUrl, opt => opt.MapFrom(src => src.Company.WebsiteUrl))
+        .ForMember(c => c.CompanyIndustryGuid, opt => opt.MapFrom(src => src.Company.Industry.IndustryGuid))
+        .ReverseMap();
+
         }
     }
 }
