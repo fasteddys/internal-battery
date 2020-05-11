@@ -105,7 +105,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ICommentRepository _commentRepository;
         private IEmailTemplateRepository _emailTemplateRepository;
         private IHiringManagerRepository _hiringManagerRepository;
-
+        private IPipelineRepository _pipelineRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
         {
@@ -1219,7 +1219,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
-
         public IEmailTemplateRepository EmailTemplateRepository
         {
             get
@@ -1229,6 +1228,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _emailTemplateRepository = new EmailTemplateRepository(_dbContext);
                 }
                 return _emailTemplateRepository;
+            }
+        }
+
+        public IPipelineRepository PipelineRepository
+        {
+            get
+            {
+                if (_pipelineRepository == null)
+                {
+                    _pipelineRepository = new PipelineRepository(_dbContext);
+                }
+                return _pipelineRepository;
             }
         }
 
@@ -1243,8 +1254,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 return _hiringManagerRepository;
             }
         }
-
-
 
         public async Task SaveAsync()
         {
