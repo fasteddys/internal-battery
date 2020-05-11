@@ -12,11 +12,15 @@ namespace UpDiddyLib.Dto
 
         public string LastName { get; set; }
 
-        public string Name { get; set; }
-
         public string Title { get; set; }
 
+        public string City { get; set; }
+
+        public Guid? StateGuid { get; set; }
+
         public string PhoneNumber { get; set; }
+
+        public string Email { get; set; }
 
         //HM company fields
         public string CompanyName { get; set; }
@@ -27,12 +31,14 @@ namespace UpDiddyLib.Dto
 
         public string CompanyWebsiteUrl { get; set; }
 
-        //add industryguid
         public Guid? CompanyIndustryGuid { get; set; }
+
+        //HM special Notes
+        public string HardToFindFillSkillsRoles { get; set; }
+        public string SkillsRolesWeAreAlwaysHiringFor { get; set; }
 
         [JsonIgnore]
         public Guid? HiringManagerGuid { get; set; }
-
 
 
     }
