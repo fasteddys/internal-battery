@@ -15,5 +15,7 @@ namespace UpDiddyApi.Models.B2B
         public virtual Subscriber Subscriber { get; set; }
         public int? CompanyId { get; set; }
         public virtual Company Company { get; set; }
+        public string HardToFindFillSkillsRoles { get; set; }
+        public string SkillsRolesWeAreAlwaysHiringFor { get; set; }
     }
 }

@@ -973,8 +973,13 @@ namespace UpDiddyApi.Helpers
 
         CreateMap<UpDiddyApi.Models.B2B.HiringManager, HiringManagerDto > ()
         .ForMember(hm => hm.HiringManagerGuid, opt => opt.MapFrom(src => src.HiringManagerGuid))
+        .ForMember(hm => hm.HardToFindFillSkillsRoles, opt => opt.MapFrom(src => src.HardToFindFillSkillsRoles))
+        .ForMember(hm => hm.SkillsRolesWeAreAlwaysHiringFor, opt => opt.MapFrom(src => src.SkillsRolesWeAreAlwaysHiringFor))
         .ForMember(s => s.FirstName, opt => opt.MapFrom(src => src.Subscriber.FirstName))
         .ForMember(s => s.LastName, opt => opt.MapFrom(src => src.Subscriber.LastName))
+        .ForMember(s => s.City, opt => opt.MapFrom(src => src.Subscriber.City))
+        .ForMember(s => s.StateGuid, opt => opt.MapFrom(src => src.Subscriber.StateGuid))
+        .ForMember(s => s.Email, opt => opt.MapFrom(src => src.Subscriber.Email))
         .ForMember(s => s.Title, opt => opt.MapFrom(src => src.Subscriber.Title))
         .ForMember(s => s.PhoneNumber, opt => opt.MapFrom(src => src.Subscriber.PhoneNumber))
         .ForMember(c => c.CompanyName, opt => opt.MapFrom(src => src.Company.CompanyName))
