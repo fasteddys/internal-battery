@@ -213,6 +213,7 @@ namespace UpDiddyApi.Models
         public DbSet<HiringManager> HiringManager { get; set; }
         public DbSet<Pipeline> Pipeline { get; set; }
         public DbSet<PipelineProfile> PipelineProfile { get; set; }
+        public DbSet<InterviewRequest> InterviewRequest { get; set; }
 
         #endregion
 
@@ -676,7 +677,9 @@ namespace UpDiddyApi.Models
                .HasName("UIX_NotificationGroup_Group")
                .IsUnique(true);
 
-
+            modelBuilder.Entity<InterviewRequest>()
+                .Property(ir => ir.DateRequested)
+                .HasDefaultValueSql("GETUTCDATE()");
         }
     }
 }
