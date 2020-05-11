@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -27,5 +28,16 @@ namespace UpDiddyApi.Models
         /// </summary>
         public string CloudTalentIndexInfo { get; set; }
         public IList<RecruiterCompany> RecruiterCompanies { get; set; }
+        /// <summary>
+        /// Keeping this simple for now since there was no specific requirement. Discussed 
+        /// with team members and decided against normalizing this, adding ranges, etc.
+        /// </summary>
+        public int? EmployeeSize { get; set; }
+        [Url]
+        public string WebsiteUrl { get; set; }
+        [StringLength(500)]
+        public string Description { get; set; }
+        public int? IndustryId { get; set; }
+        public virtual Industry Industry { get; set; }
     }
 }

@@ -31,15 +31,17 @@ namespace UpDiddyApi.Controllers
         private IMapper _mapper;
         protected internal ILogger _syslog = null;
         private readonly IRepositoryWrapper _repositoryWrapper;
+        private readonly IMemoryCacheService _memoryCacheService;
 
-        public ResumeController(UpDiddyDbContext db, ISubscriberService subscriberService, IMapper mapper, ILogger<ResumeController> sysLog, IRepositoryWrapper repositoryWrapper)
+        public ResumeController(UpDiddyDbContext db, ISubscriberService subscriberService, IMapper mapper, ILogger<ResumeController> sysLog, IRepositoryWrapper repositoryWrapper, IMemoryCacheService memoryCacheService)
         {
             this._db = db;
             this._syslog = sysLog;
             this._subscriberService = subscriberService;
             this._mapper = mapper;
             this._repositoryWrapper = repositoryWrapper;
-        }
+            this._memoryCacheService = memoryCacheService;
+    }
 
         /// <summary>
         /// Resume Upload Endpoint that takes a resume upload and submits it to sovren to get HRXML and saves it in the
@@ -99,7 +101,7 @@ namespace UpDiddyApi.Controllers
                 return BadRequest(new BasicResponseDto() { StatusCode = 401, Description = "Requester does not own resume parse" });
 
 
-            await ResumeParseFactory.ResolveProfileMerge(_repositoryWrapper, _mapper, _syslog, resumeParse, subscriber, mergeInfo);
+            await ResumeParseFactory.ResolveProfileMerge(_repositoryWrapper, _mapper, _syslog, _memoryCacheService, resumeParse, subscriber, mergeInfo);
 
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Success!" });
         }

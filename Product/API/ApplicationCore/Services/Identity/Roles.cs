@@ -8,6 +8,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
         [Description("Recruiter")]
         Recruiter = 0,
         [Description("Career Circle Administrator")]
-        Administrator = 1
+        Administrator = 1,
+        [Description("Hiring Manager")]
+        HiringManager = 2
     }
 }

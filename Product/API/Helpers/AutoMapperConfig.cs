@@ -22,6 +22,7 @@ using UpDiddyLib.Domain.Models.Reports;
 using UpDiddyLib.Domain.AzureSearch;
 using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyLib.Domain.Models.G2;
+using UpDiddyLib.Domain.Models.B2B;
 
 namespace UpDiddyApi.Helpers
 {
@@ -861,6 +862,33 @@ namespace UpDiddyApi.Helpers
                 })
                 .ReverseMap();
 
+            CreateMap<Models.B2B.Pipeline, PipelineDto>()
+                .ForMember(p => p.HiringManagerGuid, opt => opt.MapFrom(src => src.HiringManager.HiringManagerGuid))
+                .ForMember(p => p.TotalRecords, opt => opt.Ignore())
+                .ReverseMap();
+
+            CreateMap<List<PipelineDto>, PipelineListDto>()
+                .AfterMap((src, dest) =>
+                {
+                    if (src != null && src.Count() > 0)
+                        dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                    else
+                        dest.TotalRecords = 0;
+                })
+                .ForMember(dest => dest.Pipelines, opt => opt.MapFrom(src => src.ToList()))
+                .ReverseMap();
+
+            CreateMap<List<PipelineProfileDto>, PipelineProfileListDto>()
+                    .AfterMap((src, dest) =>
+                    {
+                        if (src != null && src.Count() > 0)
+                            dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                        else
+                            dest.TotalRecords = 0;
+                    })
+                .ForMember(dest => dest.PipelineProfiles, opt => opt.MapFrom(src => src.ToList()))
+                .ReverseMap();
+
             CreateMap<List<WishlistDto>, WishlistListDto>()
                 .AfterMap((src, dest) =>
                 {
@@ -942,6 +970,24 @@ namespace UpDiddyApi.Helpers
            })
          .ForMember(dest => dest.EmailTemplates, opt => opt.MapFrom(src => src.ToList()))
          .ReverseMap();
+
+        CreateMap<UpDiddyApi.Models.B2B.HiringManager, HiringManagerDto > ()
+        .ForMember(hm => hm.HiringManagerGuid, opt => opt.MapFrom(src => src.HiringManagerGuid))
+        .ForMember(hm => hm.HardToFindFillSkillsRoles, opt => opt.MapFrom(src => src.HardToFindFillSkillsRoles))
+        .ForMember(hm => hm.SkillsRolesWeAreAlwaysHiringFor, opt => opt.MapFrom(src => src.SkillsRolesWeAreAlwaysHiringFor))
+        .ForMember(s => s.FirstName, opt => opt.MapFrom(src => src.Subscriber.FirstName))
+        .ForMember(s => s.LastName, opt => opt.MapFrom(src => src.Subscriber.LastName))
+        .ForMember(s => s.City, opt => opt.MapFrom(src => src.Subscriber.City))
+        .ForMember(s => s.StateGuid, opt => opt.MapFrom(src => src.Subscriber.StateGuid))
+        .ForMember(s => s.Email, opt => opt.MapFrom(src => src.Subscriber.Email))
+        .ForMember(s => s.Title, opt => opt.MapFrom(src => src.Subscriber.Title))
+        .ForMember(s => s.PhoneNumber, opt => opt.MapFrom(src => src.Subscriber.PhoneNumber))
+        .ForMember(c => c.CompanyName, opt => opt.MapFrom(src => src.Company.CompanyName))
+        .ForMember(c => c.CompanyDescription, opt => opt.MapFrom(src => src.Company.Description))
+        .ForMember(c => c.CompanySize, opt => opt.MapFrom(src => src.Company.EmployeeSize))
+        .ForMember(c => c.CompanyWebsiteUrl, opt => opt.MapFrom(src => src.Company.WebsiteUrl))
+        .ForMember(c => c.CompanyIndustryGuid, opt => opt.MapFrom(src => src.Company.Industry.IndustryGuid))
+        .ReverseMap();
 
         }
     }
