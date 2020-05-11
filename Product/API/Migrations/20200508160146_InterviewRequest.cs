@@ -8,9 +8,6 @@ namespace UpDiddyApi.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.EnsureSchema(
-                name: "B2B");
-
             migrationBuilder.CreateTable(
                 name: "InterviewRequest",
                 schema: "B2B",
@@ -26,7 +23,9 @@ namespace UpDiddyApi.Migrations
                     InterviewRequestGuid = table.Column<Guid>(nullable: false),
                     HiringManagerId = table.Column<int>(nullable: true),
                     ProfileId = table.Column<int>(nullable: true),
-                    DateRequested = table.Column<DateTime>(nullable: false, defaultValueSql: "GETUTCDATE()")
+                    DateRequested = table.Column<DateTime>(nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    Successful = table.Column<bool>(nullable: false),
+                    Details = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {

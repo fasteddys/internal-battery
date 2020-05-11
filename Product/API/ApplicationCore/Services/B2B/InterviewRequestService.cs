@@ -54,53 +54,92 @@ namespace UpDiddyApi.ApplicationCore.Services.B2B
                 .Where(hm => hm.IsDeleted == 0 && hm.HiringManagerGuid == hiringManager.HiringManagerGuid)
                 .FirstOrDefaultAsync();
 
-            try
-            {
-                if (nonBlocking)
-                {
-                    _logger.LogInformation($"{nameof(InterviewRequestService)}:{nameof(SubmitInterviewRequest)} : Background job starting for hiring manager {hiringManager.HiringManagerGuid}");
-                    _hangfireService.Enqueue<InterviewRequestService>(s => s.ProcessEmailRequests(hiringManager, profile, hiringManagerEntity.Subscriber.Email));
-                }
-                else
-                {
-                    _logger.LogInformation($"{nameof(InterviewRequestService)}:{nameof(SubmitInterviewRequest)} : awaiting _AddHiringManager for hiring manager {hiringManager.HiringManagerGuid}");
-                    await ProcessEmailRequests(hiringManager, profile, hiringManagerEntity.Subscriber.Email);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "{method} : Error occured while attempting to send email.", nameof(SubmitInterviewRequest));
-            }
-
-
             var interviewRequest = new InterviewRequest
             {
                 InterviewRequestGuid = Guid.NewGuid(),
                 CreateGuid = Guid.NewGuid(),
                 HiringManager = hiringManagerEntity,
                 Profile = profile,
-                DateRequested = DateTime.UtcNow
+                DateRequested = DateTime.UtcNow,
+                Successful = false,
+                Details = "Sending messages to recruiters and candidates."
             };
 
             await _repositoryWrapper.InterviewRequestRepository.Create(interviewRequest);
             await _repositoryWrapper.InterviewRequestRepository.SaveAsync();
 
+            if (nonBlocking)
+            {
+                _logger.LogInformation($"{nameof(InterviewRequestService)}:{nameof(SubmitInterviewRequest)} : Background job starting for hiring manager {hiringManager.HiringManagerGuid}");
+                _hangfireService.Enqueue<InterviewRequestService>(s => s.ProcessEmailRequestsLater(hiringManager, profile, hiringManagerEntity.Subscriber.Email, interviewRequest.CreateGuid));
+            }
+            else
+            {
+                try
+                {
+                    _logger.LogInformation($"{nameof(InterviewRequestService)}:{nameof(SubmitInterviewRequest)} : awaiting _AddHiringManager for hiring manager {hiringManager.HiringManagerGuid}");
+                    var (successRecruiter, successCandidate) = await ProcessEmailRequestsNow(hiringManager, profile, hiringManagerEntity.Subscriber.Email);
+
+                    interviewRequest.Details = $"Recruiter email {(successRecruiter ? "was sent" : "was not sent")}; Candidate email {(successCandidate ? "was sent" : "was not sent")}; ";
+                    interviewRequest.ModifyDate = DateTime.UtcNow;
+                    interviewRequest.Successful = successRecruiter && successCandidate;
+                    await _repositoryWrapper.InterviewRequestRepository.SaveAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"{nameof(InterviewRequestService)}:{nameof(SubmitInterviewRequest)} : Error occured while attempting to send email.");
+
+                    interviewRequest.Details = $"Error occured while attempting to send email during hangfire queue: {ex.Message}";
+                    interviewRequest.ModifyDate = DateTime.UtcNow;
+                    interviewRequest.Successful = false;
+                    await _repositoryWrapper.InterviewRequestRepository.SaveAsync();
+
+                    throw;
+                }
+            }
+
             return interviewRequest.InterviewRequestGuid;
         }
 
-        private async Task ProcessEmailRequests(HiringManagerDto hiringManager, Profile profile, string hiringManagerEmail)
+        private async Task ProcessEmailRequestsLater(HiringManagerDto hiringManager, Profile profile, string hiringManagerEmail, Guid interviewRequestId)
+        {
+            var interviewRequest = await _repositoryWrapper.InterviewRequestRepository
+                .GetByGuid(interviewRequestId);
+
+            if (interviewRequest == null)
+            {
+                throw new NotFoundException($"Interview request {interviewRequestId} not found in the database.");
+            }
+
+            try
+            {
+                var (successRecruiter, successCandidate) = await ProcessEmailRequestsNow(hiringManager, profile, hiringManagerEmail);
+
+                interviewRequest.Details = $"Recruiter email {(successRecruiter ? "was sent" : "was not sent")}; Candidate email {(successCandidate ? "was sent" : "was not sent")}; ";
+                interviewRequest.ModifyDate = DateTime.UtcNow;
+                interviewRequest.Successful = successRecruiter && successCandidate;
+                await _repositoryWrapper.InterviewRequestRepository.SaveAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"{nameof(InterviewRequestService)}:{nameof(SubmitInterviewRequest)} : Error occured while attempting to send email during hangfire queue.");
+
+                interviewRequest.Details = $"Error occured while attempting to send email during hangfire queue: {ex.Message}";
+                interviewRequest.ModifyDate = DateTime.UtcNow;
+                interviewRequest.Successful = false;
+                await _repositoryWrapper.InterviewRequestRepository.SaveAsync();
+
+                throw;
+            }
+        }
+
+        private async Task<(bool, bool)> ProcessEmailRequestsNow(HiringManagerDto hiringManager, Profile profile, string hiringManagerEmail)
         {
             var candidateEmailTemplate = _configuration["SysEmail:Transactional:TemplateIds:InterviewRequestCandidate"];
             var recruiterEmailTemplate = _configuration["SysEmail:Transactional:TemplateIds:InterviewRequestRecruiter"];
             var recruiterEmailAddress = _configuration["SysEmail:Transactional:AdminEmailAddress"];
 
-            await SendEmailToCandidate(
-                profile.Email,
-                candidateEmailTemplate,
-                profile.FirstName,
-                hiringManager.CompanyName);
-
-            await SendEmailToRecruiter(
+            var successRecruiter = await SendEmailToRecruiter(
                 recruiterEmailAddress,
                 recruiterEmailTemplate,
                 hiringManager.FirstName,
@@ -110,18 +149,26 @@ namespace UpDiddyApi.ApplicationCore.Services.B2B
                 profile.FirstName,
                 profile.LastName,
                 profile.Email);
+
+            var successCandidate = await SendEmailToCandidate(
+                profile.Email,
+                candidateEmailTemplate,
+                profile.FirstName,
+                hiringManager.CompanyName);
+
+            return (successRecruiter, successCandidate);
         }
 
         #region Email Stuff
 
-        private async Task SendEmailToCandidate(string emailAddress, string templateId, string firstName, string companyName)
+        private async Task<bool> SendEmailToCandidate(string emailAddress, string templateId, string firstName, string companyName)
             => await _emailService.SendTemplatedEmailWithReplyToAsync(
                 emailAddress,
                 templateId,
                 BuildCandidateEmailTemplate(firstName, companyName),
                 Constants.SendGridAccount.Transactional);
 
-        private async Task SendEmailToRecruiter(
+        private async Task<bool> SendEmailToRecruiter(
             string emailAddress,
             string templateId,
             string hiringManagerFirstName,

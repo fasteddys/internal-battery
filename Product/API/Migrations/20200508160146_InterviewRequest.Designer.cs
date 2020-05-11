@@ -95,6 +95,8 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasDefaultValueSql("GETUTCDATE()");
 
+                    b.Property<string>("Details");
+
                     b.Property<int?>("HiringManagerId");
 
                     b.Property<Guid>("InterviewRequestGuid");
@@ -106,6 +108,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<Guid?>("ModifyGuid");
 
                     b.Property<int?>("ProfileId");
+
+                    b.Property<bool>("Successful");
 
                     b.HasKey("InterviewRequestId");
 

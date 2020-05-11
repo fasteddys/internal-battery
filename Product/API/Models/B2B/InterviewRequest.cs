@@ -20,5 +20,9 @@ namespace UpDiddyApi.Models.B2B
         public virtual Profile Profile { get; set; }
 
         public DateTime DateRequested { get; set; }
+
+        public bool Successful { get; set; }
+
+        public string Details { get; set; }
     }
 }
