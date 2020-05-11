@@ -71,7 +71,7 @@ namespace UpDiddyApi.ApplicationCore.Services.B2B
             if (nonBlocking)
             {
                 _logger.LogInformation($"{nameof(InterviewRequestService)}:{nameof(SubmitInterviewRequest)} : Background job starting for hiring manager {hiringManager.HiringManagerGuid}");
-                _hangfireService.Enqueue<InterviewRequestService>(s => s.ProcessEmailRequestsLater(hiringManager, profile, hiringManagerEntity.Subscriber.Email, interviewRequest.CreateGuid));
+                _hangfireService.Enqueue<InterviewRequestService>(s => s.ProcessEmailRequestsLater(hiringManager, profile, hiringManagerEntity.Subscriber.Email, interviewRequest.InterviewRequestGuid));
             }
             else
             {
@@ -101,7 +101,7 @@ namespace UpDiddyApi.ApplicationCore.Services.B2B
             return interviewRequest.InterviewRequestGuid;
         }
 
-        private async Task ProcessEmailRequestsLater(HiringManagerDto hiringManager, Profile profile, string hiringManagerEmail, Guid interviewRequestId)
+        public async Task ProcessEmailRequestsLater(HiringManagerDto hiringManager, Profile profile, string hiringManagerEmail, Guid interviewRequestId)
         {
             var interviewRequest = await _repositoryWrapper.InterviewRequestRepository
                 .GetByGuid(interviewRequestId);
@@ -137,7 +137,7 @@ namespace UpDiddyApi.ApplicationCore.Services.B2B
         {
             var candidateEmailTemplate = _configuration["SysEmail:Transactional:TemplateIds:InterviewRequestCandidate"];
             var recruiterEmailTemplate = _configuration["SysEmail:Transactional:TemplateIds:InterviewRequestRecruiter"];
-            var recruiterEmailAddress = _configuration["SysEmail:Transactional:AdminEmailAddress"];
+            var recruiterEmailAddress = _configuration["SysEmail:InterviewRequestEmails"];
 
             var successRecruiter = await SendEmailToRecruiter(
                 recruiterEmailAddress,
