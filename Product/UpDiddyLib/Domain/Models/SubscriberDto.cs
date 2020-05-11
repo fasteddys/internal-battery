@@ -33,5 +33,7 @@ namespace UpDiddyLib.Domain.Models
         public string Auth0UserId { get; set; }
 
         public Guid SubscriberGuid { get; set; }
+
+        public bool IsHiringManager { get; set; } = false;
     }
 }

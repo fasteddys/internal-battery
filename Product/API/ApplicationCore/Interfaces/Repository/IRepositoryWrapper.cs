@@ -97,6 +97,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         ICommentRepository CommentRepository { get; }
         IEmailTemplateRepository EmailTemplateRepository { get; }
         IHiringManagerRepository HiringManagerRepository { get; }
+        IPipelineRepository PipelineRepository { get; }
         IInterviewRequestRepository InterviewRequestRepository { get; }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
@@ -10,9 +11,10 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200508201024_Added new HM columns")]
+    partial class AddednewHMcolumns
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -81,74 +83,6 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("SubscriberId");
 
                     b.ToTable("HiringManagers","B2B");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.B2B.Pipeline", b =>
-                {
-                    b.Property<int>("PipelineId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500);
-
-                    b.Property<int>("HiringManagerId");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(25);
-
-                    b.Property<Guid>("PipelineGuid");
-
-                    b.HasKey("PipelineId");
-
-                    b.HasIndex("HiringManagerId", "Name", "IsDeleted")
-                        .HasName("UIX_Pipeline_HiringManager_Name_IsDeleted");
-
-                    b.ToTable("Pipelines","B2B");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.B2B.PipelineProfile", b =>
-                {
-                    b.Property<int>("PipelineProfileId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<int>("PipelineId");
-
-                    b.Property<Guid>("PipelineProfileGuid");
-
-                    b.Property<int>("ProfileId");
-
-                    b.HasKey("PipelineProfileId");
-
-                    b.HasIndex("PipelineId");
-
-                    b.HasIndex("ProfileId", "PipelineId")
-                        .IsUnique()
-                        .HasName("UIX_PipelineProfile_Profile_Pipeline");
-
-                    b.ToTable("PipelineProfiles","B2B");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Badge", b =>
@@ -5300,27 +5234,6 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany()
                         .HasForeignKey("SubscriberId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.B2B.Pipeline", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.B2B.HiringManager", "HiringManager")
-                        .WithMany()
-                        .HasForeignKey("HiringManagerId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.B2B.PipelineProfile", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.B2B.Pipeline", "Pipeline")
-                        .WithMany()
-                        .HasForeignKey("PipelineId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UpDiddyApi.Models.G2.Profile", "Profile")
-                        .WithMany()
-                        .HasForeignKey("ProfileId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

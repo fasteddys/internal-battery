@@ -22,7 +22,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<HiringManager> GetHiringManagerBySubscriberId(int SubscriberId)
         {
-            var hiringManager = await _dbContext.HiringManager.Where(hm => hm.SubscriberId == SubscriberId)
+            var hiringManager = await _dbContext.HiringManager.Where(hm => hm.SubscriberId == SubscriberId && hm.IsDeleted == 0)
                 .Include(hm => hm.Company)
                 .Include(hm => hm.Company.Industry)
                 .FirstOrDefaultAsync();
@@ -47,6 +47,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var hiringManager = _dbContext.HiringManager
                 .Where(hm => hm.SubscriberId == subscriberId)
                 .Include(hm => hm.Subscriber)
+                .Include(hm => hm.Subscriber.State)
                 .Include(hm => hm.Company)
                 .Include(hm => hm.Company.Industry)
                 .FirstOrDefault();
@@ -54,6 +55,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             //add/update Company details
 
             var industry = _dbContext.Industry.FirstOrDefault(i => hiringManagerDto.CompanyIndustryGuid.HasValue && i.IndustryGuid == hiringManagerDto.CompanyIndustryGuid.Value);
+            var state = _dbContext.State.FirstOrDefault(s => s.StateGuid == hiringManagerDto.StateGuid);
             if (hiringManager.Company == null)
             {
                 hiringManager.Company = new Company
@@ -65,7 +67,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     CompanyName = hiringManagerDto.CompanyName,
                     EmployeeSize = hiringManagerDto.CompanySize,
                     Description = hiringManagerDto.CompanyDescription,
-                    IndustryId = industry?.IndustryId
+                    Industry = industry
                 };
             }
             else
@@ -76,16 +78,23 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 hiringManager.Company.Description = hiringManagerDto.CompanyDescription;
                 hiringManager.Company.ModifyGuid = Guid.NewGuid();
                 hiringManager.Company.ModifyDate = DateTime.UtcNow;
-                hiringManager.Company.IndustryId = industry?.IndustryId;
+                hiringManager.Company.Industry = industry;
             }
 
             //update subscribers record
-
+            hiringManager.Subscriber.FirstName = hiringManagerDto.FirstName;
+            hiringManager.Subscriber.LastName = hiringManagerDto.LastName;
+            hiringManager.Subscriber.City = hiringManagerDto.City;
+            hiringManager.Subscriber.State = state;
             hiringManager.Subscriber.ModifyDate = DateTime.UtcNow;
             hiringManager.Subscriber.ModifyGuid = Guid.NewGuid();
             hiringManager.Subscriber.Title = hiringManagerDto.Title;
             hiringManager.Subscriber.PhoneNumber = hiringManagerDto.PhoneNumber;
-            //update name later
+
+
+            //update HiringManager record
+            hiringManager.HardToFindFillSkillsRoles = hiringManagerDto.HardToFindFillSkillsRoles;
+            hiringManager.SkillsRolesWeAreAlwaysHiringFor = hiringManagerDto.SkillsRolesWeAreAlwaysHiringFor;
 
 
             await _dbContext.SaveChangesAsync();

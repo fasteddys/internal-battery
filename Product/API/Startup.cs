@@ -47,8 +47,8 @@ using G2Interfaces = UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
 using UpDiddyApi.ApplicationCore.Services.G2;
 using UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager;
 using UpDiddyApi.ApplicationCore.Services.HiringManager;
-using UpDiddyApi.ApplicationCore.Services.B2B;
 using UpDiddyApi.ApplicationCore.Interfaces.Business.B2B;
+using UpDiddyApi.ApplicationCore.Services.B2B;
 
 namespace UpDiddyApi
 {
@@ -369,6 +369,7 @@ namespace UpDiddyApi
             services.AddScoped<IEmailTemplateService, EmailTemplateService>();
             services.AddScoped<IHubSpotService, HubSpotService>();
             services.AddScoped<IHiringManagerService, HiringManagerService>();
+            services.AddScoped<IPipelineService, PipelineService>();
             services.AddTransient<IInterviewRequestService, InterviewRequestService>(); // y'all know most of these can be transient!!!
 
             #endregion
