@@ -7,18 +7,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
+using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Business.B2B;
 using UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
 using UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager;
 using UpDiddyApi.Authorization;
 using UpDiddyLib.Domain.Models;
-using UpDiddyLib.Dto;
-using Microsoft.AspNetCore.Authorization;
-using UpDiddyApi.ApplicationCore.Interfaces;
-using UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager;
-using UpDiddyApi.ApplicationCore.Interfaces.Business.B2B;
 using UpDiddyLib.Domain.Models.B2B;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.Controllers.V2
 {
@@ -28,7 +25,6 @@ namespace UpDiddyApi.Controllers.V2
         private readonly IHiringManagerService _hiringManagerService;
         private readonly IPipelineService _pipelineService;
         private readonly IInterviewRequestService _interviewRequestService;
-        private readonly IProfileService _profileService;
         private readonly IG2Service _g2Service;
 
         public B2BController(IServiceProvider services)
@@ -36,7 +32,6 @@ namespace UpDiddyApi.Controllers.V2
             _hiringManagerService = services.GetService<IHiringManagerService>();
             _pipelineService = services.GetService<IPipelineService>();
             _interviewRequestService = services.GetService<IInterviewRequestService>();
-            _profileService = services.GetService<IProfileService>();
             _g2Service = services.GetService<IG2Service>();
         }
 
