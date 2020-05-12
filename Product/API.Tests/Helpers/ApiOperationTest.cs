@@ -137,17 +137,9 @@ namespace API.Tests.Helpers
                                 JObject example = responseSchema["example"].Value<JObject>();
                                 if (!example.IsValid(jschema, out jsonError))
                                 {
-                                    // todo jab cleanup
-                                    string errorMsg = "The response example is not valid according to the schema definition";
-                                    if ( jsonError != null)
-                                    {
-                                        foreach ( string e in jsonError)
-                                        {
-                                            errorMsg += " Error:" + e;
-                                        }
-                                            
-
-                                    }
+                                    string errorMsg = "The response example is not valid according to the schema definition. Error: ";
+                                    if ( jsonError != null)                                
+                                        errorMsg += string.Join("Error: ", jsonError);
                                     this.DefinitionErrors.Add(errorMsg);
 
                                 }                                    
@@ -158,27 +150,20 @@ namespace API.Tests.Helpers
                                 JArray example = responseSchema["example"].Value<JArray>();
                                 if (!example.IsValid(jschema, out jsonError))
                                 {
-                                    // todo jab cleanup
-                                    this.DefinitionErrors.Add("The response example is not valid according to the schema definition.");
-                                    string errorMsg = "The response example is not valid according to the schema definition";
+                                    // log exact json schema errors to help diagnose definition errors
+                                    string errorMsg = "The response example is not valid according to the schema definition. Error :";
                                     if (jsonError != null)
-                                    {
-                                        foreach (string e in jsonError)
-                                        {
-                                            errorMsg += " Error:" + e;
-                                        }
-
-
-                                    }
+                                        errorMsg += string.Join("Error: ", jsonError);
                                     this.DefinitionErrors.Add(errorMsg);
 
+
                                 }
-                                    
                                 else
                                     this.ResponseSchema = jschema;
                             }
                             else if (responseExampleType == typeof(JValue))
                             {
+                                // log exact json schema errors to help diagnose definition errors
                                 JValue example = responseSchema["example"].Value<JValue>();
                                 if (!example.IsValid(jschema))
                                     this.DefinitionErrors.Add("The response example is not valid according to the schema definition.");
