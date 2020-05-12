@@ -8,7 +8,7 @@ using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
-    public interface IHiringManagerRepository
+    public interface IHiringManagerRepository : IUpDiddyRepositoryBase<HiringManager>
     {
         /// <summary>
         /// 

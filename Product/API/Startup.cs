@@ -370,6 +370,7 @@ namespace UpDiddyApi
             services.AddScoped<IHubSpotService, HubSpotService>();
             services.AddScoped<IHiringManagerService, HiringManagerService>();
             services.AddScoped<IPipelineService, PipelineService>();
+            services.AddTransient<IInterviewRequestService, InterviewRequestService>(); // y'all know most of these can be transient!!!
 
             #endregion
 
