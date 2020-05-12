@@ -118,6 +118,7 @@ namespace API.Tests.Helpers
             try
             {
                 var representation = response.SelectToken("$.representations[0]");
+          
                 if (representation != null)
                 {
                     if (representation.SelectToken($".typeName") != null)
@@ -125,22 +126,54 @@ namespace API.Tests.Helpers
                         string typeName = representation.SelectToken("$.typeName").Value<string>();
                         string escapedTypeName = $"['{typeName}']";
                         var responseSchema = schemas.SelectToken($"$.{escapedTypeName}");
+                        IList<string> jsonError = null;
                         if (responseSchema != null)
                         {
                             JSchema jschema = JSchema.Parse(responseSchema.ToString(Formatting.None));
                             Type responseExampleType = responseSchema["example"].GetType();
                             if (responseExampleType == typeof(JObject))
                             {
+                                
                                 JObject example = responseSchema["example"].Value<JObject>();
-                                if (!example.IsValid(jschema))
-                                    this.DefinitionErrors.Add("The response example is not valid according to the schema definition.");
+                                if (!example.IsValid(jschema, out jsonError))
+                                {
+                                    // todo jab cleanup
+                                    string errorMsg = "The response example is not valid according to the schema definition";
+                                    if ( jsonError != null)
+                                    {
+                                        foreach ( string e in jsonError)
+                                        {
+                                            errorMsg += " Error:" + e;
+                                        }
+                                            
+
+                                    }
+                                    this.DefinitionErrors.Add(errorMsg);
+
+                                }                                    
                                 else
                                     this.ResponseSchema = jschema;
                             }
                             else if(responseExampleType == typeof(JArray)){
                                 JArray example = responseSchema["example"].Value<JArray>();
-                                if (!example.IsValid(jschema))
+                                if (!example.IsValid(jschema, out jsonError))
+                                {
+                                    // todo jab cleanup
                                     this.DefinitionErrors.Add("The response example is not valid according to the schema definition.");
+                                    string errorMsg = "The response example is not valid according to the schema definition";
+                                    if (jsonError != null)
+                                    {
+                                        foreach (string e in jsonError)
+                                        {
+                                            errorMsg += " Error:" + e;
+                                        }
+
+
+                                    }
+                                    this.DefinitionErrors.Add(errorMsg);
+
+                                }
+                                    
                                 else
                                     this.ResponseSchema = jschema;
                             }
