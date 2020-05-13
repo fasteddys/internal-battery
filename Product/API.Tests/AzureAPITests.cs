@@ -122,7 +122,15 @@ namespace API.Tests.AzureApi
                 {
                     try
                     {
-                        isResponseBodyMatchesResponseSchema = apiOperationTest.Object.ResponseBody.IsValid(apiOperationTest.Object.ResponseSchema);
+                        IList<string> jsonErrors = null;
+                        isResponseBodyMatchesResponseSchema = apiOperationTest.Object.ResponseBody.IsValid(apiOperationTest.Object.ResponseSchema, out jsonErrors);
+                        if ( isResponseBodyMatchesResponseSchema == false )
+                        {
+                            // spit out json errors 
+                            _output.WriteLine($"Invalid Response Body: {string.Join(',', jsonErrors)}");
+                        }
+                            
+
                     }
                     catch (Exception e)
                     {
