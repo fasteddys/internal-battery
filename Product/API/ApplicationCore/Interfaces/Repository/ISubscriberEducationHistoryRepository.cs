@@ -8,5 +8,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface ISubscriberEducationHistoryRepository : IUpDiddyRepositoryBase<SubscriberEducationHistory>
     {
+
+        Task<List<SubscriberEducationHistory>> GetEducationalHistoryBySubscriberGuid(Guid subscriberGuid);
     }
 }

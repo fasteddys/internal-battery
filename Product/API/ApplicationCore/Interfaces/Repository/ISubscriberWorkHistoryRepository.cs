@@ -8,5 +8,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface ISubscriberWorkHistoryRepository : IUpDiddyRepositoryBase<SubscriberWorkHistory>
     {
+
+        Task<SubscriberWorkHistory> GetLastEmploymentDetailBySubscriberGuid(Guid subscriberGuid);
+
+        Task<List<SubscriberWorkHistory>> GetWorkHistoryBySubscriberGuid(Guid subscriberGuid);
     }
 }
