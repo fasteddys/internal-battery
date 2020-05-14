@@ -149,7 +149,6 @@ namespace UpDiddyApi.Controllers.V2
         #region Create Talent Pipeline
 
         [HttpGet("create-talent-pipeline")]
-        [Authorize(Policy = "IsHiringManager")]
         public ActionResult<List<string>> GetCreateTalentPipelineQuestions()
             => _careerTalentPipelineService.GetQuestions();
 
