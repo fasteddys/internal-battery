@@ -29,15 +29,15 @@ namespace UpDiddyApi.ApplicationCore.Services.B2B.CareerTalentPipeline
         {
             if (careerTalentPipelineDto == null) { throw new ArgumentNullException(nameof(careerTalentPipelineDto)); }
 
-            var responseEmailSuccess = await SubmitResponseEmail();
+            var responseEmailSuccess = await SubmitResponseEmail(careerTalentPipelineDto.Email);
             var ccEmailSuccess = await SubmitCcEmail(careerTalentPipelineDto);
 
             return responseEmailSuccess && ccEmailSuccess;
         }
 
-        private async Task<bool> SubmitResponseEmail()
+        private async Task<bool> SubmitResponseEmail(string email)
             => await _emailService.SendTemplatedEmailAsync(
-                _options.ccEmail,
+                email,
                 _options.ResponseEmailTemplateId,
                 null, //TODO: build template data
                 Constants.SendGridAccount.Transactional,
@@ -45,7 +45,7 @@ namespace UpDiddyApi.ApplicationCore.Services.B2B.CareerTalentPipeline
 
         private async Task<bool> SubmitCcEmail(CareerTalentPipelineDto careerTalentPipelineDto)
             => await _emailService.SendTemplatedEmailAsync(
-                careerTalentPipelineDto.Email,
+                _options.ccEmail,
                 _options.ccEmailTemplateId,
                 BuildCcEmailTemplateData(careerTalentPipelineDto),
                 Constants.SendGridAccount.Transactional,
@@ -58,11 +58,11 @@ namespace UpDiddyApi.ApplicationCore.Services.B2B.CareerTalentPipeline
                 careerTalentPipelineDto.PhoneNumber,
                 careerTalentPipelineDto.Preferences,
                 Questions = careerTalentPipelineDto.Questions
-                        .Select(q => new
-                        {
-                            Question = q.Key,
-                            Answer = q.Value
-                        })
+                    .Select(q => new
+                    {
+                        Question = q.Key,
+                        Answer = q.Value
+                    })
             };
     }
 }
