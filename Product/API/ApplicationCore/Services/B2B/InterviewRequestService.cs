@@ -148,7 +148,8 @@ namespace UpDiddyApi.ApplicationCore.Services.B2B
                 hiringManager.CompanyName,
                 profile.FirstName,
                 profile.LastName,
-                profile.Email);
+                profile.Email,
+                profile.ProfileGuid);
 
             var successCandidate = await SendEmailToCandidate(
                 profile.Email,
@@ -177,7 +178,8 @@ namespace UpDiddyApi.ApplicationCore.Services.B2B
             string companyName,
             string firstName,
             string lastName,
-            string email)
+            string email,
+            Guid profileGuid)
             => await _emailService.SendTemplatedEmailWithReplyToAsync(
                 emailAddress,
                 templateId,
@@ -188,7 +190,8 @@ namespace UpDiddyApi.ApplicationCore.Services.B2B
                     companyName,
                     firstName,
                     lastName,
-                    email),
+                    email,
+                    profileGuid),
                 Constants.SendGridAccount.Transactional);
 
         private static object BuildCandidateEmailTemplate(string firstName, string companyName) => new
@@ -204,7 +207,8 @@ namespace UpDiddyApi.ApplicationCore.Services.B2B
             string companyName,
             string firstName,
             string lastName,
-            string email) => new
+            string email,
+            Guid profileGuid) => new
             {
                 hiringManagerFirstName,
                 hiringManagerLastName,
@@ -212,7 +216,8 @@ namespace UpDiddyApi.ApplicationCore.Services.B2B
                 companyName,
                 firstName,
                 lastName,
-                email
+                email,
+                profileGuid
             };
 
         #endregion Email Stuff
