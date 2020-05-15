@@ -1004,14 +1004,6 @@ namespace UpDiddyApi.Helpers
              .ReverseMap();
 
             CreateMap<List<UpDiddyApi.Models.SubscriberEducationHistory>, UpDiddyLib.Dto.EducationalHistoryDto>()
-             //.ForMember(p => p.EducationHistories, opt => opt.MapFrom(src => src.Select( seh => new EducationDto { 
-             //                                                                        EducationalDegreeGuid = seh.SubscriberEducationHistoryGuid, 
-             //                                                                        EducationalDegreeTypeGuid = seh.EducationalDegree.EducationalDegreeGuid,
-             //                                                                        EducationalInstitutionGuid = seh.EducationalInstitution.EducationalInstitutionGuid,
-             //                                                                        StartDate = seh.StartDate,
-             //                                                                        EndDate = seh.EndDate,
-             //                                                                        DegreeDate = seh.DegreeDate
-             //                                                                    }).ToList()))
              .ForMember(p => p.TotalRecords, opt => opt.MapFrom(src => src.Count()))
              .AfterMap((src, dest) => {
                   if (src != null) 
@@ -1029,13 +1021,6 @@ namespace UpDiddyApi.Helpers
             .ReverseMap();
 
             CreateMap<List<UpDiddyApi.Models.SubscriberWorkHistory>, UpDiddyLib.Dto.EmploymentHistoryDto>()
-             //.ForMember(p => p.WorkHistories, opt => opt.MapFrom(src => src.Select(seh => new EmploymentDto {
-             //    StartDate = seh.StartDate,
-             //    EndDate = seh.EndDate,
-             //    IsCurrent = seh.IsCurrent,
-             //    JobDescription = seh.JobDescription,
-             //    Title = seh.Title
-             //}).ToList()))
              .ForMember(p => p.TotalRecords, opt => opt.MapFrom(src => src.Count()))
              .AfterMap((src, dest) => {
                  if (src != null)
