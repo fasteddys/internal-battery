@@ -91,18 +91,26 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             HiringManagerCandidateProfileDto hiringManagerCandidateProfileDto = null;
             try
             {
-                var candidateProfileEntity = _repositoryWrapper.SubscriberWorkHistoryRepository.GetLastEmploymentDetailBySubscriberGuid(profile.Subscriber.SubscriberGuid.Value);
-                //map hiring manage entity to dto
-                hiringManagerCandidateProfileDto = _mapper.Map<HiringManagerCandidateProfileDto>(candidateProfileEntity);
-                //cannot be mappend in the mapper
-                hiringManagerCandidateProfileDto.ProfileGuid = candidateProfileGuid;
+                if (String.IsNullOrWhiteSpace(profile.Subscriber.Title))
+                {
+                    var subscriberWorkHistory = _repositoryWrapper.SubscriberWorkHistoryRepository.GetLastEmploymentDetailBySubscriberGuid(profile.Subscriber.SubscriberGuid.Value);
+                    //map hiring manage entity to dto
+                    hiringManagerCandidateProfileDto = _mapper.Map<HiringManagerCandidateProfileDto>(subscriberWorkHistory);
+                    //cannot be mappend in the mapper
+                    hiringManagerCandidateProfileDto.ProfileGuid = candidateProfileGuid;
+                }
+                else
+                {
+                    hiringManagerCandidateProfileDto = _mapper.Map<HiringManagerCandidateProfileDto>(profile);
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError($"HiringManagerService:GetCandidateProfileDetail  Error: {ex.ToString()} ");
             }
-
+            
             return hiringManagerCandidateProfileDto;
+
         }
 
         public async Task<EducationalHistoryDto> GetCandidateEducationHistory(Guid candidateProfileGuid)
@@ -158,7 +166,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             EmploymentHistoryDto employmentHistoryDto = null;
             try
             {
-                var employmentHistoryEntity = _repositoryWrapper.SubscriberWorkHistoryRepository.GetWorkHistoryBySubscriberGuid(profile.Subscriber.SubscriberGuid.Value);
+                var employmentHistoryEntity = await _repositoryWrapper.SubscriberWorkHistoryRepository.GetWorkHistoryBySubscriberGuid(profile.Subscriber.SubscriberGuid.Value);
                 //map hiring manage entity to dto
                 employmentHistoryDto = _mapper.Map<EmploymentHistoryDto>(employmentHistoryEntity);
             }
@@ -191,8 +199,11 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             try
             {
                 var candidateSkills = await _repositoryWrapper.SkillRepository.GetBySubscriberGuid(profile.Subscriber.SubscriberGuid.Value);
+
+                var skillDto = _mapper.Map<UpDiddyLib.Domain.Models.SkillDto>(candidateSkills);
+                
                 //map hiring manage entity to dto
-                skillListDto = _mapper.Map<SkillListDto>(candidateSkills);
+                skillListDto = _mapper.Map<SkillListDto>(skillDto);
             }
             catch (Exception ex)
             {

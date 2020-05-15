@@ -6,7 +6,7 @@ namespace UpDiddyLib.Dto
 {
     public class EducationalHistoryDto
     {
-        public List<EducationalDegreeDto> WorkHistories { get; set; } = new List<EducationalDegreeDto>();
+        public List<EducationDto> EducationHistories { get; set; }
         public int TotalRecords { get; set; }
     }
 }

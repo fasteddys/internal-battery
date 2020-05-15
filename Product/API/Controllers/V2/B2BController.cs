@@ -159,7 +159,7 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet]
         [Authorize(Policy = "IsHiringManager")]
-        [Route("profiles/{profile}")]
+        [Route("profiles/{candidateProfileGuid}")]
         public async Task<IActionResult> GetCandidateProfileDetail(Guid candidateProfileGuid)
         {
             var rval = await _hiringManagerService.GetCandidateProfileDetail(candidateProfileGuid);
@@ -168,7 +168,7 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet]
         [Authorize(Policy = "IsHiringManager")]
-        [Route("profiles/{profile}/education-histories")]
+        [Route("profiles/{candidateProfileGuid}/education-histories")]
         public async Task<IActionResult> GetCandidateEducationHistory(Guid candidateProfileGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var rval = await _hiringManagerService.GetCandidateEducationHistory(candidateProfileGuid);
@@ -177,7 +177,7 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet]
         [Authorize(Policy = "IsHiringManager")]
-        [Route("profiles/{profile}/work-histories")]
+        [Route("profiles/{candidateProfileGuid}/work-histories")]
         public async Task<IActionResult> GetCandidateWorkHistory(Guid candidateProfileGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var rval = await _hiringManagerService.GetCandidateWorkHistory(candidateProfileGuid);
@@ -187,7 +187,7 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet]
         [Authorize(Policy = "IsHiringManager")]
-        [Route("skills/profiles/{profile}")]
+        [Route("skills/profiles/{candidateProfileGuid}")]
         public async Task<IActionResult> GetCandidateSkills(Guid candidateProfileGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
             var rval = await _hiringManagerService.GetCandidateSkills(candidateProfileGuid);
