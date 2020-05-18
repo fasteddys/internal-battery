@@ -36,7 +36,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 var maxStartDate = workHistory.Max(sd => sd.StartDate);
                 var maxEndDate = workHistory.Max(sd => sd.EndDate);
 
-                if(maxStartDate.HasValue && maxEndDate.HasValue && maxStartDate.Value > maxEndDate.Value)
+                if(maxStartDate.HasValue && maxEndDate.HasValue && maxStartDate.Value >= maxEndDate.Value)
                 {
                     return workHistory.FirstOrDefault(wh => wh.StartDate == maxStartDate);
                 }
