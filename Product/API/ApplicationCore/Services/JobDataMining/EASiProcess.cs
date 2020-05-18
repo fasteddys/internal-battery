@@ -31,7 +31,6 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
         {
             var newEmploymentTypes = employmentTypeService.GetEmploymentTypes().Result;
             _employmentTypes = newEmploymentTypes.EmploymentTypes.Select(et => new EmploymentTypeDto() { EmploymentTypeGuid = et.EmploymentTypeGuid, Name = et.Name }).ToList();
-
             this._client.DefaultRequestHeaders.UserAgent.ParseAdd(@"Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)");
         }
 
@@ -61,15 +60,16 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     isJobExists = false;
                 rawHtml = await response.Content.ReadAsStringAsync();
 
+                // all job page data is embedded in javascript and bound to the DOM by the client. as such, it makes it impossible to parse the html
+                // and extract the job data. the below code is hacky as hell but it works. a slightly better way to do this would be to use the 
+                // Jurassic library to execute the javascript code and get the json data that way. started down that path but got stuck - come back
+                // and revisit that approach if this code becomes too fragile: https://html-agility-pack.net/knowledge-base/18156795/parsing-html-to-get-script-variable-value
                 string matchStart = "phApp.ddo =";
                 string matchEnd = "};";
                 int indexStart = rawHtml.IndexOf(matchStart) + matchStart.Length;
                 int indexEnd = rawHtml.IndexOf(matchEnd, indexStart) + 1; // not using length of the indexEnd here; want to ignore the semi-colon
                 string rawJson = rawHtml.Substring(indexStart, indexEnd - indexStart);
-
-
                 JObject parsedJson = JObject.Parse(rawJson);
-
                 JToken jobData = parsedJson["jobDetail"]["data"]["job"];
 
                 // check for an existing job page based on the RWS identifier
