@@ -25,10 +25,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var workHistory = await _dbContext.SubscriberWorkHistory
                                     .Where(swh => swh.Subscriber.SubscriberGuid == subscriberGuid &&
                                                   swh.Subscriber.IsDeleted == 0 &&
-                                                  swh.IsDeleted == 0 &&
-                                                  (swh.StartDate.HasValue || swh.EndDate.HasValue) &&
-                                                  swh.StartDate.Value > DateTime.MinValue && swh.EndDate.Value > DateTime.MinValue &&
-                                                  swh.StartDate.Value < DateTime.MaxValue && swh.EndDate.Value < DateTime.MaxValue)
+                                                  swh.IsDeleted == 0)
                                     .ToListAsync();
             
             if(workHistory != null && workHistory.Count > 0)
