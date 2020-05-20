@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using UpDiddyLib.Domain.Models.B2B;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business.B2B
 {
@@ -8,6 +9,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business.B2B
     {
         List<string> GetQuestions();
 
-        Task<bool> SubmitCareerTalentPipeline(CareerTalentPipelineDto careerTalentPipelineDto);
+        Task<bool> SubmitCareerTalentPipeline(
+            CareerTalentPipelineDto careerTalentPipelineDto,
+            HiringManagerDto hiringManagerDto);
     }
 }

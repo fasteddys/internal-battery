@@ -19,6 +19,7 @@ namespace UpDiddyLib.Domain.Models.B2B
     public enum ContactPreferences
     {
         Call,
-        Text
+        Text,
+        Email
     }
 }

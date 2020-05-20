@@ -3,6 +3,7 @@ using Moq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Services.B2B.CareerTalentPipeline;
 using UpDiddyLib.Domain.Models.B2B;
+using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 using Xunit;
 
@@ -45,10 +46,13 @@ namespace API.Tests.B2B
             var responseEmailTemplateId = "abc123";
             var responseEmailSubject = "Thank you";
 
+            var hiringManagerName = "hiringManager";
+            var hiringManagerCompany = "companyName";
+            var hiringManagerEmail = "email1@email.com";
             var ccEmailAddress = "email2@email.com";
             var ccEmailTemplateId = "def456";
             var ccEmailSubject = "Custom Talent Pipeline";
-            var phoneNumber = "123456789";
+            var hiringManagerPhoneNumber = "123456789";
             var preferences = ContactPreferences.Text;
 
             var question1 = "Question1";
@@ -64,15 +68,23 @@ namespace API.Tests.B2B
                 Questions = { question1, question2 }
             };
 
-            var dto = new CareerTalentPipelineDto
+            var careertalentPipelineDto = new CareerTalentPipelineDto
             {
-                PhoneNumber = phoneNumber,
+                PhoneNumber = hiringManagerPhoneNumber,
                 Preferences = preferences,
                 Email = responseEmailAddress,
                 Questions = {
                     { question1, answer1 },
                     { question2, answer2 }
                 }
+            };
+
+            var hiringManagerDto = new HiringManagerDto
+            {
+                FirstName = hiringManagerName,
+                CompanyName = hiringManagerCompany,
+                Email = hiringManagerEmail,
+                PhoneNumber = hiringManagerPhoneNumber
             };
 
             var mockEmailService = new Mock<ISysEmail>();
@@ -91,7 +103,7 @@ namespace API.Tests.B2B
 
             mockEmailService
                 .Setup(service => service.SendTemplatedEmailAsync(
-                    ccEmailAddress,
+                    hiringManagerEmail,
                     ccEmailTemplateId,
                     It.IsAny<object>(),
                     Constants.SendGridAccount.Transactional,
@@ -107,7 +119,8 @@ namespace API.Tests.B2B
                 Options.Create(options));
 
             // Act
-            var successful = await careerTalentPipelineService.SubmitCareerTalentPipeline(dto);
+            var successful = await careerTalentPipelineService
+                .SubmitCareerTalentPipeline(careertalentPipelineDto, hiringManagerDto);
 
             // Assert
             Assert.True(successful);

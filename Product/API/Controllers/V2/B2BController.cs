@@ -156,8 +156,11 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize(Policy = "IsHiringManager")]
         public async Task<IActionResult> PostCreateTalentPipelineQuestions([FromBody]CareerTalentPipelineDto careerTalentPipelineDto)
         {
+            var hiringManager = await _hiringManagerService
+               .GetHiringManagerBySubscriberGuid(GetSubscriberGuid());
+
             await _careerTalentPipelineService
-                .SubmitCareerTalentPipeline(careerTalentPipelineDto);
+                .SubmitCareerTalentPipeline(careerTalentPipelineDto, hiringManager);
 
             return Ok();
         }
