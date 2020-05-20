@@ -99,7 +99,7 @@ namespace UpDiddyApi.Controllers.V2
 
 
         [HttpGet]
-        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Authorize(Policy = "IsRecruiterOrAdmin")]
         [Route("{RecruiterGuid}")]
         public async Task<IActionResult> GetRecruiter(Guid RecruiterGuid)
         {
