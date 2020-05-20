@@ -664,7 +664,7 @@ namespace UpDiddyApi.Helpers.Job
             CloudTalentSolution.CustomAttribute ModifyDate = new CloudTalentSolution.CustomAttribute()
             {
                 Filterable = true,
-                LongValues = new List<long?>() { Utils.ToUnixTimeInSeconds(jobPosting.ModifyDate.Value) }
+                LongValues = new List<long?>() { Utils.ToUnixTimeInSeconds(jobPosting.ModifyDate.HasValue ? jobPosting.ModifyDate.Value : DateTime.UtcNow) }
             };
             rVal.Add("ModifyDate", ModifyDate);
 
