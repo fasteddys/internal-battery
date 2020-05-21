@@ -278,14 +278,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             // add user to hubspot
             await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid, lastLoginDateTime: null);
 
-            // Add the new user to the azure index 
-            await _g2Service.G2AddSubscriberAsync(subscriberGuid);
-
             // add the user to the Google Talent Cloud
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriberGuid));
+            
             // add the user to the G2 profile for search
             await _g2Service.G2AddSubscriberAsync(subscriberGuid);
-
 
             if (!string.IsNullOrWhiteSpace(subscriberDto.ReferrerUrl) && subscriberDto.PartnerGuid != null && subscriberDto.PartnerGuid != Guid.Empty)
             {
