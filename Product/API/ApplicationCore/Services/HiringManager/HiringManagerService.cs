@@ -13,6 +13,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Services.Identity;
 using UpDiddyApi.ApplicationCore.Services.Identity.Interfaces;
 using UpDiddyApi.Models;
+using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Services.HiringManager
@@ -69,6 +70,145 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             }
 
             return hiringManagerDto;
+        }
+
+        public async Task<HiringManagerCandidateProfileDto> GetCandidateProfileDetail(Guid candidateProfileGuid)
+        {
+            if (candidateProfileGuid == Guid.Empty)
+                throw new FailedValidationException($"HiringManagerService:GetCandidateProfileDetail candidate profile guid cannot be empty({candidateProfileGuid})");
+
+            //validate profile
+            var profiles = await _repositoryWrapper.ProfileRepository.GetProfilesByGuidList(new List<Guid> { candidateProfileGuid });
+
+            if (profiles == null || profiles.Count == 0)
+                throw new FailedValidationException($"HiringManagerService:GetHiringManagerBySubscriberGuid Cannot locate profile {candidateProfileGuid}");
+
+            var profile = profiles.First();
+
+            if (profile.Subscriber == null)
+                throw new FailedValidationException($"HiringManagerService:GetHiringManagerBySubscriberGuid Cannot locate subscriber for profile {candidateProfileGuid}");
+
+            HiringManagerCandidateProfileDto hiringManagerCandidateProfileDto = null;
+            try
+            {
+                if (String.IsNullOrWhiteSpace(profile.Subscriber.Title))
+                {
+                    var subscriberWorkHistory = await _repositoryWrapper.SubscriberWorkHistoryRepository.GetLastEmploymentDetailBySubscriberGuid(profile.Subscriber.SubscriberGuid.Value);
+                    //map entity to dto
+                    hiringManagerCandidateProfileDto = _mapper.Map<HiringManagerCandidateProfileDto>(subscriberWorkHistory);
+                    //cannot be mapped in the mapper
+                    hiringManagerCandidateProfileDto.ProfileGuid = candidateProfileGuid;
+                }
+                else
+                {
+                    hiringManagerCandidateProfileDto = _mapper.Map<HiringManagerCandidateProfileDto>(profile);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"HiringManagerService:GetCandidateProfileDetail  Error: {ex.ToString()} ");
+            }
+            
+            return hiringManagerCandidateProfileDto;
+
+        }
+
+        public async Task<EducationalHistoryDto> GetCandidateEducationHistory(Guid candidateProfileGuid)
+        {
+            if (candidateProfileGuid == Guid.Empty)
+                throw new FailedValidationException($"HiringManagerService:GetCandidateEducationHistory candidate profile guid cannot be empty({candidateProfileGuid})");
+
+
+            //validate profile
+             var profiles = await _repositoryWrapper.ProfileRepository.GetProfilesByGuidList(new List<Guid> { candidateProfileGuid });
+
+            if (profiles == null || profiles.Count == 0)
+                throw new FailedValidationException($"HiringManagerService:GetCandidateEducationHistory Cannot locate profile {candidateProfileGuid}");
+
+            var profile = profiles.First();
+
+            //validate subscriber
+            if (profile.Subscriber == null)
+                throw new FailedValidationException($"HiringManagerService:GetCandidateEducationHistory Cannot locate subscriber for profile {candidateProfileGuid}");
+
+            EducationalHistoryDto educationalHistoryDto = null;
+            try
+            {
+                var educationHistoryEntity = await _repositoryWrapper.SubscriberEducationHistoryRepository.GetEducationalHistoryBySubscriberGuid(profile.Subscriber.SubscriberGuid.Value);
+                //map entity to dto
+                educationalHistoryDto = _mapper.Map<EducationalHistoryDto>(educationHistoryEntity);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"HiringManagerService:GetCandidateEducationHistory  Error: {ex.ToString()} ");
+            }
+
+            return educationalHistoryDto;
+        }
+
+        public async Task<EmploymentHistoryDto> GetCandidateWorkHistory(Guid candidateProfileGuid)
+        {
+            if (candidateProfileGuid == Guid.Empty)
+                throw new FailedValidationException($"HiringManagerService:GetCandidateWorkHistory candidate profile guid cannot be empty({candidateProfileGuid})");
+
+            //validate profile
+            var profiles = await _repositoryWrapper.ProfileRepository.GetProfilesByGuidList(new List<Guid> { candidateProfileGuid });
+
+            if (profiles == null || profiles.Count == 0)
+                throw new FailedValidationException($"HiringManagerService:GetCandidateWorkHistory Cannot locate profile {candidateProfileGuid}");
+
+            var profile = profiles.First();
+
+            if (profile.Subscriber == null)
+                throw new FailedValidationException($"HiringManagerService:GetCandidateWorkHistory Cannot locate subscriber for profile {candidateProfileGuid}");
+
+
+            EmploymentHistoryDto employmentHistoryDto = null;
+            try
+            {
+                var employmentHistoryEntity = await _repositoryWrapper.SubscriberWorkHistoryRepository.GetWorkHistoryBySubscriberGuid(profile.Subscriber.SubscriberGuid.Value);
+                //map entity to dto
+                employmentHistoryDto = _mapper.Map<EmploymentHistoryDto>(employmentHistoryEntity);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"HiringManagerService:GetCandidateWorkHistory  Error: {ex.ToString()} ");
+            }
+
+            return employmentHistoryDto;
+        }
+
+        public async Task<SkillListDto> GetCandidateSkills(Guid candidateProfileGuid)
+        {
+            if (candidateProfileGuid == Guid.Empty)
+                throw new FailedValidationException($"HiringManagerService:GetCandidateSkills candidate profile guid cannot be empty({candidateProfileGuid})");
+
+            //validate profile
+            var profiles = await _repositoryWrapper.ProfileRepository.GetProfilesByGuidList(new List<Guid> { candidateProfileGuid });
+
+            if (profiles == null || profiles.Count == 0)
+                throw new FailedValidationException($"HiringManagerService:GetHiringManagerBySubscriberGuid Cannot locate profile {candidateProfileGuid}");
+
+            var profile = profiles.First();
+
+            if (profile.Subscriber == null)
+                throw new FailedValidationException($"HiringManagerService:GetHiringManagerBySubscriberGuid Cannot locate subscriber for profile {candidateProfileGuid}");
+
+
+            SkillListDto skillListDto = null;
+            try
+            {
+                var candidateSkills = await _repositoryWrapper.SkillRepository.GetBySubscriberGuid(profile.Subscriber.SubscriberGuid.Value);
+                
+                //map entity to dto
+                skillListDto = _mapper.Map<SkillListDto>(candidateSkills);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"HiringManagerService:GetCandidateSkills  Error: {ex.ToString()} ");
+            }
+
+            return skillListDto;
         }
 
 
@@ -156,12 +296,5 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 
             return true;
         }
-
-
-
-
-
-
-
     }
 }
