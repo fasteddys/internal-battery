@@ -26,6 +26,7 @@ namespace UpDiddyApi.Controllers.V2
         private readonly IPipelineService _pipelineService;
         private readonly IInterviewRequestService _interviewRequestService;
         private readonly IG2Service _g2Service;
+        private readonly ICareerTalentPipelineService _careerTalentPipelineService;
 
         public B2BController(IServiceProvider services)
         {
@@ -33,6 +34,7 @@ namespace UpDiddyApi.Controllers.V2
             _pipelineService = services.GetService<IPipelineService>();
             _interviewRequestService = services.GetService<IInterviewRequestService>();
             _g2Service = services.GetService<IG2Service>();
+            _careerTalentPipelineService = services.GetService<ICareerTalentPipelineService>();
         }
 
         [HttpGet]
@@ -143,6 +145,28 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         #endregion
+
+        #region Create Talent Pipeline
+
+        [HttpGet("create-talent-pipeline")]
+        public ActionResult<List<string>> GetCreateTalentPipelineQuestions()
+            => _careerTalentPipelineService.GetQuestions();
+
+        [HttpPost("create-talent-pipeline")]
+        [Authorize(Policy = "IsHiringManager")]
+        public async Task<IActionResult> PostCreateTalentPipelineQuestions([FromBody]CareerTalentPipelineDto careerTalentPipelineDto)
+        {
+            var hiringManager = await _hiringManagerService
+               .GetHiringManagerBySubscriberGuid(GetSubscriberGuid());
+
+            await _careerTalentPipelineService
+                .SubmitCareerTalentPipeline(careerTalentPipelineDto, hiringManager);
+
+            return Ok();
+        }
+
+
+        #endregion Create Talent Pipeline
 
         [HttpPost("hiring-managers/request-interview/{profileGuid}")]
         [Authorize(Policy = "IsHiringManager")]

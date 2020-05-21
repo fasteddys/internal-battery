@@ -371,6 +371,7 @@ namespace UpDiddyApi
             services.AddScoped<IHiringManagerService, HiringManagerService>();
             services.AddScoped<IPipelineService, PipelineService>();
             services.AddTransient<IInterviewRequestService, InterviewRequestService>(); // y'all know most of these can be transient!!!
+            services.AddCareerTalentPipelineService(Configuration.GetSection("CreateTalentPipeline"));
 
             #endregion
 
