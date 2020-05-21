@@ -16,12 +16,12 @@ using Newtonsoft.Json;
 using UpDiddyApi.Workflow;
 using Newtonsoft.Json.Linq;
 using UpDiddyApi.ApplicationCore.Exceptions;
+
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class JobAlertService : IJobAlertService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
-
         private readonly IHangfireService _hangfireService;
 
         public JobAlertService(IHangfireService hangfireService, IRepositoryWrapper repositoryWrapper)
@@ -32,47 +32,41 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<Guid> CreateJobAlert(Guid subscriberGuid, JobAlertDto jobAlertDto)
         {
-            try
+            var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+
+            if (subscriber == null)
+                throw new NotFoundException("Subscriber not found");
+
+            JobQueryDto jobQueryDto = CreateJobQueryDto(jobAlertDto);
+            var alerts = await _repositoryWrapper.JobPostingAlertRepository.GetAllJobPostingAlertsBySubscriber(subscriberGuid);
+
+            if (alerts.ToList().Count >= 5)
+                throw new MaximumReachedException("Subscriber has exceeded the maximum number of job exception");
+
+            DateTime localExecutionDate = CreateLocalExecutionDate(jobAlertDto.Frequency, jobAlertDto.ExecutionDayOfWeek);
+            string cronSchedule = CreateCronSchedule(jobAlertDto.Frequency, localExecutionDate);
+            int subscriberId = subscriber.SubscriberId;
+            Guid jobPostingAlertGuid = Guid.NewGuid();
+
+            JobPostingAlert jobPostingAlert = new JobPostingAlert()
             {
-                var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+                CreateDate = DateTime.UtcNow,
+                CreateGuid = Guid.Empty,
+                Description = jobAlertDto.Description,
+                ExecutionDayOfWeek = jobAlertDto?.Frequency == "Weekly" ? (DayOfWeek?)localExecutionDate.DayOfWeek : null,
+                ExecutionHour = localExecutionDate.Hour,
+                ExecutionMinute = localExecutionDate.Minute,
+                Frequency = (Frequency)Enum.Parse(typeof(Frequency), jobAlertDto.Frequency),
+                IsDeleted = 0,
+                JobPostingAlertGuid = jobPostingAlertGuid,
+                JobQueryDto = JObject.FromObject(jobQueryDto),
+                SubscriberId = subscriberId
+            };
 
-                if (subscriber == null)
-                    throw new NotFoundException("Subscriber not found");
-
-                JobQueryDto jobQueryDto = CreateJobQueryDto(jobAlertDto);
-                var alerts = await _repositoryWrapper.JobPostingAlertRepository.GetAllJobPostingAlertsBySubscriber(subscriberGuid);
-
-                if (alerts.ToList().Count >= 5)
-                    throw new MaximumReachedException("Subscriber has exceeded the maximum number of job exception");
-
-                DateTime localExecutionDate = CreateLocalExecutionDate(jobAlertDto.Frequency, jobAlertDto.ExecutionDayOfWeek);
-                string cronSchedule = CreateCronSchedule(jobAlertDto.Frequency, localExecutionDate);
-                int subscriberId = subscriber.SubscriberId;
-                Guid jobPostingAlertGuid = Guid.NewGuid();
-                JobPostingAlert jobPostingAlert = new JobPostingAlert()
-                {
-                    CreateDate = DateTime.UtcNow,
-                    CreateGuid = Guid.Empty,
-                    Description = jobAlertDto.Description,
-                    ExecutionDayOfWeek = jobAlertDto?.Frequency == "Weekly" ? (DayOfWeek?)localExecutionDate.DayOfWeek : null,
-                    ExecutionHour = localExecutionDate.Hour,
-                    ExecutionMinute = localExecutionDate.Minute,
-                    Frequency = (Frequency)Enum.Parse(typeof(Frequency), jobAlertDto.Frequency),
-                    IsDeleted = 0,
-                    JobPostingAlertGuid = jobPostingAlertGuid,
-                    JobQueryDto = JObject.FromObject(jobQueryDto),
-                    SubscriberId = subscriberId
-                };
-
-                await _repositoryWrapper.JobPostingAlertRepository.Create(jobPostingAlert);
-                await _repositoryWrapper.SaveAsync();
-                _hangfireService.AddOrUpdate<ScheduledJobs>($"jobPostingAlert:{jobPostingAlertGuid}", sj => sj.ExecuteJobPostingAlert(jobPostingAlertGuid), cronSchedule);
-                return jobPostingAlertGuid;
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
+            await _repositoryWrapper.JobPostingAlertRepository.Create(jobPostingAlert);
+            await _repositoryWrapper.SaveAsync();
+            _hangfireService.AddOrUpdate<ScheduledJobs>($"jobPostingAlert:{jobPostingAlertGuid}", sj => sj.ExecuteJobPostingAlert(jobPostingAlertGuid), cronSchedule);
+            return jobPostingAlertGuid;
         }
 
         public async Task UpdateJobAlert(Guid subscriberGuid, Guid jobAlertGuid, JobAlertDto jobAlertDto)
@@ -152,18 +146,16 @@ namespace UpDiddyApi.ApplicationCore.Services
             DateTime utcDate = DateTime.UtcNow;
             DayOfWeek dayOfWeek;
             bool isValid = DayOfWeek.TryParse(executionDayOfWeek, out dayOfWeek);
-            if (!isValid)
-            {
-                throw new NotSupportedException($"Unrecognized value for 'ExecutionDayOfWeek' parameter: {executionDayOfWeek}");
-            }
-            DateTime localExecutionDate = new DateTime(
-                   utcDate.Year,
-                   utcDate.Month,
-                   frequency == "Weekly" ? utcDate.Next(dayOfWeek).Day : utcDate.Day,
-                   utcDate.Hour,
-                   utcDate.Minute,
-                   0);
-            return localExecutionDate;
+            if (isValid)
+                return new DateTime(
+                       utcDate.Year,
+                       utcDate.Month,
+                       frequency == "Weekly" ? utcDate.Next(dayOfWeek).Day : utcDate.Day,
+                       utcDate.Hour,
+                       utcDate.Minute,
+                       0);
+            else
+                return utcDate;
         }
 
         private string CreateCronSchedule(string frequency, DateTime localExecutionDate)
