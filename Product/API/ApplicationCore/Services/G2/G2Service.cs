@@ -57,7 +57,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         #region B2B searching 
 
 
-        public async Task<G2SearchResultDto> B2BSearchAsync(Guid subscriberGuid, Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
+        public async Task<G2SearchResultDto> HiringManagerSearchAsync(Guid subscriberGuid, Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
         {
             G2SearchResultDto results = null;
 
@@ -76,7 +76,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             // handle case of non geo search 
             if (cityGuid == null || cityGuid == Guid.Empty)
             {
-                results =  await _SearchG2BySkillsAsync(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, 0, 0, 0, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
+                results =  await _HiringMangerSearchAsync(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, 0, 0, 0, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
                 // Obfucscate the results 
                 Obfuscate(results);
                 return results;
@@ -93,7 +93,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             if (postal == null)
                 throw new NotFoundException($"A city with an Guid of {cityGuid} cannot be found.");
 
-            results = await _SearchG2BySkillsAsync(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, (double)postal.Latitude, (double)postal.Longitude, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
+            results = await _HiringMangerSearchAsync(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, (double)postal.Latitude, (double)postal.Longitude, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
             // Obfucscate  the results 
             Obfuscate(results);
             return results;
@@ -872,25 +872,28 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         private async Task<G2SearchResultDto> _SearchG2Async(List<Guid> companyGuids, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, double lat = 0, double lng = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
         {
 
-            return await _DoSearch(string.Empty, companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, lat, lng, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
+            return await _DoSearch(null, companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, lat, lng, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
  
         }
 
      
-        private async Task<G2SearchResultDto> _SearchG2BySkillsAsync(List<Guid> companyGuids, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, double lat = 0, double lng = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
+        private async Task<G2SearchResultDto> _HiringMangerSearchAsync(List<Guid> companyGuids, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, double lat = 0, double lng = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
         {
-            return await _DoSearch("PublicSkills", companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, lat, lng, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
+
+            List<string> searchFields = new List<string>()
+            {
+                "PublicSkills",
+                "Title"
+            };
+            return await _DoSearch(searchFields, companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, lat, lng, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
         }
 
-
-
-
-        private async Task<G2SearchResultDto> _DoSearch(string searchField, List<Guid> companyGuids, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, double lat = 0, double lng = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
+        private async Task<G2SearchResultDto> _DoSearch(List<string> searchFields, List<Guid> companyGuids, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, double lat = 0, double lng = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
         {
 
             try
             {
-                _logger.LogInformation($"G2Service:_DoSearch: starting searchField ={searchField} sort={sort} order={order} keyword={keyword} limit = {limit} sourcePartnerGuid={sourcePartnerGuid} radius={radius} lat={lat} lng = {lng} isWillingToRelocate={isWillingToRelocate} isWillingToTravel={isWillingToTravel} isActiveJobSeeker={isActiveJobSeeker} isActiveJobSeeker={isActiveJobSeeker}  isWillingToWorkProBono={isWillingToWorkProBono}   ");
+                _logger.LogInformation($"G2Service:_DoSearch: starting searchField ={searchFields} sort={sort} order={order} keyword={keyword} limit = {limit} sourcePartnerGuid={sourcePartnerGuid} radius={radius} lat={lat} lng = {lng} isWillingToRelocate={isWillingToRelocate} isWillingToTravel={isWillingToTravel} isActiveJobSeeker={isActiveJobSeeker} isActiveJobSeeker={isActiveJobSeeker}  isWillingToWorkProBono={isWillingToWorkProBono}   ");
 
                 if (companyGuids == null || companyGuids.Count == 0)
                     throw new FailedValidationException("G2Service:_DoSearch: Recruiter is not associated with the CareerCircle search company");
@@ -925,14 +928,11 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
 
                     };
 
-
                 // add search field if one is specified 
-                if (!string.IsNullOrEmpty(searchField))
+                if (searchFields != null )
                 {
-                    parameters.SearchFields = new List<string>() { searchField };
+                    parameters.SearchFields = searchFields;
                 }
-
-
 
                 string companyFilter = string.Empty;
                 foreach (Guid g in companyGuids)
