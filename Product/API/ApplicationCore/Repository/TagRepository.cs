@@ -16,9 +16,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
     public class TagRepository : UpDiddyRepositoryBase<Tag>, ITagRepository
     {
         private UpDiddyDbContext _dbContext;
+ 
 
         public TagRepository(UpDiddyDbContext dbContext) : base(dbContext)
-        {
+       {
             _dbContext = dbContext;
         }
 
@@ -61,32 +62,34 @@ namespace UpDiddyApi.ApplicationCore.Repository
                                                             where s.SubscriberGuid == subscriberGuid && p.ProfileGuid == profileGuid
                                                             select rc.RecruiterCompanyId).Any();
             if (!isProfileAssociatedWithRecruiterCompany)
-                throw new FailedValidationException($"recruiter does not have permission to modify profile tags");
+                throw new UnauthorizedAccessException($"TagRepository:AddTagsToProfileForRecruiter Recruiter does not have permission to modify profile tags");
 
             List<Guid> profileTagGuids = new List<Guid>();
             foreach (Guid tagGuid in tagGuids)
-            {
-                Guid profileTagGuid = Guid.NewGuid();
-                profileTagGuids.Add(profileTagGuid);
+            { 
                 bool isTagAlreadyAddedProfile = (from ps in _dbContext.ProfileTag
                                                    join p in _dbContext.Profile on ps.ProfileId equals p.ProfileId
                                                    join s in _dbContext.Tag on ps.TagId equals s.TagId
                                                    where s.TagGuid == tagGuid && p.ProfileGuid == profileGuid
                                                    select ps.ProfileTagId).Any();
+                // Per Brent: make this method idempotent and not throw an error if the tag has already been added 
                 if (isTagAlreadyAddedProfile)
-                    throw new FailedValidationException($"The tag '{tagGuid}' is already associated with this profile");
+                    continue;
+
+                Guid profileTagGuid = Guid.NewGuid();
+                profileTagGuids.Add(profileTagGuid);
 
                 var profileId = (from p in _dbContext.Profile
                                  where p.ProfileGuid == profileGuid && p.IsDeleted == 0
                                  select p.ProfileId).FirstOrDefault();
                 if (profileId == null || profileId == 0)
-                    throw new FailedValidationException("profile not found");
+                    throw new FailedValidationException("Profile not found");
 
                 var tagId = (from s in _dbContext.Tag
                                where s.TagGuid == tagGuid && s.IsDeleted == 0
                                select s.TagId).FirstOrDefault();
                 if (tagId == null || tagId == 0)
-                    throw new FailedValidationException("tag not found");
+                    throw new FailedValidationException("Tag not found");
 
                 ProfileTag tagDeletedFromProfile = (from ps in _dbContext.ProfileTag
                                                         join p in _dbContext.Profile on ps.ProfileId equals p.ProfileId
@@ -129,7 +132,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                                                             where s.SubscriberGuid == subscriberGuid && ps.ProfileTagGuid == profileTagGuids.FirstOrDefault()
                                                             select rc.RecruiterCompanyId).Any();
             if (!isProfileAssociatedWithRecruiterCompany)
-                throw new FailedValidationException($"recruiter does not have permission to modify profile tags");
+                throw new UnauthorizedAccessException($"Recruiter does not have permission to modify profile tags");
 
             foreach (Guid profileTagGuid in profileTagGuids)
             {
@@ -137,7 +140,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                                     where ps.ProfileTagGuid == profileTagGuid && ps.IsDeleted == 0
                                     select ps).FirstOrDefault();
                 if (profileTag == null)
-                    throw new NotFoundException($"profile tag '{profileTagGuid}' not found");
+                    throw new NotFoundException($"Profile tag '{profileTagGuid}' not found");
 
                 profileTag.ModifyDate = DateTime.UtcNow;
                 profileTag.ModifyGuid = Guid.Empty;
