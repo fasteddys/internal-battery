@@ -26,6 +26,7 @@ namespace UpDiddyApi.Controllers.V2
         private readonly IPipelineService _pipelineService;
         private readonly IInterviewRequestService _interviewRequestService;
         private readonly IG2Service _g2Service;
+        private readonly ICareerTalentPipelineService _careerTalentPipelineService;
 
         public B2BController(IServiceProvider services)
         {
@@ -33,6 +34,7 @@ namespace UpDiddyApi.Controllers.V2
             _pipelineService = services.GetService<IPipelineService>();
             _interviewRequestService = services.GetService<IInterviewRequestService>();
             _g2Service = services.GetService<IG2Service>();
+            _careerTalentPipelineService = services.GetService<ICareerTalentPipelineService>();
         }
 
         [HttpGet]
@@ -61,7 +63,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("profiles/query")]
         public async Task<IActionResult> SearchG2(Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
         {
-            var rVal = await _g2Service.B2BSearchAsync(GetSubscriberGuid(), cityGuid, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
+            var rVal = await _g2Service.HiringManagerSearchAsync(GetSubscriberGuid(), cityGuid, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
             return Ok(rVal);
         }
 
@@ -144,6 +146,28 @@ namespace UpDiddyApi.Controllers.V2
 
         #endregion
 
+        #region Create Talent Pipeline
+
+        [HttpGet("create-talent-pipeline")]
+        public ActionResult<List<string>> GetCreateTalentPipelineQuestions()
+            => _careerTalentPipelineService.GetQuestions();
+
+        [HttpPost("create-talent-pipeline")]
+        [Authorize(Policy = "IsHiringManager")]
+        public async Task<IActionResult> PostCreateTalentPipelineQuestions([FromBody]CareerTalentPipelineDto careerTalentPipelineDto)
+        {
+            var hiringManager = await _hiringManagerService
+               .GetHiringManagerBySubscriberGuid(GetSubscriberGuid());
+
+            await _careerTalentPipelineService
+                .SubmitCareerTalentPipeline(careerTalentPipelineDto, hiringManager);
+
+            return Ok();
+        }
+
+
+        #endregion Create Talent Pipeline
+
         [HttpPost("hiring-managers/request-interview/{profileGuid}")]
         [Authorize(Policy = "IsHiringManager")]
         public async Task<IActionResult> SubmitInterviewRequest(Guid profileGuid)
@@ -155,6 +179,43 @@ namespace UpDiddyApi.Controllers.V2
                 .SubmitInterviewRequest(hiringManager, profileGuid);
 
             return Ok(interviewRequestId);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "IsHiringManager")]
+        [Route("profiles/{candidateProfileGuid}")]
+        public async Task<IActionResult> GetCandidateProfileDetail(Guid candidateProfileGuid)
+        {
+            var rval = await _hiringManagerService.GetCandidateProfileDetail(candidateProfileGuid);
+            return Ok(rval);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "IsHiringManager")]
+        [Route("profiles/{candidateProfileGuid}/education-histories")]
+        public async Task<IActionResult> GetCandidateEducationHistory(Guid candidateProfileGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        {
+            var rval = await _hiringManagerService.GetCandidateEducationHistory(candidateProfileGuid);
+            return Ok(rval);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "IsHiringManager")]
+        [Route("profiles/{candidateProfileGuid}/work-histories")]
+        public async Task<IActionResult> GetCandidateWorkHistory(Guid candidateProfileGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        {
+            var rval = await _hiringManagerService.GetCandidateWorkHistory(candidateProfileGuid);
+            return Ok(rval);
+        }
+
+
+        [HttpGet]
+        [Authorize(Policy = "IsHiringManager")]
+        [Route("skills/profiles/{candidateProfileGuid}")]
+        public async Task<IActionResult> GetCandidateSkills(Guid candidateProfileGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
+        {
+            var rval = await _hiringManagerService.GetCandidateSkills(candidateProfileGuid);
+            return Ok(rval);
         }
 
     }

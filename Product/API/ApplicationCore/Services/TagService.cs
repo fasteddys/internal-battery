@@ -67,6 +67,15 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             if (tagDto == null)
                 throw new NullReferenceException("TagDto cannot be null");
+
+            // prevent duplicate tags from being entered since there is no DB constraint 
+            var existingTag =  _repositoryWrapper.Tag.GetAll()
+                .Where(t => t.IsDeleted == 0 && t.Name == tagDto.Name)
+                .FirstOrDefault();
+
+            if ( existingTag != null )
+                return existingTag.TagGuid.Value;
+
             Tag tag = _mapper.Map<Tag>(tagDto);
             tag.CreateDate = DateTime.UtcNow;
             tag.TagGuid = Guid.NewGuid();
