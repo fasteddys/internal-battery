@@ -1030,7 +1030,8 @@ namespace UpDiddyApi.Helpers
                          EndDate = (swh.EndDate.HasValue &&  swh.EndDate.Value > DateTime.MinValue && swh.EndDate.Value < DateTime.MaxValue) ? swh.EndDate : (DateTime?)null,
                          IsCurrent = swh.IsCurrent,
                          JobDescription = swh.JobDescription,
-                         Title = swh.Title
+                         Title = swh.Title,
+                         CompanyGuid = swh.Company?.CompanyGuid
                      }).ToList();
               })
             .ReverseMap();
