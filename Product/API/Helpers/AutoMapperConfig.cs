@@ -1031,7 +1031,7 @@ namespace UpDiddyApi.Helpers
                          IsCurrent = swh.IsCurrent,
                          JobDescription = swh.JobDescription,
                          Title = swh.Title,
-                         CompanyGuid = swh.Company?.CompanyGuid
+                         CompanyGuid = swh.Company?.IsDeleted == 1 ? (Guid?)null : swh.Company?.CompanyGuid
                      }).ToList();
               })
             .ReverseMap();
