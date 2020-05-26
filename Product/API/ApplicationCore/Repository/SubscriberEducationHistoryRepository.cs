@@ -28,6 +28,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
                                         .Where(seh => seh.Subscriber.SubscriberGuid == subscriberGuid &&
                                                       seh.Subscriber.IsDeleted == 0 &&
                                                       seh.IsDeleted == 0)
+                                        .Include(seh => seh.EducationalDegree)
+                                        .Include(seh => seh.EducationalInstitution)
+                                        .Include(seh => seh.EducationalDegreeType)
                                         .ToListAsync();
 
             return educationalHistory;
