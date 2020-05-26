@@ -37,6 +37,9 @@ namespace UpDiddyApi.Controllers.V2
             _careerTalentPipelineService = services.GetService<ICareerTalentPipelineService>();
         }
 
+
+        #region Hiring Manager Crud
+
         [HttpGet]
         [Authorize(Policy = "IsHiringManager")]
         [Route("hiring-managers")]
@@ -55,6 +58,8 @@ namespace UpDiddyApi.Controllers.V2
             await _hiringManagerService.UpdateHiringManager(GetSubscriberGuid(), request);
             return Ok();
         }
+
+        #endregion
 
         #region Hiring  Query Functions 
 
@@ -168,6 +173,8 @@ namespace UpDiddyApi.Controllers.V2
 
         #endregion Create Talent Pipeline
 
+        #region Interview Requests 
+
         [HttpPost("hiring-managers/request-interview/{profileGuid}")]
         [Authorize(Policy = "IsHiringManager")]
         public async Task<IActionResult> SubmitInterviewRequest(Guid profileGuid)
@@ -180,6 +187,12 @@ namespace UpDiddyApi.Controllers.V2
 
             return Ok(interviewRequestId);
         }
+
+
+        #endregion
+
+        #region Profiles 
+
 
         [HttpGet]
         [Authorize(Policy = "IsHiringManager")]
@@ -217,6 +230,8 @@ namespace UpDiddyApi.Controllers.V2
             var rval = await _hiringManagerService.GetCandidateSkills(candidateProfileGuid);
             return Ok(rval);
         }
+
+        #endregion
 
     }
 }
