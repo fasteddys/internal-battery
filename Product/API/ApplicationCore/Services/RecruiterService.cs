@@ -182,20 +182,18 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
-
-
-
         public async Task<RecruiterInfoListDto> GetRecruiters(int limit, int offset, string sort, string order)
         {
-            List<RecruiterInfoDto> rVal = null;
-            rVal = await _repositoryWrapper.StoredProcedureRepository.GetRecruiters(limit, offset, sort, order);
-            return _mapper.Map<RecruiterInfoListDto>(rVal);
-        }
+            var recruiters = await _repositoryWrapper.StoredProcedureRepository.GetRecruiters(limit, offset, sort, order);
+            var recruitersDto = _mapper.Map<RecruiterInfoListDto>(recruiters);
 
+            await CheckRecruiterPermissionAsync(recruitersDto.Entities);
+            return recruitersDto;
+        }
 
         public async Task<Guid> AddRecruiterAsync(RecruiterInfoDto recruiterDto)
         {
-            // Do validations             
+            // Do validations
             if (recruiterDto.SubscriberGuid == null)
                 throw new FailedValidationException("Subscriber must be specified");
 
@@ -501,7 +499,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
-
         private async Task<bool> CheckRecruiterPermissionAsync(Recruiter recruiter)
         {
             var response = await _userService.GetUsersInRoleAsync(Role.Recruiter);
@@ -517,10 +514,16 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         }
 
-
-
-
-
+        private async Task CheckRecruiterPermissionAsync(List<RecruiterInfoDto> recruiters)
+        {
+            var response = await _userService.GetUsersInRoleAsync(Role.Recruiter);
+            if (!response.Success)
+                throw new ApplicationException("There was a problem retrieving users in the recruiter role");
+            foreach (var recruiter in recruiters)
+            {
+                recruiter.IsInAuth0RecruiterGroup = response.Users.Any(u => u.Email == recruiter.Email);
+            }
+        }
 
         #endregion
     }
