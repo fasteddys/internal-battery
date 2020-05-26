@@ -1010,8 +1010,8 @@ namespace UpDiddyApi.Helpers
                       dest.EducationHistories = src.Select(seh => new EducationDto
                       {
                           EducationHistoryGuid = seh.SubscriberEducationHistoryGuid,
-                          EducationalDegreeGuid = seh.SubscriberEducationHistoryGuid,
-                          EducationalDegreeTypeGuid = seh.EducationalDegree?.EducationalDegreeGuid,
+                          EducationalDegreeGuid = seh.EducationalDegree?.EducationalDegreeGuid,
+                          EducationalDegreeTypeGuid = seh.EducationalDegreeType?.EducationalDegreeTypeGuid,
                           EducationalInstitutionGuid = seh.EducationalInstitution?.EducationalInstitutionGuid,
                           StartDate = (seh.StartDate.HasValue && seh.StartDate.Value > DateTime.MinValue && seh.StartDate.Value < DateTime.MaxValue) ? seh.StartDate : (DateTime?)null,
                           EndDate = (seh.EndDate.HasValue &&  seh.EndDate.Value > DateTime.MinValue && seh.EndDate.Value < DateTime.MaxValue) ? seh.EndDate : (DateTime?)null,
