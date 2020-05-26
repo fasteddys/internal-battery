@@ -1,9 +1,9 @@
 /*
 ROLLBACK Postal data refresh
+Notes:
+=>Please select the appropriate DB and DB environment before running this script.
+=>Please update the Backup table names based on the current backup tables.
 */
-USE [careercircledb] --Change based on environment
-GO
-
 
 --RollBack ZIPCODE data
 
@@ -43,6 +43,7 @@ OUTPUT
    inserted.*;
 
    GO
+
 --Rollback CITY data
 
 

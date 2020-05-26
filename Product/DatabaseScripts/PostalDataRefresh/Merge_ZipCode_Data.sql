@@ -1,8 +1,9 @@
-USE [careercircledb]
-GO
+/*
+Notes: Please select the corrent DB and DB environment before executing this script.
+*/
 
 --ADD/UPDATE STATE data
-;MERGE [careercircledb].[dbo].[State] AS t
+;MERGE [dbo].[State] AS t
 USING (
 		SELECT Distinct [Code] = newdata.ProvinceAbbr
 			  ,[Name] = newdata.[ProvinceName]
@@ -15,15 +16,15 @@ USING (
 			  ,[ModifyDate] = s.[ModifyDate]
 			  ,[CreateGuid] = s.[CreateGuid]
 			  ,[ModifyGuid] = s.[ModifyGuid]
-		FROM [careercircledb].[DataImport].[USA_Canada_ZipCode_LatestData] AS newdata
+		FROM [DataImport].[USA_Canada_ZipCode_LatestData] AS newdata
 		Left Join (
-			Select s.* From [careercircledb]..[State] s
-			Join [careercircledb]..[Country] c
+			Select s.* From [State] s
+			Join [Country] c
 			On c.CountryId = s.CountryId
 			Where c.Code3 IN ('USA','CAN')
 		) As s
 		On s.code = newdata.provinceAbbr
-		Join [careercircledb]..[Country] c
+		Join [Country] c
 		On c.Code3 = newdata.CountryName
 		--order by newdata.ProvinceAbbr
 
@@ -81,7 +82,7 @@ GO
 --ADD/UPDATE CITY data
 
 
-;MERGE [careercircledb].[dbo].[City] AS t
+;MERGE [dbo].[City] AS t
 USING (
 
 		SELECT DISTINCT [Name] = newdata.[CityName]
@@ -100,20 +101,20 @@ USING (
 			  ,[ProvinceName]
 			  ,[ProvinceAbbr]
 			  ,s.StateId
-		  FROM [careercircledb].[DataImport].[USA_Canada_ZipCode_LatestData] new
-		  join [careercircledb]..[State] s
+		  FROM [DataImport].[USA_Canada_ZipCode_LatestData] new
+		  join [State] s
 			On s.Code = new.ProvinceAbbr and s.name = new.ProvinceName
-			Join [careercircledb]..[Country] ct
+			Join [Country] ct
 			ON ct.CountryId = s.CountryId
 			WHERE ct.Code3 IN ('USA','CAN')
 		)AS newdata
 		Left Join (
 			SELECT c.[Name] AS CityName, c.Cityid, s.Code AS StateCode, s.StateId, s.[Name] AS StateName,
 				   c.[IsDeleted], c.[CreateDate], c.[ModifyDate], c.[CreateGuid], c.[ModifyGuid], c.[CityGuid]
-			FROM [careercircledb]..[City] c
-			Right Join [careercircledb]..[State] s
+			FROM [City] c
+			Right Join [State] s
 			On s.StateId = c.StateId
-			Join [careercircledb]..[Country] ct
+			Join [Country] ct
 			ON ct.CountryId = s.CountryId
 			WHERE ct.Code3 IN ('USA','CAN')
 			) as olddata
@@ -164,7 +165,7 @@ GO
 --ADD/UPDATE ZIPCODE data
 
 
-;MERGE [careercircledb].[dbo].[Postal] AS t
+;MERGE [dbo].[Postal] AS t
 USING (
 
 	SELECT [PostalId] = p.PostalId
@@ -180,16 +181,16 @@ USING (
 		  ,[CityId] = newdata.CityId
 			FROM  (
 				Select c.Name, c.CityId, s.Code, ct.Code3 AS CountryAbbr3, new.PostalCode, new.Longitude,new.Latitude
-				From [careercircledb]..[City] c
-				Join [careercircledb]..[State] s
+				From [City] c
+				Join [State] s
 				On s.StateId = c.StateId 
-				Join [careercircledb]..[Country] ct
+				Join [Country] ct
 				ON ct.CountryId = s.CountryId
-				Join [careercircledb].[DataImport].[USA_Canada_ZipCode_LatestData] AS new
+				Join [DataImport].[USA_Canada_ZipCode_LatestData] AS new
 				On s.Code = new.ProvinceAbbr AND c.Name = new.CityName
 				WHERE ct.Code3 IN ('USA','CAN')
 			) as newdata
-			Left Join [careercircledb].[dbo].[Postal] p
+			Left Join [dbo].[Postal] p
 			On p.code = newdata.postalCode AND p.CityId = newdata.CityId
 ) AS s
 ON s.[Code] = t.[Code] AND s.CityId = t.CityId

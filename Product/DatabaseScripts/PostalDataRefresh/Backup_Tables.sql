@@ -1,17 +1,21 @@
-USE [careercircledb]
-GO
+
 /*
-Note: The below query will create a backup of the table data only, all PK - FK relationships will drop along with constraints.
+Notes: 
+=>The below script takes backup of the existing City, State and Postal table. 
+=>Please name the backup tables with a date extension for convenience, for example, Postal_Backup_YYYYMMDD.
+=>The script creates new log tables if the log tables do not exist, else it would truncate the data in tables, if they existed.
+=>The below query will create a backup of the table data only, all PK - FK relationships will drop along with constraints.
+=>Please Select the correct Database instance before running this script.
 */
-Select * Into [Postal_BackUp_20200519] from [dbo].[Postal] 
+Select * Into [dbo].[Postal_Backup_20200519] from [dbo].[Postal] 
 
 GO
 
-Select * Into [City_BackUp_20200519] from [dbo].[City] 
+Select * Into [dbo].[City_Backup_20200519] from [dbo].[City] 
 
 GO
 
-Select * Into [State_BackUp_20200519] from [dbo].[State] 
+Select * Into [dbo].[State_Backup_20200519] from [dbo].[State] 
 
 GO
 

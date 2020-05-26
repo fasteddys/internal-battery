@@ -1,4 +1,8 @@
---New Zip Codes
+/*
+Below queries just help to compare the new and existing data and spot checking after the merge scripts are executed.
+*/
+
+--Query shows New Zip Codes
 SELECT newdata.* 
 FROM [careercircledb].[DataImport].[USA_Canada_ZipCode_LatestData] AS newdata
 Left Join (
@@ -18,7 +22,7 @@ Where olddata.Code is null
 
 
 
---New States
+--Query shows New States
 SELECT distinct provincename, countryname 
 FROM [careercircledb].[DataImport].[USA_Canada_ZipCode_LatestData] AS newdata
 where 
@@ -32,14 +36,13 @@ On s.code = newdata.provinceAbbr
 Where s.code is null
 
 
---New Cities Names
+--Query shows New Cities Names
 SELECT distinct cityname, provincename, countryname
 FROM [careercircledb].[DataImport].[USA_Canada_ZipCode_LatestData] AS newdata
 where cityname not in (select name from [careercircledb]..[city])
 
 
-select name from [careercircledb]..[city] where stateid = 102
-
+--Spot checking the data using below queries
 
 select count(cityName) From [careercircledb].[DataImport].[USA_Canada_ZipCode_LatestData]
 where cityname = 'Medicine Hat'
