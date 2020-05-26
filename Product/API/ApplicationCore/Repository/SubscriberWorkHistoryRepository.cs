@@ -68,6 +68,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                         .Where(swh => swh.Subscriber.SubscriberGuid == subscriberGuid &&
                                       swh.Subscriber.IsDeleted == 0 &&
                                       swh.IsDeleted == 0 )
+                        .Include(swh => swh.Company)
                         .ToListAsync();
 
             return workHistory;
