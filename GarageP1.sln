@@ -31,16 +31,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GoogleProfiles", "GooglePro
 EndProject
 Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "CCProfileService", "Product\CCProfileService\CCProfileService.njsproj", "{A87AE4EB-FB2C-4F6A-8837-6981637F0E05}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DatabaseScripts", "DatabaseScripts", "{083BFF47-986E-4D0B-B93F-143A376037AC}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PostalDataRefresh", "PostalDataRefresh", "{FCD40964-AC12-4414-B4BD-ADBECB973CB6}"
-	ProjectSection(SolutionItems) = preProject
-		..\..\ViveksUtils\ZipCodeRefresh\Backup_Tables.sql = ..\..\ViveksUtils\ZipCodeRefresh\Backup_Tables.sql
-		..\..\ViveksUtils\ZipCodeRefresh\DataComparisonQuery_Examples.sql = ..\..\ViveksUtils\ZipCodeRefresh\DataComparisonQuery_Examples.sql
-		..\..\ViveksUtils\ZipCodeRefresh\Merge_ZipCode_Data.sql = ..\..\ViveksUtils\ZipCodeRefresh\Merge_ZipCode_Data.sql
-		..\..\ViveksUtils\ZipCodeRefresh\Rollback_Scripts.sql = ..\..\ViveksUtils\ZipCodeRefresh\Rollback_Scripts.sql
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -177,8 +167,6 @@ Global
 		{A7AC5904-2E46-41B6-B76C-0B7EEED30CB3} = {D69FFB99-BCE0-4887-B9CE-AF64B4D08BC7}
 		{C45A5158-051B-4D67-B27E-49917F13136E} = {EA364CEC-C644-47AB-83F2-2ED2AA1FFDA7}
 		{A87AE4EB-FB2C-4F6A-8837-6981637F0E05} = {C45A5158-051B-4D67-B27E-49917F13136E}
-		{083BFF47-986E-4D0B-B93F-143A376037AC} = {EA364CEC-C644-47AB-83F2-2ED2AA1FFDA7}
-		{FCD40964-AC12-4414-B4BD-ADBECB973CB6} = {083BFF47-986E-4D0B-B93F-143A376037AC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A8302128-EB59-4309-B39F-DE576B8C957E}
