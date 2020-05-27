@@ -2,6 +2,19 @@
 Below queries just help to compare the new and existing data and spot checking after the merge scripts are executed.
 */
 
+--Below query will list all postal code that is in out DB but missing from the Import file/table
+Select p.code as postalcode, c.name as cityname, s.Name as statename
+	from [Postal] p
+	Join [City] c
+	On c.CityId = p.CityId
+	Join [State] s
+	On s.StateId = c.StateId
+	Join [Country] co
+	On co.CountryId = s.CountryId
+	Where co.Code3 in ('USA','CAN')
+	--and c.name = 'Gatineau'
+	and p.code not in (select postalcode From [DataImport].[USA_Canada_ZipCode_LatestData])
+
 --Query shows New Zip Codes
 SELECT newdata.* 
 FROM [DataImport].[USA_Canada_ZipCode_LatestData] AS newdata
