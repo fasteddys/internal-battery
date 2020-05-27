@@ -51,7 +51,6 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             if (subscriber == null)
                 throw new FailedValidationException($"HiringManagerService:GetHiringManagerBySubscriberGuid Cannot locate subscriber {subscriberGuid}");
 
-            HiringManagerDto hiringManagerDto = null;
             try
             {
                 var hiringManagerEntity = await _repositoryWrapper.HiringManagerRepository.GetHiringManagerBySubscriberId(subscriber.SubscriberId); 
@@ -62,14 +61,13 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 }
 
                 //map hiring manage entity to dto
-                hiringManagerDto = _mapper.Map<HiringManagerDto>(hiringManagerEntity);
+                return _mapper.Map<HiringManagerDto>(hiringManagerEntity);
             }
             catch (Exception ex)
             {
                 _logger.LogError($"HiringManagerService:GetHiringManagerBySubscriberGuid  Error: {ex.ToString()} ");
+                throw;
             }
-
-            return hiringManagerDto;
         }
 
         public async Task<HiringManagerCandidateProfileDto> GetCandidateProfileDetail(Guid candidateProfileGuid)
@@ -88,29 +86,27 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             if (profile.Subscriber == null)
                 throw new FailedValidationException($"HiringManagerService:GetHiringManagerBySubscriberGuid Cannot locate subscriber for profile {candidateProfileGuid}");
 
-            HiringManagerCandidateProfileDto hiringManagerCandidateProfileDto = null;
             try
             {
                 if (String.IsNullOrWhiteSpace(profile.Subscriber.Title))
                 {
                     var subscriberWorkHistory = await _repositoryWrapper.SubscriberWorkHistoryRepository.GetLastEmploymentDetailBySubscriberGuid(profile.Subscriber.SubscriberGuid.Value);
                     //map entity to dto
-                    hiringManagerCandidateProfileDto = _mapper.Map<HiringManagerCandidateProfileDto>(subscriberWorkHistory);
+                    var hiringManagerCandidateProfileDto = _mapper.Map<HiringManagerCandidateProfileDto>(subscriberWorkHistory);
                     //cannot be mapped in the mapper
                     hiringManagerCandidateProfileDto.ProfileGuid = candidateProfileGuid;
+                    return hiringManagerCandidateProfileDto;
                 }
                 else
                 {
-                    hiringManagerCandidateProfileDto = _mapper.Map<HiringManagerCandidateProfileDto>(profile);
+                    return _mapper.Map<HiringManagerCandidateProfileDto>(profile);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError($"HiringManagerService:GetCandidateProfileDetail  Error: {ex.ToString()} ");
+                throw;
             }
-            
-            return hiringManagerCandidateProfileDto;
-
         }
 
         public async Task<EducationalHistoryDto> GetCandidateEducationHistory(Guid candidateProfileGuid)
