@@ -1,4 +1,4 @@
-﻿ 
+﻿
 using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -53,9 +53,9 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 
             try
             {
-                var hiringManagerEntity = await _repositoryWrapper.HiringManagerRepository.GetHiringManagerBySubscriberId(subscriber.SubscriberId); 
+                var hiringManagerEntity = await _repositoryWrapper.HiringManagerRepository.GetHiringManagerBySubscriberId(subscriber.SubscriberId);
 
-                if(hiringManagerEntity == null)
+                if (hiringManagerEntity == null)
                 {
                     throw new FailedValidationException($"HiringManagerService:GetHiringManagerBySubscriberGuid Cannot locate hiring manager for subscriber: {subscriberGuid}");
                 }
@@ -91,16 +91,18 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 if (String.IsNullOrWhiteSpace(profile.Subscriber.Title))
                 {
                     var subscriberWorkHistory = await _repositoryWrapper.SubscriberWorkHistoryRepository.GetLastEmploymentDetailBySubscriberGuid(profile.Subscriber.SubscriberGuid.Value);
-                    //map entity to dto
-                    var hiringManagerCandidateProfileDto = _mapper.Map<HiringManagerCandidateProfileDto>(subscriberWorkHistory);
-                    //cannot be mapped in the mapper
-                    hiringManagerCandidateProfileDto.ProfileGuid = candidateProfileGuid;
-                    return hiringManagerCandidateProfileDto;
+
+                    if (subscriberWorkHistory != null)
+                    {
+                        //map entity to dto
+                        var hiringManagerCandidateProfileDto = _mapper.Map<HiringManagerCandidateProfileDto>(subscriberWorkHistory);
+                        //cannot be mapped in the mapper
+                        hiringManagerCandidateProfileDto.ProfileGuid = candidateProfileGuid;
+                        return hiringManagerCandidateProfileDto;
+                    }
                 }
-                else
-                {
-                    return _mapper.Map<HiringManagerCandidateProfileDto>(profile);
-                }
+
+                return _mapper.Map<HiringManagerCandidateProfileDto>(profile);
             }
             catch (Exception ex)
             {
@@ -116,7 +118,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 
 
             //validate profile
-             var profiles = await _repositoryWrapper.ProfileRepository.GetProfilesByGuidList(new List<Guid> { candidateProfileGuid });
+            var profiles = await _repositoryWrapper.ProfileRepository.GetProfilesByGuidList(new List<Guid> { candidateProfileGuid });
 
             if (profiles == null || profiles.Count == 0)
                 throw new FailedValidationException($"HiringManagerService:GetCandidateEducationHistory Cannot locate profile {candidateProfileGuid}");
@@ -195,7 +197,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             try
             {
                 var candidateSkills = await _repositoryWrapper.SkillRepository.GetBySubscriberGuid(profile.Subscriber.SubscriberGuid.Value);
-                
+
                 //map entity to dto
                 skillListDto = _mapper.Map<SkillListDto>(candidateSkills);
             }
@@ -208,10 +210,10 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
         }
 
 
-        public async Task UpdateHiringManager(Guid subscriberGuid, HiringManagerDto hiringManager) 
+        public async Task UpdateHiringManager(Guid subscriberGuid, HiringManagerDto hiringManager)
         {
             _logger.LogInformation($"HiringManagerService:UpdateHiringManager  Starting for subscriber {subscriberGuid} ");
-            if(subscriberGuid == Guid.Empty)
+            if (subscriberGuid == Guid.Empty)
                 throw new FailedValidationException($"HiringManagerService:UpdateHiringManager subscriber guid cannot be empty({subscriberGuid})");
 
             if (hiringManager == null)
@@ -268,9 +270,9 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 {
                     _logger.LogInformation($"HiringManagerService:AddHiringManager : awaiting _AddHiringManager for subscriber {subscriberGuid}");
                     await _AddHiringManager(subscriber);
-                }            
+                }
             }
-            catch (Exception ex )
+            catch (Exception ex)
             {
                 _logger.LogError($"HiringManagerService:AddHiringManager  Error: {ex.ToString()} ");
             }
@@ -280,7 +282,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
         }
 
 
-        public  async Task<bool> _AddHiringManager(Subscriber subscriber)
+        public async Task<bool> _AddHiringManager(Subscriber subscriber)
         {
             _logger.LogInformation($"HiringManagerService:_AddHiringManager  Starting for subscriber {subscriber.SubscriberGuid} ");
             var getUserResponse = await _userService.GetUserByEmailAsync(subscriber.Email);
