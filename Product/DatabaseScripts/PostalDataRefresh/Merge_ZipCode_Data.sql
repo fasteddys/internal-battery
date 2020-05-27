@@ -1,5 +1,9 @@
 /*
-Notes: Please select the corrent DB and DB environment before executing this script.
+Notes: 
+=>Please run the three MERGE statements individually in order State, City then Postal data merge.
+  They can take considerable time to complete.
+=>Please select the correct DB and DB environment before executing this script.
+=>Remember this script does not DELETE any data in the target tables.
 */
 
 --ADD/UPDATE STATE data
