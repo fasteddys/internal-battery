@@ -1010,9 +1010,8 @@ namespace UpDiddyApi.Helpers
                       dest.EducationHistories = src.Select(seh => new EducationDto
                       {
                           EducationHistoryGuid = seh.SubscriberEducationHistoryGuid,
-                          EducationalDegreeGuid = seh.SubscriberEducationHistoryGuid,
-                          EducationalDegreeTypeGuid = seh.EducationalDegree?.EducationalDegreeGuid,
-                          EducationalInstitutionGuid = seh.EducationalInstitution?.EducationalInstitutionGuid,
+                          Institution = seh.EducationalInstitution?.Name,               
+                          EducationalDegree = seh.EducationalDegree?.Degree,
                           StartDate = (seh.StartDate.HasValue && seh.StartDate.Value > DateTime.MinValue && seh.StartDate.Value < DateTime.MaxValue) ? seh.StartDate : (DateTime?)null,
                           EndDate = (seh.EndDate.HasValue &&  seh.EndDate.Value > DateTime.MinValue && seh.EndDate.Value < DateTime.MaxValue) ? seh.EndDate : (DateTime?)null,
                           DegreeDate = (seh.DegreeDate.HasValue && seh.DegreeDate.Value > DateTime.MinValue && seh.DegreeDate.Value < DateTime.MaxValue) ? seh.DegreeDate : (DateTime?)null,
@@ -1030,7 +1029,8 @@ namespace UpDiddyApi.Helpers
                          EndDate = (swh.EndDate.HasValue &&  swh.EndDate.Value > DateTime.MinValue && swh.EndDate.Value < DateTime.MaxValue) ? swh.EndDate : (DateTime?)null,
                          IsCurrent = swh.IsCurrent,
                          JobDescription = swh.JobDescription,
-                         Title = swh.Title
+                         Title = swh.Title,
+                         CompanyGuid = swh.Company?.IsDeleted == 1 ? (Guid?)null : swh.Company?.CompanyGuid
                      }).ToList();
               })
             .ReverseMap();

@@ -23,5 +23,8 @@ namespace UpDiddyLib.Domain.Models.B2B
         public string Description { get; set; }
         [JsonIgnore]
         public int TotalRecords { get; set; }
+
+        // number of profiles in pipeline
+        public int ProfileCount { get; set; }
     }
 }

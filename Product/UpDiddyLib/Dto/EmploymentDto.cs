@@ -30,5 +30,10 @@ namespace UpDiddyLib.Dto
 		/// Job description or job responsibilities.
 		/// </summary>
 		public string JobDescription {get; set;}
+
+		/// <summary>
+		/// Employment company's guid.
+		/// </summary>
+		public Guid? CompanyGuid { get; set; }
     }
 }
