@@ -22,18 +22,52 @@ namespace UpDiddyApi.ApplicationCore.Repository
             _dbContext = dbContext;
         }
 
-        public async Task<List<SubscriberEducationHistory>> GetEducationalHistoryBySubscriberGuid(Guid subscriberGuid)
+        public async Task<List<SubscriberEducationHistory>> GetEducationalHistoryBySubscriberGuid(Guid subscriberGuid, int limit, int offset, string sort, string order)
         {
-            var educationalHistory = await _dbContext.SubscriberEducationHistory
+            var educationalHistory = _dbContext.SubscriberEducationHistory
                                         .Where(seh => seh.Subscriber.SubscriberGuid == subscriberGuid &&
                                                       seh.Subscriber.IsDeleted == 0 &&
                                                       seh.IsDeleted == 0)
                                         .Include(seh => seh.EducationalDegree)
                                         .Include(seh => seh.EducationalInstitution)
                                         .Include(seh => seh.EducationalDegreeType)
-                                        .ToListAsync();
+                                        .Skip(limit*offset)
+                                        .Take(limit);
 
-            return educationalHistory;
+            //sorting            
+            if(order.ToLower() == "descending")
+            {
+                switch (sort.ToLower())
+                {
+                    case "modifydate":
+                        educationalHistory = educationalHistory.OrderByDescending(s => s.ModifyDate);
+                        break;
+                    case "createdate":
+                        educationalHistory = educationalHistory.OrderByDescending(s => s.CreateDate);
+                        break;
+                    default:
+                        educationalHistory = educationalHistory.OrderByDescending(s => s.ModifyDate);
+                        break;
+                }
+            }
+            else
+            {
+                switch (sort.ToLower())
+                {
+                    case "modifydate":
+                        educationalHistory = educationalHistory.OrderBy(s => s.ModifyDate);
+                        break;
+                    case "createdate":
+                        educationalHistory = educationalHistory.OrderBy(s => s.CreateDate);
+                        break;
+                    default:
+                        educationalHistory = educationalHistory.OrderBy(s => s.ModifyDate);
+                        break;
+                }
+            }
+
+
+            return await educationalHistory.ToListAsync();
 
         }
     }
