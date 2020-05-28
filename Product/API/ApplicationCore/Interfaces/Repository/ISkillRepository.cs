@@ -20,5 +20,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<Guid>> AddSkillsToProfileForRecruiter(Guid subscriberGuid, List<Guid> skillGuids, Guid profileGuid);
         Task UpdateProfileSkillsForRecruiter(Guid subscriberGuid, List<Guid> skillGuids, Guid profileGuid);
         Task<Guid> GetProfileGuidByProfileSkillGuids(List<Guid> profileSkillGuids);
+        Task<List<Skill>> GetSkillsBySubscriberGuidSortedandPaged(Guid subscriberGuid, int limit, int offset, string sort, string order);
     }
 }
