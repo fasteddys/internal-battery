@@ -111,11 +111,10 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             }
         }
 
-        public async Task<EducationalHistoryDto> GetCandidateEducationHistory(Guid candidateProfileGuid)
+        public async Task<EducationalHistoryDto> GetCandidateEducationHistory(Guid candidateProfileGuid, int limit, int offset, string sort, string order)
         {
             if (candidateProfileGuid == Guid.Empty)
                 throw new FailedValidationException($"HiringManagerService:GetCandidateEducationHistory candidate profile guid cannot be empty({candidateProfileGuid})");
-
 
             //validate profile
             var profiles = await _repositoryWrapper.ProfileRepository.GetProfilesByGuidList(new List<Guid> { candidateProfileGuid });
@@ -132,19 +131,20 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             EducationalHistoryDto educationalHistoryDto = null;
             try
             {
-                var educationHistoryEntity = await _repositoryWrapper.SubscriberEducationHistoryRepository.GetEducationalHistoryBySubscriberGuid(profile.Subscriber.SubscriberGuid.Value);
+                var educationHistoryEntity = await _repositoryWrapper.SubscriberEducationHistoryRepository.GetEducationalHistoryBySubscriberGuid(profile.Subscriber.SubscriberGuid.Value, limit, offset, sort, order);
                 //map entity to dto
                 educationalHistoryDto = _mapper.Map<EducationalHistoryDto>(educationHistoryEntity);
             }
             catch (Exception ex)
             {
                 _logger.LogError($"HiringManagerService:GetCandidateEducationHistory  Error: {ex.ToString()} ");
+                throw;
             }
 
             return educationalHistoryDto;
         }
 
-        public async Task<EmploymentHistoryDto> GetCandidateWorkHistory(Guid candidateProfileGuid)
+        public async Task<EmploymentHistoryDto> GetCandidateWorkHistory(Guid candidateProfileGuid, int limit, int offset, string sort, string order)
         {
             if (candidateProfileGuid == Guid.Empty)
                 throw new FailedValidationException($"HiringManagerService:GetCandidateWorkHistory candidate profile guid cannot be empty({candidateProfileGuid})");
@@ -164,19 +164,20 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             EmploymentHistoryDto employmentHistoryDto = null;
             try
             {
-                var employmentHistoryEntity = await _repositoryWrapper.SubscriberWorkHistoryRepository.GetWorkHistoryBySubscriberGuid(profile.Subscriber.SubscriberGuid.Value);
+                var employmentHistoryEntity = await _repositoryWrapper.SubscriberWorkHistoryRepository.GetWorkHistoryBySubscriberGuid(profile.Subscriber.SubscriberGuid.Value, limit, offset, sort, order);
                 //map entity to dto
                 employmentHistoryDto = _mapper.Map<EmploymentHistoryDto>(employmentHistoryEntity);
             }
             catch (Exception ex)
             {
                 _logger.LogError($"HiringManagerService:GetCandidateWorkHistory  Error: {ex.ToString()} ");
+                throw;
             }
 
             return employmentHistoryDto;
         }
 
-        public async Task<SkillListDto> GetCandidateSkills(Guid candidateProfileGuid)
+        public async Task<SkillListDto> GetCandidateSkills(Guid candidateProfileGuid, int limit, int offset, string sort, string order)
         {
             if (candidateProfileGuid == Guid.Empty)
                 throw new FailedValidationException($"HiringManagerService:GetCandidateSkills candidate profile guid cannot be empty({candidateProfileGuid})");
@@ -196,7 +197,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             SkillListDto skillListDto = null;
             try
             {
-                var candidateSkills = await _repositoryWrapper.SkillRepository.GetBySubscriberGuid(profile.Subscriber.SubscriberGuid.Value);
+                var candidateSkills = await _repositoryWrapper.SkillRepository.GetSkillsBySubscriberGuidSortedandPaged(profile.Subscriber.SubscriberGuid.Value, limit, offset, sort, order);
 
                 //map entity to dto
                 skillListDto = _mapper.Map<SkillListDto>(candidateSkills);
@@ -204,6 +205,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             catch (Exception ex)
             {
                 _logger.LogError($"HiringManagerService:GetCandidateSkills  Error: {ex.ToString()} ");
+                throw;
             }
 
             return skillListDto;

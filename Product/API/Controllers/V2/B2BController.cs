@@ -208,7 +208,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("profiles/{candidateProfileGuid}/education-histories")]
         public async Task<IActionResult> GetCandidateEducationHistory(Guid candidateProfileGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var rval = await _hiringManagerService.GetCandidateEducationHistory(candidateProfileGuid);
+            var rval = await _hiringManagerService.GetCandidateEducationHistory(candidateProfileGuid, limit, offset, sort, order);
             return Ok(rval);
         }
 
@@ -217,7 +217,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("profiles/{candidateProfileGuid}/work-histories")]
         public async Task<IActionResult> GetCandidateWorkHistory(Guid candidateProfileGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var rval = await _hiringManagerService.GetCandidateWorkHistory(candidateProfileGuid);
+            var rval = await _hiringManagerService.GetCandidateWorkHistory(candidateProfileGuid, limit, offset, sort, order);
             return Ok(rval);
         }
 
@@ -227,7 +227,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("skills/profiles/{candidateProfileGuid}")]
         public async Task<IActionResult> GetCandidateSkills(Guid candidateProfileGuid, int limit = 10, int offset = 0, string sort = "modifyDate", string order = "descending")
         {
-            var rval = await _hiringManagerService.GetCandidateSkills(candidateProfileGuid);
+            var rval = await _hiringManagerService.GetCandidateSkills(candidateProfileGuid, limit, offset, sort, order);
             return Ok(rval);
         }
 

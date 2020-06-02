@@ -45,21 +45,21 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager
         /// </summary>
         /// <param name="candidateProfileGuid"></param>
         /// <returns></returns>
-        Task<EducationalHistoryDto> GetCandidateEducationHistory(Guid candidateProfileGuid);
+        Task<EducationalHistoryDto> GetCandidateEducationHistory(Guid candidateProfileGuid, int limit, int offset, string sort, string order);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="candidateProfileGuid"></param>
         /// <returns></returns>
-        Task<EmploymentHistoryDto> GetCandidateWorkHistory(Guid candidateProfileGuid);
+        Task<EmploymentHistoryDto> GetCandidateWorkHistory(Guid candidateProfileGuid, int limit, int offset, string sort, string order);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="candidateProfileGuid"></param>
         /// <returns></returns>
-        Task<SkillListDto> GetCandidateSkills(Guid candidateProfileGuid);
+        Task<SkillListDto> GetCandidateSkills(Guid candidateProfileGuid, int limit, int offset, string sort, string order);
 
     }
 }
