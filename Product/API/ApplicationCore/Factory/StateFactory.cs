@@ -9,12 +9,11 @@ namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class StateFactory
     {
- 
-        public static async Task<State> GetStateByStateCode(IRepositoryWrapper repositoryWrapper, string stateCode)
+        public static async Task<State> GetStateByStateCode(IRepositoryWrapper repositoryWrapper, string stateCode, string countryCode = "US")
         {
             return await repositoryWrapper.State.GetAllWithTracking()
-                .Where(s => s.IsDeleted == 0 && s.Code == stateCode.Trim())
-                .FirstOrDefaultAsync();
+                .Include(s => s.Country)
+                .FirstOrDefaultAsync(s => s.IsDeleted == 0 && s.Country.Code2 == countryCode && s.Code == stateCode.Trim());
         }
     }
 }

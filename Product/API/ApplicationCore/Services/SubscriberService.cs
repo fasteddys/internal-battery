@@ -248,8 +248,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <returns></returns>
         public async Task<Guid> CreateSubscriberAsync(UpDiddyLib.Domain.Models.SubscriberDto subscriberDto)
         {
-
-
             _logger.LogInformation($"SubscriberService:CreateSubscriberAsync  Creating account for {subscriberDto?.Email}");
 
             Models.Group group = null;
@@ -273,18 +271,18 @@ namespace UpDiddyApi.ApplicationCore.Services
             // todo: if we remove the dependency for INT PKs from other services (tagging, file download) then we can remove the following line of code
             var subscriber = _repository.SubscriberRepository.GetSubscriberByGuid(subscriberGuid);
 
+            // create hiring manager record where necessary
+            if (subscriberDto.IsHiringManager)
+                await _repository.HiringManagerRepository.AddHiringManager(subscriber.SubscriberId);
 
             // add user to hubspot
             await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid, lastLoginDateTime: null);
 
-            // Add the new user to the azure index 
-            await _g2Service.G2AddSubscriberAsync(subscriberGuid);
-
             // add the user to the Google Talent Cloud
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriberGuid));
+            
             // add the user to the G2 profile for search
             await _g2Service.G2AddSubscriberAsync(subscriberGuid);
-
 
             if (!string.IsNullOrWhiteSpace(subscriberDto.ReferrerUrl) && subscriberDto.PartnerGuid != null && subscriberDto.PartnerGuid != Guid.Empty)
             {
@@ -1524,7 +1522,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             
             return searchResults;
         }
-
 
 
 

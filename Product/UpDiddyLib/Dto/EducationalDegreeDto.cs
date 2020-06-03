@@ -8,5 +8,6 @@ namespace UpDiddyLib.Dto
     {
         public Guid EducationalDegreeGuid { get; set; }
         public string Degree { get; set; }
+
     }
 }

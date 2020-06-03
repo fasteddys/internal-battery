@@ -28,6 +28,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly ISovrenAPI _sovrenApi;
         private readonly IHiringSolvedService _hiringSolvedService;
         private readonly IHubSpotService _hubSpotService;
+        private readonly IMemoryCacheService _memoryCacheService;
+
 
         public ResumeService(IHangfireService hangfireService
         , IRepositoryWrapper repositoryWrapper
@@ -38,6 +40,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         , ISovrenAPI sovrenApi
         , IHiringSolvedService hiringSolvedService
         , IHubSpotService hubSpotService
+        , IMemoryCacheService memoryCacheService
            )
         {
             _repositoryWrapper = repositoryWrapper;
@@ -49,6 +52,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _sovrenApi = sovrenApi;
             _hiringSolvedService = hiringSolvedService;
             _hubSpotService = hubSpotService;
+            _memoryCacheService = memoryCacheService;
         }
 
         public async Task<bool> HasSubscriberUploadedResumeForRecruiter(Guid profileGuid, Guid subscriberGuid)
@@ -209,7 +213,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (resumeParse == null)
                 throw new NotFoundException("ResumeParse not found");
             Subscriber subscriber = await _subscriberService.GetBySubscriberGuid(subscriberGuid);
-            await ResumeParseFactory.ResolveProfileMerge(_repositoryWrapper, _mapper, _syslog, resumeParse, subscriber, mergeInfo);
+            await ResumeParseFactory.ResolveProfileMerge(_repositoryWrapper, _mapper, _syslog, _memoryCacheService, resumeParse, subscriber, mergeInfo);
         }
 
         public async Task DeleteResume(Guid subscriberGuid)

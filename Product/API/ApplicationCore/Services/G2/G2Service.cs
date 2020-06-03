@@ -53,6 +53,59 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             _hangfireService = hangfireService;
         }
 
+
+        #region B2B searching 
+
+
+        public async Task<G2SearchResultDto> HiringManagerSearchAsync(Guid subscriberGuid, Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
+        {
+            G2SearchResultDto results = null;
+
+            // validate the the user provides a city if they also provided a radius
+            if ((cityGuid == null || cityGuid == Guid.Empty) && radius != 0)
+                throw new FailedValidationException("A city guid must be provided if a radius is specifed");
+ 
+            // All hiring managers are to use the default CC search company
+            string CCCompanySearchGuid = _configuration["AzureSearch:CCCompanySearchGuid"];
+            List<Guid> companyGuids = new List<Guid>()
+            {
+                Guid.Parse(CCCompanySearchGuid)
+            };
+
+                        
+            // handle case of non geo search 
+            if (cityGuid == null || cityGuid == Guid.Empty)
+            {
+                results =  await _HiringMangerSearchAsync(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, 0, 0, 0, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
+                // Obfucscate the results 
+                Obfuscate(results);
+                return results;
+            }
+                
+
+            // pick a random postal code for the city to get the last and long 
+            Postal postal = _repository.PostalRepository.GetAll()
+                .Include(c => c.City)
+                .Where(p => p.City.CityGuid == cityGuid && p.IsDeleted == 0)
+                .FirstOrDefault();
+
+            // validate that the city has a postal code 
+            if (postal == null)
+                throw new NotFoundException($"A city with an Guid of {cityGuid} cannot be found.");
+
+            results = await _HiringMangerSearchAsync(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, (double)postal.Latitude, (double)postal.Longitude, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
+            // Obfucscate  the results 
+            Obfuscate(results);
+            return results;
+
+
+
+        }
+
+
+
+        #endregion 
+
         #region G2 Searching 
 
         public async Task<G2SearchResultDto> G2SearchAsync(Guid subscriberGuid, Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
@@ -85,7 +138,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
 
             // handle case of non geo search 
             if (cityGuid == null || cityGuid == Guid.Empty)
-                return await SearchG2Async(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, 0, 0, 0, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
+                return await _SearchG2Async(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, 0, 0, 0, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
 
             // pick a random postal code for the city to get the last and long 
             Postal postal = _repository.PostalRepository.GetAll()
@@ -97,7 +150,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             if (postal == null)
                 throw new NotFoundException($"A city with an Guid of {cityGuid} cannot be found.");
 
-            return await SearchG2Async(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, (double)postal.Latitude, (double)postal.Longitude, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
+            return await _SearchG2Async(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, (double)postal.Latitude, (double)postal.Longitude, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
         }
 
 
@@ -645,7 +698,6 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
 
         #endregion
 
-
         #region private helper functions 
 
         private async Task<bool> UpdateG2Status(AzureIndexResult results, string statusName, string info)
@@ -817,121 +869,184 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         }
 
 
-        private async Task<G2SearchResultDto> SearchG2Async(List<Guid> companyGuids, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, double lat = 0, double lng = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
+        private async Task<G2SearchResultDto> _SearchG2Async(List<Guid> companyGuids, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, double lat = 0, double lng = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
         {
 
-            if (companyGuids == null || companyGuids.Count == 0)
-                throw new FailedValidationException("G2Service:SearchG2Async: Recruiter is not associated with the CareerCircle search company");
-
-            DateTime startSearch = DateTime.Now;
-            G2SearchResultDto searchResults = new G2SearchResultDto();
-
-            string searchServiceName = _configuration["AzureSearch:SearchServiceName"];
-            string adminApiKey = _configuration["AzureSearch:SearchServiceQueryApiKey"];
-            string g2IndexName = _configuration["AzureSearch:G2IndexName"];
-
-            // map descending to azure search sort syntax of "asc" or "desc"  default is ascending so only map descending 
-            string orderBy = sort;
-            if (order == "descending")
-                orderBy = orderBy + " desc";
-            List<String> orderByList = new List<string>();
-            orderByList.Add(orderBy);
-
-            SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(adminApiKey));
-            ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(g2IndexName);
-
-            SearchParameters parameters;
-            DocumentSearchResult<G2InfoDto> results;
-
-            parameters =
-                new SearchParameters()
-                {
-                    Top = limit,
-                    Skip = offset,
-                    OrderBy = orderByList,
-                    IncludeTotalResultCount = true,
-                };
-
-
-            string companyFilter = string.Empty;
-            foreach (Guid g in companyGuids)
-            {
-                if (string.IsNullOrEmpty(companyFilter))
-                    companyFilter = $"( CompanyGuid eq '{g}'";
-                else
-                    companyFilter += $" or CompanyGuid eq '{g}'";
-            }
-            companyFilter += ") ";
-            parameters.Filter = companyFilter;
-
-            // Add partner filter if one has been specified
-            if (sourcePartnerGuid != null)
-                parameters.Filter += $" and PartnerGuid eq '{sourcePartnerGuid}'";
-
-            // Add filter for is.... properties 
-            if (isWillingToRelocate != null)
-                parameters.Filter += $" and IsWillingToRelocate eq " + (isWillingToRelocate.Value ? "true" : "false");
-            if (isWillingToTravel != null)
-                parameters.Filter += $" and IsWillingToTravel eq " + (isWillingToTravel.Value ? "true" : "false");
-            if (isWillingToWorkProBono != null)
-                parameters.Filter += $" and IsWillingToWorkProBono eq " + (isWillingToWorkProBono.Value ? "true" : "false");
-            if (isCurrentlyEmployed != null)
-                parameters.Filter += $" and IsCurrentlyEmployed eq " + (isCurrentlyEmployed.Value ? "true" : "false");
-            if (isActiveJobSeeker != null)
-                parameters.Filter += $" and IsActiveJobSeeker eq " + (isActiveJobSeeker.Value ? "true" : "false");
-
-            double radiusKm = 0;
-            // check to see if radius is in play
-            if (radius > 0)
-            {
-
-                radiusKm = radius * 1.60934;
-                if (lat == 0)
-                    throw new FailedValidationException("Lattitude must be specified for radius searching");
-
-                if (lng == 0)
-                    throw new FailedValidationException("Longitude must be specified for radius searching");
-
-                // start this clause with "and" since the companyfilter MUST be specified above 
-                parameters.Filter += $" and geo.distance(Location, geography'POINT({lng} {lat})') le {radiusKm}";
-            }
-            else if (radius == 0 && lat != 0 && lng != 0)
-            {
-                // In the case of searching for a single city with no radius, set the default radius to 1 mile since most larger
-                // cities have more than one postal records, each of which contains varying lat/lng data
-                radiusKm = 1 * 1.60934; ;
-                parameters.Filter += $" and geo.distance(Location, geography'POINT({lng} {lat})') le {radiusKm}";
-
-            }
-            // double quote email to ensure direct hit         
-            keyword = Utils.EscapeQuoteEmailsInString(keyword);
-
-            results = indexClient.Documents.Search<G2InfoDto>(keyword, parameters);
-
-            DateTime startMap = DateTime.Now;
-            searchResults.G2s = results?.Results?
-                .Select(s => (G2InfoDto)s.Document)
-                .ToList();
-
-            searchResults.TotalHits = results.Count.Value;
-            searchResults.PageSize = limit;
-            searchResults.NumPages = searchResults.PageSize != 0 ? (int)Math.Ceiling((double)searchResults.TotalHits / searchResults.PageSize) : 0;
-            searchResults.SubscriberCount = searchResults.G2s.Count;
-            searchResults.PageNum = (offset / limit) + 1;
-
-            DateTime stopMap = DateTime.Now;
-            // calculate search timing metrics 
-            TimeSpan intervalTotalSearch = stopMap - startSearch;
-            TimeSpan intervalSearchTime = startMap - startSearch;
-            TimeSpan intervalMapTime = stopMap - startMap;
-
-            // assign search metrics to search results 
-            searchResults.SearchTimeInMilliseconds = intervalTotalSearch.TotalMilliseconds;
-            searchResults.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
-            searchResults.SearchMappingTimeInTicks = intervalMapTime.Ticks;
-
-            return searchResults;
+            return await _DoSearch(null, companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, lat, lng, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
+ 
         }
+
+     
+        private async Task<G2SearchResultDto> _HiringMangerSearchAsync(List<Guid> companyGuids, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, double lat = 0, double lng = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
+        {
+
+            List<string> searchFields = new List<string>()
+            {
+                "PublicSkills",
+                "Title"
+            };
+            return await _DoSearch(searchFields, companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, radius, lat, lng, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
+        }
+
+        private async Task<G2SearchResultDto> _DoSearch(List<string> searchFields, List<Guid> companyGuids, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, double lat = 0, double lng = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null)
+        {
+
+            try
+            {
+                _logger.LogInformation($"G2Service:_DoSearch: starting searchField ={searchFields} sort={sort} order={order} keyword={keyword} limit = {limit} sourcePartnerGuid={sourcePartnerGuid} radius={radius} lat={lat} lng = {lng} isWillingToRelocate={isWillingToRelocate} isWillingToTravel={isWillingToTravel} isActiveJobSeeker={isActiveJobSeeker} isActiveJobSeeker={isActiveJobSeeker}  isWillingToWorkProBono={isWillingToWorkProBono}   ");
+
+                if (companyGuids == null || companyGuids.Count == 0)
+                    throw new FailedValidationException("G2Service:_DoSearch: Recruiter is not associated with the CareerCircle search company");
+
+                DateTime startSearch = DateTime.Now;
+                G2SearchResultDto searchResults = new G2SearchResultDto();
+
+                string searchServiceName = _configuration["AzureSearch:SearchServiceName"];
+                string adminApiKey = _configuration["AzureSearch:SearchServiceQueryApiKey"];
+                string g2IndexName = _configuration["AzureSearch:G2IndexName"];
+
+                // map descending to azure search sort syntax of "asc" or "desc"  default is ascending so only map descending 
+                string orderBy = sort;
+                if (order == "descending")
+                    orderBy = orderBy + " desc";
+                List<String> orderByList = new List<string>();
+                orderByList.Add(orderBy);
+
+                SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(adminApiKey));
+                ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(g2IndexName);
+
+                SearchParameters parameters;
+                DocumentSearchResult<G2InfoDto> results;
+
+                parameters =
+                    new SearchParameters()
+                    {
+                        Top = limit,
+                        Skip = offset,
+                        OrderBy = orderByList,
+                        IncludeTotalResultCount = true
+
+                    };
+
+                // add search field if one is specified 
+                if (searchFields != null )
+                {
+                    parameters.SearchFields = searchFields;
+                }
+
+                string companyFilter = string.Empty;
+                foreach (Guid g in companyGuids)
+                {
+                    if (string.IsNullOrEmpty(companyFilter))
+                        companyFilter = $"( CompanyGuid eq '{g}'";
+                    else
+                        companyFilter += $" or CompanyGuid eq '{g}'";
+                }
+                companyFilter += ") ";
+                parameters.Filter = companyFilter;
+
+                // Add partner filter if one has been specified
+                if (sourcePartnerGuid != null)
+                    parameters.Filter += $" and PartnerGuid eq '{sourcePartnerGuid}'";
+
+                // Add filter for is.... properties 
+                if (isWillingToRelocate != null)
+                    parameters.Filter += $" and IsWillingToRelocate eq " + (isWillingToRelocate.Value ? "true" : "false");
+                if (isWillingToTravel != null)
+                    parameters.Filter += $" and IsWillingToTravel eq " + (isWillingToTravel.Value ? "true" : "false");
+                if (isWillingToWorkProBono != null)
+                    parameters.Filter += $" and IsWillingToWorkProBono eq " + (isWillingToWorkProBono.Value ? "true" : "false");
+                if (isCurrentlyEmployed != null)
+                    parameters.Filter += $" and IsCurrentlyEmployed eq " + (isCurrentlyEmployed.Value ? "true" : "false");
+                if (isActiveJobSeeker != null)
+                    parameters.Filter += $" and IsActiveJobSeeker eq " + (isActiveJobSeeker.Value ? "true" : "false");
+
+                double radiusKm = 0;
+                // check to see if radius is in play
+                if (radius > 0)
+                {
+
+                    radiusKm = radius * 1.60934;
+                    if (lat == 0)
+                        throw new FailedValidationException("Lattitude must be specified for radius searching");
+
+                    if (lng == 0)
+                        throw new FailedValidationException("Longitude must be specified for radius searching");
+
+                    // start this clause with "and" since the companyfilter MUST be specified above 
+                    parameters.Filter += $" and geo.distance(Location, geography'POINT({lng} {lat})') le {radiusKm}";
+                }
+                else if (radius == 0 && lat != 0 && lng != 0)
+                {
+                    // In the case of searching for a single city with no radius, set the default radius to 1 mile since most larger
+                    // cities have more than one postal records, each of which contains varying lat/lng data
+                    radiusKm = 1 * 1.60934; ;
+                    parameters.Filter += $" and geo.distance(Location, geography'POINT({lng} {lat})') le {radiusKm}";
+
+                }
+                _logger.LogInformation($"G2Service:_DoSearch: filter = {parameters.Filter} ");
+
+                // double quote email to ensure direct hit         
+                keyword = Utils.EscapeQuoteEmailsInString(keyword);
+                _logger.LogInformation($"G2Service:_DoSearch: escaped keyword = {keyword} ");
+
+                results = indexClient.Documents.Search<G2InfoDto>(keyword, parameters);
+
+                DateTime startMap = DateTime.Now;
+                searchResults.G2s = results?.Results?
+                    .Select(s => (G2InfoDto)s.Document)
+                    .ToList();
+
+                searchResults.TotalHits = results.Count.Value;
+                searchResults.PageSize = limit;
+                searchResults.NumPages = searchResults.PageSize != 0 ? (int)Math.Ceiling((double)searchResults.TotalHits / searchResults.PageSize) : 0;
+                searchResults.SubscriberCount = searchResults.G2s.Count;
+                searchResults.PageNum = (offset / limit) + 1;
+
+                DateTime stopMap = DateTime.Now;
+                // calculate search timing metrics 
+                TimeSpan intervalTotalSearch = stopMap - startSearch;
+                TimeSpan intervalSearchTime = startMap - startSearch;
+                TimeSpan intervalMapTime = stopMap - startMap;
+
+                // assign search metrics to search results 
+                searchResults.SearchTimeInMilliseconds = intervalTotalSearch.TotalMilliseconds;
+                searchResults.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
+                searchResults.SearchMappingTimeInTicks = intervalMapTime.Ticks;
+
+                return searchResults;
+            }
+            catch ( Exception ex)
+            {
+                _logger.LogError($"G2Service:_DoSearch: error = {ex.ToString()}");
+                throw ex;
+
+            }
+
+           
+        }
+
+        private static bool Obfuscate(G2SearchResultDto results)
+        {
+            if (results == null || results.G2s == null || results.G2s.Count <= 0)
+                return false;
+
+            foreach ( G2InfoDto profile in results.G2s )
+            {
+                profile.FirstName = profile.SubscriberGuid.ToString();
+                profile.LastName = profile.SubscriberGuid.ToString();
+                profile.Email = string.Empty;
+                if (profile.PhoneNumber != null)
+                    profile.PhoneNumber = string.Empty;
+
+            }
+
+            return true;
+
+
+        }
+
+
 
         private static string ResolveIndexStatusMessage(string statusMsg)
         {

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
@@ -16,7 +17,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
     {
 
 
-        public static async Task<bool> ResolveProfileMerge(IRepositoryWrapper repositoryWrapper, IMapper mapper, ILogger syslog, ResumeParse resumeParse, Subscriber subscriber, string mergeInfo)
+        public static async Task<bool> ResolveProfileMerge(IRepositoryWrapper repositoryWrapper, IMapper mapper, ILogger syslog, IMemoryCacheService memoryCacheService, ResumeParse resumeParse, Subscriber subscriber, string mergeInfo)
         {
 
             string[] updates = mergeInfo.Split(',');
@@ -44,7 +45,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     {
                         resultGuidStr = updateType.Replace("chk_", string.Empty);
                         resumeParseResult = await repositoryWrapper.ResumeParseResultRepository.GetResumeParseResultByGuidAsync(Guid.Parse(resultGuidStr));
-                        await _resolveCheckQuestion(repositoryWrapper, subscriber, resumeParseResult, updateData);
+                        await _resolveCheckQuestion(repositoryWrapper, memoryCacheService, subscriber, resumeParseResult, updateData);
 
                     }
                 }
@@ -66,7 +67,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return true;
         }
 
-        public static async Task<bool> ResolveProfileMerge(IRepositoryWrapper repositoryWrapper, IMapper mapper, ILogger syslog, ResumeParse resumeParse, Subscriber subscriber, List<string> mergeInfo)
+        public static async Task<bool> ResolveProfileMerge(IRepositoryWrapper repositoryWrapper, IMapper mapper, ILogger syslog, IMemoryCacheService memoryCacheService, ResumeParse resumeParse, Subscriber subscriber, List<string> mergeInfo)
         {
 
             foreach (string update in mergeInfo)
@@ -92,7 +93,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     {
                         resultGuidStr = updateType.Replace("chk_", string.Empty);
                         resumeParseResult = await repositoryWrapper.ResumeParseResultRepository.GetResumeParseResultByGuidAsync(Guid.Parse(resultGuidStr));
-                        await _resolveCheckQuestion(repositoryWrapper, subscriber, resumeParseResult, updateData);
+                        await _resolveCheckQuestion(repositoryWrapper, memoryCacheService, subscriber, resumeParseResult, updateData);
 
                     }
                 }
@@ -350,14 +351,14 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
 
 
-        private static async Task<bool> _resolveCheckQuestion(IRepositoryWrapper repositoryWrapper,  Subscriber subscriber, ResumeParseResult resumeParseResult, string info)
+        private static async Task<bool> _resolveCheckQuestion(IRepositoryWrapper repositoryWrapper, IMemoryCacheService memoryCacheService, Subscriber subscriber, ResumeParseResult resumeParseResult, string info)
         {
             try
             {
                
                 if ( resumeParseResult.TargetTypeName == "SubscriberSkill" )
                 {
-                    Skill skill = await SkillFactory.GetOrAdd(repositoryWrapper, info);
+                    Skill skill = await SkillFactory.GetOrAdd(repositoryWrapper, memoryCacheService, info);
                     await SubscriberSkillFactory.AddSkillForSubscriber(repositoryWrapper, subscriber, skill);
                 }
                 resumeParseResult.ParseStatus = (int) ResumeParseStatus.Merged;

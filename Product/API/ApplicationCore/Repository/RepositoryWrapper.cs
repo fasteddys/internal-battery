@@ -104,7 +104,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IWishlistRepository _wishlistRepository;
         private ICommentRepository _commentRepository;
         private IEmailTemplateRepository _emailTemplateRepository;
-
+        private IHiringManagerRepository _hiringManagerRepository;
+        private IPipelineRepository _pipelineRepository;
+        private IInterviewRequestRepository _interviewRequestRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
         {
@@ -1218,7 +1220,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
-
         public IEmailTemplateRepository EmailTemplateRepository
         {
             get
@@ -1231,7 +1232,41 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
+        public IPipelineRepository PipelineRepository
+        {
+            get
+            {
+                if (_pipelineRepository == null)
+                {
+                    _pipelineRepository = new PipelineRepository(_dbContext);
+                }
+                return _pipelineRepository;
+            }
+        }
 
+        public IHiringManagerRepository HiringManagerRepository
+        {
+            get
+            {
+                if (_hiringManagerRepository == null)
+                {
+                    _hiringManagerRepository = new HiringManagerRepository(_dbContext);
+                }
+                return _hiringManagerRepository;
+            }
+        }
+
+        public IInterviewRequestRepository InterviewRequestRepository
+        {
+            get
+            {
+                if (_interviewRequestRepository == null)
+                {
+                    _interviewRequestRepository = new InterviewRequestRepository(_dbContext);
+                }
+                return _interviewRequestRepository;
+            }
+        }
 
         public async Task SaveAsync()
         {

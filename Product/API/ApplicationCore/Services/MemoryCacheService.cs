@@ -29,5 +29,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             _memoryCache.Set<T>(key, value, offset);
        }
 
+        public void ClearCacheByKey(string key)
+        {
+            _memoryCache.Remove(key);
+        }
+
     }
 }

@@ -48,6 +48,51 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return skills;
         }
 
+        public async Task<List<Skill>> GetSkillsBySubscriberGuidSortedandPaged(Guid subscriberGuid,int limit, int offset, string sort, string order)
+        {
+            var skills = (from ss in _dbContext.SubscriberSkill
+                          join s in _dbContext.Skill on ss.SkillId equals s.SkillId
+                          join su in _dbContext.Subscriber on ss.SubscriberId equals su.SubscriberId
+                          where su.SubscriberGuid == subscriberGuid && ss.IsDeleted == 0
+                          select s)
+                         .Skip(limit * offset)
+                         .Take(limit);
+
+            //sorting            
+            if (order.ToLower() == "descending")
+            {
+                switch (sort.ToLower())
+                {
+                    case "modifydate":
+                        skills = skills.OrderByDescending(s => s.ModifyDate);
+                        break;
+                    case "createdate":
+                        skills = skills.OrderByDescending(s => s.CreateDate);
+                        break;
+                    default:
+                        skills = skills.OrderByDescending(s => s.ModifyDate);
+                        break;
+                }
+            }
+            else
+            {
+                switch (sort.ToLower())
+                {
+                    case "modifydate":
+                        skills = skills.OrderBy(s => s.ModifyDate);
+                        break;
+                    case "createdate":
+                        skills = skills.OrderBy(s => s.CreateDate);
+                        break;
+                    default:
+                        skills = skills.OrderBy(s => s.ModifyDate);
+                        break;
+                }
+            }
+
+            return await skills.ToListAsync();
+        }
+
         public async Task<Skill> GetByName(string name)
         {
             return await (from s in _dbContext.Skill

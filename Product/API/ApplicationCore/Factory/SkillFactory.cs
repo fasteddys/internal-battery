@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
+using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using Microsoft.EntityFrameworkCore;
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class SkillFactory
     {
-
+        private const string allSkillsCacheKey = "AllSkills";
+        
         public static Skill CreateSkill(string skillName)
         {
             Skill rVal = new Skill();
@@ -24,7 +26,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return rVal;
         }
 
-        static public async Task<Skill> GetOrAdd(IRepositoryWrapper repositoryWrapper, string skillName)
+        static public async Task<Skill> GetOrAdd(IRepositoryWrapper repositoryWrapper, IMemoryCacheService memoryCacheService, string skillName)
         {
             skillName = skillName.Trim().ToLower();
 
@@ -37,6 +39,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 skill = CreateSkill(skillName);
                 await repositoryWrapper.SkillRepository.Create(skill);
                 await repositoryWrapper.SkillRepository.SaveAsync();
+                memoryCacheService.ClearCacheByKey(allSkillsCacheKey);
             }
             return skill;
         }

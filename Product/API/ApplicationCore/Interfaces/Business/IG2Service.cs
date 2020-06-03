@@ -14,7 +14,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
  
         #region G2 Searching
         // Prefix all search operations with G2Search...
-        Task<G2SearchResultDto> G2SearchAsync(Guid subscriberGuid, Guid cityGuid,int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0,bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null);
+        Task<G2SearchResultDto> G2SearchAsync(Guid subscriberGuid, Guid cityGuid,int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0,bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null);      
         Task<G2SearchResultDto> G2SearchGetTopAsync(int numRecords);
         #endregion
 
@@ -160,7 +160,12 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         #endregion
 
 
-   
+
+        #region B2B Searching
+        Task<G2SearchResultDto> HiringManagerSearchAsync(Guid subscriberGuid, Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, bool? isWillingToRelocate = null, bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null);
+        #endregion
+
+
 
 
 

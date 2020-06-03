@@ -189,6 +189,15 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             List<RecruiterInfoDto> rVal = null;
             rVal = await _repositoryWrapper.StoredProcedureRepository.GetRecruiters(limit, offset, sort, order);
+            // hydrate IsInAuth0RecruiterGroup property 
+            foreach(RecruiterInfoDto rid in rVal)
+            {
+                var getUserResponse = await _userService.GetUserByEmailAsync(rid.Email);
+                if (getUserResponse.Success)
+                    rid.IsInAuth0RecruiterGroup = getUserResponse.User.Roles.Contains(Role.Recruiter);
+                else
+                    rid.IsInAuth0RecruiterGroup = false;                
+            }
             return _mapper.Map<RecruiterInfoListDto>(rVal);
         }
 
@@ -229,8 +238,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                     // Update recruiter in azure
                     _azureSearchService.AddOrUpdateRecruiter(existingRecruiter);
                 }
-                else
-                    throw new FailedValidationException($"Subscriber {subscriber.SubscriberGuid} is already a Recruiter");
+
+                recruiterGuid = existingRecruiter.RecruiterGuid;
+ 
             }
             else
             {
