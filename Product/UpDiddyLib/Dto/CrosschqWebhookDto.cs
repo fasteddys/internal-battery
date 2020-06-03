@@ -14,5 +14,21 @@ namespace UpDiddyLib.Dto
         public List<CrosschqReferenceDto> References { get; set; }
         public string Created_At { get; set; }
         public string Updated_On { get; set; }
+
+        /// <summary>
+        /// Url to the report
+        /// </summary>
+        public string Report_Url { get; set; }
+
+        /// <summary>
+        /// Base64 string representation of summary report pdf file.
+        /// </summary>
+        public string Report_Summary_Pdf { get; set; }
+
+        /// <summary>
+        /// Base64 string representation of full report pdf file.
+        /// </summary>
+        public string Report_Full_Pdf { get; set; }
+
     }
 }
