@@ -6,7 +6,7 @@ namespace Microsoft.Extensions.DependencyInjection
     using UpDiddyApi.ApplicationCore.Interfaces.Business.B2B;
     using UpDiddyApi.ApplicationCore.Services.B2B.CareerTalentPipeline;
 
-    public static class ExtensionMethods
+    public static class CareerTalentPipelineExtensionMethods
     {
         public static IServiceCollection AddCareerTalentPipelineService(this IServiceCollection services, IConfiguration config)
         {
