@@ -46,9 +46,20 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             _hangfireService = hangfireService;
         }
 
-        public async Task UpdateReferenceChkStatus(CrosschqWebhookDto request)
+        public async Task UpdateReferenceChkStatus(CrosschqWebhookDto crosschqWebhookDto)
         {
+            if (crosschqWebhookDto == null)
+                throw new FailedValidationException("crosschqWebhookDto cannot be null");
 
+            try
+            {
+
+            }
+            catch(Exception ex)
+            {
+
+                throw;
+            }
         }
     }
 }
