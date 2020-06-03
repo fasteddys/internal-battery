@@ -30,10 +30,11 @@ namespace UpDiddyApi.Models.G2
         /// <summary>
         /// Type of reference check type, for example, the job_role json property that is returned by CrossChq API response.
         /// </summary>
+        [StringLength(100, MinimumLength = 1)]
         public string ReferenceCheckType { get; set; }
 
         /// <summary>
-        /// Base64 string representation of PDF file.
+        /// Base64 string representation of report PDF file.
         /// File is assumed to be a PDF all the time.
         /// </summary>
         [Column(TypeName = "Varchar(MAX)")]

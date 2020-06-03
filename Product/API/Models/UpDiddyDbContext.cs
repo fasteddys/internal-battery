@@ -684,19 +684,11 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<InterviewRequest>()
                 .Property(ir => ir.DateRequested)
                 .HasDefaultValueSql("GETUTCDATE()");
-
-            //modelBuilder.Entity<ReferenceCheckStatus>()
-            //    .Property(s => s.ReferenceCheckStatusGuid)
-            //    .HasDefaultValueSql("NewId()");
             
             modelBuilder.Entity<ReferenceCheckStatus>()
                 .HasIndex(i => i.ReferenceCheckStatusGuid)
                 .HasName("UIX_ReferenceCheckStatus_ReferenceCheckStatusGuid")
                 .IsUnique(true);
-
-            //modelBuilder.Entity<ReferenceCheckVendor>()
-            //    .Property(s => s.ReferenceCheckVendorGuid)
-            //    .HasDefaultValueSql("NewId()");
 
             modelBuilder.Entity<ReferenceCheckVendor>()
                 .HasIndex(i => i.ReferenceCheckVendorGuid)
@@ -707,10 +699,6 @@ namespace UpDiddyApi.Models
                 .HasIndex(i => i.Name)
                 .HasName("UIX_ReferenceCheckVendor_Name")
                 .IsUnique(true);
-
-            //modelBuilder.Entity<ReferenceCheck>()
-            //    .Property(s => s.ReferenceCheckGuid)
-            //    .HasDefaultValueSql("NewId()");
 
             modelBuilder.Entity<ReferenceCheck>()
                 .HasIndex(i => i.ReferenceCheckGuid)
