@@ -42,7 +42,7 @@ namespace UpDiddyApi.Models.G2
         /// <summary>
         /// Url to the reference check report file.
         /// </summary>
-        [StringLength(500, MinimumLength = 1)]
+        [Url]
         public string ReferenceCheckReportFileUrl { get; set; }
 
         [Required]
