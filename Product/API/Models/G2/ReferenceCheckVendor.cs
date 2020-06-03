@@ -13,13 +13,12 @@ namespace UpDiddyApi.Models.G2
     {
         public int ReferenceCheckVendorId { get; set; }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid ReferenceCheckVendorGuid { get; set; }
 
-        [StringLength(50)]
+        [StringLength(50, MinimumLength = 1)]
         public string Name { get; set; } //CrossChq
 
-        [StringLength(250)]
+        [StringLength(250, MinimumLength = 1)]
         public string Description { get; set; } //https://crosschq.com
 
 

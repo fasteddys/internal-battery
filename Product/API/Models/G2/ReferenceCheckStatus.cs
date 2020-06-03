@@ -13,14 +13,24 @@ namespace UpDiddyApi.Models.G2
     {
         public int ReferenceCheckStatusId { get; set; }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid ReferenceCheckStatusGuid { get; set; }
 
-        [Required]
-        [StringLength(50, MinimumLength = 1)]
-        public string Name { get; set; }
+        /// <summary>
+        /// An integer between 0-100 representing a percentage(%).
+        /// </summary>
+        public int  Progress { get; set; }
 
-        [StringLength(250)]
-        public string Description { get; set; }
+        /// <summary>
+        /// A status value sent by the vendor.
+        /// </summary>
+        [StringLength(100, MinimumLength = 1)]
+        public string Status { get; set; }
+
+        /// <summary>
+        /// Saves the web-hook json response.
+        /// </summary>
+        [StringLength(4000, MinimumLength = 1)]
+        public string VendorJsonResponse { get; set; }
+
     }
 }
