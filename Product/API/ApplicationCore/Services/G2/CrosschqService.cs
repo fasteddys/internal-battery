@@ -1,23 +1,26 @@
 ﻿using AutoMapper;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Net;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using System.Security.Policy;
+using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
-using UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
-using UpDiddyLib.Dto;
-using UpDiddyLib.Domain.Models;
-using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
+using UpDiddyApi.Models.G2.CrossChq;
 using UpDiddyApi.Models.Views;
-using System.Security.Policy;
+using UpDiddyLib.Domain.Models;
+using UpDiddyLib.Domain.Models.G2;
+using UpDiddyLib.Domain.Models.G2.CrossChq;
+using UpDiddyLib.Dto;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.ApplicationCore.Services.G2
 {
@@ -29,7 +32,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         private readonly IRepositoryWrapper _repository;
         private readonly IMapper _mapper;
         private readonly IHangfireService _hangfireService;
-
+        private readonly ICrossChqWebClient _webClient;
 
         public CrosschqService(
             UpDiddyDbContext context,
@@ -37,8 +40,8 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             IRepositoryWrapper repository,
             ILogger<SubscriberService> logger,
             IMapper mapper,
-            IHangfireService hangfireService
-            )
+            IHangfireService hangfireService,
+            ICrossChqWebClient webClient)
         {
             _db = context;
             _configuration = configuration;
@@ -46,6 +49,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             _logger = logger;
             _mapper = mapper;
             _hangfireService = hangfireService;
+            _webClient = webClient;
         }
 
         public async Task UpdateReferenceChkStatus(CrosschqWebhookDto crosschqWebhookDto)
@@ -77,6 +81,22 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             }
             _logger.LogInformation($"CrosschqService:UpdateReferenceChkStatus  Done for Crosschq request_id: {crosschqWebhookDto.Id} ");
 
+        }
+
+        public async Task<string> CreateReferenceRequest(
+            ProfileDto profile,
+            RecruiterInfoDto recruiter,
+            CrossChqReferenceRequestDto referenceRequest)
+        {
+            var request = new ReferenceRequest
+            {
+            };
+
+            var requestId = await _webClient.PostReferenceRequestAsync(request);
+
+            // TODO:  Persist the request and the resultant ID #2469
+
+            return requestId;
         }
 
         #region private methods
