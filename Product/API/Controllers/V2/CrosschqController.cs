@@ -30,10 +30,10 @@ namespace UpDiddyApi.Controllers.V2
         #region webhook
 
         [HttpPost]
-        [Route("crosschq")]
-        public async Task<IActionResult> UpdateReferenceChkStatus(CrosschqWebhookDto request)
+        [Route("crosschq/status")]
+        public async Task<IActionResult> UpdateReferenceChkStatus([FromBody]CrosschqWebhookDto request)
         {
-            //await _crosschqService.UpdateReferenceChkStatus(request);
+            await _crosschqService.UpdateReferenceChkStatus(request);
             return Ok();
         }
 

@@ -58,10 +58,6 @@ namespace UpDiddyApi.Models.G2
         public virtual Profile Profile { get; set; }
 
         [Required]
-        public int ReferenceCheckStatusId { get; set; }
-        public virtual ReferenceCheckStatus ReferenceCheckStatus { get; set; }
-
-        [Required]
         public int ReferenceCheckVendorId { get; set; }
         public virtual ReferenceCheckVendor ReferenceCheckVendor { get; set; }
 
@@ -69,8 +65,9 @@ namespace UpDiddyApi.Models.G2
         public int RecruiterId { get; set; }
         public virtual Recruiter Recruiter { get; set; }
 
-        public int CandidateReferenceId { get; set; }
-        public virtual CandidateReference CandidateReference { get; set; }
+        public virtual List<CandidateReference> CandidateReference { get; set; } = new List<CandidateReference>();
+
+        public virtual List<ReferenceCheckStatus> ReferenceCheckStatus { get; set; } = new List<ReferenceCheckStatus>();
 
     }
 }
