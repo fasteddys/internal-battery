@@ -204,13 +204,17 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<Guid> AddRecruiterAsync(RecruiterInfoDto recruiterDto)
         {
-            // Do validations             
-            if (recruiterDto.SubscriberGuid == null)
-                throw new FailedValidationException("Subscriber must be specified");
+            // Do validations  
 
-            var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(recruiterDto.SubscriberGuid.Value);
+            Subscriber subscriber = null;
+            if (recruiterDto.SubscriberGuid == null)     
+                //try and get subscriber from recrutier email 
+                subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByEmailAsync(recruiterDto.Email);                           
+            else                
+               subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(recruiterDto.SubscriberGuid.Value);
+
             if (subscriber == null)
-                throw new FailedValidationException($"{recruiterDto.SubscriberGuid.Value} is not a valid subscriber");
+                throw new FailedValidationException($"Cannot locate by Subscriber  SubscriberGuid = {recruiterDto.SubscriberGuid.Value}  Email = {recruiterDto.Email}");
 
             if (recruiterDto.CompanyGuid == null)
                 throw new FailedValidationException("Company must be specified");
@@ -275,7 +279,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             //Assign permission to recruiter
             if (recruiterDto.IsInAuth0RecruiterGroup != null && recruiterDto.IsInAuth0RecruiterGroup.Value == true)
-                await AssignRecruiterPermissionsAsync(recruiterDto.SubscriberGuid.Value);
+                await AssignRecruiterPermissionsAsync(subscriber.SubscriberGuid.Value);
             
             return recruiterGuid;
         }
