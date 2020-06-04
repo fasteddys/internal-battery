@@ -46,8 +46,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
             {
                 referenceCheck.ModifyDate = DateTime.UtcNow;
                 referenceCheck.ModifyGuid = Guid.NewGuid();
-                //referenceCheck.ReferenceCheckReportFile = fullReportPdfBase64;
-                //referenceCheck.ReferenceCheckReportFileUrl = crosschqWebhookDto.Report_Full_Pdf; //??????
 
                 if (!String.IsNullOrWhiteSpace(fullReportPdfBase64))
                 {
