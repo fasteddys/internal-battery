@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SendGrid;
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -66,7 +67,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2.CrossChq
         {
             var statusCode = (int)responseMessage.StatusCode;
             var content = await responseMessage.Content.ReadAsStringAsync();
-            if (statusCode < 200 || statusCode >= 300)
+            if (!responseMessage.IsSuccessStatusCode)
             {
                 var errorJson = JObject.Parse(content);
                 var errorMsg = errorJson["errors"]?.ToString()
