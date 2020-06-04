@@ -53,6 +53,11 @@ namespace UpDiddyApi.Migrations
                 schema: "G2",
                 table: "ReferenceCheckReport",
                 column: "ReferenceCheckId");
+
+            migrationBuilder.Sql(@"SET IDENTITY_INSERT [G2].[ReferenceCheckVendor] ON;" +
+            "INSERT INTO[G2].[ReferenceCheckVendor]([ReferenceCheckVendorId],[IsDeleted],[CreateDate],[ModifyDate],[CreateGuid],[ModifyGuid],[Name],[Description],[ReferenceCheckVendorGuid])" +
+            "VALUES(1, 0, GetUtcDate(), NULL, '00000000-0000-0000-0000-000000000000', NULL, 'CrossChq', 'CareerCircle uses CrossChq service to accomplish reference checks, see more details at https://crosschq.com', NewId())" +
+            "SET IDENTITY_INSERT[G2].[ReferenceCheckVendor] OFF;");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

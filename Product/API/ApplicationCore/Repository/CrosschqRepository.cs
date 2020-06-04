@@ -53,7 +53,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 {
                     referenceCheck.ReferenceCheckReport.Add(new ReferenceCheckReport { 
                             CreateDate = DateTime.UtcNow,
-                            CreateGuid = Guid.NewGuid(),
+                            CreateGuid = Guid.Empty,
+                            ReferenceCheckReportGuid = Guid.NewGuid(),
                             FileUrl = crosschqWebhookDto.Report_Full_Pdf,
                             Base64File = fullReportPdfBase64,
                             FileType = "Full"
@@ -65,7 +66,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     referenceCheck.ReferenceCheckReport.Add(new ReferenceCheckReport
                     {
                         CreateDate = DateTime.UtcNow,
-                        CreateGuid = Guid.NewGuid(),
+                        CreateGuid = Guid.Empty,
+                        ReferenceCheckReportGuid = Guid.NewGuid(),
                         FileUrl = crosschqWebhookDto.Report_Summary_Pdf,
                         Base64File = summaryReportPdfBase64,
                         FileType = "Summary"
@@ -76,7 +78,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 referenceCheck.ReferenceCheckStatus.Add(new ReferenceCheckStatus
                 {
                     CreateDate = DateTime.UtcNow,
-                    CreateGuid = Guid.NewGuid(),
+                    CreateGuid = Guid.Empty,
                     ReferenceCheckStatusGuid = Guid.NewGuid(),
                     VendorJsonResponse = JsonConvert.SerializeObject(crosschqWebhookDto),
                     Status = crosschqWebhookDto.Status,
@@ -91,7 +93,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                         referenceCheck.CandidateReference.Add(new CandidateReference
                         {
                             CreateDate = DateTime.UtcNow,
-                            CreateGuid = Guid.NewGuid(),
+                            CreateGuid = Guid.Empty,
                             CandidateReferenceGuid = Guid.NewGuid(),
                             FirstName = reference.First_Name,
                             LastName = reference.Last_Name,
@@ -111,7 +113,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                         if (candidateReferenceEntity != null)
                         {
                             candidateReferenceEntity.ModifyDate = DateTime.UtcNow;
-                            candidateReferenceEntity.ModifyGuid = Guid.NewGuid();
+                            candidateReferenceEntity.ModifyGuid = Guid.Empty;
                             candidateReferenceEntity.Status = reference.Status;
                         }
                         else
@@ -119,7 +121,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                             referenceCheck.CandidateReference.Add(new CandidateReference
                             {
                                 CreateDate = DateTime.UtcNow,
-                                CreateGuid = Guid.NewGuid(),
+                                CreateGuid = Guid.Empty,
                                 CandidateReferenceGuid = Guid.NewGuid(),
                                 FirstName = reference.First_Name,
                                 LastName = reference.Last_Name,
