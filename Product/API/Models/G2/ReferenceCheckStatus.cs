@@ -15,6 +15,9 @@ namespace UpDiddyApi.Models.G2
 
         public Guid ReferenceCheckStatusGuid { get; set; }
 
+        public int ReferenceCheckId { get; set; }
+        public virtual ReferenceCheck ReferenceCheck { get; set; }
+
         /// <summary>
         /// An integer between 0-100 representing a percentage(%).
         /// </summary>
@@ -23,7 +26,7 @@ namespace UpDiddyApi.Models.G2
         /// <summary>
         /// A status value sent by the vendor.
         /// </summary>
-        [StringLength(100, MinimumLength = 1)]
+        [StringLength(50, MinimumLength = 1)]
         public string Status { get; set; }
 
         /// <summary>

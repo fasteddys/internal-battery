@@ -15,6 +15,9 @@ namespace UpDiddyApi.Models.G2
 
         public Guid CandidateReferenceGuid { get; set; }
 
+        public int ReferenceCheckId { get; set; }
+        public virtual ReferenceCheck ReferenceCheck { get; set; }
+
         [StringLength(100, MinimumLength = 1)]
         public string FirstName { get; set; }
 
@@ -26,6 +29,12 @@ namespace UpDiddyApi.Models.G2
 
         [StringLength(20, MinimumLength = 1)]
         public string PhoneNumber { get; set; }
+
+        /// <summary>
+        /// A status value sent by the vendor.
+        /// </summary>
+        [StringLength(50, MinimumLength = 1)]
+        public string Status { get; set; }
 
 
     }
