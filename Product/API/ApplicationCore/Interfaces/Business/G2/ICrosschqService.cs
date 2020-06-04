@@ -14,5 +14,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business.G2
             ProfileDto profile,
             RecruiterInfoDto recruiter,
             CrossChqReferenceRequestDto referenceRequest);
+
+        Task<CrossChqReferenceResponse> RetrieveReferenceStatus(ProfileDto profile);
     }
 }

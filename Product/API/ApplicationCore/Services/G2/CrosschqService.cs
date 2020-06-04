@@ -99,6 +99,18 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             return requestId;
         }
 
+        public async Task<CrossChqReferenceResponse> RetrieveReferenceStatus(ProfileDto profile)
+        {
+            // TODO:  Retrieve from Database
+
+            var response = new CrossChqReferenceResponse
+            {
+
+            };
+
+            return response;
+        }
+
         #region private methods
         private string GetFileBase64String(Uri fileUrl)
         {

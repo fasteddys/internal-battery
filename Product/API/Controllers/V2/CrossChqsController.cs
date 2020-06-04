@@ -32,16 +32,13 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize(Policy = "IsRecruiterPolicy")]
         public async Task<IActionResult> ReferenceRequest(Guid profileGuid)
         {
-            var subscriberId = GetSubscriberGuid();
-
             var profile = await _profileService
-                .GetProfileForRecruiter(profileGuid, subscriberId);
+                .GetProfileForRecruiter(profileGuid, GetSubscriberGuid());
 
-            RecruiterInfoDto recruiter = await _recruiterService
-                .GetRecruiterBySubscriberAsync(subscriberId);
+            var response = await _crosschqService
+                .RetrieveReferenceStatus(profile);
 
-
-            return Ok();
+            return Ok(response);
         }
 
         [HttpPost("references/{profileGuid}")]
