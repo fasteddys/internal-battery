@@ -205,17 +205,22 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<Guid> AddRecruiterAsync(RecruiterInfoDto recruiterDto)
         {
             // Do validations  
-
             Subscriber subscriber = null;
-            if (recruiterDto.SubscriberGuid == null)     
+            if (recruiterDto.SubscriberGuid == null)
+            {
                 //try and get subscriber from recrutier email 
-                subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByEmailAsync(recruiterDto.Email);                           
-            else                
-               subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(recruiterDto.SubscriberGuid.Value);
-
-            if (subscriber == null)
-                throw new FailedValidationException($"Cannot locate by Subscriber  SubscriberGuid = {recruiterDto.SubscriberGuid.Value}  Email = {recruiterDto.Email}");
-
+                subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByEmailAsync(recruiterDto.Email);
+                if (subscriber == null)
+                    throw new FailedValidationException($"Cannot locate by Subscriber Email = {recruiterDto.Email}");
+            }                
+            else
+            {
+                //try and get subscriber by subscriber guid
+                subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(recruiterDto.SubscriberGuid.Value);
+                if (subscriber == null)
+                    throw new FailedValidationException($"Cannot locate by Subscriber by SubscriberGuid {recruiterDto.SubscriberGuid.Value}");
+            }
+            
             if (recruiterDto.CompanyGuid == null)
                 throw new FailedValidationException("Company must be specified");
 
@@ -344,7 +349,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                     }
                 }
             }
-
 
         }
 
