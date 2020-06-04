@@ -33,19 +33,6 @@ namespace UpDiddyApi.Models.G2
         [StringLength(100, MinimumLength = 1)]
         public string ReferenceCheckType { get; set; }
 
-        /// <summary>
-        /// Base64 string representation of report PDF file.
-        /// File is assumed to be a PDF all the time.
-        /// </summary>
-        [Column(TypeName = "Varchar(MAX)")]
-        public string ReferenceCheckReportFile { get; set; }
-
-        /// <summary>
-        /// Url to the reference check report file.
-        /// </summary>
-        [Url]
-        public string ReferenceCheckReportFileUrl { get; set; }
-
         [Required]
         [StringLength(75, MinimumLength = 1)]
         public string CandidateJobTitle { get; set; }
@@ -68,6 +55,9 @@ namespace UpDiddyApi.Models.G2
         public virtual List<CandidateReference> CandidateReference { get; set; } = new List<CandidateReference>();
 
         public virtual List<ReferenceCheckStatus> ReferenceCheckStatus { get; set; } = new List<ReferenceCheckStatus>();
+
+        public virtual List<ReferenceCheckReport> ReferenceCheckReport { get; set; } = new List<ReferenceCheckReport>();
+
 
     }
 }

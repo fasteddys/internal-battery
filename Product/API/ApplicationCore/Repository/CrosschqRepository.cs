@@ -25,28 +25,55 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<ReferenceCheck> GetReferenceCheckByRequestId(string requestId)
         {
-            var ReferenceCheck = await _dbContext.ReferenceCheck.Where(rc => String.IsNullOrWhiteSpace(requestId) && rc.ReferenceCheckRequestId == requestId.Trim())
-                .Include(rc => rc.Profile)
-                .Include(rc => rc.Recruiter)
-                .Include(rc => rc.ReferenceCheckVendor)
-                .Include(rc => rc.ReferenceCheckStatus)
-                .Include(rc => rc.CandidateReference)
-                .FirstOrDefaultAsync();
+            if (String.IsNullOrWhiteSpace(requestId)) return null;
+
+            var ReferenceCheck = await _dbContext.ReferenceCheck.Where(rc => rc.ReferenceCheckRequestId.Trim() == requestId.Trim())
+            .Include(rc => rc.Profile)
+            .Include(rc => rc.Recruiter)
+            .Include(rc => rc.ReferenceCheckVendor)
+            .Include(rc => rc.ReferenceCheckStatus)
+            .Include(rc => rc.CandidateReference)
+            .FirstOrDefaultAsync();
 
             return ReferenceCheck;
         }
 
-        public async Task UpdateReferenceCheck(CrosschqWebhookDto crosschqWebhookDto, string fullReportPdfBase64)
+        public async Task UpdateReferenceCheck(CrosschqWebhookDto crosschqWebhookDto, string fullReportPdfBase64, string summaryReportPdfBase64)
         {
             var referenceCheck = await GetReferenceCheckByRequestId(crosschqWebhookDto.Id);
 
-            if(referenceCheck != null)
+            if (referenceCheck != null)
             {
                 referenceCheck.ModifyDate = DateTime.UtcNow;
                 referenceCheck.ModifyGuid = Guid.NewGuid();
-                referenceCheck.ReferenceCheckReportFile = fullReportPdfBase64;
+                //referenceCheck.ReferenceCheckReportFile = fullReportPdfBase64;
+                //referenceCheck.ReferenceCheckReportFileUrl = crosschqWebhookDto.Report_Full_Pdf; //??????
+
+                if (!String.IsNullOrWhiteSpace(fullReportPdfBase64))
+                {
+                    referenceCheck.ReferenceCheckReport.Add(new ReferenceCheckReport { 
+                            CreateDate = DateTime.UtcNow,
+                            CreateGuid = Guid.NewGuid(),
+                            FileUrl = crosschqWebhookDto.Report_Full_Pdf,
+                            Base64File = fullReportPdfBase64,
+                            FileType = "Full"
+                    });
+                }
+
+                if (!String.IsNullOrWhiteSpace(summaryReportPdfBase64))
+                {
+                    referenceCheck.ReferenceCheckReport.Add(new ReferenceCheckReport
+                    {
+                        CreateDate = DateTime.UtcNow,
+                        CreateGuid = Guid.NewGuid(),
+                        FileUrl = crosschqWebhookDto.Report_Summary_Pdf,
+                        Base64File = summaryReportPdfBase64,
+                        FileType = "Summary"
+                    });
+                }
+
                 //Add a new status for every status update
-                referenceCheck.ReferenceCheckStatus.Add( new ReferenceCheckStatus
+                referenceCheck.ReferenceCheckStatus.Add(new ReferenceCheckStatus
                 {
                     CreateDate = DateTime.UtcNow,
                     CreateGuid = Guid.NewGuid(),
@@ -59,9 +86,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 if (referenceCheck.CandidateReference == null && crosschqWebhookDto.References != null && crosschqWebhookDto.References.Count > 0)
                 {
                     //Add new reference
-                   foreach(var reference in crosschqWebhookDto.References)
+                    foreach (var reference in crosschqWebhookDto.References)
                     {
-                        referenceCheck.CandidateReference.Add(new CandidateReference { 
+                        referenceCheck.CandidateReference.Add(new CandidateReference
+                        {
                             CreateDate = DateTime.UtcNow,
                             CreateGuid = Guid.NewGuid(),
                             CandidateReferenceGuid = Guid.NewGuid(),
@@ -80,7 +108,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     {
                         var candidateReferenceEntity = referenceCheck.CandidateReference.FirstOrDefault(cr => cr.Email.Trim() == reference.Email.Trim());
 
-                        if(candidateReferenceEntity != null)
+                        if (candidateReferenceEntity != null)
                         {
                             candidateReferenceEntity.ModifyDate = DateTime.UtcNow;
                             candidateReferenceEntity.ModifyGuid = Guid.NewGuid();

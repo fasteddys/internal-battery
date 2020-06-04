@@ -59,24 +59,28 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             try
             {
                 string fullReportPdfBase64 = null;
-                if(crosschqWebhookDto.Progress == 100 && String.IsNullOrWhiteSpace(crosschqWebhookDto.Report_Full_Pdf))
+                if(crosschqWebhookDto.Progress == 100 && !String.IsNullOrWhiteSpace(crosschqWebhookDto.Report_Full_Pdf))
                 {
-                    //test using https://images.homedepot-static.com/catalog/pdfImages/8b/8b47a061-1184-44b4-bf51-21b7f7ccd618.pdf
-                    fullReportPdfBase64 = GetFileBase64Stream(new Uri(crosschqWebhookDto.Report_Full_Pdf, UriKind.Absolute));
+                    fullReportPdfBase64 = GetFileBase64String(new Uri(crosschqWebhookDto.Report_Full_Pdf, UriKind.Absolute));
                 }
-                await _repository.CrosschqRepository.UpdateReferenceCheck(crosschqWebhookDto, fullReportPdfBase64);
+                string summaryReportPdfBase64 = null;
+                if (crosschqWebhookDto.Progress == 100 && !String.IsNullOrWhiteSpace(crosschqWebhookDto.Report_Summary_Pdf))
+                {
+                    summaryReportPdfBase64 = GetFileBase64String(new Uri(crosschqWebhookDto.Report_Summary_Pdf, UriKind.Absolute));
+                }
+                await _repository.CrosschqRepository.UpdateReferenceCheck(crosschqWebhookDto, fullReportPdfBase64, summaryReportPdfBase64);
             }
             catch(Exception ex)
             {
                 _logger.LogError($"CrosschqService:UpdateReferenceChkStatus  Error: {ex.ToString()} ");
-                throw;
+                throw ex;
             }
             _logger.LogInformation($"CrosschqService:UpdateReferenceChkStatus  Done for Crosschq request_id: {crosschqWebhookDto.Id} ");
 
         }
 
         #region private methods
-        private string GetFileBase64Stream(Uri fileUrl)
+        private string GetFileBase64String(Uri fileUrl)
         {
             if (fileUrl == null) return null;
 
@@ -93,7 +97,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             }
             catch (Exception ex)
             {
-                _logger.LogError($"CrosschqService:GetFileBase64Stream  Error: {ex.ToString()} ");
+                _logger.LogError($"CrosschqService:GetFileBase64String  Error: {ex.ToString()} ");
                 return null;
             }
 

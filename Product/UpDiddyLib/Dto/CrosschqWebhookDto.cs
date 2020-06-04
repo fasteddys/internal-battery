@@ -11,7 +11,7 @@ namespace UpDiddyLib.Dto
         /// </summary>
         public string Id { get; set; }
         public CrosschqCandidateDto Candidate { get; set; }
-        public string Job_Role { get; set; }
+        public string job_position { get; set; }
         public string Status { get; set; }
         public int Progress { get; set; }
         public List<CrosschqReferenceDto> References { get; set; }

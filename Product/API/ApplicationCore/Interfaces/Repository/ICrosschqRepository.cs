@@ -11,6 +11,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     public interface ICrosschqRepository
     {
         Task<ReferenceCheck> GetReferenceCheckByRequestId(string requestId);
-        Task UpdateReferenceCheck(CrosschqWebhookDto crosschqWebhookDto, string fullReportPdfBase64);
+        Task UpdateReferenceCheck(CrosschqWebhookDto crosschqWebhookDto, string fullReportPdfBase64, string summaryReportPdfBase64);
     }
 }
