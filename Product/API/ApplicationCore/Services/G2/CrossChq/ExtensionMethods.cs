@@ -14,8 +14,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddHttpClient(nameof(CrossChqWebClient), c =>
             {
-                c.BaseAddress = new Uri(config["baseAddress"]);
-                c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(config["apiKey"]);
+                c.BaseAddress = new Uri(config["BaseAddress"]);
+                c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(config["ApiKey"]);
             });
 
             return services
