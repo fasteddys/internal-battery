@@ -5,8 +5,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyApi.Models.G2;
 
-namespace UpDiddyApi.Models.G2
+namespace UpDiddyApi.Models.CrossChq
 {
     [Table("ReferenceCheck", Schema = "G2")]
     public class ReferenceCheck : BaseModel

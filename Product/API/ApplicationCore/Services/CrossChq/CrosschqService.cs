@@ -14,15 +14,15 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
-using UpDiddyApi.Models.G2.CrossChq;
+using UpDiddyApi.Models.CrossChq;
 using UpDiddyApi.Models.Views;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.G2;
-using UpDiddyLib.Domain.Models.G2.CrossChq;
+using UpDiddyLib.Domain.Models.CrossChq;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 
-namespace UpDiddyApi.ApplicationCore.Services.G2
+namespace UpDiddyApi.ApplicationCore.Services.CrossChq
 {
     public class CrosschqService: ICrosschqService
     {

@@ -6,10 +6,11 @@ using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
-using UpDiddyApi.Models.G2.CrossChq;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyApi.Models.CrossChq;
+using UpDiddyLib.Domain.Models.CrossChq;
 
-namespace UpDiddyApi.ApplicationCore.Services.G2.CrossChq
+namespace UpDiddyApi.ApplicationCore.Services.CrossChq
 {
     public class CrossChqWebClient : ICrossChqWebClient
     {

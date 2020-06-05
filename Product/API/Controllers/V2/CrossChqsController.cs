@@ -6,7 +6,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.G2;
-using UpDiddyLib.Domain.Models.G2.CrossChq;
+using UpDiddyLib.Domain.Models.CrossChq;
 
 namespace UpDiddyApi.Controllers.V2
 {

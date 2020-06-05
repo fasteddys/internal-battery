@@ -369,7 +369,6 @@ namespace UpDiddyApi
             services.AddScoped<IEmailTemplateService, EmailTemplateService>();
             services.AddScoped<IHubSpotService, HubSpotService>();
             services.AddScoped<IHiringManagerService, HiringManagerService>();
-            services.AddScoped<G2Interfaces.ICrosschqService, CrosschqService>();
             services.AddScoped<IPipelineService, PipelineService>();
             services.AddTransient<IInterviewRequestService, InterviewRequestService>(); // y'all know most of these can be transient!!!
             services.AddCareerTalentPipelineService(Configuration.GetSection("CreateTalentPipeline"));

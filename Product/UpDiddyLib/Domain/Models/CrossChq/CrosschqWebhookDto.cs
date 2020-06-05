@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using UpDiddyLib.Dto;
 
-namespace UpDiddyLib.Dto
+namespace UpDiddyLib.Domain.Models.CrossChq
 {
     public class CrosschqWebhookDto
     {

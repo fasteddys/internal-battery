@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace UpDiddyApi.Models.G2.CrossChq
+namespace UpDiddyLib.Domain.Models.CrossChq
 {
     public class ReferenceCandidate : ReferenceHiringManager
     {

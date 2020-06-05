@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
-using UpDiddyApi.Models.G2;
-using UpDiddyLib.Dto;
+using UpDiddyApi.Models.CrossChq;
+using UpDiddyLib.Domain.Models.CrossChq;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {

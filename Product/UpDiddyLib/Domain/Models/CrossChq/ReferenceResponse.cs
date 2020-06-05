@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace UpDiddyApi.Models.G2.CrossChq
+namespace UpDiddyLib.Domain.Models.CrossChq
 {
     public class ReferenceResponse
     {

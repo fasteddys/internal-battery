@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
-using UpDiddyApi.Models.G2.CrossChq;
+using UpDiddyLib.Domain.Models.CrossChq;
 
-namespace UpDiddyApi.ApplicationCore.Interfaces.Business.G2
+namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface ICrossChqWebClient
     {

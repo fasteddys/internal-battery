@@ -11,6 +11,8 @@ using UpDiddyApi.Models;
 using UpDiddyApi.Models.G2;
 using UpDiddyLib.Dto;
 using Newtonsoft.Json;
+using UpDiddyApi.Models.CrossChq;
+using UpDiddyLib.Domain.Models.CrossChq;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {

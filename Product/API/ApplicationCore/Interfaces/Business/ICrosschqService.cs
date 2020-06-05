@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.G2;
-using UpDiddyLib.Domain.Models.G2.CrossChq;
+using UpDiddyLib.Domain.Models.CrossChq;
 using UpDiddyLib.Dto;
 
-namespace UpDiddyApi.ApplicationCore.Interfaces.Business.G2
+namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface ICrosschqService
     {

@@ -14,6 +14,7 @@ using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyLib.Domain.Models.G2;
 using UpDiddyApi.Models.B2B;
 using UpDiddyLib.Domain.Models.B2B;
+using UpDiddyApi.Models.CrossChq;
 
 namespace UpDiddyApi.Models
 {

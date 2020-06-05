@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
 using System.Net.Http.Headers;
-using UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
-using UpDiddyApi.ApplicationCore.Services.G2.CrossChq;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyApi.ApplicationCore.Services.CrossChq;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -19,6 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             return services
+                .AddTransient<ICrosschqService, CrosschqService>()
                 .AddTransient<ICrossChqWebClient, CrossChqWebClient>();
         }
     }

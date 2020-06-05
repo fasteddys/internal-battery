@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace UpDiddyApi.Models.G2
+namespace UpDiddyApi.Models.CrossChq
 {
     [Table("CandidateReference", Schema = "G2")]
     public class CandidateReference : BaseModel
