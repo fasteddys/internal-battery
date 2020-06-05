@@ -40,6 +40,15 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet]
         [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("all-hiring-managers-detail")]
+        public async Task<IActionResult> GetAllHiringManagersDetail()
+        {
+            var hiringManagerDetails = await _reportsService.GetAllHiringManagersDetail();
+            return Ok(hiringManagerDetails);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("users-by-partner/{partner:guid}")]
         public async Task<IActionResult> GetUsersByPartnerDetail(Guid partner, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {

@@ -920,6 +920,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return rval;
         }
 
+        public async Task<List<UsersDetailDto>> GetAllHiringManagersDetail()
+        {
+            List<UsersDetailDto> rval = null;
+            rval = await _dbContext.UsersDetail.FromSql<UsersDetailDto>("[System_Report_AllHiringManagersDetail]").ToListAsync();
+            return rval;
+        }
+
         public async Task<List<UsersDetailDto>> GetUsersByPartnerDetail(Guid partner, DateTime startDate, DateTime endDate)
         {
             var spParams = new object[] {
