@@ -18,5 +18,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
             CrossChqReferenceRequestDto referenceRequest);
 
         Task<List<ReferenceStatusDto>> RetrieveReferenceStatus(Guid profileGuid, Guid subscriberGuid);
+
+        Task<ReferenceCheckReportDto> GetReferenceCheckReportPdf(Guid referenceCheckGuid, string reportType);
     }
 }

@@ -40,6 +40,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return ReferenceCheck;
         }
 
+        public async Task<ReferenceCheckReport> GetReferenceCheckReportPdf(Guid referenceCheckGuid, string reportType)
+        {
+            if (referenceCheckGuid == Guid.Empty || String.IsNullOrWhiteSpace(reportType)) return null;
+
+            var referenceCheckReport = await _dbContext.ReferenceCheckReport
+                                      .Where(rcr => rcr.ReferenceCheck.ReferenceCheckGuid == referenceCheckGuid && rcr.FileType == reportType.Trim())
+                                      .Include(rcr => rcr.ReferenceCheck)
+                                      .FirstOrDefaultAsync();
+
+            return referenceCheckReport;
+        }
+
         public async Task UpdateReferenceCheck(CrosschqWebhookDto crosschqWebhookDto, string fullReportPdfBase64, string summaryReportPdfBase64)
         {
             var referenceCheck = await GetReferenceCheckByRequestId(crosschqWebhookDto.Id);

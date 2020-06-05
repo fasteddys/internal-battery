@@ -31,6 +31,15 @@ namespace UpDiddyApi.Controllers.V2
             return Ok(response);
         }
 
+        [HttpGet("references/report/{referencecheckguid}")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        public async Task<IActionResult> GetReferenceCheckReportPdf(Guid referencecheckGuid, string reportType)
+        {
+            var referenceCheckReport = await _crosschqService.GetReferenceCheckReportPdf(referencecheckGuid, reportType);
+
+            return Ok(referenceCheckReport);
+        }
+
         [HttpPost("references/{profileGuid}")]
         [Authorize(Policy = "IsRecruiterPolicy")]
         public async Task<IActionResult> ReferenceRequest(Guid profileGuid, [FromBody] CrossChqReferenceRequestDto referenceRequest)

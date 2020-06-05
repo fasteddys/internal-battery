@@ -18,7 +18,7 @@ using UpDiddyLib.Domain.Models;
 using Microsoft.Extensions.Configuration;
 using UpDiddyLib.Domain;
 using UpDiddyLib.Domain.Models.Reports;
-
+using UpDiddyLib.Domain.Models.CrossChq;
 using UpDiddyLib.Domain.AzureSearch;
 using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyLib.Domain.Models.G2;
@@ -1048,6 +1048,13 @@ namespace UpDiddyApi.Helpers
             .ForMember(sl => sl.TotalRecords, opt => opt.MapFrom(src => src.Count()))
             .ReverseMap();
 
+
+            CreateMap<UpDiddyApi.Models.CrossChq.ReferenceCheckReport, ReferenceCheckReportDto>()
+             .ForMember(p => p.ReportFile, opt => opt.MapFrom(src => src.Base64File))
+             .ForMember(p => p.ReportFileUrl, opt => opt.MapFrom(src => src.FileUrl))
+             .ForMember(p => p.ReportType, opt => opt.MapFrom(src => src.FileType))
+             .ForMember(p => p.ReferenceCheckGuid, opt => opt.MapFrom(src => src.ReferenceCheck.ReferenceCheckGuid))
+             .ReverseMap();
         }
     }
 }
