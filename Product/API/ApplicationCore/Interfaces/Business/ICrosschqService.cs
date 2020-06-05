@@ -1,7 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using UpDiddyLib.Domain.Models;
-using UpDiddyLib.Domain.Models.G2;
 using UpDiddyLib.Domain.Models.CrossChq;
+using UpDiddyLib.Domain.Models.G2;
 using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business
@@ -11,10 +13,10 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task UpdateReferenceChkStatus(CrosschqWebhookDto request);
 
         Task<string> CreateReferenceRequest(
-            ProfileDto profile,
-            RecruiterInfoDto recruiter,
+            Guid profileGuid,
+            Guid subscriberGuid,
             CrossChqReferenceRequestDto referenceRequest);
 
-        Task<CrossChqReferenceResponse> RetrieveReferenceStatus(ProfileDto profile);
+        Task<List<ReferenceStatusDto>> RetrieveReferenceStatus(Guid profileGuid, Guid subscriberGuid);
     }
 }

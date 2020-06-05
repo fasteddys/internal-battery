@@ -15,28 +15,18 @@ namespace UpDiddyApi.Controllers.V2
     public class CrossChqsController : BaseApiController
     {
         private readonly ICrosschqService _crosschqService;
-        private readonly IProfileService _profileService;
-        private readonly IRecruiterService _recruiterService;
 
-        public CrossChqsController(
-            ICrosschqService crosschqService,
-            IProfileService profileService,
-            IRecruiterService recruiterService)
+        public CrossChqsController(ICrosschqService crosschqService)
         {
             _crosschqService = crosschqService;
-            _profileService = profileService;
-            _recruiterService = recruiterService;
         }
 
         [HttpGet("references/{profileGuid}")]
         [Authorize(Policy = "IsRecruiterPolicy")]
         public async Task<IActionResult> ReferenceRequest(Guid profileGuid)
         {
-            var profile = await _profileService
-                .GetProfileForRecruiter(profileGuid, GetSubscriberGuid());
-
             var response = await _crosschqService
-                .RetrieveReferenceStatus(profile);
+                .RetrieveReferenceStatus(profileGuid, GetSubscriberGuid());
 
             return Ok(response);
         }
@@ -45,16 +35,8 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize(Policy = "IsRecruiterPolicy")]
         public async Task<IActionResult> ReferenceRequest(Guid profileGuid, [FromBody] CrossChqReferenceRequestDto referenceRequest)
         {
-            var subscriberId = GetSubscriberGuid();
-
-            var profile = await _profileService
-                .GetProfileForRecruiter(profileGuid, subscriberId);
-
-            var recruiter = await _recruiterService
-                .GetRecruiterBySubscriberAsync(subscriberId);
-
             var requestId = await _crosschqService
-                .CreateReferenceRequest(profile, recruiter, referenceRequest);
+                .CreateReferenceRequest(profileGuid, GetSubscriberGuid(), referenceRequest);
 
             return Ok(requestId);
         }

@@ -21,12 +21,15 @@ using UpDiddyLib.Domain.Models.G2;
 using UpDiddyLib.Domain.Models.CrossChq;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
+using IProfileService = UpDiddyApi.ApplicationCore.Interfaces.Business.G2.IProfileService;
 
 namespace UpDiddyApi.ApplicationCore.Services.CrossChq
 {
-    public class CrosschqService: ICrosschqService
+    public class CrosschqService : ICrosschqService
     {
         private readonly UpDiddyDbContext _db;
+        private readonly IProfileService _profileService;
+        private readonly IRecruiterService _recruiterService;
         private readonly IConfiguration _configuration;
         private readonly ILogger _logger;
         private readonly IRepositoryWrapper _repository;
@@ -36,6 +39,8 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
 
         public CrosschqService(
             UpDiddyDbContext context,
+            IProfileService profileService,
+            IRecruiterService recruiterService,
             IConfiguration configuration,
             IRepositoryWrapper repository,
             ILogger<SubscriberService> logger,
@@ -44,6 +49,8 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
             ICrossChqWebClient webClient)
         {
             _db = context;
+            _profileService = profileService;
+            _recruiterService = recruiterService;
             _configuration = configuration;
             _repository = repository;
             _logger = logger;
@@ -63,7 +70,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
             try
             {
                 string fullReportPdfBase64 = null;
-                if(crosschqWebhookDto.Progress == 100 && !String.IsNullOrWhiteSpace(crosschqWebhookDto.Report_Full_Pdf))
+                if (crosschqWebhookDto.Progress == 100 && !String.IsNullOrWhiteSpace(crosschqWebhookDto.Report_Full_Pdf))
                 {
                     fullReportPdfBase64 = GetFileBase64String(new Uri(crosschqWebhookDto.Report_Full_Pdf, UriKind.Absolute));
                 }
@@ -74,7 +81,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
                 }
                 await _repository.CrosschqRepository.UpdateReferenceCheck(crosschqWebhookDto, fullReportPdfBase64, summaryReportPdfBase64);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError($"CrosschqService:UpdateReferenceChkStatus  Error: {ex.ToString()} ");
                 throw ex;
@@ -84,10 +91,17 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
         }
 
         public async Task<string> CreateReferenceRequest(
-            ProfileDto profile,
-            RecruiterInfoDto recruiter,
+            Guid profileGuid,
+            Guid subscriberGuid,
             CrossChqReferenceRequestDto referenceRequest)
         {
+
+            var profile = await _profileService
+                .GetProfileForRecruiter(profileGuid, subscriberGuid);
+
+            var recruiter = await _recruiterService
+                .GetRecruiterBySubscriberAsync(subscriberGuid);
+
             var request = new ReferenceRequest
             {
             };
@@ -99,11 +113,14 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
             return requestId;
         }
 
-        public async Task<CrossChqReferenceResponse> RetrieveReferenceStatus(ProfileDto profile)
+        public async Task<List<ReferenceStatusDto>> RetrieveReferenceStatus(Guid profileGuid, Guid subscriberGuid)
         {
+            var profile = await _profileService
+                .GetProfileForRecruiter(profileGuid, subscriberGuid);
+
             // TODO:  Retrieve from Database
 
-            var response = new CrossChqReferenceResponse
+            var response = new List<ReferenceStatusDto>
             {
 
             };
