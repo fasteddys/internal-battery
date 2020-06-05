@@ -218,6 +218,8 @@ namespace UpDiddyApi.Models
         public DbSet<ReferenceCheckStatus> ReferenceCheckStatus { get; set; }
         public DbSet<ReferenceCheckVendor> ReferenceCheckVendor { get; set; }
         public DbSet<ReferenceCheck> ReferenceCheck { get; set; }
+        public DbSet<ReferenceCheckReport> ReferenceCheckReport { get; set; }
+
 
 
         #endregion

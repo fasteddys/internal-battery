@@ -111,7 +111,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
             return response;
         }
 
-        public async Task<string> GetReferenceCheckReportPdf(Guid referenceCheckGuid, string reportType)
+        public async Task<ReferenceCheckReportDto> GetReferenceCheckReportPdf(Guid referenceCheckGuid, string reportType)
         {
             _logger.LogInformation($"CrosschqService:GetReferenceCheckReportPdf  Starting for referenceCheckGuid {referenceCheckGuid} ");
             if (referenceCheckGuid == Guid.Empty)
@@ -121,10 +121,10 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
 
             try
             {
-                string fullReportPdfBase64 = null;
-                var referenceCheckReportEntity = await _repository.CrosschqRepository.GetReferenceCheckReport(referenceCheckGuid, reportType);
+                var referenceCheckReportEntity = await _repository.CrosschqRepository.GetReferenceCheckReportPdf(referenceCheckGuid, reportType);
 
-                return referenceCheckReportEntity
+                var referenceCheckReportDto = _mapper.Map<ReferenceCheckReportDto>(referenceCheckReportEntity);
+                return referenceCheckReportDto;
             }
             catch (Exception ex)
             {

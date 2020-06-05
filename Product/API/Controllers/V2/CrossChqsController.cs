@@ -41,13 +41,13 @@ namespace UpDiddyApi.Controllers.V2
             return Ok(response);
         }
 
-        [HttpGet("referencecheck-report/{reporttype}/{referencecheckguid}")]
+        [HttpGet("references/report/{referencecheckguid}")]
         [Authorize(Policy = "IsRecruiterPolicy")]
         public async Task<IActionResult> GetReferenceCheckReportPdf(Guid referencecheckGuid, string reportType)
         {
-            var referenceCheckReportPdfBase64 = 
+            var referenceCheckReport = await _crosschqService.GetReferenceCheckReportPdf(referencecheckGuid, reportType);
 
-            return Ok(referenceCheckReportPdfBase64);
+            return Ok(referenceCheckReport);
         }
 
         [HttpPost("references/{profileGuid}")]
