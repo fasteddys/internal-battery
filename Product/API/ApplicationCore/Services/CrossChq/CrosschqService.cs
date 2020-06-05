@@ -95,22 +95,35 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
             Guid subscriberGuid,
             CrossChqReferenceRequestDto referenceRequest)
         {
-
-            var profile = await _profileService
-                .GetProfileForRecruiter(profileGuid, subscriberGuid);
-
-            var recruiter = await _recruiterService
-                .GetRecruiterBySubscriberAsync(subscriberGuid);
-
-            var request = new ReferenceRequest
+            try
             {
-            };
+                var profile = await _profileService
+                    .GetProfileForRecruiter(profileGuid, subscriberGuid);
 
-            var requestId = await _webClient.PostReferenceRequestAsync(request);
+                var recruiter = await _recruiterService
+                    .GetRecruiterBySubscriberAsync(subscriberGuid);
 
-            // TODO:  Persist the request and the resultant ID #2469
+                var request = new ReferenceRequest
+                {
+                    JobPosition = "test",
+                    JobRole = "manager test"
+                };
 
-            return requestId;
+                var requestId = await _webClient.PostReferenceRequestAsync(request);
+
+                _logger.LogInformation($"CrosschqService:CreateReferenceRequest  CrossChq request_id: {requestId} ");
+
+
+                await _repository.CrosschqRepository.AddReferenceCheck(profileGuid, recruiter.RecruiterGuid, request, requestId);
+
+                return requestId;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError($"CrosschqService:CreateReferenceRequest  Error: {ex.ToString()} ");
+                throw ex;
+            }
+            _logger.LogInformation($"CrosschqService:CreateReferenceRequest  Done for profileGuid: {profileGuid} ");
         }
 
         public async Task<List<ReferenceStatusDto>> RetrieveReferenceStatus(Guid profileGuid, Guid subscriberGuid)

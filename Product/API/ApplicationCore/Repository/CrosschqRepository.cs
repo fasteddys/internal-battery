@@ -25,6 +25,28 @@ namespace UpDiddyApi.ApplicationCore.Repository
             _dbContext = dbContext;
         }
 
+        public async Task AddReferenceCheck(Guid profileGuid, Guid recruiterGuid, ReferenceRequest referenceRequest, string referenceCheckRequestId)
+        {
+            var profile = await _dbContext.Profile.FirstOrDefaultAsync(p => p.ProfileGuid == profileGuid);
+            var recruiter = await _dbContext.Recruiter.FirstOrDefaultAsync(r => r.RecruiterGuid == recruiterGuid);
+            var vendor = await _dbContext.ReferenceCheckVendor.FirstOrDefaultAsync(v => v.Name == "Crosschq");
+
+            _dbContext.ReferenceCheck.Add(new ReferenceCheck { 
+            
+               CreateDate = DateTime.UtcNow,
+               CreateGuid = Guid.Empty,
+               ReferenceCheckGuid = Guid.NewGuid(),
+               Recruiter = recruiter,
+               Profile = profile,
+               ReferenceCheckVendor = vendor,
+               CandidateJobTitle = referenceRequest.JobPosition,
+               ReferenceCheckType = referenceRequest.JobRole,
+               ReferenceCheckRequestId = referenceCheckRequestId
+            });
+
+            await _dbContext.SaveChangesAsync();
+        }
+
         public async Task<ReferenceCheck> GetReferenceCheckByRequestId(string requestId)
         {
             if (String.IsNullOrWhiteSpace(requestId)) return null;
@@ -60,7 +82,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             {
                 referenceCheck.ModifyDate = DateTime.UtcNow;
                 referenceCheck.ModifyGuid = Guid.NewGuid();
-
+                referenceCheck.ReferenceCheckConcludedDate = crosschqWebhookDto.Progress == 100 ? DateTime.UtcNow : (DateTime?)null;
                 if (!String.IsNullOrWhiteSpace(fullReportPdfBase64))
                 {
                     referenceCheck.ReferenceCheckReport.Add(new ReferenceCheckReport { 
