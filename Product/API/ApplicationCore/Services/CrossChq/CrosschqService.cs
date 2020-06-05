@@ -111,6 +111,30 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
             return response;
         }
 
+        public async Task<string> GetReferenceCheckReportPdf(Guid referenceCheckGuid, string reportType)
+        {
+            _logger.LogInformation($"CrosschqService:GetReferenceCheckReportPdf  Starting for referenceCheckGuid {referenceCheckGuid} ");
+            if (referenceCheckGuid == Guid.Empty)
+                throw new FailedValidationException("referenceCheckGuid cannot be null or empty");
+            if (string.IsNullOrWhiteSpace(reportType))
+                throw new FailedValidationException("reportType cannot be null or empty. Allow values: Full/Summary.");
+
+            try
+            {
+                string fullReportPdfBase64 = null;
+                var referenceCheckReportEntity = await _repository.CrosschqRepository.GetReferenceCheckReport(referenceCheckGuid, reportType);
+
+                return referenceCheckReportEntity
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"CrosschqService:GetReferenceCheckReportPdf  Error: {ex.ToString()} ");
+                throw ex;
+            }
+            _logger.LogInformation($"CrosschqService:GetReferenceCheckReportPdf  Done for referenceCheckGuid: {referenceCheckGuid} ");
+
+        }
+
         #region private methods
         private string GetFileBase64String(Uri fileUrl)
         {

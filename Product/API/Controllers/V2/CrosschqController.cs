@@ -24,7 +24,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> UpdateReferenceChkStatus([FromBody]CrosschqWebhookDto request)
         {
             await _crosschqService.UpdateReferenceChkStatus(request);
-            return Ok();
+            return StatusCode(202);
         }
 
         #endregion

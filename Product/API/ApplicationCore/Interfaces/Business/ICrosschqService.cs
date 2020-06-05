@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.G2;
 using UpDiddyLib.Domain.Models.CrossChq;
@@ -16,5 +17,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
             CrossChqReferenceRequestDto referenceRequest);
 
         Task<CrossChqReferenceResponse> RetrieveReferenceStatus(ProfileDto profile);
+
+        Task<string> GetReferenceCheckReportPdf(Guid referenceCheckGuid, string reportType);
     }
 }
