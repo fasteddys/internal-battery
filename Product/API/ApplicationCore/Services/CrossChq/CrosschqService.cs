@@ -3,24 +3,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Security.Policy;
 using System.Threading.Tasks;
-using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
-using UpDiddyApi.Models.CrossChq;
-using UpDiddyApi.Models.Views;
-using UpDiddyLib.Domain.Models;
-using UpDiddyLib.Domain.Models.G2;
 using UpDiddyLib.Domain.Models.CrossChq;
-using UpDiddyLib.Dto;
-using UpDiddyLib.Helpers;
 using IProfileService = UpDiddyApi.ApplicationCore.Interfaces.Business.G2.IProfileService;
 
 namespace UpDiddyApi.ApplicationCore.Services.CrossChq
@@ -95,15 +86,42 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
             Guid subscriberGuid,
             CrossChqReferenceRequestDto referenceRequest)
         {
-
             var profile = await _profileService
                 .GetProfileForRecruiter(profileGuid, subscriberGuid);
 
             var recruiter = await _recruiterService
                 .GetRecruiterBySubscriberAsync(subscriberGuid);
 
-            var request = new ReferenceRequest
+            var request = new ReferenceRequest // TODO:  rename to "ReferenceRequestDto" when I know there won't be a merge collision!
             {
+                Candidate = new ReferenceCandidate // TODO:  rename to "ReferenceCandidateDto"
+                {
+                    FirstName = profile.FirstName,
+                    LastName = profile.LastName,
+                    Email = profile.Email,
+                    MobilePhone = profile.PhoneNumber
+                },
+                JobRole = referenceRequest.JobRole,
+                RequestorEmailAddress = recruiter.Email,
+                UseSMS = false,
+                ConfigurationParameters = new ReferenceRequestConfigurationParameters
+                {
+                    Managers = referenceRequest?.ConfigurationParameters.Managers ?? 0,
+                    Employees = referenceRequest?.ConfigurationParameters.Employees ?? 0,
+                    Peers = referenceRequest?.ConfigurationParameters.Peers ?? 0,
+                    Business = referenceRequest?.ConfigurationParameters.Business ?? 0,
+                    Social = referenceRequest?.ConfigurationParameters.Social ?? 0
+                },
+                SendPastDueNotification = false,
+                SendCompletedNotification = false,
+                CandidateMessage = referenceRequest.CandidateMessage,
+                JobPosition = referenceRequest.JobPosition,
+                HiringManager = new ReferenceHiringManager
+                {
+                    FirstName = recruiter.FirstName,
+                    LastName = recruiter.LastName,
+                    Email = recruiter.Email
+                }
             };
 
             var requestId = await _webClient.PostReferenceRequestAsync(request);
