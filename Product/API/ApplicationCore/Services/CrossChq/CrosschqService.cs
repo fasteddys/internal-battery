@@ -86,49 +86,61 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
             Guid subscriberGuid,
             CrossChqReferenceRequestDto referenceRequest)
         {
-            var profile = await _profileService
-                .GetProfileForRecruiter(profileGuid, subscriberGuid);
-
-            var recruiter = await _recruiterService
-                .GetRecruiterBySubscriberAsync(subscriberGuid);
-
-            var request = new ReferenceRequest // TODO:  rename to "ReferenceRequestDto" when I know there won't be a merge collision!
+            try
             {
-                Candidate = new ReferenceCandidate // TODO:  rename to "ReferenceCandidateDto"
-                {
-                    FirstName = profile.FirstName,
-                    LastName = profile.LastName,
-                    Email = profile.Email,
-                    MobilePhone = profile.PhoneNumber
-                },
-                JobRole = referenceRequest.JobRole,
-                RequestorEmailAddress = recruiter.Email,
-                UseSMS = false,
-                ConfigurationParameters = new ReferenceRequestConfigurationParameters
-                {
-                    Managers = referenceRequest?.ConfigurationParameters.Managers ?? 0,
-                    Employees = referenceRequest?.ConfigurationParameters.Employees ?? 0,
-                    Peers = referenceRequest?.ConfigurationParameters.Peers ?? 0,
-                    Business = referenceRequest?.ConfigurationParameters.Business ?? 0,
-                    Social = referenceRequest?.ConfigurationParameters.Social ?? 0
-                },
-                SendPastDueNotification = false,
-                SendCompletedNotification = false,
-                CandidateMessage = referenceRequest.CandidateMessage,
-                JobPosition = referenceRequest.JobPosition,
-                HiringManager = new ReferenceHiringManager
-                {
-                    FirstName = recruiter.FirstName,
-                    LastName = recruiter.LastName,
-                    Email = recruiter.Email
-                }
-            };
+                var profile = await _profileService
+                    .GetProfileForRecruiter(profileGuid, subscriberGuid);
 
-            var requestId = await _webClient.PostReferenceRequestAsync(request);
+                var recruiter = await _recruiterService
+                    .GetRecruiterBySubscriberAsync(subscriberGuid);
 
-            // TODO:  Persist the request and the resultant ID #2469
+                var request = new ReferenceRequest // TODO:  rename to "ReferenceRequestDto" when I know there won't be a merge collision!
+                {
+                    Candidate = new ReferenceCandidate // TODO:  rename to "ReferenceCandidateDto"
+                    {
+                        FirstName = profile.FirstName,
+                        LastName = profile.LastName,
+                        Email = profile.Email,
+                        MobilePhone = profile.PhoneNumber
+                    },
+                    JobRole = referenceRequest.JobRole,
+                    RequestorEmailAddress = recruiter.Email,
+                    UseSMS = false,
+                    ConfigurationParameters = new ReferenceRequestConfigurationParameters
+                    {
+                        Managers = referenceRequest?.ConfigurationParameters.Managers ?? 0,
+                        Employees = referenceRequest?.ConfigurationParameters.Employees ?? 0,
+                        Peers = referenceRequest?.ConfigurationParameters.Peers ?? 0,
+                        Business = referenceRequest?.ConfigurationParameters.Business ?? 0,
+                        Social = referenceRequest?.ConfigurationParameters.Social ?? 0
+                    },
+                    SendPastDueNotification = false,
+                    SendCompletedNotification = false,
+                    CandidateMessage = referenceRequest.CandidateMessage,
+                    JobPosition = referenceRequest.JobPosition,
+                    HiringManager = new ReferenceHiringManager
+                    {
+                        FirstName = recruiter.FirstName,
+                        LastName = recruiter.LastName,
+                        Email = recruiter.Email
+                    }
+                };
 
-            return requestId;
+                var requestId = await _webClient.PostReferenceRequestAsync(request);
+
+                _logger.LogInformation($"CrosschqService:CreateReferenceRequest  CrossChq request_id: {requestId} ");
+
+
+                await _repository.CrosschqRepository.AddReferenceCheck(profileGuid, recruiter.RecruiterGuid, request, requestId);
+
+                return requestId;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError($"CrosschqService:CreateReferenceRequest  Error: {ex.ToString()} ");
+                throw ex;
+            }
+            _logger.LogInformation($"CrosschqService:CreateReferenceRequest  Done for profileGuid: {profileGuid} ");
         }
 
         public async Task<List<ReferenceStatusDto>> RetrieveReferenceStatus(Guid profileGuid, Guid subscriberGuid)
