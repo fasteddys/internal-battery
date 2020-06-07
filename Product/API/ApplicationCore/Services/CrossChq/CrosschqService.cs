@@ -1,8 +1,11 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Graph;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
@@ -11,6 +14,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Business.G2;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
+using UpDiddyApi.Models.CrossChq;
 using UpDiddyLib.Domain.Models.CrossChq;
 using IProfileService = UpDiddyApi.ApplicationCore.Interfaces.Business.G2.IProfileService;
 
@@ -130,12 +134,11 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
 
                 _logger.LogInformation($"CrosschqService:CreateReferenceRequest  CrossChq request_id: {requestId} ");
 
-
                 await _repository.CrosschqRepository.AddReferenceCheck(profileGuid, recruiter.RecruiterGuid, request, requestId);
 
                 return requestId;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError($"CrosschqService:CreateReferenceRequest  Error: {ex.ToString()} ");
                 throw ex;
@@ -143,19 +146,47 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
             _logger.LogInformation($"CrosschqService:CreateReferenceRequest  Done for profileGuid: {profileGuid} ");
         }
 
-        public async Task<List<ReferenceStatusDto>> RetrieveReferenceStatus(Guid profileGuid, Guid subscriberGuid)
+        public async Task<List<ReferenceStatusDto>> RetrieveReferenceStatus(Guid profileGuid)
         {
-            var profile = await _profileService
-                .GetProfileForRecruiter(profileGuid, subscriberGuid);
-
-            // TODO:  Retrieve from Database
-
-            var response = new List<ReferenceStatusDto>
+            try
             {
+                _logger.LogInformation("CrosschqService:RetrieveReferenceStatus: Fetching reference status for {profileGuid}", profileGuid);
 
-            };
+                var referenceCheck = await _repository.CrosschqRepository
+                    .GetReferenceCheckByProfileGuid(profileGuid);
 
-            return response;
+                return referenceCheck
+                    .Select(rc => (
+                        referenceCheck: rc,
+                        status: rc.ReferenceCheckStatus
+                            .OrderBy(s => s.CreateDate)
+                            .FirstOrDefault()))
+                    .Select((rc, status) => new ReferenceStatusDto
+                    {
+                        ReferenceCheckId = rc.referenceCheck.ReferenceCheckGuid,
+                        Status = rc.status?.Status ?? "",
+                        JobRole = rc.referenceCheck.ReferenceCheckType,
+                        JobPosition = rc.referenceCheck.CandidateJobTitle,
+                        PercentComplete = rc.status?.Progress ?? 0,
+                        CreateDate = rc.status?.CreateDate,
+                        References = rc.referenceCheck.CandidateReference
+                            ?.Select(r => new Reference
+                            {
+                                FirstName = r.FirstName,
+                                LastName = r.LastName,
+                                Email = r.Email,
+                                MobilePhone = r.PhoneNumber,
+                                Status = r.Status
+                            })
+                            .ToList()
+                    })
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "CrosschqService:RetrieveReferenceStatus: Error fetching reference status: {errorMsg}", ex.ToString());
+                throw;
+            }
         }
 
         public async Task<ReferenceCheckReportDto> GetReferenceCheckReportPdf(Guid referenceCheckGuid, string reportType)

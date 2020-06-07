@@ -25,8 +25,7 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize(Policy = "IsRecruiterPolicy")]
         public async Task<IActionResult> ReferenceRequest(Guid profileGuid)
         {
-            var response = await _crosschqService
-                .RetrieveReferenceStatus(profileGuid, GetSubscriberGuid());
+            var response = await _crosschqService.RetrieveReferenceStatus(profileGuid);
 
             return Ok(response);
         }

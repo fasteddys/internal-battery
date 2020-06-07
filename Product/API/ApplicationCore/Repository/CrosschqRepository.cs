@@ -62,6 +62,17 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return ReferenceCheck;
         }
 
+        public async Task<List<ReferenceCheck>> GetReferenceCheckByProfileGuid(Guid profileGuid)
+            => await _dbContext.ReferenceCheck
+                .Include(rc => rc.Profile)
+                .Include(rc => rc.Recruiter)
+                .Include(rc => rc.ReferenceCheckVendor)
+                .Include(rc => rc.ReferenceCheckStatus)
+                .Include(rc => rc.CandidateReference)
+                .OrderByDescending(rc => rc.CreateDate)
+                .Where(rc => rc.Profile.ProfileGuid == profileGuid)
+                .ToListAsync();
+
         public async Task<ReferenceCheckReport> GetReferenceCheckReportPdf(Guid referenceCheckGuid, string reportType)
         {
             if (referenceCheckGuid == Guid.Empty || String.IsNullOrWhiteSpace(reportType)) return null;
