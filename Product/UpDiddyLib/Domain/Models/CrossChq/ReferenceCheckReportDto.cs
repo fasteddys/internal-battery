@@ -7,7 +7,6 @@ namespace UpDiddyLib.Domain.Models.CrossChq
     public class ReferenceCheckReportDto
     {
         public Guid ReferenceCheckGuid { get; set; }
-        public string ReportFileUrl { get; set; }
 
         /// <summary>
         /// Hardcoded report type - values: Full/Summary. 

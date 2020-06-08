@@ -1051,7 +1051,6 @@ namespace UpDiddyApi.Helpers
 
             CreateMap<UpDiddyApi.Models.CrossChq.ReferenceCheckReport, ReferenceCheckReportDto>()
              .ForMember(p => p.ReportFile, opt => opt.MapFrom(src => src.Base64File))
-             .ForMember(p => p.ReportFileUrl, opt => opt.MapFrom(src => src.FileUrl))
              .ForMember(p => p.ReportType, opt => opt.MapFrom(src => src.FileType))
              .ForMember(p => p.ReferenceCheckGuid, opt => opt.MapFrom(src => src.ReferenceCheck.ReferenceCheckGuid))
              .ReverseMap();
