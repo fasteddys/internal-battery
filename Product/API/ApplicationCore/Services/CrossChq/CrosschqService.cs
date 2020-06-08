@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces;
@@ -105,7 +106,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
                         FirstName = profile.FirstName,
                         LastName = profile.LastName,
                         Email = profile.Email,
-                        MobilePhone = profile.PhoneNumber
+                        MobilePhone = $"+1{PreparePhoneNumber(profile.PhoneNumber)}"
                     },
                     JobRole = referenceRequest.JobRole,
                     RequestorEmailAddress = recruiter.Email,
@@ -234,7 +235,19 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
                 _logger.LogError($"CrosschqService:GetFileBase64String  Error: {ex.ToString()} ");
                 return null;
             }
+        }
 
+        private static string PreparePhoneNumber(string phoneNumber)
+        {
+            if (string.IsNullOrEmpty(phoneNumber)) { throw new ArgumentNullException(nameof(phoneNumber)); }
+
+            var digits = new Regex(@"\d")
+                .Matches(phoneNumber)
+                .Select(regex => regex.Value);
+
+            return string.Join(
+                separator: null,
+                values: digits);
         }
 
         #endregion
