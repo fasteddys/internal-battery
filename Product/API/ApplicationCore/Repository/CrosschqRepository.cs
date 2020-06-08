@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
+using UpDiddyApi.ApplicationCore.Exceptions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -27,9 +28,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task AddReferenceCheck(Guid profileGuid, Guid recruiterGuid, ReferenceRequest referenceRequest, string referenceCheckRequestId)
         {
+            //The IsDeleted flag check is not added in the below queries while retrieving the profile and recruiter entities,
+            //based on the assumption that the profile and recruiter validity check was done before this method is called.
+            //The sole purpose of these DB calls is to get the entities for adding the relational data.
             var profile = await _dbContext.Profile.FirstOrDefaultAsync(p => p.ProfileGuid == profileGuid);
+            if (profile == null) throw new NotFoundException($"profile cannot be null: {profileGuid}");
+
             var recruiter = await _dbContext.Recruiter.FirstOrDefaultAsync(r => r.RecruiterGuid == recruiterGuid);
+            if (recruiter == null) throw new NotFoundException($"recruiter cannot be null: {recruiterGuid}");
+
             var vendor = await _dbContext.ReferenceCheckVendor.FirstOrDefaultAsync(v => v.Name == "Crosschq");
+            if (vendor == null) throw new NotFoundException("vendor cannot be null for Crosschq");
+
 
             _dbContext.ReferenceCheck.Add(new ReferenceCheck { 
             
@@ -93,7 +103,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
             {
                 referenceCheck.ModifyDate = DateTime.UtcNow;
                 referenceCheck.ModifyGuid = Guid.NewGuid();
-                referenceCheck.ReferenceCheckConcludedDate = crosschqWebhookDto.Progress == 100 ? DateTime.UtcNow : (DateTime?)null;
+                referenceCheck.ReferenceCheckConcludedDate = !referenceCheck.ReferenceCheckConcludedDate.HasValue && crosschqWebhookDto.Progress == 100 ? 
+                                                              DateTime.UtcNow : (DateTime?)null;
                 if (!String.IsNullOrWhiteSpace(fullReportPdfBase64))
                 {
                     referenceCheck.ReferenceCheckReport.Add(new ReferenceCheckReport { 

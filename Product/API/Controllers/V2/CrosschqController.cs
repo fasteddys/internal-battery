@@ -7,7 +7,7 @@ using UpDiddyLib.Domain.Models.CrossChq;
 
 namespace UpDiddyApi.Controllers.V2
 {
-    [Route("/V2/[controller]/")]
+    [Route("/[controller]/")]
     public class CrosschqController : BaseApiController
     {
         private readonly ICrosschqService _crosschqService;
