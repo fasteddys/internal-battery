@@ -160,7 +160,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
                     .Select(rc => (
                         referenceCheck: rc,
                         status: rc.ReferenceCheckStatus
-                            .OrderBy(s => s.CreateDate)
+                            .OrderByDescending(s => s.CreateDate)
                             .FirstOrDefault()))
                     .Select((rc, status) => new ReferenceStatusDto
                     {

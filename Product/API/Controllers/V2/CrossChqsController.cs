@@ -22,7 +22,7 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         [HttpGet("references/{profileGuid}")]
-        [Authorize(Policy = "IsRecruiterPolicy")]
+        // [Authorize(Policy = "IsRecruiterPolicy")]
         public async Task<IActionResult> ReferenceRequest(Guid profileGuid)
         {
             var response = await _crosschqService.RetrieveReferenceStatus(profileGuid);
@@ -31,7 +31,7 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         [HttpGet("references/report/{referencecheckguid}")]
-        [Authorize(Policy = "IsRecruiterPolicy")]
+        //[Authorize(Policy = "IsRecruiterPolicy")]
         public async Task<IActionResult> GetReferenceCheckReportPdf(Guid referencecheckGuid, string reportType)
         {
             var referenceCheckReport = await _crosschqService.GetReferenceCheckReportPdf(referencecheckGuid, reportType);
