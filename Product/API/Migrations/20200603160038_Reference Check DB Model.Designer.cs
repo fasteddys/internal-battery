@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
@@ -10,9 +11,10 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200603160038_Reference Check DB Model")]
+    partial class ReferenceCheckDBModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1735,14 +1737,7 @@ namespace UpDiddyApi.Migrations
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(20);
 
-                    b.Property<int>("ReferenceCheckId");
-
-                    b.Property<string>("Status")
-                        .HasMaxLength(50);
-
                     b.HasKey("CandidateReferenceId");
-
-                    b.HasIndex("ReferenceCheckId");
 
                     b.ToTable("CandidateReference","G2");
                 });
@@ -2137,6 +2132,8 @@ namespace UpDiddyApi.Migrations
                         .IsRequired()
                         .HasMaxLength(75);
 
+                    b.Property<int>("CandidateReferenceId");
+
                     b.Property<DateTime>("CreateDate");
 
                     b.Property<Guid>("CreateGuid");
@@ -2155,8 +2152,15 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("ReferenceCheckGuid");
 
+                    b.Property<string>("ReferenceCheckReportFile")
+                        .HasColumnType("Varchar(MAX)");
+
+                    b.Property<string>("ReferenceCheckReportFileUrl");
+
                     b.Property<string>("ReferenceCheckRequestId")
                         .HasMaxLength(150);
+
+                    b.Property<int>("ReferenceCheckStatusId");
 
                     b.Property<string>("ReferenceCheckType")
                         .HasMaxLength(100);
@@ -2164,6 +2168,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<int>("ReferenceCheckVendorId");
 
                     b.HasKey("ReferenceCheckId");
+
+                    b.HasIndex("CandidateReferenceId");
 
                     b.HasIndex("ProfileId");
 
@@ -2173,46 +2179,11 @@ namespace UpDiddyApi.Migrations
                         .IsUnique()
                         .HasName("UIX_ReferenceCheck_ReferenceCheckGuid");
 
+                    b.HasIndex("ReferenceCheckStatusId");
+
                     b.HasIndex("ReferenceCheckVendorId");
 
                     b.ToTable("ReferenceCheck","G2");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.G2.ReferenceCheckReport", b =>
-                {
-                    b.Property<int>("ReferenceCheckReportId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Base64File")
-                        .HasColumnType("Varchar(MAX)");
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<string>("FileType")
-                        .IsRequired()
-                        .HasMaxLength(25);
-
-                    b.Property<string>("FileUrl")
-                        .IsRequired();
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<int>("ReferenceCheckId");
-
-                    b.Property<Guid>("ReferenceCheckReportGuid");
-
-                    b.HasKey("ReferenceCheckReportId");
-
-                    b.HasIndex("ReferenceCheckId");
-
-                    b.ToTable("ReferenceCheckReport","G2");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.G2.ReferenceCheckStatus", b =>
@@ -2233,19 +2204,15 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("Progress");
 
-                    b.Property<int>("ReferenceCheckId");
-
                     b.Property<Guid>("ReferenceCheckStatusGuid");
 
                     b.Property<string>("Status")
-                        .HasMaxLength(50);
+                        .HasMaxLength(100);
 
                     b.Property<string>("VendorJsonResponse")
                         .HasMaxLength(4000);
 
                     b.HasKey("ReferenceCheckStatusId");
-
-                    b.HasIndex("ReferenceCheckId");
 
                     b.HasIndex("ReferenceCheckStatusGuid")
                         .IsUnique()
@@ -5781,14 +5748,6 @@ namespace UpDiddyApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.G2.CandidateReference", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.G2.ReferenceCheck", "ReferenceCheck")
-                        .WithMany("CandidateReference")
-                        .HasForeignKey("ReferenceCheckId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
             modelBuilder.Entity("UpDiddyApi.Models.G2.Profile", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.G2.AzureIndexStatus", "AzureIndexStatus")
@@ -5921,6 +5880,11 @@ namespace UpDiddyApi.Migrations
 
             modelBuilder.Entity("UpDiddyApi.Models.G2.ReferenceCheck", b =>
                 {
+                    b.HasOne("UpDiddyApi.Models.G2.CandidateReference", "CandidateReference")
+                        .WithMany()
+                        .HasForeignKey("CandidateReferenceId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("UpDiddyApi.Models.G2.Profile", "Profile")
                         .WithMany()
                         .HasForeignKey("ProfileId")
@@ -5931,25 +5895,14 @@ namespace UpDiddyApi.Migrations
                         .HasForeignKey("RecruiterId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("UpDiddyApi.Models.G2.ReferenceCheckStatus", "ReferenceCheckStatus")
+                        .WithMany()
+                        .HasForeignKey("ReferenceCheckStatusId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("UpDiddyApi.Models.G2.ReferenceCheckVendor", "ReferenceCheckVendor")
                         .WithMany()
                         .HasForeignKey("ReferenceCheckVendorId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.G2.ReferenceCheckReport", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.G2.ReferenceCheck", "ReferenceCheck")
-                        .WithMany("ReferenceCheckReport")
-                        .HasForeignKey("ReferenceCheckId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.G2.ReferenceCheckStatus", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.G2.ReferenceCheck", "ReferenceCheck")
-                        .WithMany("ReferenceCheckStatus")
-                        .HasForeignKey("ReferenceCheckId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
