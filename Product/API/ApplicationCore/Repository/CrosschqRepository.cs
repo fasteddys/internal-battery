@@ -90,6 +90,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var referenceCheckReport = await _dbContext.ReferenceCheckReport
                                       .Where(rcr => rcr.ReferenceCheck.ReferenceCheckGuid == referenceCheckGuid && rcr.FileType == reportType.Trim())
                                       .Include(rcr => rcr.ReferenceCheck)
+                                      .OrderByDescending(rcr => rcr.CreateDate)
                                       .FirstOrDefaultAsync();
 
             return referenceCheckReport;
