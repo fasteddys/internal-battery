@@ -80,7 +80,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _butterCMSService = butterCMSService;
             _g2Service = g2Service;
             _hubSpotService = hubSpotService;
-            
+
         }
 
         public async Task<Subscriber> GetSubscriberByEmail(string email)
@@ -99,7 +99,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await _repository.StoredProcedureRepository.GetSubscriberSources(subscriberId);
 
         }
- 
+
         public async Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numSubscribers, int indexVersion)
         {
             var querableSubscribers = _repository.SubscriberRepository.GetAllSubscribersAsync();
@@ -280,9 +280,10 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             // add the user to the Google Talent Cloud
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriberGuid));
-            
-            // add the user to the G2 profile for search
-            await _g2Service.G2AddSubscriberAsync(subscriberGuid);
+
+            // add the user to the G2 profile for search as long as they are not a hiring manager
+            if (!subscriberDto.IsHiringManager)
+                await _g2Service.G2AddSubscriberAsync(subscriberGuid);
 
             if (!string.IsNullOrWhiteSpace(subscriberDto.ReferrerUrl) && subscriberDto.PartnerGuid != null && subscriberDto.PartnerGuid != Guid.Empty)
             {
@@ -320,12 +321,12 @@ namespace UpDiddyApi.ApplicationCore.Services
                         gatedDownloadFileUrl = butterPage.Data.Fields.gatedfiledownloadfile;
                         maxFileDownloadAttemptsPermitted = butterPage.Data.Fields.gatedfiledownloadmaxattemptsallowed;
                         step = 3;
-                        if(butterPage.Data.Fields.partner != null)
+                        if (butterPage.Data.Fields.partner != null)
                         {
-                            if(butterPage.Data.Fields.partner.PartnerGuid != Guid.Empty)
+                            if (butterPage.Data.Fields.partner.PartnerGuid != Guid.Empty)
                             {
                                 partnerGuid = butterPage.Data.Fields.partner.PartnerGuid;
-                               _logger.LogInformation($"SubscriberService:CreateSubscriberAsync This campaign slug '{pageName}' does contain Partner with Guid {partnerGuid.ToString()}");
+                                _logger.LogInformation($"SubscriberService:CreateSubscriberAsync This campaign slug '{pageName}' does contain Partner with Guid {partnerGuid.ToString()}");
                             }
                         }
                         else
@@ -380,7 +381,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             try
             {
                 Models.Group group = null;
-            
+
                 // create the user in the CareerCircle database
                 await _repository.SubscriberRepository.Create(new Subscriber()
                 {
@@ -453,7 +454,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (!string.IsNullOrWhiteSpace(createUserDto.ReferrerUrl))
                 {
                     _logger.LogInformation($"SubscriberService:ExistingSubscriberSignUp looking up partnerguid from ReferrerUrl");
-                    
+
                     var url = createUserDto.ReferrerUrl;
                     var pageName = Path.GetFileName(url);
                     if (!string.IsNullOrEmpty(pageName))
@@ -470,12 +471,12 @@ namespace UpDiddyApi.ApplicationCore.Services
                         isGatedDownload = butterPage.Data.Fields.isgateddownload;
                         gatedDownloadFileUrl = butterPage.Data.Fields.gatedfiledownloadfile;
                         maxFileDownloadAttemptsPermitted = butterPage.Data.Fields.gatedfiledownloadmaxattemptsallowed;
-                       if(butterPage.Data.Fields.partner != null)
+                        if (butterPage.Data.Fields.partner != null)
                         {
-                            if(butterPage.Data.Fields.partner.PartnerGuid != Guid.Empty)
+                            if (butterPage.Data.Fields.partner.PartnerGuid != Guid.Empty)
                             {
                                 partnerGuid = butterPage.Data.Fields.partner.PartnerGuid;
-                               _logger.LogInformation($"SubscriberService:CreateSubscriberAsync This campaign slug '{pageName}' does contain Partner with Guid {partnerGuid.ToString()}");
+                                _logger.LogInformation($"SubscriberService:CreateSubscriberAsync This campaign slug '{pageName}' does contain Partner with Guid {partnerGuid.ToString()}");
                             }
                         }
                         else
@@ -525,7 +526,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             string downloadUrl = await _fileDownloadTrackerService.CreateFileDownloadLink(fileDownloadTrackerDto);
 
             _hangfireService.Enqueue(() =>
-             _sysEmail.SendTemplatedEmailAsync( 
+             _sysEmail.SendTemplatedEmailAsync(
                  email,
                  _configuration["SysEmail:Transactional:TemplateIds:GatedDownload-LinkEmail"],
                  new
@@ -1493,21 +1494,21 @@ namespace UpDiddyApi.ApplicationCore.Services
                     OrderBy = orderByList,
                     IncludeTotalResultCount = true,
                 };
- 
+
             results = indexClient.Documents.Search<SubscriberInfoDto>(keyword, parameters);
-      
+
 
             DateTime startMap = DateTime.Now;
             searchResults.Subscribers = results?.Results?
                 .Select(s => (SubscriberInfoDto)s.Document)
                 .ToList();
-            
+
             searchResults.TotalHits = results.Count.Value;
             searchResults.PageSize = limit;
             searchResults.NumPages = searchResults.PageSize != 0 ? (int)Math.Ceiling((double)searchResults.TotalHits / searchResults.PageSize) : 0;
             searchResults.SubscriberCount = searchResults.Subscribers.Count;
             searchResults.PageNum = (offset / limit) + 1;
-            
+
             DateTime stopMap = DateTime.Now;
 
             // calculate search timing metrics 
@@ -1519,7 +1520,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             searchResults.SearchTimeInMilliseconds = intervalTotalSearch.TotalMilliseconds;
             searchResults.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
             searchResults.SearchMappingTimeInTicks = intervalMapTime.Ticks;
-            
+
             return searchResults;
         }
 
