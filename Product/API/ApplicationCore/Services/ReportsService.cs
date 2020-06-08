@@ -31,10 +31,16 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await _repositoryWrapper.StoredProcedureRepository.GetAllUsersDetail();            
         }
 
+        public async Task<List<UsersDetailDto>> GetAllHiringManagersDetail()
+        {
+            return await _repositoryWrapper.StoredProcedureRepository.GetAllHiringManagersDetail();
+        }
+
         public async Task<List<UsersDetailDto>> GetUsersByPartnerDetail(Guid partner, DateTime startDate, DateTime endDate)
         {
             return await _repositoryWrapper.StoredProcedureRepository.GetUsersByPartnerDetail(partner, startDate, endDate);
         }
+
         public async Task<List<PartnerUsers>> GetUsersByPartner(DateTime startDate, DateTime endDate)
         {
             return await _repositoryWrapper.StoredProcedureRepository.GetUsersByPartner(startDate, endDate);

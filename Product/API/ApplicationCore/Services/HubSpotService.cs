@@ -109,7 +109,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 DateTime? lastResumeUploadDate = null;
                 try
                 {
-                    await _repositoryWrapper.SubscriberFileRepository.GetMostRecentCreatedDate(subscriberGuid);
+                    lastResumeUploadDate = await _repositoryWrapper.SubscriberFileRepository.GetMostRecentCreatedDate(subscriberGuid);
                 }
                 catch { }
 

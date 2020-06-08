@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
@@ -10,9 +11,10 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200604021947_Reference Check DB Model updates1")]
+    partial class ReferenceCheckDBModelupdates1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2155,6 +2157,11 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("ReferenceCheckGuid");
 
+                    b.Property<string>("ReferenceCheckReportFile")
+                        .HasColumnType("Varchar(MAX)");
+
+                    b.Property<string>("ReferenceCheckReportFileUrl");
+
                     b.Property<string>("ReferenceCheckRequestId")
                         .HasMaxLength(150);
 
@@ -2176,43 +2183,6 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("ReferenceCheckVendorId");
 
                     b.ToTable("ReferenceCheck","G2");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.G2.ReferenceCheckReport", b =>
-                {
-                    b.Property<int>("ReferenceCheckReportId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Base64File")
-                        .HasColumnType("Varchar(MAX)");
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<string>("FileType")
-                        .IsRequired()
-                        .HasMaxLength(25);
-
-                    b.Property<string>("FileUrl")
-                        .IsRequired();
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<int>("ReferenceCheckId");
-
-                    b.Property<Guid>("ReferenceCheckReportGuid");
-
-                    b.HasKey("ReferenceCheckReportId");
-
-                    b.HasIndex("ReferenceCheckId");
-
-                    b.ToTable("ReferenceCheckReport","G2");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.G2.ReferenceCheckStatus", b =>
@@ -5934,14 +5904,6 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.G2.ReferenceCheckVendor", "ReferenceCheckVendor")
                         .WithMany()
                         .HasForeignKey("ReferenceCheckVendorId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.G2.ReferenceCheckReport", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.G2.ReferenceCheck", "ReferenceCheck")
-                        .WithMany("ReferenceCheckReport")
-                        .HasForeignKey("ReferenceCheckId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
