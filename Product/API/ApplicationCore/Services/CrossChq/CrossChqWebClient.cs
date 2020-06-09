@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.Models.CrossChq;
 using UpDiddyLib.Domain.Models.CrossChq;
 
@@ -36,6 +37,11 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
 
                 var json = JObject.Parse(content);
                 return json["request_id"]?.ToString();
+            }
+            catch (AlreadyExistsException aee)
+            {
+                _logger.LogError(aee, "Error occurred while retrieving a Reference Request");
+                throw;
             }
             catch (HttpRequestException ex)
             {
@@ -73,6 +79,11 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
                 var errorJson = JObject.Parse(content);
                 var errorMsg = errorJson["errors"]?.ToString()
                     ?? errorJson["detail"]?.ToString();
+
+                if (statusCode == (int)System.Net.HttpStatusCode.Conflict)
+                {
+                    throw new AlreadyExistsException(errorMsg);
+                }
 
                 throw new HttpRequestException(
                     string.IsNullOrEmpty(errorMsg)
