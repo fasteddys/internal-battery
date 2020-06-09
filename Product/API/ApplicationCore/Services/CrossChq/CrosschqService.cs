@@ -139,6 +139,11 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
 
                 return requestId;
             }
+            catch (AlreadyExistsException aee)
+            {
+                _logger.LogError(aee, "Error occurred while retrieving a Reference Request");
+                throw;
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"CrosschqService:CreateReferenceRequest  Error: {ex.ToString()} ");
