@@ -106,7 +106,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
                         FirstName = profile.FirstName,
                         LastName = profile.LastName,
                         Email = profile.Email,
-                        MobilePhone = $"+1{PreparePhoneNumber(profile.PhoneNumber)}"
+                        MobilePhone = PreparePhoneNumber(profile.PhoneNumber)
                     },
                     JobRole = referenceRequest.JobRole,
                     RequestorEmailAddress = recruiter.Email,
@@ -239,15 +239,18 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
 
         private static string PreparePhoneNumber(string phoneNumber)
         {
-            if (string.IsNullOrEmpty(phoneNumber)) { throw new ArgumentNullException(nameof(phoneNumber)); }
+            var gasOnaFire = new BadRequestException("Invalid or missing phone number");
+
+            if(string.IsNullOrEmpty(phoneNumber)) { throw gasOnaFire; }
 
             var digits = new Regex(@"\d")
                 .Matches(phoneNumber)
-                .Select(regex => regex.Value);
+                .Select(regex => regex.Value)
+                .ToList();
 
-            return string.Join(
-                separator: null,
-                values: digits);
+            if (digits.Count < 10) { throw gasOnaFire; }
+
+            return $"+1{string.Join(null, digits)}";
         }
 
         #endregion

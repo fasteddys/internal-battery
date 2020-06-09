@@ -4,7 +4,7 @@ namespace UpDiddyLib.Domain.Models.CrossChq
 {
     public class ReferenceCandidate : ReferenceHiringManager
     {
-        [JsonProperty("mobile_phone")]
+        [JsonProperty("mobile_phone", DefaultValueHandling = DefaultValueHandling.Ignore)] // omits this property if the value is null
         public string MobilePhone { get; set; }
     }
 
