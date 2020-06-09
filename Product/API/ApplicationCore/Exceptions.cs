@@ -119,6 +119,19 @@ namespace UpDiddyApi.ApplicationCore.Exceptions
         public InsufficientPermissionException(string message, InsufficientPermissionException innerException)
             : base(message, innerException) { }
     }
+
+    public class BadRequestException : Exception
+    {
+        public BadRequestException() { }
+
+        public BadRequestException(string message)
+            : base(message)
+        { }
+
+        public BadRequestException(string message, Exception innerException)
+            : base(message, innerException)
+        { }
+    }
 }
 
 
