@@ -13,6 +13,7 @@ using System.Security.Authentication;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.Models;
@@ -30,6 +31,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
         {
             var newEmploymentTypes = employmentTypeService.GetEmploymentTypes().Result;
             _employmentTypes = newEmploymentTypes.EmploymentTypes.Select(et => new EmploymentTypeDto() { EmploymentTypeGuid = et.EmploymentTypeGuid, Name = et.Name }).ToList();
+            this._client.DefaultRequestHeaders.UserAgent.ParseAdd(@"Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)");
         }
 
         #region Private Members
@@ -56,86 +58,50 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                 if (response.StatusCode != HttpStatusCode.OK)
                     isJobExists = false;
                 rawHtml = await response.Content.ReadAsStringAsync();
-                jobHtml.LoadHtml(rawHtml);
 
-                // check for a message indicating that the job does not exist and continue only if we do not find one
-                if (jobHtml.DocumentNode.SelectSingleNode("//div[contains(@class, 'missing-job-bar')]") == null)
+                // all job page data is embedded in javascript and bound to the DOM by the client. as such, it makes it impossible to parse the html
+                // and extract the job data. the below code is hacky as hell but it works. a slightly better way to do this would be to use the 
+                // Jurassic library to execute the javascript code and get the json data that way. started down that path but got stuck - come back
+                // and revisit that approach if this code becomes too fragile: https://html-agility-pack.net/knowledge-base/18156795/parsing-html-to-get-script-variable-value
+                string matchStart = "phApp.ddo =";
+                string matchEnd = "};";
+                int indexStart = rawHtml.IndexOf(matchStart) + matchStart.Length;
+                int indexEnd = rawHtml.IndexOf(matchEnd, indexStart) + 1; // not using length of the indexEnd here; want to ignore the semi-colon
+                string rawJson = rawHtml.Substring(indexStart, indexEnd - indexStart);
+                JObject parsedJson = JObject.Parse(rawJson);
+                JToken jobData = parsedJson["jobDetail"]["data"]["job"];
+
+                // check for an existing job page based on the RWS identifier
+                existingJobPage = existingJobPages.Where(jp => jp.UniqueIdentifier == jobData["jobId"].ToString()).FirstOrDefault();
+                if (existingJobPage != null)
                 {
-                    var jsonJobData = jobHtml.DocumentNode.SelectSingleNode("//script[@type='application/ld+json']");
-                    rawData = JObject.Parse(jsonJobData.InnerText);
+                    // check to see if the page content has changed since we last ran this process
+                    if (existingJobPage.RawData == jobData.ToString())
+                        jobPageStatusId = 2; // active (no action required)
 
-                    // add formatted job description to job data
-                    var jobSummaryH2 = jobHtml.DocumentNode.SelectSingleNode("//div[contains(@class, 'jdp-job-description-card')]/h2[contains(@class, 'content-card-header')]");
-                    if (jobSummaryH2 != null)
-                        jobSummaryH2.Remove();
-                    var descriptionFromHtml = jobHtml.DocumentNode.SelectSingleNode("//div[contains(@class, 'jdp-job-description-card')]");
-                    if (descriptionFromHtml != null && descriptionFromHtml.InnerHtml != null)
-                        rawData.Add("formattedDescription", descriptionFromHtml.InnerHtml.Trim());
-
-                    // add the RWS identifier to job data
-                    var rwsId = jobHtml.DocumentNode.SelectSingleNode("//div/strong[text()='Posting ID:']/following-sibling::div");
-                    rawData.Add("rwsId", rwsId.InnerText.Trim());
-
-                    // retrieve recruiter information 
-                    var recruiterName = jobHtml.DocumentNode.SelectSingleNode("//div[contains(.,'Name:')]/following-sibling::div");
-                    string[] split = recruiterName.InnerText.Trim().Split(' ');
-                    string recruiterfirstName = null, recruiterlastName = null;
-                    if (split != null)
+                    // use the existing job page
+                    existingJobPage.JobPageStatusId = jobPageStatusId;
+                    existingJobPage.Uri = jobPageUri;
+                    existingJobPage.RawData = jobData.ToString();
+                    existingJobPage.ModifyDate = DateTime.UtcNow;
+                    existingJobPage.ModifyGuid = Guid.Empty;
+                    result = existingJobPage;
+                }
+                else
+                {
+                    // create a new job page
+                    result = new JobPage()
                     {
-                        if (split.Length == 1)
-                        {
-                            recruiterfirstName = split[0];
-                        }
-                        else if (split.Length >= 2)
-                        {
-                            recruiterfirstName = split[0];
-                            recruiterlastName = split[1];
-                        }
-                    }
-                    var recruiterPhone = jobHtml.DocumentNode.SelectSingleNode("//div[contains(.,'Phone:')]/following-sibling::div");
-                    var recruiterEmail = jobHtml.DocumentNode.SelectSingleNode("//div[contains(.,'Email:')]/following-sibling::div/a");
-
-                    // add recruiter information to job data
-                    rawData.Add(
-                        new JProperty("recruiter",
-                            new JObject(
-                                new JProperty("firstName", recruiterfirstName),
-                                new JProperty("lastName", recruiterlastName),
-                                new JProperty("phone", recruiterPhone.InnerText.Trim()),
-                                new JProperty("email", recruiterEmail.InnerText.Trim()))));
-
-                    // check for an existing job page based on the RWS identifier
-                    existingJobPage = existingJobPages.Where(jp => jp.UniqueIdentifier == rwsId.InnerText.Trim()).FirstOrDefault();
-                    if (existingJobPage != null)
-                    {
-                        // check to see if the page content has changed since we last ran this process
-                        if (existingJobPage.RawData == rawData.ToString())
-                            jobPageStatusId = 2; // active (no action required)
-
-                        // use the existing job page
-                        existingJobPage.JobPageStatusId = jobPageStatusId;
-                        existingJobPage.Uri = jobPageUri;
-                        existingJobPage.RawData = rawData.ToString();
-                        existingJobPage.ModifyDate = DateTime.UtcNow;
-                        existingJobPage.ModifyGuid = Guid.Empty;
-                        result = existingJobPage;
-                    }
-                    else
-                    {
-                        // create a new job page
-                        result = new JobPage()
-                        {
-                            CreateDate = DateTime.UtcNow,
-                            CreateGuid = Guid.Empty,
-                            IsDeleted = 0,
-                            JobPageGuid = Guid.NewGuid(),
-                            JobPageStatusId = jobPageStatusId,
-                            RawData = rawData.ToString(),
-                            UniqueIdentifier = rwsId.InnerText.Trim(),
-                            Uri = jobPageUri,
-                            JobSiteId = _jobSite.JobSiteId
-                        };
-                    }
+                        CreateDate = DateTime.UtcNow,
+                        CreateGuid = Guid.Empty,
+                        IsDeleted = 0,
+                        JobPageGuid = Guid.NewGuid(),
+                        JobPageStatusId = jobPageStatusId,
+                        RawData = jobData.ToString(),
+                        UniqueIdentifier = jobData["jobId"].ToString(),
+                        Uri = jobPageUri,
+                        JobSiteId = _jobSite.JobSiteId
+                    };
                 }
             }
             catch (Exception e)
@@ -167,52 +133,46 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
 
-            // retrieve all of the individual job urls by crawling the search results
-            List<Uri> jobPageUrls = new List<Uri>();
-            bool isSearchPageContainsJobs = true;
-            int pageIndex = 1;
-            do
+            // the new structure of search results page prevents us from extracting job urls. cannot figure out a way to 
+            // control pagination via query string parameters or headers or the "sliderRadius" (geo distance). using the
+            // sitemap for EASi instead (replaced dbo.Jobsite.Uri with https://jobs.easi.com/sitemap.xml)
+            List<Uri> sitemapJobPageUrls = new List<Uri>();
+
+            // load the sitemap as xml
+            var sitemapResult = await _client.GetAsync(_jobSite.Uri);
+            string sitemapAsString = await sitemapResult.Content.ReadAsStringAsync();
+            XmlDocument sitemapXml = new XmlDocument();
+            sitemapXml.LoadXml(sitemapAsString);
+
+            // add the namespace used for sitemaps
+            XmlNamespaceManager manager = new XmlNamespaceManager(sitemapXml.NameTable);
+            manager.AddNamespace("s", @"http://www.sitemaps.org/schemas/sitemap/0.9");
+
+            // this regex matches specific job pages (those that contain "job" followed by a number)
+            Regex specificJobUrl = new Regex(@"/job/[0-9]+/");
+
+            // identify the urls that contain specific jobs 
+            XmlNodeList listOfUrls = sitemapXml.SelectNodes("/s:urlset/s:url", manager);
+            foreach (XmlNode url in listOfUrls)
             {
-                UriBuilder searchUriBuilder = new UriBuilder(_jobSite.Uri);
-                searchUriBuilder.Query = "?pagenumber=" + (pageIndex++).ToString();
-
-                var result = await _client.GetAsync(searchUriBuilder.Uri);
-                string response = await result.Content.ReadAsStringAsync();
-
-                HtmlDocument searchResultPage = new HtmlDocument();
-                searchResultPage.LoadHtml(response);
-                var rawJobListData = searchResultPage.DocumentNode.SelectSingleNode("//script[@type='application/ld+json']");
-                var jsonJobListData = JObject.Parse(rawJobListData.InnerText);
-
-                var searchResultPageJobUrls = (from p in jsonJobListData["itemListElement"]
-                                               select (Uri)p["url"]).ToList();
-
-                if (searchResultPageJobUrls != null && searchResultPageJobUrls.Count() > 0)
+                var locText = url["loc"].InnerText;
+                if (specificJobUrl.IsMatch(locText))
                 {
-                    jobPageUrls.AddRange(searchResultPageJobUrls);
-                    Thread.Sleep(_jobSite.CrawlDelayInMilliseconds.Value);
+                    sitemapJobPageUrls.Add(new Uri(locText));
                 }
-                else
-                    isSearchPageContainsJobs = false;
+            }
 
-                rawJobListData = null;
-                jsonJobListData = null;
-                searchResultPage = null;
-                searchResultPageJobUrls = null;
-                GC.Collect(2, GCCollectionMode.Forced);
-            } while (isSearchPageContainsJobs);
-
-            // crawl all of the job urls and create job pages for each
-            (jobPageUrls.ForEachWithDelay(jobPageUri => Task.Run(async () =>
+            // removed parallel processing with crawl delay since all job pages get parsed from the sitemap now
+            foreach (Uri jobUri in sitemapJobPageUrls)
             {
-                JobPage discoveredJobPage = null;
-                discoveredJobPage = await CreateJobPageFromHttpRequest(jobPageUri, existingJobPages);
+                JobPage discoveredJobPage = await CreateJobPageFromHttpRequest(jobUri, existingJobPages);
                 if (discoveredJobPage != null)
                     discoveredJobPages.Add(discoveredJobPage);
-            }), _jobSite.CrawlDelayInMilliseconds.Value)).Wait();
+            }
 
-            if (discoveredJobPages.Count() != jobPageUrls.Count)
-                _syslog.Log(LogLevel.Information, $"***** TEKsystemsProcess.DiscoverJobPages found {discoveredJobPages.Count()} jobs but TEKsystem's website indicates there should be {jobPageUrls.Count} jobs.");
+
+            if (discoveredJobPages.Count() != sitemapJobPageUrls.Count)
+                _syslog.Log(LogLevel.Information, $"***** TEKsystemsProcess.DiscoverJobPages found {discoveredJobPages.Count()} jobs but TEKsystem's website indicates there should be {sitemapJobPageUrls.Count} jobs.");
 
             /* deal with duplicate job postings (or job postings that are similar enough to be considered duplicates). examples:
              * - two job listings that have the same url and id but in the raw data the "applications" property is different (id: J3Q20V76L8YK2XBR6S8)
@@ -264,12 +224,12 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                 jobPostingDto.Company = new CompanyDto() { CompanyGuid = _companyGuid };
                 jobPostingDto.ThirdPartyIdentifier = jobPage.UniqueIdentifier;
                 jobPostingDto.PostingExpirationDateUTC = DateTime.UtcNow.AddYears(1);
-
+                
                 // everything else relies upon valid raw data
                 var jobData = JsonConvert.DeserializeObject<dynamic>(jobPage.RawData);
                 jobPostingDto.Title = Helpers.ConvertJValueToString(jobData.title);
-                jobPostingDto.Description = Helpers.ConvertJValueToString(jobData.formattedDescription);
-                string rawDatePosted = Helpers.ConvertJValueToString((jobData.datePosted));
+                jobPostingDto.Description = Helpers.ConvertJValueToString(jobData.structureData.description);
+                string rawDatePosted = Helpers.ConvertJValueToString((jobData.postedDate));
                 DateTime datePosted;
                 if (DateTime.TryParse(rawDatePosted, out datePosted))
                 {
@@ -282,20 +242,28 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     else
                         jobPostingDto.CreateDate = DateTime.UtcNow;
                 }
-                jobPostingDto.City = Helpers.ConvertJValueToString(jobData.jobLocation.address.addressLocality);
-                jobPostingDto.Province = Helpers.ConvertJValueToString(jobData.jobLocation.address.addressRegion);
-                jobPostingDto.Country = Helpers.ConvertJValueToString(jobData.jobLocation.address.addressCountry);
+                jobPostingDto.City = Helpers.ConvertJValueToString(jobData.structureData.jobLocation.address.addressLocality);
+                jobPostingDto.Province = Helpers.ConvertJValueToString(jobData.structureData.jobLocation.address.addressRegion);
+                jobPostingDto.Country = Helpers.ConvertJValueToString(jobData.structureData.jobLocation.address.addressCountry);
+
+                string recruiterName = Helpers.ConvertJValueToString(jobData.recruiterName);
+                string[] splitRecruiterName = recruiterName.Split(" ");
+                string firstName = null, lastName = null;
+                if (splitRecruiterName.Length == 2)
+                {
+                    firstName = splitRecruiterName[0];
+                    lastName = splitRecruiterName[1];
+                }
                 jobPostingDto.Recruiter = new RecruiterDto()
                 {
-                    Email = Helpers.ConvertJValueToString(jobData.recruiter.email),
-                    FirstName = Helpers.ConvertJValueToString(jobData.recruiter.firstName),
-                    LastName = Helpers.ConvertJValueToString(jobData.recruiter.lastName),
-                    PhoneNumber = Helpers.ConvertJValueToString(jobData.recruiter.phone)
+                    Email = Helpers.ConvertJValueToString(jobData.recruiterEmail),
+                    FirstName = firstName,
+                    LastName = lastName,
+                    PhoneNumber = Helpers.ConvertJValueToString(jobData.recruiterPhone)
                 };
-                string rawSkills = Helpers.ConvertJValueToString(jobData.skills);
-                if (!string.IsNullOrWhiteSpace(rawSkills))
+                string[] skills = Helpers.ConvertJArrayToStringArray(jobData.ml_skills);
+                if (skills != null)
                 {
-                    string[] skills = (jobData.skills).Value.Split(',');
                     List<SkillDto> skillsDto = new List<SkillDto>();
                     foreach (var skill in skills)
                     {
@@ -307,20 +275,18 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                 }
                 if (_employmentTypes != null)
                 {
-                    string[] rawEmploymentTypeArray = Helpers.ConvertJArrayToStringArray(jobData.employmentType);
-                    string rawEmploymentType = null;
-                    if (rawEmploymentType != null && rawEmploymentType.Length > 0)
-                        rawEmploymentType = rawEmploymentTypeArray.First();
+                    string rawEmploymentType = Helpers.ConvertJValueToString(jobData.structureData.employmentType);
 
+                    // todo: may need to revisit these values - not accounting for other values I have seen appear in the new phenom jobs: 'Direct Hire', 'Direct Placement', 'Contract-to-Hire' - those don't map to existing values - should we create new lookups?
                     switch (rawEmploymentType)
                     {
-                        case "CONTRACTOR":
+                        case "Contract":
                             jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Contractor").FirstOrDefault();
                             break;
-                        case "FULL_TIME":
+                        case "Full-Time":
                             jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Full-Time").FirstOrDefault();
                             break;
-                        case "PART_TIME":
+                        case "Part-Time":
                             jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Part-Time").FirstOrDefault();
                             break;
                         default:
@@ -328,7 +294,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                             break;
                     }
                 }
-                
+
                 return jobPostingDto;
             }
             catch (Exception e)

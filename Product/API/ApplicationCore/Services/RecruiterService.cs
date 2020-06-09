@@ -189,20 +189,38 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             List<RecruiterInfoDto> rVal = null;
             rVal = await _repositoryWrapper.StoredProcedureRepository.GetRecruiters(limit, offset, sort, order);
+            // hydrate IsInAuth0RecruiterGroup property 
+            foreach(RecruiterInfoDto rid in rVal)
+            {
+                var getUserResponse = await _userService.GetUserByEmailAsync(rid.Email);
+                if (getUserResponse.Success)
+                    rid.IsInAuth0RecruiterGroup = getUserResponse.User.Roles.Contains(Role.Recruiter);
+                else
+                    rid.IsInAuth0RecruiterGroup = false;                
+            }
             return _mapper.Map<RecruiterInfoListDto>(rVal);
         }
 
 
         public async Task<Guid> AddRecruiterAsync(RecruiterInfoDto recruiterDto)
         {
-            // Do validations             
+            // Do validations  
+            Subscriber subscriber = null;
             if (recruiterDto.SubscriberGuid == null)
-                throw new FailedValidationException("Subscriber must be specified");
-
-            var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(recruiterDto.SubscriberGuid.Value);
-            if (subscriber == null)
-                throw new FailedValidationException($"{recruiterDto.SubscriberGuid.Value} is not a valid subscriber");
-
+            {
+                //try and get subscriber from recrutier email 
+                subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByEmailAsync(recruiterDto.Email);
+                if (subscriber == null)
+                    throw new FailedValidationException($"Cannot locate by Subscriber Email = {recruiterDto.Email}");
+            }                
+            else
+            {
+                //try and get subscriber by subscriber guid
+                subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(recruiterDto.SubscriberGuid.Value);
+                if (subscriber == null)
+                    throw new FailedValidationException($"Cannot locate by Subscriber by SubscriberGuid {recruiterDto.SubscriberGuid.Value}");
+            }
+            
             if (recruiterDto.CompanyGuid == null)
                 throw new FailedValidationException("Company must be specified");
 
@@ -229,8 +247,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                     // Update recruiter in azure
                     _azureSearchService.AddOrUpdateRecruiter(existingRecruiter);
                 }
-                else
-                    throw new FailedValidationException($"Subscriber {subscriber.SubscriberGuid} is already a Recruiter");
+
+                recruiterGuid = existingRecruiter.RecruiterGuid;
+ 
             }
             else
             {
@@ -265,7 +284,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             //Assign permission to recruiter
             if (recruiterDto.IsInAuth0RecruiterGroup != null && recruiterDto.IsInAuth0RecruiterGroup.Value == true)
-                await AssignRecruiterPermissionsAsync(recruiterDto.SubscriberGuid.Value);
+                await AssignRecruiterPermissionsAsync(subscriber.SubscriberGuid.Value);
             
             return recruiterGuid;
         }
@@ -330,7 +349,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                     }
                 }
             }
-
 
         }
 
