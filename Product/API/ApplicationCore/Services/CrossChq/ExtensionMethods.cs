@@ -19,6 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             return services
+                .Configure<CrossChqOptions>(config)
                 .AddTransient<ICrosschqService, CrosschqService>()
                 .AddTransient<ICrossChqWebClient, CrossChqWebClient>();
         }

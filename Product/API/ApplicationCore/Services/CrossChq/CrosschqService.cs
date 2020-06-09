@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Graph;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,8 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyApi.Models.CrossChq;
 using UpDiddyLib.Domain.Models.CrossChq;
+using UpDiddyLib.Helpers;
+using Constants = UpDiddyLib.Helpers.Constants;
 using IProfileService = UpDiddyApi.ApplicationCore.Interfaces.Business.G2.IProfileService;
 
 namespace UpDiddyApi.ApplicationCore.Services.CrossChq
@@ -32,6 +35,8 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
         private readonly IMapper _mapper;
         private readonly IHangfireService _hangfireService;
         private readonly ICrossChqWebClient _webClient;
+        private readonly ISysEmail _emailService;
+        private readonly CrossChqOptions _options;
 
         public CrosschqService(
             UpDiddyDbContext context,
@@ -42,7 +47,9 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
             ILogger<SubscriberService> logger,
             IMapper mapper,
             IHangfireService hangfireService,
-            ICrossChqWebClient webClient)
+            ICrossChqWebClient webClient,
+            ISysEmail emailService,
+            IOptions<CrossChqOptions> optionsAccessor)
         {
             _db = context;
             _profileService = profileService;
@@ -53,6 +60,8 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
             _mapper = mapper;
             _hangfireService = hangfireService;
             _webClient = webClient;
+            _emailService = emailService;
+            _options = optionsAccessor.Value;
         }
 
         public async Task UpdateReferenceChkStatus(CrosschqWebhookDto crosschqWebhookDto)
@@ -136,6 +145,8 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
                 _logger.LogInformation($"CrosschqService:CreateReferenceRequest  CrossChq request_id: {requestId} ");
 
                 await _repository.CrosschqRepository.AddReferenceCheck(profileGuid, recruiter.RecruiterGuid, request, requestId);
+
+                await SendSuccessEmail(profile.Email);
 
                 return requestId;
             }
@@ -241,6 +252,13 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
                 return null;
             }
         }
+
+        private async Task SendSuccessEmail(string emailAddress)
+            => await _emailService.SendTemplatedEmailAsync(
+                emailAddress,
+                _options.NotificationEmailTemplate,
+                null,
+                Constants.SendGridAccount.Transactional);
 
         private static string PreparePhoneNumber(string phoneNumber)
         {
