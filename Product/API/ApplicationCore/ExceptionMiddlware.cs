@@ -75,7 +75,7 @@ public class ExceptionMiddleware
         }
         catch(InsufficientPermissionException ex)
         {
-            await CreateResponse(401, ex, context);
+            await CreateResponse(403, ex, context);
         }
         catch (Exception ex)
         {
