@@ -27,7 +27,7 @@ namespace UpDiddyApi.Helpers
 
 
             // request parse from hiring solved 
-            await hiringSolvedService.RequestParse(subscriber.SubscriberId, resume.BlobName, base64EncodedString);
+            // await hiringSolvedService.RequestParse(subscriber.SubscriberId, resume.BlobName, base64EncodedString);
             
             return resumeParse.ResumeParseGuid;
         }
