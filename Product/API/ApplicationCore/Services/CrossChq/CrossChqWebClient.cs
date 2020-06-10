@@ -24,7 +24,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
             _logger = logger;
         }
 
-        public async Task<string> PostReferenceRequestAsync(ReferenceRequest request)
+        public async Task<string> PostReferenceRequestAsync(ReferenceRequestDto request)
         {
             try
             {
@@ -50,7 +50,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
             }
         }
 
-        public async Task<ReferenceResponse> GetReferenceRequestAsync(string referenceId)
+        public async Task<ReferenceResponseDto> GetReferenceRequestAsync(string referenceId)
         {
             try
             {
@@ -61,7 +61,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
 
                 var content = await GetContent(responseMessage);
 
-                return JsonConvert.DeserializeObject<ReferenceResponse>(content);
+                return JsonConvert.DeserializeObject<ReferenceResponseDto>(content);
             }
             catch (HttpRequestException ex)
             {

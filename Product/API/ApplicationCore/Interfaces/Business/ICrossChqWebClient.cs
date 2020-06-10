@@ -5,8 +5,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface ICrossChqWebClient
     {
-        Task<string> PostReferenceRequestAsync(ReferenceRequest request);
+        Task<string> PostReferenceRequestAsync(ReferenceRequestDto request);
 
-        Task<ReferenceResponse> GetReferenceRequestAsync(string referenceId);
+        Task<ReferenceResponseDto> GetReferenceRequestAsync(string referenceId);
     }
 }
