@@ -265,8 +265,9 @@ namespace UpDiddyApi
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.PurgeSendGridAuditRecords(), Cron.Daily());
 
        
-            string HiringSolvedCronExpression = $"*/{Configuration["HiringSolved:PollIntervalInSeconds"]} * * * * *";
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.GetHiringSolvedResumeParseUpdates(), HiringSolvedCronExpression);
+            //disabled 2020.06.10 - the remote rest service does not seem to be working since 2020.04.13
+            //string HiringSolvedCronExpression = $"*/{Configuration["HiringSolved:PollIntervalInSeconds"]} * * * * *";
+            //RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.GetHiringSolvedResumeParseUpdates(), HiringSolvedCronExpression);
 
 
 
