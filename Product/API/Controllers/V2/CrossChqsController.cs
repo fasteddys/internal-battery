@@ -32,7 +32,7 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet("references/report/{referencecheckguid}")]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        public async Task<IActionResult> GetReferenceCheckReportPdf(Guid referencecheckGuid, string reportType)
+        public async Task<IActionResult> GetReferenceCheckReportPdf(Guid referencecheckGuid, string reportType = "Full")
         {
             var referenceCheckReport = await _crosschqService.GetReferenceCheckReportPdf(referencecheckGuid, reportType);
 
