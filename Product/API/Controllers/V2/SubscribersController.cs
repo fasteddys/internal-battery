@@ -34,7 +34,7 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         [HttpPost]
-        //[MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
         [Route("new-subscriber-registration")]
         public async Task<IActionResult> NewSubscriberRegistration([FromBody] SubscriberDto subscriberDto)
         {
