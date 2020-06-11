@@ -278,6 +278,7 @@ namespace UpDiddyApi.Models
         public DbQuery<UpDiddyLib.Domain.Models.JobSiteScrapeStatisticDto> JobSiteScrapeStatistics { get; set; }
         public DbQuery<UsersDto> Users { get; set; }
         public DbQuery<UsersDetailDto> UsersDetail { get; set; }
+        public DbQuery<HiringManagerDetailDto> HiringManagersDetail { get; set; }
         public DbQuery<PartnerUsers> PartnerUsers { get; set; } 
         public DbQuery<SubscriberEmailStatisticDto> SubscriberEmailStatistics { get; set; }
         public DbQuery<ProfileWishlistDto> ProfileWishlists { get; set; }

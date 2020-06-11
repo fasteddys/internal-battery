@@ -10,7 +10,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     {
         Task<UsersListDto> GetNewUsers();
         Task<List<UsersDetailDto>> GetAllUsersDetail();
-        Task<List<UsersDetailDto>> GetAllHiringManagersDetail();
+        Task<List<HiringManagerDetailDto>> GetAllHiringManagersDetail();
         Task<List<UsersDetailDto>> GetUsersByPartnerDetail(Guid partner, DateTime startDate, DateTime endDate);
         Task<List<PartnerUsers>> GetUsersByPartner(DateTime startDate, DateTime endDate);
     }

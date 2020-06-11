@@ -18,6 +18,8 @@ using UpDiddyLib.Domain.Models.HubSpot;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 using Newtonsoft.Json;
+using UpDiddyApi.ApplicationCore.Services.HiringManager;
+using UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -30,15 +32,17 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IHangfireService _hangfireService;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHiringManagerService _hiringManagerService;
 
-        public HubSpotService(UpDiddyDbContext db, ILogger<HubSpotService> sysLog, IRepositoryWrapper repositoryWrapper, IHangfireService hangfireService, IConfiguration configuration, IHttpClientFactory httpClientFactory )
-        {            
+        public HubSpotService(UpDiddyDbContext db, ILogger<HubSpotService> sysLog, IRepositoryWrapper repositoryWrapper, IHangfireService hangfireService, IConfiguration configuration, IHttpClientFactory httpClientFactory, IHiringManagerService hiringManagerService)
+        {
             _db = db;
-            _syslog = sysLog;            
+            _syslog = sysLog;
             _repositoryWrapper = repositoryWrapper;
             _hangfireService = hangfireService;
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
+            _hiringManagerService = hiringManagerService;
         }
 
 
@@ -48,7 +52,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _syslog.LogInformation($"HubSpotService.AddOrUpdateContactBySubscribterGuid: Starting for subscriber {subscriberGuid} nonBlocking = {nonBlocking}");
 
             // Fire off background job if non-block has been requested and hangfire is enabled 
-            if (nonBlocking )
+            if (nonBlocking)
             {
                 _syslog.LogInformation($"HubSpotService.AddOrUpdateContactBySubscribterGuid: Background job starting for subscriber {subscriberGuid}");
                 _hangfireService.Enqueue<HubSpotService>(j => j._AddOrUpdateContactBySubscriberGuid(subscriberGuid, lastLoginDateTime));
@@ -61,7 +65,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 _syslog.LogInformation($"HubSpotService.AddOrUpdateContactBySubscribterGuid: Subscriber {subscriberGuid} has hubSpotVid = {hubSpotVid}");
                 return hubSpotVid;
             }
-            
+
         }
 
 
@@ -97,7 +101,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                             .FirstOrDefault();
 
                 step = 2;
-                string g2PublicSkills = string.Empty;                   
+                string g2PublicSkills = string.Empty;
                 if (g2Profile?.PublicSkills != null)
                 {
                     g2Profile?.PublicSkills.Replace(';', '\n');
@@ -105,7 +109,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 //Get LastResumeUploadDate for subscriber
                 step = 3;
-                
+
                 DateTime? lastResumeUploadDate = null;
                 try
                 {
@@ -113,11 +117,32 @@ namespace UpDiddyApi.ApplicationCore.Services
                 }
                 catch { }
 
-             
+
                 step = 4;
                 // get the source partner for the subscriber 
                 SubscriberSourceDto sourcePartner = await _repositoryWrapper.SubscriberRepository.GetSubscriberSource(subscriber.SubscriberId);
                 step = 5;
+
+                bool? isHiringManager = null;
+                try
+                {
+                    var hiringManager = await _hiringManagerService.GetHiringManagerBySubscriberGuid(subscriberGuid);
+                    isHiringManager = hiringManager != null ? true : false;
+                }
+                catch (Exception e)
+                {
+                    _syslog.LogError($"HubSpotService._AddOrUpdateContact: An error occurred while trying to retrieve hiring manager: {e.Message}");
+                }
+
+                // consider removing 'lastLoginDateTime' - does not appear to be used. quick and dirty workaround for now
+                DateTime? lastLogin;
+                if (lastLoginDateTime.HasValue)
+                    lastLogin = lastLoginDateTime;
+                else if (subscriber.LastSignIn.HasValue)
+                    lastLogin = subscriber.LastSignIn;
+                else
+                    lastLogin = DateTime.UtcNow;
+
                 HubSpotContactDto contact = new HubSpotContactDto()
                 {
                     SubscriberGuid = subscriberGuid,
@@ -126,11 +151,12 @@ namespace UpDiddyApi.ApplicationCore.Services
                     Email = subscriber.Email,
                     HubSpotVid = subscriber?.HubSpotVid,
                     DateJoined = subscriber.CreateDate,
-                    LastLoginDate = lastLoginDateTime.HasValue ? lastLoginDateTime.Value : subscriber.LastSignIn.Value,
+                    LastLoginDate = lastLogin,
                     SelfCuratedSkills = selfCuratedSkills,
-                    SourcePartner = sourcePartner != null ?  sourcePartner.PartnerName : null,
+                    SourcePartner = sourcePartner != null ? sourcePartner.PartnerName : null,
                     SkillsG2 = g2PublicSkills,
-                    LastResumeUploadDate = lastResumeUploadDate
+                    LastResumeUploadDate = lastResumeUploadDate,
+                    IsHiringManager = isHiringManager
                 };
                 step = 6;
                 // map the contact dto to a hubspot property dto and serialize it
@@ -159,7 +185,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     _syslog.LogInformation($"HubSpotService._AddOrUpdateContact: Success HubSpot returned OK");
                     // extract vid from response 
                     JObject responseObject = JObject.Parse(ResponseJson);
-                    string vidString = (string)responseObject["vid"];                    
+                    string vidString = (string)responseObject["vid"];
                     rval = long.Parse(vidString);
                     _syslog.LogInformation($"HubSpotService._AddOrUpdateContactBySubscriberGuid: Vid returned {rval}");
 
@@ -168,21 +194,21 @@ namespace UpDiddyApi.ApplicationCore.Services
                 }
                 else
                 {
-                    _syslog.LogError($"HubSpotService._AddOrUpdateContactBySubscriberGuid: See details below;\n\r "+ 
+                    _syslog.LogError($"HubSpotService._AddOrUpdateContactBySubscriberGuid: See details below;\n\r " +
                         $"Hubspot API request: {JsonConvert.SerializeObject(request)}\n\r" +
                         $"Hubspot API http response: {JsonConvert.SerializeObject(SearchResponse) ?? "null"}\n\r" +
                         $"Hubspot API response content: {ResponseJson ?? "null"}");
                     throw new Exception($"HubSpot service failure with statuscode {SearchResponse.StatusCode}");
                 }
             }
-            catch ( Exception ex )
+            catch (Exception ex)
             {
                 _syslog.LogError($"HubSpotService._AddOrUpdateContactBySubscriberGuid: Error {ex.ToString()} step = {step}");
             }
             finally
             {
                 _syslog.LogInformation($"HubSpotService._AddOrUpdateContactBySubscriberGuid: Done");
-            }                                      
+            }
             return rval;
         }
 
@@ -192,7 +218,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         //todo find a more elegant way to do this mapping when time allows 
         private HubSpotPropertiesDto MapToHubSpotPropertiesDto(HubSpotContactDto hubSpotContactDto)
         {
-
             HubSpotPropertiesDto rVal = new HubSpotPropertiesDto();
 
             // ran a test and with property of FIRSTNAME and it worked, so..  hubspot property names are case independent
@@ -218,7 +243,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             };
             rVal.properties.Add(p);
 
-            if ( hubSpotContactDto.DateJoined != null )
+            if (hubSpotContactDto.DateJoined != null)
             {
                 p = new HubSpotProperty()
                 {
@@ -229,7 +254,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
             if (hubSpotContactDto.LastLoginDate != null)
-            {        
+            {
                 p = new HubSpotProperty()
                 {
                     property = "lastlogin",
@@ -249,7 +274,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 rVal.properties.Add(p);
             }
 
-            if ( string.IsNullOrEmpty(hubSpotContactDto.SelfCuratedSkills) == false )
+            if (string.IsNullOrEmpty(hubSpotContactDto.SelfCuratedSkills) == false)
             {
                 p = new HubSpotProperty()
                 {
@@ -279,13 +304,19 @@ namespace UpDiddyApi.ApplicationCore.Services
                 rVal.properties.Add(p);
             }
 
-
+            if (hubSpotContactDto.IsHiringManager.HasValue)
+            {
+                p = new HubSpotProperty()
+                {
+                    property = "b2b_hiring_manager",
+                    value = hubSpotContactDto.IsHiringManager.Value.ToString().ToLower()
+                };
+                rVal.properties.Add(p);
+            }
 
             return rVal;
         }
 
         #endregion
-
-
     }
 }
