@@ -11,6 +11,6 @@ namespace UpDiddyLib.Domain.Models.CrossChq
         public string JobPosition { get; set; }
 
         [JsonProperty("configParams")]
-        public CrossChqConfigurationParameters ConfigurationParameters { get; set; }
+        public ConfigurationParametersDto ConfigurationParameters { get; set; }
     }
 }

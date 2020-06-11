@@ -26,7 +26,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             _dbContext = dbContext;
         }
 
-        public async Task AddReferenceCheck(Guid profileGuid, Guid recruiterGuid, ReferenceRequest referenceRequest, string referenceCheckRequestId)
+        public async Task AddReferenceCheck(Guid profileGuid, Guid recruiterGuid, ReferenceRequestDto referenceRequest, string referenceCheckRequestId)
         {
             //The IsDeleted flag check is not added in the below queries while retrieving the profile and recruiter entities,
             //based on the assumption that the profile and recruiter validity check was done before this method is called.

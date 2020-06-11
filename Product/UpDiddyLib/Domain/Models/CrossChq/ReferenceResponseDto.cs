@@ -4,13 +4,13 @@ using System.Collections.Generic;
 
 namespace UpDiddyLib.Domain.Models.CrossChq
 {
-    public class ReferenceResponse
+    public class ReferenceResponseDto
     {
         [JsonProperty("id")]
         public string ReferenceResponseId { get; set; }
 
         [JsonProperty("candidate")]
-        public ReferenceCandidate Candidate { get; set; }
+        public ReferenceCandidateDto Candidate { get; set; }
 
         [JsonProperty("job_position")]
         public string JobPosition { get; set; }
@@ -25,7 +25,7 @@ namespace UpDiddyLib.Domain.Models.CrossChq
         public int Progress { get; set; }
 
         [JsonProperty("references")]
-        public List<Reference> References { get; set; }
+        public List<ReferenceDto> References { get; set; }
 
         [JsonProperty("report_url")]
         public string ReportURL { get; set; }

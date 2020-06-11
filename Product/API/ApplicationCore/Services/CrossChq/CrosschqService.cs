@@ -108,9 +108,9 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
                 var recruiter = await _recruiterService
                     .GetRecruiterBySubscriberAsync(subscriberGuid);
 
-                var request = new ReferenceRequest // TODO:  rename to "ReferenceRequestDto" when I know there won't be a merge collision!
+                var request = new ReferenceRequestDto
                 {
-                    Candidate = new ReferenceCandidate // TODO:  rename to "ReferenceCandidateDto"
+                    Candidate = new ReferenceCandidateDto
                     {
                         FirstName = profile.FirstName,
                         LastName = profile.LastName,
@@ -120,7 +120,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
                     JobRole = referenceRequest.JobRole,
                     RequestorEmailAddress = recruiter.Email,
                     UseSMS = false,
-                    ConfigurationParameters = new ReferenceRequestConfigurationParameters
+                    ConfigurationParameters = new ConfigurationParametersDto
                     {
                         Managers = referenceRequest?.ConfigurationParameters.Managers ?? 0,
                         Employees = referenceRequest?.ConfigurationParameters.Employees ?? 0,
@@ -132,7 +132,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
                     SendCompletedNotification = false,
                     CandidateMessage = referenceRequest.CandidateMessage,
                     JobPosition = referenceRequest.JobPosition,
-                    HiringManager = new ReferenceHiringManager
+                    HiringManager = new ReferenceHiringManagerDto
                     {
                         FirstName = recruiter.FirstName,
                         LastName = recruiter.LastName,
@@ -187,7 +187,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
                         PercentComplete = rc.status?.Progress ?? 0,
                         CreateDate = rc.status?.CreateDate,
                         References = rc.referenceCheck.CandidateReference
-                            ?.Select(r => new Reference
+                            ?.Select(r => new ReferenceDto
                             {
                                 FirstName = r.FirstName,
                                 LastName = r.LastName,

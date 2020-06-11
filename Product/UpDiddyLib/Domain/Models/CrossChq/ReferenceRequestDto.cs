@@ -2,10 +2,10 @@
 
 namespace UpDiddyLib.Domain.Models.CrossChq
 {
-    public class ReferenceRequest
+    public class ReferenceRequestDto
     {
         [JsonProperty("candidate")]
-        public ReferenceCandidate Candidate { get; set; }
+        public ReferenceCandidateDto Candidate { get; set; }
 
         [JsonProperty("jobrole")]
         public string JobRole { get; set; }
@@ -17,7 +17,7 @@ namespace UpDiddyLib.Domain.Models.CrossChq
         public bool UseSMS { get; set; }
 
         [JsonProperty("config_params")]
-        public ReferenceRequestConfigurationParameters ConfigurationParameters { get; set; }
+        public ConfigurationParametersDto ConfigurationParameters { get; set; }
 
         [JsonProperty("send_past_due_notification")]
         public bool SendPastDueNotification { get; set; }
@@ -32,24 +32,6 @@ namespace UpDiddyLib.Domain.Models.CrossChq
         public string JobPosition { get; set; }
 
         [JsonProperty("hiring_manager")]
-        public ReferenceHiringManager HiringManager { get; set; }
-    }
-
-    public class ReferenceRequestConfigurationParameters
-    {
-        [JsonProperty("managers")]
-        public int Managers { get; set; }
-
-        [JsonProperty("employees")]
-        public int Employees { get; set; }
-
-        [JsonProperty("peers")]
-        public int Peers { get; set; }
-
-        [JsonProperty("business")]
-        public int Business { get; set; }
-
-        [JsonProperty("social")]
-        public int Social { get; set; }
+        public ReferenceHiringManagerDto HiringManager { get; set; }
     }
 }
