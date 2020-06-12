@@ -1,7 +1,5 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace UpDiddyLib.Dto
 {
@@ -9,28 +7,18 @@ namespace UpDiddyLib.Dto
     {
         //Subscriber data
         public string FirstName { get; set; }
-
         public string LastName { get; set; }
-
         public string Title { get; set; }
-
         public string City { get; set; }
-
         public Guid? StateGuid { get; set; }
-
         public string PhoneNumber { get; set; }
-
         public string Email { get; set; }
 
         //HM company fields
         public string CompanyName { get; set; }
-
         public int? CompanySize { get; set; }
-
         public string CompanyDescription { get; set; }
-
         public string CompanyWebsiteUrl { get; set; }
-
         public Guid? CompanyIndustryGuid { get; set; }
 
         //HM special Notes
@@ -39,7 +27,5 @@ namespace UpDiddyLib.Dto
 
         [JsonIgnore]
         public Guid? HiringManagerGuid { get; set; }
-
-
     }
 }
