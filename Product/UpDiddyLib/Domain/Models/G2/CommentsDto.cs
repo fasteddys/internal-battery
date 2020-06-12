@@ -12,7 +12,7 @@ namespace UpDiddyLib.Domain.Models.G2
         public Guid RecruiterGuid { get; set; }
 
         [Required]
-        [StringLength(500)]
+        [StringLength(2500)]
         public string Value { get; set; }
 
         public bool IsVisibleToCompany { get; set; }

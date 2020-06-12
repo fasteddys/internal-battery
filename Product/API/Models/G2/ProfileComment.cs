@@ -18,7 +18,7 @@ namespace UpDiddyApi.Models.G2
         public int RecruiterId { get; set; }
         public virtual Recruiter Recruiter { get; set; }
         [Required]
-        [StringLength(500)]
+        [StringLength(2500)]
         public string Value { get; set; }
         [DefaultValue(false)]
         public bool IsVisibleToCompany { get; set; }
