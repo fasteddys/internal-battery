@@ -10,6 +10,5 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
     public interface IHubSpotService
     {
         Task<long> AddOrUpdateContactBySubscriberGuid(Guid subscriberGuid, DateTime? lastLoginDateTime = null, bool nonBlocking = true);
-        Task UpdateHiringManager(HubSpotContactDto hubspotContactDto);
     }
 }

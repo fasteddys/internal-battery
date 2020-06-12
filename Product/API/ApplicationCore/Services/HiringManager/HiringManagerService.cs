@@ -234,7 +234,6 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             try
             {
                 await _repositoryWrapper.HiringManagerRepository.UpdateHiringManager(subscriber.SubscriberId, hiringManager);
-                // retrieve
                 await _hubspotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid, null, true);
             }
             catch (Exception ex)

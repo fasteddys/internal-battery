@@ -31,9 +31,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IHangfireService _hangfireService;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IHiringManagerService _hiringManagerService;
 
-        public HubSpotService(UpDiddyDbContext db, ILogger<HubSpotService> sysLog, IRepositoryWrapper repositoryWrapper, IHangfireService hangfireService, IConfiguration configuration, IHttpClientFactory httpClientFactory, IHiringManagerService hiringManagerService)
+        public HubSpotService(UpDiddyDbContext db, ILogger<HubSpotService> sysLog, IRepositoryWrapper repositoryWrapper, IHangfireService hangfireService, IConfiguration configuration, IHttpClientFactory httpClientFactory)
         {
             _db = db;
             _syslog = sysLog;
@@ -41,62 +40,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             _hangfireService = hangfireService;
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
-            _hiringManagerService = hiringManagerService;
-        }
-
-        /// <summary>
-        /// This method receives all of the information needed to send a message to HubSpot. I realize that this method contains redundant code, but this was the quickest
-        /// path forward for the upcoming release that avoids a circular dependency. The reason for taking the quickest path is that there is an urgent business need
-        /// to get hiring manager data into HubSpot. 
-        /// </summary>
-        /// <param name="hubspotContactDto"></param>
-        /// <returns></returns>
-        public async Task UpdateHiringManager(HubSpotContactDto hubspotContactDto)
-        {
-            try
-            {
-                long rval = -1;
-                // map the contact dto to a hubspot property dto and serialize it
-                string json = JsonConvert.SerializeObject(MapToHubSpotPropertiesDto(hubspotContactDto));
-                _syslog.LogInformation($"HubSpotService.UpdateHiringManager: json = {json}");
-                string BaseUrl = _configuration["HubSpot:BaseUrl"];
-                string ApiKey = _configuration["HubSpot:ApiKey"];
-                string Url = BaseUrl + "/contacts/v1/contact/createOrUpdate/email/" + hubspotContactDto.Email + "?hapikey=" + ApiKey;
-
-                // call hubspot  
-                HttpClient client = _httpClientFactory.CreateClient(Constants.HttpPostClientName);
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, Url)
-                {
-                    Content = new StringContent(json)
-                };
-
-                request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                HttpResponseMessage SearchResponse = AsyncHelper.RunSync<HttpResponseMessage>(() => client.SendAsync(request));
-                string ResponseJson = AsyncHelper.RunSync<string>(() => SearchResponse.Content.ReadAsStringAsync());
-                _syslog.LogInformation($"HubSpotService:UpdateHiringManager: response = {ResponseJson}");
-
-                // if all went well capture the returned vid   
-                if (SearchResponse.StatusCode == System.Net.HttpStatusCode.OK)
-                {
-                    _syslog.LogInformation($"HubSpotService.UpdateHiringManager: Success; HubSpot returned OK");
-                    // extract vid from response 
-                    JObject responseObject = JObject.Parse(ResponseJson);
-                    string vidString = (string)responseObject["vid"];
-                    rval = long.Parse(vidString);
-                    _syslog.LogInformation($"HubSpotService.UpdateHiringManager: vid = {rval}");
-                }
-                else
-                {
-                    _syslog.LogError($"HubSpotService.UpdateHiringManager; See details below:\n\r " +
-                        $"Hubspot API request: {JsonConvert.SerializeObject(request)}\n\r" +
-                        $"Hubspot API http response: {JsonConvert.SerializeObject(SearchResponse) ?? "null"}\n\r" +
-                        $"Hubspot API response content: {ResponseJson ?? "null"}");
-                }
-            }
-            catch (Exception ex)
-            {
-                _syslog.LogError($"HubSpotService.UpdateHiringManager: Error {ex.ToString()}");
-            }
         }
 
         public async Task<long> AddOrUpdateContactBySubscriberGuid(Guid subscriberGuid, DateTime? lastLoginDateTime = null, bool nonBlocking = true)
@@ -129,10 +72,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             try
             {
                 Subscriber subscriber = _repositoryWrapper.SubscriberRepository.GetAll()
-                        .Include(s1 => s1.SubscriberSkills)
-                        .ThenInclude(ss => ss.Skill)
-                        .Where(x => x.IsDeleted == 0 && x.SubscriberGuid == subscriberGuid)
-                        .FirstOrDefault();
+                    .Include(s1 => s1.SubscriberSkills)
+                    .ThenInclude(ss => ss.Skill)
+                    .Include(s => s.State)
+                    .Where(x => x.IsDeleted == 0 && x.SubscriberGuid == subscriberGuid)
+                    .FirstOrDefault();
 
                 if (subscriber == null)
                     throw new DllNotFoundException($"HubSpotService._AddOrUpdateContactBySubscribterGuid: cannot locate subscriber {subscriberGuid}");
@@ -171,16 +115,29 @@ namespace UpDiddyApi.ApplicationCore.Services
                 step = 4;
                 // get the source partner for the subscriber 
                 SubscriberSourceDto sourcePartner = await _repositoryWrapper.SubscriberRepository.GetSubscriberSource(subscriber.SubscriberId);
+                string hiringManagerCity = null, hiringManagerCompany = null, hiringManagerCompanySize = null, hiringManagerIndustry = null, hiringManagerPhone = null, hiringManagerState = null, hiringManagerWebsite = null;
+
                 step = 5;
                 bool? isHiringManager = null;
                 try
                 {
-                    var hiringManager = await _hiringManagerService.GetHiringManagerBySubscriberGuid(subscriberGuid);
+                    var hiringManager = await _repositoryWrapper.HiringManagerRepository.GetHiringManagerBySubscriberId(subscriber.SubscriberId);
                     isHiringManager = hiringManager != null ? true : false;
+
+                    if (isHiringManager.HasValue && isHiringManager.Value)
+                    {
+                        hiringManagerCity = hiringManager.Subscriber?.City;
+                        hiringManagerCompany = hiringManager.Company?.CompanyName;
+                        hiringManagerCompanySize = hiringManager.Company?.EmployeeSize?.ToString();
+                        hiringManagerIndustry = hiringManager.Company?.Industry?.Name;
+                        hiringManagerPhone = subscriber.PhoneNumber;
+                        hiringManagerState = subscriber.State?.Name;
+                        hiringManagerWebsite = hiringManager.Company?.WebsiteUrl;
+                    }
                 }
                 catch (Exception e)
                 {
-                    _syslog.LogError($"HubSpotService._AddOrUpdateContact: An error occurred while trying to retrieve hiring manager: {e.Message}");
+                    _syslog.LogError($"HubSpotService._AddOrUpdateContact: An error occurred while trying to retrieve hiring manager data: {e.Message}");
                 }
 
                 // consider removing 'lastLoginDateTime' - does not appear to be used. quick and dirty workaround for now
@@ -268,7 +225,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             return rval;
         }
-
 
         #region private helper functions 
 
@@ -386,7 +342,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     value = hubSpotContactDto.HiringManagerCompany
                 };
                 rVal.properties.Add(p);
-                
+
                 p = new HubSpotProperty()
                 {
                     property = "company_size",
