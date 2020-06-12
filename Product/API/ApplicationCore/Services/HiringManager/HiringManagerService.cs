@@ -294,10 +294,5 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 
             return true;
         }
-
-        private void GetHiringManagerPropertiesForHubspot()
-        {
-
-        }
     }
 }

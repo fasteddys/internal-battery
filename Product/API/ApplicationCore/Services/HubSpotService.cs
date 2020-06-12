@@ -20,6 +20,7 @@ using UpDiddyLib.Helpers;
 using Newtonsoft.Json;
 using UpDiddyApi.ApplicationCore.Services.HiringManager;
 using UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager;
+using UpDiddyApi.ApplicationCore.Exceptions;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -79,7 +80,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     .FirstOrDefault();
 
                 if (subscriber == null)
-                    throw new DllNotFoundException($"HubSpotService._AddOrUpdateContactBySubscribterGuid: cannot locate subscriber {subscriberGuid}");
+                    throw new NotFoundException($"HubSpotService._AddOrUpdateContactBySubscribterGuid: cannot locate subscriber {subscriberGuid}");
 
                 step = 1;
                 // get list of self curated skills as string with new lines 
@@ -327,6 +328,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 rVal.properties.Add(p);
             }
 
+            // only add the following properties if the contact is a hiring manager
             if (hubSpotContactDto.IsHiringManager.HasValue && hubSpotContactDto.IsHiringManager.Value)
             {
                 p = new HubSpotProperty()
@@ -349,8 +351,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     value = hubSpotContactDto.HiringManagerCompanySize
                 };
                 rVal.properties.Add(p);
-
-
+                
                 p = new HubSpotProperty()
                 {
                     property = "industry",
