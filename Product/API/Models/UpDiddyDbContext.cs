@@ -219,9 +219,7 @@ namespace UpDiddyApi.Models
         public DbSet<ReferenceCheckVendor> ReferenceCheckVendor { get; set; }
         public DbSet<ReferenceCheck> ReferenceCheck { get; set; }
         public DbSet<ReferenceCheckReport> ReferenceCheckReport { get; set; }
-
-
-
+        public DbSet<SubscriberLink> SubscriberLinks { get; set; }
         #endregion
 
         #region DBQueries
@@ -679,6 +677,11 @@ namespace UpDiddyApi.Models
 
             modelBuilder.Entity<Subscriber>()
                 .Property(s => s.PostalGuid).HasComputedColumnSql("[dbo].[fn_GetPostalGuidForSubscriber]([PostalCode], [City], [StateId])");
+
+            modelBuilder.Entity<SubscriberLink>()
+                .HasOne(sl => sl.Subscriber)
+                .WithMany(s => s.SubscriberLinks)
+                .HasForeignKey(sl => sl.SubscriberId);
 
             modelBuilder.Entity<NotificationGroup>()
                .HasIndex(p => new { p.NotificationGroupId, p.GroupId })
