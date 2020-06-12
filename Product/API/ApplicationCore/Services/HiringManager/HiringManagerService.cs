@@ -20,7 +20,6 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 {
     public class HiringManagerService : IHiringManagerService
     {
-
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
@@ -211,8 +210,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 
             return skillListDto;
         }
-
-
+        
         public async Task UpdateHiringManager(Guid subscriberGuid, HiringManagerDto hiringManager)
         {
             _logger.LogInformation($"HiringManagerService:UpdateHiringManager  Starting for subscriber {subscriberGuid} ");
@@ -236,6 +234,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             try
             {
                 await _repositoryWrapper.HiringManagerRepository.UpdateHiringManager(subscriber.SubscriberId, hiringManager);
+                // retrieve
                 await _hubspotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid, null, true);
             }
             catch (Exception ex)
@@ -246,8 +245,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             _logger.LogInformation($"HiringManagerService:UpdateHiringManager  Done for Hiring Manager with subscriber: {subscriberGuid} ");
 
         }
-
-
+        
         public async Task<bool> AddHiringManager(Guid subscriberGuid, bool nonBlocking = true)
         {
             _logger.LogInformation($"HiringManagerService:AddHiringManager  Starting for subscriber {subscriberGuid} ");
@@ -284,8 +282,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 
             return true;
         }
-
-
+        
         public async Task<bool> _AddHiringManager(Subscriber subscriber)
         {
             _logger.LogInformation($"HiringManagerService:_AddHiringManager  Starting for subscriber {subscriber.SubscriberGuid} ");
@@ -297,6 +294,11 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             _logger.LogInformation($"HiringManagerService:_AddHiringManager  Done");
 
             return true;
+        }
+
+        private void GetHiringManagerPropertiesForHubspot()
+        {
+
         }
     }
 }
