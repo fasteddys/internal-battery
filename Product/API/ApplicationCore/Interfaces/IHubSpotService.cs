@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyLib.Domain.Models.HubSpot;
 using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces
@@ -9,5 +10,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
     public interface IHubSpotService
     {
         Task<long> AddOrUpdateContactBySubscriberGuid(Guid subscriberGuid, DateTime? lastLoginDateTime = null, bool nonBlocking = true);
+        Task UpdateHiringManager(HubSpotContactDto hubspotContactDto);
     }
 }

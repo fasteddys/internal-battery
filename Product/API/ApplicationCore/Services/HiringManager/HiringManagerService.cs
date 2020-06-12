@@ -27,9 +27,9 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
         private readonly IUserService _userService;
         private readonly ILogger _logger;
         private readonly IHangfireService _hangfireService;
+        private readonly IHubSpotService _hubspotService;
 
-
-        public HiringManagerService(IConfiguration configuration, IRepositoryWrapper repositoryWrapper, IMapper mapper, IUserService userService, ILogger<HiringManagerService> logger, IHangfireService hangfireService)
+        public HiringManagerService(IConfiguration configuration, IRepositoryWrapper repositoryWrapper, IMapper mapper, IUserService userService, ILogger<HiringManagerService> logger, IHangfireService hangfireService, IHubSpotService hubspotService)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
@@ -37,6 +37,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             _userService = userService;
             _logger = logger;
             _hangfireService = hangfireService;
+            _hubspotService = hubspotService;
         }
 
         public async Task<HiringManagerDto> GetHiringManagerBySubscriberGuid(Guid subscriberGuid)
@@ -235,6 +236,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             try
             {
                 await _repositoryWrapper.HiringManagerRepository.UpdateHiringManager(subscriber.SubscriberId, hiringManager);
+                await _hubspotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid, null, true);
             }
             catch (Exception ex)
             {

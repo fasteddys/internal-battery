@@ -25,7 +25,6 @@ namespace UpDiddyApi.ApplicationCore.Services
 {
     public class HubSpotService : IHubSpotService
     {
-
         private readonly UpDiddyDbContext _db = null;
         private readonly ILogger _syslog;
         private IConfiguration _configuration { get; set; }
@@ -45,7 +44,60 @@ namespace UpDiddyApi.ApplicationCore.Services
             _hiringManagerService = hiringManagerService;
         }
 
+        /// <summary>
+        /// This method receives all of the information needed to send a message to HubSpot. I realize that this method contains redundant code, but this was the quickest
+        /// path forward for the upcoming release that avoids a circular dependency. The reason for taking the quickest path is that there is an urgent business need
+        /// to get hiring manager data into HubSpot. 
+        /// </summary>
+        /// <param name="hubspotContactDto"></param>
+        /// <returns></returns>
+        public async Task UpdateHiringManager(HubSpotContactDto hubspotContactDto)
+        {
+            try
+            {
+                long rval = -1;
+                // map the contact dto to a hubspot property dto and serialize it
+                string json = JsonConvert.SerializeObject(MapToHubSpotPropertiesDto(hubspotContactDto));
+                _syslog.LogInformation($"HubSpotService.UpdateHiringManager: json = {json}");
+                string BaseUrl = _configuration["HubSpot:BaseUrl"];
+                string ApiKey = _configuration["HubSpot:ApiKey"];
+                string Url = BaseUrl + "/contacts/v1/contact/createOrUpdate/email/" + hubspotContactDto.Email + "?hapikey=" + ApiKey;
 
+                // call hubspot  
+                HttpClient client = _httpClientFactory.CreateClient(Constants.HttpPostClientName);
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, Url)
+                {
+                    Content = new StringContent(json)
+                };
+
+                request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                HttpResponseMessage SearchResponse = AsyncHelper.RunSync<HttpResponseMessage>(() => client.SendAsync(request));
+                string ResponseJson = AsyncHelper.RunSync<string>(() => SearchResponse.Content.ReadAsStringAsync());
+                _syslog.LogInformation($"HubSpotService:UpdateHiringManager: response = {ResponseJson}");
+
+                // if all went well capture the returned vid   
+                if (SearchResponse.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    _syslog.LogInformation($"HubSpotService.UpdateHiringManager: Success; HubSpot returned OK");
+                    // extract vid from response 
+                    JObject responseObject = JObject.Parse(ResponseJson);
+                    string vidString = (string)responseObject["vid"];
+                    rval = long.Parse(vidString);
+                    _syslog.LogInformation($"HubSpotService.UpdateHiringManager: vid = {rval}");
+                }
+                else
+                {
+                    _syslog.LogError($"HubSpotService.UpdateHiringManager; See details below:\n\r " +
+                        $"Hubspot API request: {JsonConvert.SerializeObject(request)}\n\r" +
+                        $"Hubspot API http response: {JsonConvert.SerializeObject(SearchResponse) ?? "null"}\n\r" +
+                        $"Hubspot API response content: {ResponseJson ?? "null"}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _syslog.LogError($"HubSpotService.UpdateHiringManager: Error {ex.ToString()}");
+            }
+        }
 
         public async Task<long> AddOrUpdateContactBySubscriberGuid(Guid subscriberGuid, DateTime? lastLoginDateTime = null, bool nonBlocking = true)
         {
@@ -65,9 +117,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 _syslog.LogInformation($"HubSpotService.AddOrUpdateContactBySubscribterGuid: Subscriber {subscriberGuid} has hubSpotVid = {hubSpotVid}");
                 return hubSpotVid;
             }
-
         }
-
 
         // add or update the current subsscriber in hubspot
         public async Task<long> _AddOrUpdateContactBySubscriberGuid(Guid subscriberGuid, DateTime? lastLoginDateTime)
@@ -78,8 +128,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             int step = 0;
             try
             {
-
-
                 Subscriber subscriber = _repositoryWrapper.SubscriberRepository.GetAll()
                         .Include(s1 => s1.SubscriberSkills)
                         .ThenInclude(ss => ss.Skill)
@@ -115,14 +163,15 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     lastResumeUploadDate = await _repositoryWrapper.SubscriberFileRepository.GetMostRecentCreatedDate(subscriberGuid);
                 }
-                catch { }
-
+                catch (Exception e)
+                {
+                    _syslog.LogError($"HubSpotService._AddOrUpdateContact: An error occurred while trying to the most recent create date for a resume: {e.Message}");
+                }
 
                 step = 4;
                 // get the source partner for the subscriber 
                 SubscriberSourceDto sourcePartner = await _repositoryWrapper.SubscriberRepository.GetSubscriberSource(subscriber.SubscriberId);
                 step = 5;
-
                 bool? isHiringManager = null;
                 try
                 {
@@ -156,8 +205,16 @@ namespace UpDiddyApi.ApplicationCore.Services
                     SourcePartner = sourcePartner != null ? sourcePartner.PartnerName : null,
                     SkillsG2 = g2PublicSkills,
                     LastResumeUploadDate = lastResumeUploadDate,
-                    IsHiringManager = isHiringManager
+                    IsHiringManager = isHiringManager,
+                    HiringManagerCity = hiringManagerCity,
+                    HiringManagerCompany = hiringManagerCompany,
+                    HiringManagerCompanySize = hiringManagerCompanySize,
+                    HiringManagerIndustry = hiringManagerIndustry,
+                    HiringManagerPhone = hiringManagerPhone,
+                    HiringManagerState = hiringManagerState,
+                    HiringManagerWebsite = hiringManagerWebsite
                 };
+
                 step = 6;
                 // map the contact dto to a hubspot property dto and serialize it
                 json = JsonConvert.SerializeObject(MapToHubSpotPropertiesDto(contact));
@@ -310,6 +367,59 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     property = "b2b_hiring_manager",
                     value = hubSpotContactDto.IsHiringManager.Value.ToString().ToLower()
+                };
+                rVal.properties.Add(p);
+            }
+
+            if (hubSpotContactDto.IsHiringManager.HasValue && hubSpotContactDto.IsHiringManager.Value)
+            {
+                p = new HubSpotProperty()
+                {
+                    property = "city",
+                    value = hubSpotContactDto.HiringManagerCity
+                };
+                rVal.properties.Add(p);
+
+                p = new HubSpotProperty()
+                {
+                    property = "company",
+                    value = hubSpotContactDto.HiringManagerCompany
+                };
+                rVal.properties.Add(p);
+                
+                p = new HubSpotProperty()
+                {
+                    property = "company_size",
+                    value = hubSpotContactDto.HiringManagerCompanySize
+                };
+                rVal.properties.Add(p);
+
+
+                p = new HubSpotProperty()
+                {
+                    property = "industry",
+                    value = hubSpotContactDto.HiringManagerIndustry
+                };
+                rVal.properties.Add(p);
+
+                p = new HubSpotProperty()
+                {
+                    property = "phone",
+                    value = hubSpotContactDto.HiringManagerPhone
+                };
+                rVal.properties.Add(p);
+
+                p = new HubSpotProperty()
+                {
+                    property = "state",
+                    value = hubSpotContactDto.HiringManagerState
+                };
+                rVal.properties.Add(p);
+
+                p = new HubSpotProperty()
+                {
+                    property = "website",
+                    value = hubSpotContactDto.HiringManagerWebsite
                 };
                 rVal.properties.Add(p);
             }
