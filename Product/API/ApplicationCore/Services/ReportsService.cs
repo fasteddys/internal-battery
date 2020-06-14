@@ -31,7 +31,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await _repositoryWrapper.StoredProcedureRepository.GetAllUsersDetail();            
         }
 
-        public async Task<List<UsersDetailDto>> GetAllHiringManagersDetail()
+        public async Task<List<HiringManagerDetailDto>> GetAllHiringManagersDetail()
         {
             return await _repositoryWrapper.StoredProcedureRepository.GetAllHiringManagersDetail();
         }

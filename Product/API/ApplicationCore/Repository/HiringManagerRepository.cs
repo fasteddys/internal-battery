@@ -23,8 +23,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
         public async Task<HiringManager> GetHiringManagerBySubscriberId(int SubscriberId)
         {
             var hiringManager = await _dbContext.HiringManager.Where(hm => hm.SubscriberId == SubscriberId && hm.IsDeleted == 0)
-                .Include(hm => hm.Company)
-                .Include(hm => hm.Company.Industry)
+                .Include(hm => hm.Company).ThenInclude(c => c.Industry)
+                .Include(hm => hm.Subscriber).ThenInclude(s => s.State)                
                 .FirstOrDefaultAsync();
 
             return hiringManager;

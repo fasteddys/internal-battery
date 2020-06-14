@@ -71,7 +71,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<UpDiddyLib.Domain.Models.JobSiteScrapeStatisticDto>> GetJobSiteScrapeStatistics(int limit, int offset, string sort, string order);
         Task<List<UsersDto>> GetNewUsers();
         Task<List<UsersDetailDto>> GetAllUsersDetail();
-        Task<List<UsersDetailDto>> GetAllHiringManagersDetail();
+        Task<List<HiringManagerDetailDto>> GetAllHiringManagersDetail();
         Task<List<UsersDetailDto>> GetUsersByPartnerDetail(Guid partner, DateTime startDate, DateTime endDate);
         Task<List<PartnerUsers>> GetUsersByPartner(DateTime startDate, DateTime endDate);
         Task<bool> InsertSendGridEvents(string sendGridJson);

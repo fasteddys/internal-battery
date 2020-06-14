@@ -1259,6 +1259,213 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("CourseVariantType");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.CrossChq.CandidateReference", b =>
+                {
+                    b.Property<int>("CandidateReferenceId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<Guid>("CandidateReferenceGuid");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(254);
+
+                    b.Property<string>("FirstName")
+                        .HasMaxLength(100);
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<string>("LastName")
+                        .HasMaxLength(100);
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(20);
+
+                    b.Property<int>("ReferenceCheckId");
+
+                    b.Property<string>("Status")
+                        .HasMaxLength(50);
+
+                    b.HasKey("CandidateReferenceId");
+
+                    b.HasIndex("ReferenceCheckId");
+
+                    b.ToTable("CandidateReference","G2");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CrossChq.ReferenceCheck", b =>
+                {
+                    b.Property<int>("ReferenceCheckId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("CandidateJobTitle")
+                        .IsRequired()
+                        .HasMaxLength(75);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("ProfileId");
+
+                    b.Property<int>("RecruiterId");
+
+                    b.Property<DateTime?>("ReferenceCheckConcludedDate");
+
+                    b.Property<Guid>("ReferenceCheckGuid");
+
+                    b.Property<string>("ReferenceCheckRequestId")
+                        .HasMaxLength(150);
+
+                    b.Property<string>("ReferenceCheckType")
+                        .HasMaxLength(100);
+
+                    b.Property<int>("ReferenceCheckVendorId");
+
+                    b.HasKey("ReferenceCheckId");
+
+                    b.HasIndex("ProfileId");
+
+                    b.HasIndex("RecruiterId");
+
+                    b.HasIndex("ReferenceCheckGuid")
+                        .IsUnique()
+                        .HasName("UIX_ReferenceCheck_ReferenceCheckGuid");
+
+                    b.HasIndex("ReferenceCheckVendorId");
+
+                    b.ToTable("ReferenceCheck","G2");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CrossChq.ReferenceCheckReport", b =>
+                {
+                    b.Property<int>("ReferenceCheckReportId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Base64File")
+                        .HasColumnType("Varchar(MAX)");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasMaxLength(25);
+
+                    b.Property<string>("FileUrl")
+                        .IsRequired();
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("ReferenceCheckId");
+
+                    b.Property<Guid>("ReferenceCheckReportGuid");
+
+                    b.HasKey("ReferenceCheckReportId");
+
+                    b.HasIndex("ReferenceCheckId");
+
+                    b.ToTable("ReferenceCheckReport","G2");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CrossChq.ReferenceCheckStatus", b =>
+                {
+                    b.Property<int>("ReferenceCheckStatusId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("Progress");
+
+                    b.Property<int>("ReferenceCheckId");
+
+                    b.Property<Guid>("ReferenceCheckStatusGuid");
+
+                    b.Property<string>("Status")
+                        .HasMaxLength(50);
+
+                    b.Property<string>("VendorJsonResponse")
+                        .HasMaxLength(4000);
+
+                    b.HasKey("ReferenceCheckStatusId");
+
+                    b.HasIndex("ReferenceCheckId");
+
+                    b.HasIndex("ReferenceCheckStatusGuid")
+                        .IsUnique()
+                        .HasName("UIX_ReferenceCheckStatus_ReferenceCheckStatusGuid");
+
+                    b.ToTable("ReferenceCheckStatus","G2");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CrossChq.ReferenceCheckVendor", b =>
+                {
+                    b.Property<int>("ReferenceCheckVendorId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(250);
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(50);
+
+                    b.Property<Guid>("ReferenceCheckVendorGuid");
+
+                    b.HasKey("ReferenceCheckVendorId");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasName("UIX_ReferenceCheckVendor_Name")
+                        .HasFilter("[Name] IS NOT NULL");
+
+                    b.HasIndex("ReferenceCheckVendorGuid")
+                        .IsUnique()
+                        .HasName("UIX_ReferenceCheckVendor_ReferenceCheckVendorGuid");
+
+                    b.ToTable("ReferenceCheckVendor","G2");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.EducationLevel", b =>
                 {
                     b.Property<int>("EducationLevelId")
@@ -1867,7 +2074,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("Value")
                         .IsRequired()
-                        .HasMaxLength(500);
+                        .HasMaxLength(2500);
 
                     b.HasKey("ProfileCommentId");
 
@@ -5534,6 +5741,48 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.CourseVariantType", "CourseVariantType")
                         .WithMany()
                         .HasForeignKey("CourseVariantTypeId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CrossChq.CandidateReference", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.CrossChq.ReferenceCheck", "ReferenceCheck")
+                        .WithMany("CandidateReference")
+                        .HasForeignKey("ReferenceCheckId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CrossChq.ReferenceCheck", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.G2.Profile", "Profile")
+                        .WithMany()
+                        .HasForeignKey("ProfileId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Recruiter", "Recruiter")
+                        .WithMany()
+                        .HasForeignKey("RecruiterId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.CrossChq.ReferenceCheckVendor", "ReferenceCheckVendor")
+                        .WithMany()
+                        .HasForeignKey("ReferenceCheckVendorId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CrossChq.ReferenceCheckReport", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.CrossChq.ReferenceCheck", "ReferenceCheck")
+                        .WithMany("ReferenceCheckReport")
+                        .HasForeignKey("ReferenceCheckId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CrossChq.ReferenceCheckStatus", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.CrossChq.ReferenceCheck", "ReferenceCheck")
+                        .WithMany("ReferenceCheckStatus")
+                        .HasForeignKey("ReferenceCheckId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

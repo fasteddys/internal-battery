@@ -23,11 +23,11 @@ public class ExceptionMiddleware
         }
         catch (AlreadyExistsException ex)
         {
-            await CreateResponse(400, ex, context);
+            await CreateResponse(409, ex, context);
         }
         catch (FileSizeExceedsLimit ex)
         {
-            await CreateResponse(400, ex, context);
+            await CreateResponse(413, ex, context);
         }
         catch (JobPostingCreation ex)
         {
@@ -39,11 +39,11 @@ public class ExceptionMiddleware
         }
         catch (FailedValidationException ex)
         {
-            await CreateResponse(400, ex, context);
+            await CreateResponse(422, ex, context);
         }
         catch (MaximumReachedException ex)
         {
-            await CreateResponse(400, ex, context);
+            await CreateResponse(403, ex, context);
         }
         catch (NotFoundException ex)
         {
@@ -51,11 +51,11 @@ public class ExceptionMiddleware
         }
         catch (NotSupportedException ex)
         {
-            await CreateResponse(400, ex, context);
+            await CreateResponse(404, ex, context);
         }
         catch (NullReferenceException ex)
         {
-            await CreateResponse(400, ex, context);
+            await CreateResponse(404, ex, context);
         }
         catch (ExpiredJobException ex)
         {
@@ -63,7 +63,7 @@ public class ExceptionMiddleware
         }
         catch (InvalidOperationException ex)
         {
-            await CreateResponse(400, ex, context);
+            await CreateResponse(404, ex, context);
         }
         catch (TraitifyException ex)
         {
@@ -73,9 +73,13 @@ public class ExceptionMiddleware
         {
             await CreateResponse(400, ex, context);
         }
-        catch(InsufficientPermissionException ex)
+        catch (InsufficientPermissionException ex)
         {
-            await CreateResponse(401, ex, context);
+            await CreateResponse(403, ex, context);
+        }
+        catch (BadRequestException ex)
+        {
+            await CreateResponse(400, ex, context);
         }
         catch (Exception ex)
         {

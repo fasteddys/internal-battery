@@ -107,6 +107,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IHiringManagerRepository _hiringManagerRepository;
         private IPipelineRepository _pipelineRepository;
         private IInterviewRequestRepository _interviewRequestRepository;
+        private ICrosschqRepository _crosschqRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
         {
@@ -231,6 +232,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _companyRepository = new CompanyRepository(_dbContext);
                 }
                 return _companyRepository;
+            }
+        }
+
+        public ICrosschqRepository CrosschqRepository
+        {
+            get
+            {
+                if (_crosschqRepository == null)
+                {
+                    _crosschqRepository = new CrosschqRepository(_dbContext);
+                }
+                return _crosschqRepository;
             }
         }
 
