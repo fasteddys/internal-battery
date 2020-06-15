@@ -219,7 +219,8 @@ namespace UpDiddyApi.Models
         public DbSet<ReferenceCheckVendor> ReferenceCheckVendor { get; set; }
         public DbSet<ReferenceCheck> ReferenceCheck { get; set; }
         public DbSet<ReferenceCheckReport> ReferenceCheckReport { get; set; }
-
+        public DbSet<SubscriberEmploymentTypes> SubscriberEmploymentTypes { get; set; }
+        public DbSet<CommuteDistance> CommuteDistance { get; set; }
 
 
         #endregion
@@ -707,6 +708,11 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<ReferenceCheck>()
                 .HasIndex(i => i.ReferenceCheckGuid)
                 .HasName("UIX_ReferenceCheck_ReferenceCheckGuid")
+                .IsUnique(true);
+
+            modelBuilder.Entity<SubscriberEmploymentTypes>()
+                .HasIndex(set => new { set.SubscriberId, set.EmploymentTypeId })
+                .HasName("UIX_SubscriberEmploymentTypes_Subscriber_EmploymentType")
                 .IsUnique(true);
         }
     }
