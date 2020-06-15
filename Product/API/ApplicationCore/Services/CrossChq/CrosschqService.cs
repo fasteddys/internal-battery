@@ -181,11 +181,11 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
                     .Select((rc, status) => new ReferenceStatusDto
                     {
                         ReferenceCheckId = rc.referenceCheck.ReferenceCheckGuid,
-                        Status = rc.status?.Status ?? "",
+                        Status = rc.status?.Status ?? "Initiated",
                         JobRole = rc.referenceCheck.ReferenceCheckType,
                         JobPosition = rc.referenceCheck.CandidateJobTitle,
                         PercentComplete = rc.status?.Progress ?? 0,
-                        CreateDate = rc.status?.CreateDate,
+                        CreateDate = rc.status?.CreateDate ?? DateTime.Now,
                         References = rc.referenceCheck.CandidateReference
                             ?.Select(r => new ReferenceDto
                             {
