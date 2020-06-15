@@ -1,5 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyLib.Domain.Models.Candidate360;
 
 namespace UpDiddyApi.Controllers.V2
 {
@@ -31,6 +35,22 @@ namespace UpDiddyApi.Controllers.V2
         #endregion Employment Preferences
 
         #region Role Preferences
+
+        public async Task<ActionResult<Candidate360RoleDto>> GetCandidate360Role()
+        {
+            var subscriberGuid = GetSubscriberGuid();
+
+            var candidate360Role = await _candidatesService.GetCandidate360Role(subscriberGuid);
+            return candidate360Role;
+        }
+
+        public async Task<IActionResult> UpdateCandidate360Role(Candidate360RoleDto candidate360Role)
+        {
+            var subscriberGuid = GetSubscriberGuid();
+
+            await _candidatesService.UpdateCandidate360Role(subscriberGuid, candidate360Role);
+            return Ok();
+        }
 
         #endregion Role Preferences
     }

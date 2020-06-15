@@ -1,13 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
+using UpDiddyLib.Domain.Models.Candidate360;
 using UpDiddyLib.Dto;
-using Microsoft.EntityFrameworkCore.Extensions;
- 
+using SkillDto = UpDiddyLib.Domain.Models.SkillDto;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -64,7 +65,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         public async Task<Subscriber> GetSubscriberByGuidAsync(Guid subscriberGuid)
         {
 
-   
+
             var subscriberResult = await _dbContext.Subscriber
                               .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
                               .FirstOrDefaultAsync();
@@ -77,7 +78,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return await _dbContext.Subscriber
               .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
               .Include( s => s.State)
-              .FirstOrDefaultAsync(); 
+              .FirstOrDefaultAsync();
         }
 
 
@@ -98,8 +99,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             var subscriberGroups = _subscriberGroupRepository.GetAll()
                 .Where(s => s.SubscriberId == subscriberId);
-            
-            var groupPartners = _groupPartnerRepository.GetAll();                
+
+            var groupPartners = _groupPartnerRepository.GetAll();
             var partners = _partnerRepository.GetAll();
 
             return await subscriberGroups
@@ -120,10 +121,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     PartnerType = partner.PartnerType,
                     PartnerTypeId = partner.PartnerTypeId,
                     Referrers = partner.Referrers,
-                    WebRedirect = partner.WebRedirect                    
+                    WebRedirect = partner.WebRedirect
                 })
                 .ToListAsync<Partner>();
-        
+
         }
 
         public async Task<int> GetSubscribersCountByStartEndDates(DateTime? startDate = null, DateTime? endDate = null)
@@ -157,6 +158,69 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 .SingleOrDefaultAsync(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId);
 
             await UpdateHubSpotDetails(subscriber, hubSpotVid);
+        }
+
+        public async Task<Candidate360RoleDto> GetCandidate360Role(Guid subscriberGuid)
+        {
+            var subscriber = await _dbContext.Subscriber
+                .Include(s => s.SubscriberSkills)
+                .Include(s => s.SubscriberLinks)
+                .FirstOrDefaultAsync(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid);
+
+            if (subscriber == null) { return null; }
+
+            var candidate360RoleDto = new Candidate360RoleDto
+            {
+                Title = subscriber.Title ?? string.Empty,
+                CurrentRoleProficiencies = subscriber.CurrentRoleProficiencies ?? string.Empty,
+                DreamJob = subscriber.DreamJob ?? string.Empty,
+                PreferredLeaderStyle = subscriber.PreferredLeaderStyle ?? string.Empty,
+                PreferredTeamType = subscriber.PreferredTeamType ?? string.Empty,
+                PassionProjects = subscriber.PassionProjectsDescription ?? string.Empty,
+                CoverLetter = subscriber.CoverLetter ?? string.Empty,
+                SocialLinks = subscriber.SubscriberLinks
+                    .Select(sl => new SocialLinksDto
+                    {
+                        SocialLinksGuid = sl.SubscriberLinkGuid,
+                        Link = sl.Url,
+                        Label = sl.Label
+                    })
+                    .ToList(),
+                Skills = subscriber.SubscriberSkills
+                    .Select(ss => new SkillDto
+                    {
+                        SkillGuid = ss.Skill.SkillGuid ?? Guid.NewGuid(),
+                        Name = ss.Skill.SkillName
+                    })
+                    .ToList()
+            };
+
+            return candidate360RoleDto;
+        }
+
+        public async Task UpdateCandidate360Role(Guid subscriberGuid, Candidate360RoleDto candidate360Role)
+        {
+            if (candidate360Role == null) { throw new ArgumentNullException(nameof(candidate360Role)); }
+
+            var subscriber = await _dbContext.Subscriber
+                .Include(s => s.SubscriberSkills)
+                .Include(s => s.SubscriberLinks)
+                .FirstOrDefaultAsync(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid);
+
+            if (subscriber == null) { return; }
+
+            if (candidate360Role.Title != null) { subscriber.Title = candidate360Role.Title; }
+            if (candidate360Role.CurrentRoleProficiencies != null) { subscriber.CurrentRoleProficiencies = candidate360Role.CurrentRoleProficiencies; }
+            if (candidate360Role.DreamJob != null) { subscriber.DreamJob = candidate360Role.DreamJob; }
+            if (candidate360Role.PreferredLeaderStyle != null) { subscriber.PreferredLeaderStyle = candidate360Role.PreferredLeaderStyle; }
+            if (candidate360Role.PreferredTeamType != null) { subscriber.PreferredTeamType = candidate360Role.PreferredTeamType; }
+            if (candidate360Role.PassionProjects != null) { subscriber.PassionProjectsDescription = candidate360Role.PassionProjects; }
+            if (candidate360Role.CoverLetter != null) { subscriber.CoverLetter = candidate360Role.CoverLetter; }
+
+            // TODO:  Add skills
+            // TODO:  Add links
+
+            await _dbContext.SaveChangesAsync();
         }
 
         private async Task UpdateHubSpotDetails(Subscriber subscriber, long hubSpotVid)

@@ -1,10 +1,13 @@
-﻿namespace UpDiddyApi.ApplicationCore.Interfaces.Business
+﻿using System;
+using System.Threading.Tasks;
+using UpDiddyLib.Domain.Models.Candidate360;
+
+namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface ICandidatesService
     {
-        // This empty service interface will be used for stories:
-        //   #2480 - Candidate 360: Personal Info
-        //   #2481 - Candidate 360: Employment Preferences
-        //   #2482 - Candidate 360: Role Preferences
+        Task<Candidate360RoleDto> GetCandidate360Role(Guid subscriberGuid);
+
+        Task UpdateCandidate360Role(Guid subscriberGuid, Candidate360RoleDto candidate360Role);
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
+using UpDiddyLib.Domain.Models.Candidate360;
 using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
@@ -27,5 +28,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task UpdateHubSpotDetails(Guid subscriberId, long hubSpotVid);
 
         Task UpdateHubSpotDetails(int subscriberId, long hubSpotVid);
+
+        Task<Candidate360RoleDto> GetCandidate360Role(Guid subscriberGuid);
+        Task UpdateCandidate360Role(Guid subscriberGuid, Candidate360RoleDto candidate360Role);
     }
 }
