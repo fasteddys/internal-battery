@@ -185,7 +185,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
                         JobRole = rc.referenceCheck.ReferenceCheckType,
                         JobPosition = rc.referenceCheck.CandidateJobTitle,
                         PercentComplete = rc.status?.Progress ?? 0,
-                        CreateDate = rc.status?.CreateDate ?? DateTime.Now,
+                        CreateDate = rc.status?.CreateDate ?? rc.referenceCheck?.CreateDate,
                         References = rc.referenceCheck.CandidateReference
                             ?.Select(r => new ReferenceDto
                             {
