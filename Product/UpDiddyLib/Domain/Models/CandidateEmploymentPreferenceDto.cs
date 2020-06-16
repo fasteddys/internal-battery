@@ -6,11 +6,6 @@ namespace UpDiddyLib.Domain.Models
 {
     public class CandidateEmploymentPreferenceDto
     {
-        /// <summary>
-        /// Subscriber guid of the candidate.
-        /// Used when the Dto returns a hydrated object.
-        /// </summary>
-        public Guid? CandidatesSubscriberGuid { get; set; }
 
         public bool? IsWillingToTravel { get; set; }
 
@@ -24,6 +19,6 @@ namespace UpDiddyLib.Domain.Models
         /// <summary>
         /// Guid that corresponds to a value in EmploymentType lookup.
         /// </summary>
-        public List<Guid> PreferredPlacementTypes { get; set; }
+        public List<Guid> EmploymentTypeGuids { get; set; }
     }
 }

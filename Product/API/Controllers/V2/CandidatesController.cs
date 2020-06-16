@@ -35,28 +35,21 @@ namespace UpDiddyApi.Controllers.V2
 
         #region Employment Preferences
 
-        [HttpPost]
-        [Route("employment-preference/{subscriberGuid}")]
-        public async Task<IActionResult> AddCandidateEmploymentPreference(Guid subscriberGuid, [FromBody] CandidateEmploymentPreferenceDto request)
-        {
-            //await _candidatesService.AddCandidateEmploymentPreference(request);
-            return Ok();
-        }
 
         [HttpGet]
-        [Route("employment-preference/{subscriberGuid}")]
-        public async Task<IActionResult> GetCandidateEmploymentPreference(Guid subscriberGuid)
+        [Route("employment-preferences")]
+        public async Task<IActionResult> GetCandidateEmploymentPreference()
         {
-            //await _candidatesService.GetCandidateEmploymentPreference(request);
-            return Ok(new CandidateEmploymentPreferenceDto());
+            var response = await _candidatesService.GetCandidateEmploymentPreference(GetSubscriberGuid());
+            return Ok(response);
         }
 
         [HttpPut]
-        [Route("employment-preference/{subscriberGuid}")]
-        public async Task<IActionResult> UpdateCandidateEmploymentPreference(Guid subscriberGuid, [FromBody] CandidateEmploymentPreferenceDto request)
+        [Route("employment-preferences")]
+        public async Task<IActionResult> UpdateCandidateEmploymentPreference([FromBody] CandidateEmploymentPreferenceDto request)
         {
-            //await _candidatesService.UpdateCandidateEmploymentPreference(request);
-            return Ok();
+            await _candidatesService.UpdateCandidateEmploymentPreference(GetSubscriberGuid(), request);
+            return StatusCode(202);
         }
 
 

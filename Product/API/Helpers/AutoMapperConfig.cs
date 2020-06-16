@@ -1054,6 +1054,17 @@ namespace UpDiddyApi.Helpers
              .ForMember(p => p.ReportType, opt => opt.MapFrom(src => src.FileType))
              .ForMember(p => p.ReferenceCheckGuid, opt => opt.MapFrom(src => src.ReferenceCheck.ReferenceCheckGuid))
              .ReverseMap();
+
+            CreateMap<List<UpDiddyApi.Models.SubscriberEmploymentTypes>, CandidateEmploymentPreferenceDto>()
+             .ForMember(dest => dest.IsFlexibleWorkScheduleRequired, opt => opt.MapFrom(src => src.FirstOrDefault().Subscriber.IsFlexibleWorkScheduleRequired))
+             .ForMember(dest => dest.IsWillingToTravel, opt => opt.MapFrom(src => src.FirstOrDefault().Subscriber.IsWillingToTravel))
+             .ForMember(dest => dest.CommuteDistanceGuid, opt => opt.MapFrom(src => src.FirstOrDefault().Subscriber.CommuteDistance.CommuteDistanceGuid))
+             //.AfterMap((src, dest) =>{
+             //       if (src != null)
+             //           dest.EmploymentTypeGuids = src.Select(set => set.EmploymentType.EmploymentTypeGuid).ToList();
+             //})
+             .ForMember(dest => dest.EmploymentTypeGuids, opt => opt.MapFrom(src => src.Select(set => set.EmploymentType.EmploymentTypeGuid).ToList()))
+             .ReverseMap();
         }
     }
 }

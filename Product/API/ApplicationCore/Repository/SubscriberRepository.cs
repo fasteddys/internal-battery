@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
+using UpDiddyLib.Domain.Models;
 using Microsoft.EntityFrameworkCore.Extensions;
  
 
@@ -80,6 +81,16 @@ namespace UpDiddyApi.ApplicationCore.Repository
               .FirstOrDefaultAsync(); 
         }
 
+        public async Task<List<SubscriberEmploymentTypes>> GetCandidateEmploymentPreferencesBySubscriberGuidAsync(Guid subscriberGuid)
+        {
+            var subscriberEmploymentTypes = await _dbContext.SubscriberEmploymentTypes
+                              .Where(s => s.Subscriber.IsDeleted == 0 && s.Subscriber.SubscriberGuid == subscriberGuid)
+                              .Include(s => s.EmploymentType)
+                              .Include(s => s.Subscriber.CommuteDistance)
+                              .ToListAsync();
+
+            return subscriberEmploymentTypes;
+        }
 
         public Subscriber GetSubscriberByGuid(Guid subscriberGuid)
         {
@@ -164,6 +175,59 @@ namespace UpDiddyApi.ApplicationCore.Repository
             subscriber.HubSpotVid = hubSpotVid;
             subscriber.HubSpotModifyDate = DateTime.UtcNow;
             await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task UpdateCandidateEmploymentPreferencesBySubscriberGuidAsync(Guid subscriberGuid, CandidateEmploymentPreferenceDto candidateEmploymentPreferenceDto)
+        {
+            var subscriber = _dbContext.Subscriber
+                              .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                              .Include(s => s.SubscriberEmploymentTypes)
+                              .Include(s => s.CommuteDistance)
+                              .FirstOrDefault();
+
+            var employmentTypes = _dbContext.EmploymentType
+                .Where(et => candidateEmploymentPreferenceDto.EmploymentTypeGuids != null &&
+                            candidateEmploymentPreferenceDto.EmploymentTypeGuids.Count > 0 &&
+                            candidateEmploymentPreferenceDto.EmploymentTypeGuids.Contains(et.EmploymentTypeGuid))
+                .ToList();
+
+            var commuteDistance = _dbContext.CommuteDistance
+                .FirstOrDefault(cd => candidateEmploymentPreferenceDto.CommuteDistanceGuid.HasValue &&
+                                      cd.CommuteDistanceGuid == candidateEmploymentPreferenceDto.CommuteDistanceGuid);
+
+            subscriber.IsFlexibleWorkScheduleRequired = candidateEmploymentPreferenceDto.IsFlexibleWorkScheduleRequired;
+            subscriber.IsWillingToTravel = candidateEmploymentPreferenceDto.IsWillingToTravel;
+            subscriber.CommuteDistanceId = commuteDistance?.CommuteDistanceId;
+
+            var employmentTypeIds = employmentTypes.Select(et => et.EmploymentTypeId).ToList();
+
+            var newSubscriberEmploymentTypes = new List<SubscriberEmploymentTypes>();
+            if(employmentTypes != null && employmentTypes.Count > 0)
+            {
+                if(subscriber.SubscriberEmploymentTypes.Count != employmentTypeIds.Count || 
+                   subscriber.SubscriberEmploymentTypes.Any(set => !employmentTypeIds.Contains(set.EmploymentTypeId)))
+                {
+                    foreach (var et in employmentTypes)
+                    {
+                        newSubscriberEmploymentTypes.Add(new SubscriberEmploymentTypes
+                        {
+                            SubscriberEmploymentTypesGuid = Guid.NewGuid(),
+                            SubscriberId = subscriber.SubscriberId,
+                            EmploymentTypeId = et.EmploymentTypeId
+                        });
+
+                    }
+
+                    subscriber.SubscriberEmploymentTypes = newSubscriberEmploymentTypes;
+                }
+
+            }
+            else
+            {
+                subscriber.SubscriberEmploymentTypes = null;
+            }
+
+            _dbContext.SaveChangesAsync();
         }
     }
 }
