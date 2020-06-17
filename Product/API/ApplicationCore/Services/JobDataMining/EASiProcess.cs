@@ -275,26 +275,6 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     if (distinctSkillsDto.Count() > 0)
                         jobPostingDto.JobPostingSkills = distinctSkillsDto;
                 }
-                if (_employmentTypes != null)
-                {
-                    string rawEmploymentType = Helpers.ConvertJValueToString(jobData.structureData.employmentType);
-
-                    switch (rawEmploymentType)
-                    {
-                        case "CONTRACTOR":
-                            jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Contractor").FirstOrDefault();
-                            break;
-                        case "FULL_TIME":
-                            jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Full-Time").FirstOrDefault();
-                            break;
-                        case "PART_TIME":
-                            jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Part-Time").FirstOrDefault();
-                            break;
-                        default:
-                            jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Other").FirstOrDefault();
-                            break;
-                    }
-                }
 
                 return jobPostingDto;
             }
