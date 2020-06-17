@@ -1055,6 +1055,16 @@ namespace UpDiddyApi.Helpers
              .ForMember(p => p.ReferenceCheckGuid, opt => opt.MapFrom(src => src.ReferenceCheck.ReferenceCheckGuid))
              .ReverseMap();
 
+            CreateMap<UpDiddyApi.Models.CommuteDistance, CommuteDistanceDto>()
+             .ForMember(dest => dest.CommuteDistanceGuid, opt => opt.MapFrom(src => src.CommuteDistanceGuid))
+             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.DistanceRange))
+             .ReverseMap();
+
+            CreateMap<List<UpDiddyApi.Models.CommuteDistance>, CommuteDistancesDto>()
+             .ForMember(p => p.TotalRecords, opt => opt.MapFrom(src => src.Count))
+             .ForMember(p => p.CommuteDistances, opt => opt.MapFrom(src => src.Select(cd => new {CommuteDistanceGuid = cd.CommuteDistanceGuid, Name = cd.DistanceRange}).ToList()))
+             .ReverseMap();
+
             CreateMap<List<UpDiddyApi.Models.SubscriberEmploymentTypes>, CandidateEmploymentPreferenceDto>()
              .ForMember(dest => dest.IsFlexibleWorkScheduleRequired, opt => opt.MapFrom(src => src.FirstOrDefault().Subscriber.IsFlexibleWorkScheduleRequired))
              .ForMember(dest => dest.IsWillingToTravel, opt => opt.MapFrom(src => src.FirstOrDefault().Subscriber.IsWillingToTravel))

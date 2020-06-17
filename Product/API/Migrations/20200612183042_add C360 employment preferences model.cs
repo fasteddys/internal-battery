@@ -99,11 +99,11 @@ namespace UpDiddyApi.Migrations
                 onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.Sql(@"Insert [dbo].[CommuteDistance]
-                    Values (0,GETUTCDATE(),Null,'00000000-0000-0000-0000-000000000000', Null,NewId(),'0 miles'),
-                           (0,GETUTCDATE(),Null,'00000000-0000-0000-0000-000000000000', Null,NewId(),'1-15 miles'),
-                           (0,GETUTCDATE(),Null,'00000000-0000-0000-0000-000000000000', Null,NewId(),'16-30 miles'),
-                           (0,GETUTCDATE(),Null,'00000000-0000-0000-0000-000000000000', Null,NewId(),'31-50 mile'),
-                           (0,GETUTCDATE(),Null,'00000000-0000-0000-0000-000000000000', Null,NewId(),'51+ miles')");
+                    Values (0,GETUTCDATE(),Null,'00000000-0000-0000-0000-000000000000', Null,'B13953D8-2E36-4004-A81A-F83D32B1AF76','0 miles'),
+                           (0,GETUTCDATE(),Null,'00000000-0000-0000-0000-000000000000', Null,'20A63515-DD45-4CC7-AF73-224BE3814431','1-15 miles'),
+                           (0,GETUTCDATE(),Null,'00000000-0000-0000-0000-000000000000', Null,'3D55CD71-5395-482A-BAE9-E357B6C7ABCE','16-30 miles'),
+                           (0,GETUTCDATE(),Null,'00000000-0000-0000-0000-000000000000', Null,'CA248AB4-905F-4C75-B920-249480F45B9A','31-50 mile'),
+                           (0,GETUTCDATE(),Null,'00000000-0000-0000-0000-000000000000', Null,'F34FA438-C1D7-4221-9B27-2FAE49062C43','51+ miles')");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
