@@ -171,7 +171,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             await UpdateHubSpotDetails(subscriber, hubSpotVid);
         }
 
-        public async Task<Candidate360RoleDto> GetCandidate360Role(Guid subscriberGuid)
+        public async Task<RolePreferenceDto> GetRolePreference(Guid subscriberGuid)
         {
             var subscriber = await _dbContext.Subscriber
                 .Include(s => s.SubscriberSkills)
@@ -181,7 +181,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             if (subscriber == null) { return null; }
 
-            var candidate360RoleDto = new Candidate360RoleDto
+            var rolePreference = new RolePreferenceDto
             {
                 JobTitle = subscriber.Title ?? string.Empty,
                 DreamJob = subscriber.DreamJob ?? string.Empty,
@@ -204,12 +204,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 ElevatorPitch = subscriber.CoverLetter ?? string.Empty
             };
 
-            return candidate360RoleDto;
+            return rolePreference;
         }
 
-        public async Task UpdateCandidate360Role(Guid subscriberGuid, Candidate360RoleDto candidate360Role)
+        public async Task UpdateRolePreference(Guid subscriberGuid, RolePreferenceDto rolePreference)
         {
-            if (candidate360Role == null) { throw new ArgumentNullException(nameof(candidate360Role)); }
+            if (rolePreference == null) { throw new ArgumentNullException(nameof(rolePreference)); }
 
             var subscriber = await _dbContext.Subscriber
                 .Include(s => s.SubscriberSkills)
@@ -223,20 +223,20 @@ namespace UpDiddyApi.ApplicationCore.Repository
             try
             {
                 // Trying to implement a "patch" strategy...
-                if (candidate360Role.JobTitle != null) { subscriber.Title = candidate360Role.JobTitle; }
-                if (candidate360Role.DreamJob != null) { subscriber.CurrentRoleProficiencies = candidate360Role.DreamJob; }
-                if (candidate360Role.WhatSetsMeApart != null) { subscriber.DreamJob = candidate360Role.WhatSetsMeApart; }
-                if (candidate360Role.WhatKindOfLeader != null) { subscriber.PreferredLeaderStyle = candidate360Role.WhatKindOfLeader; }
-                if (candidate360Role.WhatKindOfTeam != null) { subscriber.PreferredTeamType = candidate360Role.WhatKindOfTeam; }
-                if (candidate360Role.VolunteerOrPassionProjects != null) { subscriber.PassionProjectsDescription = candidate360Role.VolunteerOrPassionProjects; }
-                if (candidate360Role.ElevatorPitch != null) { subscriber.CoverLetter = candidate360Role.ElevatorPitch; }
+                if (rolePreference.JobTitle != null) { subscriber.Title = rolePreference.JobTitle; }
+                if (rolePreference.DreamJob != null) { subscriber.CurrentRoleProficiencies = rolePreference.DreamJob; }
+                if (rolePreference.WhatSetsMeApart != null) { subscriber.DreamJob = rolePreference.WhatSetsMeApart; }
+                if (rolePreference.WhatKindOfLeader != null) { subscriber.PreferredLeaderStyle = rolePreference.WhatKindOfLeader; }
+                if (rolePreference.WhatKindOfTeam != null) { subscriber.PreferredTeamType = rolePreference.WhatKindOfTeam; }
+                if (rolePreference.VolunteerOrPassionProjects != null) { subscriber.PassionProjectsDescription = rolePreference.VolunteerOrPassionProjects; }
+                if (rolePreference.ElevatorPitch != null) { subscriber.CoverLetter = rolePreference.ElevatorPitch; }
 
                 var skillsToDelete = subscriber.SubscriberSkills
-                    .Where(ss => ss.IsDeleted == 0 && ss.Skill?.SkillGuid != null && !candidate360Role.SkillGuids.Contains(ss.Skill.SkillGuid.Value));
+                    .Where(ss => ss.IsDeleted == 0 && ss.Skill?.SkillGuid != null && !rolePreference.SkillGuids.Contains(ss.Skill.SkillGuid.Value));
 
                 foreach (var skillToDelete in skillsToDelete) { skillToDelete.IsDeleted = 1; }
 
-                var skillGuidsToAdd = candidate360Role.SkillGuids
+                var skillGuidsToAdd = rolePreference.SkillGuids
                     .Where(sg => !subscriber.SubscriberSkills.Any(ss => ss.IsDeleted == 0 && ss.Skill?.SkillGuid == sg))
                     .ToList();
 
@@ -259,11 +259,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 }
 
                 var linksToDelete = subscriber.SubscriberLinks
-                    .Where(link => link.IsDeleted == 0 && !candidate360Role.SocialLinks.Any(sl => sl.FriendlyName == link.Label));
+                    .Where(link => link.IsDeleted == 0 && !rolePreference.SocialLinks.Any(sl => sl.FriendlyName == link.Label));
 
                 foreach (var linkToDelete in linksToDelete) { linkToDelete.IsDeleted = 1; }
 
-                var linksToAdd = candidate360Role.SocialLinks
+                var linksToAdd = rolePreference.SocialLinks
                     .Where(link => !subscriber.SubscriberLinks.Any(sl => sl.IsDeleted == 0 && sl.Label == link.FriendlyName))
                     .Select(link => new SubscriberLink
                     {

@@ -12,8 +12,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         Task UpdateCandidateEmploymentPreference(Guid subscriberGuid, CandidateEmploymentPreferenceDto candidateEmploymentPreferenceDto);
 
-        Task<Candidate360RoleDto> GetCandidate360Role(Guid subscriberGuid);
+        Task<RolePreferenceDto> GetRolePreference(Guid subscriberGuid);
 
-        Task UpdateCandidate360Role(Guid subscriberGuid, Candidate360RoleDto candidate360Role);
+        Task UpdateRolePreference(Guid subscriberGuid, RolePreferenceDto rolePreference);
     }
 }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace UpDiddyLib.Domain.Models.Candidate360
 {
-    public class Candidate360RoleDto
+    public class RolePreferenceDto
     {
         [JsonProperty("jobTitle")]
         public string JobTitle { get; set; }

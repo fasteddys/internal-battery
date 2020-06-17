@@ -55,22 +55,21 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet("role-preferences")]
         [Authorize]
-        public async Task<ActionResult<Candidate360RoleDto>> GetCandidate360Role()
+        public async Task<ActionResult<RolePreferenceDto>> GetRolePreferenceDto()
         {
             var subscriberGuid = GetSubscriberGuid();
 
-
-            var candidate360Role = await _candidatesService.GetCandidate360Role(subscriberGuid);
-            return candidate360Role;
+            var rolePreferenceDto = await _candidatesService.GetRolePreference(subscriberGuid);
+            return rolePreferenceDto;
         }
 
         [HttpPost("role-preferences")]
         [Authorize]
-        public async Task<IActionResult> UpdateCandidate360Role(Candidate360RoleDto candidate360Role)
+        public async Task<IActionResult> UpdateRolePreferenceDto(RolePreferenceDto rolePreference)
         {
             var subscriberGuid = GetSubscriberGuid();
 
-            await _candidatesService.UpdateCandidate360Role(subscriberGuid, candidate360Role);
+            await _candidatesService.UpdateRolePreference(subscriberGuid, rolePreference);
             return Ok();
         }
 

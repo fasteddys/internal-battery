@@ -86,36 +86,36 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
         #region Role Preferences
 
-        public async Task<Candidate360RoleDto> GetCandidate360Role(Guid subscriberGuid)
+        public async Task<RolePreferenceDto> GetRolePreference(Guid subscriberGuid)
         {
             try
             {
-                _logger.LogDebug("CandidatesService:GetCandidate360Role: Fetching Candidate 360 Role information for {subscriber}", subscriberGuid);
+                _logger.LogDebug("CandidatesService:GetRolePreference: Fetching Candidate 360 Role information for {subscriber}", subscriberGuid);
 
-                var candidate360Role = await _repositoryWrapper.SubscriberRepository.GetCandidate360Role(subscriberGuid);
-                _logger.LogDebug("CandidatesService:GetCandidate360Role: Returning Candidate 360 Role information for {subscriber}", subscriberGuid);
+                var rolePreference = await _repositoryWrapper.SubscriberRepository.GetRolePreference(subscriberGuid);
+                _logger.LogDebug("CandidatesService:GetRolePreference: Returning Candidate 360 Role information for {subscriber}", subscriberGuid);
 
-                return candidate360Role;
+                return rolePreference;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "CandidatesService:GetCandidate360Role: Error while fetching Candidate 360 Role information for {subscriber}", subscriberGuid);
+                _logger.LogError(ex, "CandidatesService:GetRolePreference: Error while fetching Candidate 360 Role information for {subscriber}", subscriberGuid);
                 throw;
             }
         }
 
-        public async Task UpdateCandidate360Role(Guid subscriberGuid, Candidate360RoleDto candidate360Role)
+        public async Task UpdateRolePreference(Guid subscriberGuid, RolePreferenceDto rolePreference)
         {
             try
             {
-                _logger.LogDebug("CandidatesService:GetCandidate360Role: Updating Candidate 360 Role information for {subscriber}", subscriberGuid);
+                _logger.LogDebug("CandidatesService:UpdateRolePreference: Updating Candidate 360 Role information for {subscriber}", subscriberGuid);
 
-                await _repositoryWrapper.SubscriberRepository.UpdateCandidate360Role(subscriberGuid, candidate360Role);
-                _logger.LogDebug("CandidatesService:GetCandidate360Role: Updated Candidate 360 Role information for {subscriber}", subscriberGuid);
+                await _repositoryWrapper.SubscriberRepository.UpdateRolePreference(subscriberGuid, rolePreference);
+                _logger.LogDebug("CandidatesService:UpdateRolePreference: Updated Candidate 360 Role information for {subscriber}", subscriberGuid);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "CandidatesService:GetCandidate360Role: Error while updating Candidate 360 Role information for {subscriber}", subscriberGuid);
+                _logger.LogError(ex, "CandidatesService:UpdateRolePreference: Error while updating Candidate 360 Role information for {subscriber}", subscriberGuid);
                 throw;
             }
         }
