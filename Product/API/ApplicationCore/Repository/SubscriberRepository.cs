@@ -1,14 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
-using UpDiddyLib.Dto;
 using UpDiddyLib.Domain.Models;
-using Microsoft.EntityFrameworkCore.Extensions;
- 
+using UpDiddyLib.Domain.Models.Candidate360;
+using UpDiddyLib.Dto;
+using SkillDto = UpDiddyLib.Domain.Models.SkillDto;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -65,7 +66,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         public async Task<Subscriber> GetSubscriberByGuidAsync(Guid subscriberGuid)
         {
 
-   
+
             var subscriberResult = await _dbContext.Subscriber
                               .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
                               .FirstOrDefaultAsync();
@@ -78,7 +79,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return await _dbContext.Subscriber
               .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
               .Include( s => s.State)
-              .FirstOrDefaultAsync(); 
+              .FirstOrDefaultAsync();
         }
 
         public async Task<List<SubscriberEmploymentTypes>> GetCandidateEmploymentPreferencesBySubscriberGuidAsync(Guid subscriberGuid)
@@ -109,8 +110,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             var subscriberGroups = _subscriberGroupRepository.GetAll()
                 .Where(s => s.SubscriberId == subscriberId);
-            
-            var groupPartners = _groupPartnerRepository.GetAll();                
+
+            var groupPartners = _groupPartnerRepository.GetAll();
             var partners = _partnerRepository.GetAll();
 
             return await subscriberGroups
@@ -131,10 +132,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     PartnerType = partner.PartnerType,
                     PartnerTypeId = partner.PartnerTypeId,
                     Referrers = partner.Referrers,
-                    WebRedirect = partner.WebRedirect                    
+                    WebRedirect = partner.WebRedirect
                 })
                 .ToListAsync<Partner>();
-        
+
         }
 
         public async Task<int> GetSubscribersCountByStartEndDates(DateTime? startDate = null, DateTime? endDate = null)
@@ -168,6 +169,128 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 .SingleOrDefaultAsync(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId);
 
             await UpdateHubSpotDetails(subscriber, hubSpotVid);
+        }
+
+        public async Task<RolePreferenceDto> GetRolePreference(Guid subscriberGuid)
+        {
+            var subscriber = await _dbContext.Subscriber
+                .Include(s => s.SubscriberSkills)
+                    .ThenInclude(ss => ss.Skill)
+                .Include(s => s.SubscriberLinks)
+                .FirstOrDefaultAsync(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid);
+
+            if (subscriber == null) { return null; }
+
+            var rolePreference = new RolePreferenceDto
+            {
+                JobTitle = subscriber.Title ?? string.Empty,
+                DreamJob = subscriber.DreamJob ?? string.Empty,
+                WhatSetsMeApart = subscriber.CurrentRoleProficiencies ?? string.Empty,
+                WhatKindOfLeader = subscriber.PreferredLeaderStyle ?? string.Empty,
+                WhatKindOfTeam = subscriber.PreferredTeamType ?? string.Empty,
+                VolunteerOrPassionProjects = subscriber.PassionProjectsDescription ?? string.Empty,
+                SkillGuids = subscriber.SubscriberSkills
+                    .Where(ss => ss.IsDeleted == 0 && ss.Skill.SkillGuid.HasValue)
+                    .Select(ss => ss.Skill.SkillGuid.Value)
+                    .ToList(),
+                SocialLinks = subscriber.SubscriberLinks
+                    .Where(sl => sl.IsDeleted == 0)
+                    .Select(sl => new SocialLinksDto
+                    {
+                        FriendlyName = sl.Label,
+                        Url = sl.Url
+                    })
+                    .ToList(),
+                ElevatorPitch = subscriber.CoverLetter ?? string.Empty
+            };
+
+            return rolePreference;
+        }
+
+        public async Task UpdateRolePreference(Guid subscriberGuid, RolePreferenceDto rolePreference)
+        {
+            if (rolePreference == null) { throw new ArgumentNullException(nameof(rolePreference)); }
+
+            var subscriber = await _dbContext.Subscriber
+                .Include(s => s.SubscriberSkills)
+                    .ThenInclude(ss => ss.Skill)
+                .Include(s => s.SubscriberLinks)
+                .FirstOrDefaultAsync(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid);
+
+            if (subscriber == null) { return; }
+
+            var transaction = await _dbContext.Database.BeginTransactionAsync();
+            try
+            {
+                // Trying to implement a "patch" strategy...
+                if (rolePreference.JobTitle != null) { subscriber.Title = rolePreference.JobTitle; }
+                if (rolePreference.DreamJob != null) { subscriber.CurrentRoleProficiencies = rolePreference.DreamJob; }
+                if (rolePreference.WhatSetsMeApart != null) { subscriber.DreamJob = rolePreference.WhatSetsMeApart; }
+                if (rolePreference.WhatKindOfLeader != null) { subscriber.PreferredLeaderStyle = rolePreference.WhatKindOfLeader; }
+                if (rolePreference.WhatKindOfTeam != null) { subscriber.PreferredTeamType = rolePreference.WhatKindOfTeam; }
+                if (rolePreference.VolunteerOrPassionProjects != null) { subscriber.PassionProjectsDescription = rolePreference.VolunteerOrPassionProjects; }
+                if (rolePreference.ElevatorPitch != null) { subscriber.CoverLetter = rolePreference.ElevatorPitch; }
+
+                var skillsToDelete = subscriber.SubscriberSkills
+                    .Where(ss => ss.IsDeleted == 0 && ss.Skill?.SkillGuid != null && !rolePreference.SkillGuids.Contains(ss.Skill.SkillGuid.Value));
+
+                foreach (var skillToDelete in skillsToDelete) { skillToDelete.IsDeleted = 1; }
+
+                var skillGuidsToAdd = rolePreference.SkillGuids
+                    .Where(sg => !subscriber.SubscriberSkills.Any(ss => ss.IsDeleted == 0 && ss.Skill?.SkillGuid == sg))
+                    .ToList();
+
+                if (skillGuidsToAdd.Any())
+                {
+                    var newSubscriberSkills = await _dbContext.Skill
+                        .Where(s => s.IsDeleted == 0 && s.SkillGuid != null && skillGuidsToAdd.Contains(s.SkillGuid.Value))
+                        .Select(s => new SubscriberSkill
+                        {
+                            CreateDate = DateTime.UtcNow,
+                            CreateGuid = Guid.NewGuid(),
+                            SubscriberSkillGuid = Guid.NewGuid(),
+                            IsDeleted = 0,
+                            SkillId = s.SkillId,
+                            SubscriberId = subscriber.SubscriberId
+                        })
+                        .ToListAsync();
+
+                    await _dbContext.SubscriberSkill.AddRangeAsync(newSubscriberSkills);
+                }
+
+                var linksToDelete = subscriber.SubscriberLinks
+                    .Where(link => link.IsDeleted == 0 && !rolePreference.SocialLinks.Any(sl => sl.FriendlyName == link.Label));
+
+                foreach (var linkToDelete in linksToDelete) { linkToDelete.IsDeleted = 1; }
+
+                var linksToAdd = rolePreference.SocialLinks
+                    .Where(link => !subscriber.SubscriberLinks.Any(sl => sl.IsDeleted == 0 && sl.Label == link.FriendlyName))
+                    .Select(link => new SubscriberLink
+                    {
+                        CreateDate = DateTime.UtcNow,
+                        CreateGuid = Guid.NewGuid(),
+                        SubscriberLinkGuid = Guid.NewGuid(),
+                        SubscriberId = subscriber.SubscriberId,
+                        IsDeleted = 0,
+                        Label = link.FriendlyName,
+                        Url = link.Url
+                    })
+                    .ToList();
+
+                if (linksToAdd.Any())
+                {
+                    await _dbContext.SubscriberLinks.AddRangeAsync(linksToAdd);
+                }
+
+                await _dbContext.SaveChangesAsync();
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                throw;
+            }
+            finally { transaction.Dispose(); }
         }
 
         private async Task UpdateHubSpotDetails(Subscriber subscriber, long hubSpotVid)
