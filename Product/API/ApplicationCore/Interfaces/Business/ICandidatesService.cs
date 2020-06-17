@@ -1,4 +1,8 @@
-﻿namespace UpDiddyApi.ApplicationCore.Interfaces.Business
+﻿using System;
+using System.Threading.Tasks;
+using UpDiddyLib.Domain.Models;
+
+namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface ICandidatesService
     {
@@ -6,5 +10,8 @@
         //   #2480 - Candidate 360: Personal Info
         //   #2481 - Candidate 360: Employment Preferences
         //   #2482 - Candidate 360: Role Preferences
+
+        Task<CandidateEmploymentPreferenceDto> GetCandidateEmploymentPreference(Guid subscriberGuid);
+        Task UpdateCandidateEmploymentPreference(Guid subscriberGuid, CandidateEmploymentPreferenceDto candidateEmploymentPreferenceDto);
     }
 }

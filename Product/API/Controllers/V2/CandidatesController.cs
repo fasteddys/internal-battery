@@ -1,8 +1,15 @@
 ﻿using Microsoft.Extensions.Logging;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Threading.Tasks;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.Controllers.V2
 {
+    [Route("v2/[controller]/")]
     public class CandidatesController : BaseApiController
     {
         private readonly ICandidatesService _candidatesService;
@@ -27,6 +34,25 @@ namespace UpDiddyApi.Controllers.V2
         #endregion Personal Info
 
         #region Employment Preferences
+
+
+        [HttpGet]
+        [Route("employment-preferences")]
+        public async Task<IActionResult> GetCandidateEmploymentPreference()
+        {
+            var response = await _candidatesService.GetCandidateEmploymentPreference(GetSubscriberGuid());
+            return Ok(response);
+        }
+
+        [HttpPut]
+        [Route("employment-preferences")]
+        public async Task<IActionResult> UpdateCandidateEmploymentPreference([FromBody] CandidateEmploymentPreferenceDto request)
+        {
+            await _candidatesService.UpdateCandidateEmploymentPreference(GetSubscriberGuid(), request);
+            return StatusCode(202);
+        }
+
+
 
         #endregion Employment Preferences
 
