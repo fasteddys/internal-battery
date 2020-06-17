@@ -108,6 +108,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IPipelineRepository _pipelineRepository;
         private IInterviewRequestRepository _interviewRequestRepository;
         private ICrosschqRepository _crosschqRepository;
+        private ICommuteDistancesRepository _commuteDistancesRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
         {
@@ -220,6 +221,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _jobApplicationRepository = new JobApplicationRepository(_dbContext);
                 }
                 return _jobApplicationRepository;
+            }
+        }
+
+        public ICommuteDistancesRepository CommuteDistancesRepository
+        {
+            get
+            {
+                if (_commuteDistancesRepository == null)
+                {
+                    _commuteDistancesRepository = new CommuteDistancesRepository(_dbContext);
+                }
+                return _commuteDistancesRepository;
             }
         }
 

@@ -59,6 +59,16 @@ namespace UpDiddyApi.Models
         public int? TopicId { get; set; }
         public virtual List<SubscriberLink> SubscriberLinks { get; set; }
 
+        public List<SubscriberEmploymentTypes> SubscriberEmploymentTypes { get; set; } = new List<SubscriberEmploymentTypes>();
+
+        public bool? IsFlexibleWorkScheduleRequired { get; set; }
+
+        public bool? IsWillingToTravel { get; set; }
+
+        public int? CommuteDistanceId { get; set; }
+        public CommuteDistance CommuteDistance { get; set; }
+
+
         #region Avatar Urls
         public string LinkedInAvatarUrl { get; set; }
         public string AvatarUrl { get; set; }

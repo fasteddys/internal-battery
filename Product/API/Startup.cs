@@ -376,7 +376,7 @@ namespace UpDiddyApi
             services.AddTransient<ICandidatesService, CandidatesService>();
             services.AddCareerTalentPipelineService(Configuration.GetSection("CreateTalentPipeline"));
             services.AddCrossChq(Configuration.GetSection("CrossChq"));
-
+            services.AddTransient<ICommuteDistancesService, CommuteDistancesService>();
             #endregion
 
             // Configure SnapshotCollector from application settings

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
@@ -10,9 +11,10 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200612183042_add C360 employment preferences model")]
+    partial class addC360employmentpreferencesmodel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2100,7 +2102,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("Value")
                         .IsRequired()
-                        .HasMaxLength(2500);
+                        .HasMaxLength(500);
 
                     b.HasKey("ProfileCommentId");
 
@@ -4526,17 +4528,11 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<DateTime?>("ConnectedModifyDate");
 
-                    b.Property<string>("CoverLetter");
-
                     b.Property<DateTime>("CreateDate");
 
                     b.Property<Guid>("CreateGuid");
 
-                    b.Property<string>("CurrentRoleProficiencies");
-
                     b.Property<DateTime?>("DateOfBirth");
-
-                    b.Property<string>("DreamJob");
 
                     b.Property<int?>("EducationLevelId");
 
@@ -4584,8 +4580,6 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasDefaultValue(true);
 
-                    b.Property<string>("PassionProjectsDescription");
-
                     b.Property<string>("PhoneNumber");
 
                     b.Property<string>("PostalCode");
@@ -4593,10 +4587,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<Guid?>("PostalGuid")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasComputedColumnSql("[dbo].[fn_GetPostalGuidForSubscriber]([PostalCode], [City], [StateId])");
-
-                    b.Property<string>("PreferredLeaderStyle");
-
-                    b.Property<string>("PreferredTeamType");
 
                     b.Property<string>("ProfileImage");
 
@@ -4806,40 +4796,6 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("SubscriberId");
 
                     b.ToTable("SubscriberGroup");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.SubscriberLink", b =>
-                {
-                    b.Property<int>("SubscriberLinkId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<string>("Label")
-                        .HasMaxLength(100);
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<int>("SubscriberId");
-
-                    b.Property<Guid>("SubscriberLinkGuid");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasMaxLength(2000);
-
-                    b.HasKey("SubscriberLinkId");
-
-                    b.HasIndex("SubscriberId");
-
-                    b.ToTable("SubscriberLinks");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberNotes", b =>
@@ -6607,14 +6563,6 @@ namespace UpDiddyApi.Migrations
 
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany()
-                        .HasForeignKey("SubscriberId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.SubscriberLink", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany("SubscriberLinks")
                         .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
