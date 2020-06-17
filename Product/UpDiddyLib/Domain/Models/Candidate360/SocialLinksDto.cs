@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Newtonsoft.Json;
 
 namespace UpDiddyLib.Domain.Models.Candidate360
 {
     public class SocialLinksDto
     {
-        public Guid SocialLinksGuid { get; set; }
+        [JsonProperty("friendlyName")]
+        public string FriendlyName { get; set; }
 
-        public string Link { get; set; }
-
-        public string Label { get; set; }
+        [JsonProperty("url")]
+        public string Url { get; set; }
     }
 }

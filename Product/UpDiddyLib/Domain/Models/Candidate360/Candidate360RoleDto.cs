@@ -1,28 +1,36 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace UpDiddyLib.Domain.Models.Candidate360
 {
     public class Candidate360RoleDto
     {
-        public Guid SubscriberGuid { get; set; }
+        [JsonProperty("jobTitle")]
+        public string JobTitle { get; set; }
 
-        public string Title { get; set; }
-
-        public string CurrentRoleProficiencies { get; set; }
-
+        [JsonProperty("dreamJob")]
         public string DreamJob { get; set; }
 
-        public string PreferredLeaderStyle { get; set; }
+        [JsonProperty("whatSetsMeApart")]
+        public string WhatSetsMeApart { get; set; }
 
-        public string PreferredTeamType { get; set; }
+        [JsonProperty("whatKindOfLeader")]
+        public string WhatKindOfLeader { get; set; }
 
-        public string PassionProjects { get; set; }
+        [JsonProperty("whatKindOfTeam")]
+        public string WhatKindOfTeam { get; set; }
 
-        public string CoverLetter { get; set; }
+        [JsonProperty("volunteerOrPassionProjects")]
+        public string VolunteerOrPassionProjects { get; set; }
 
-        public List<SocialLinksDto> SocialLinks { get; set; }
+        [JsonProperty("skillGuids")]
+        public List<Guid> SkillGuids { get; set; } = new List<Guid>();
 
-        public List<SkillDto> Skills { get; set; }
+        [JsonProperty("socialLinks")]
+        public List<SocialLinksDto> SocialLinks { get; set; } = new List<SocialLinksDto>();
+
+        [JsonProperty("elevatorPitch")]
+        public string ElevatorPitch { get; set; }
     }
 }

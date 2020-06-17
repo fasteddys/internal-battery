@@ -171,28 +171,24 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             var candidate360RoleDto = new Candidate360RoleDto
             {
-                Title = subscriber.Title ?? string.Empty,
-                CurrentRoleProficiencies = subscriber.CurrentRoleProficiencies ?? string.Empty,
+                JobTitle = subscriber.Title ?? string.Empty,
                 DreamJob = subscriber.DreamJob ?? string.Empty,
-                PreferredLeaderStyle = subscriber.PreferredLeaderStyle ?? string.Empty,
-                PreferredTeamType = subscriber.PreferredTeamType ?? string.Empty,
-                PassionProjects = subscriber.PassionProjectsDescription ?? string.Empty,
-                CoverLetter = subscriber.CoverLetter ?? string.Empty,
+                WhatSetsMeApart = subscriber.CurrentRoleProficiencies ?? string.Empty,
+                WhatKindOfLeader = subscriber.PreferredLeaderStyle ?? string.Empty,
+                WhatKindOfTeam = subscriber.PreferredTeamType ?? string.Empty,
+                VolunteerOrPassionProjects = subscriber.PassionProjectsDescription ?? string.Empty,
+                SkillGuids = subscriber.SubscriberSkills
+                    .Where(ss => ss.Skill.SkillGuid.HasValue)
+                    .Select(ss => ss.Skill.SkillGuid.Value)
+                    .ToList(),
                 SocialLinks = subscriber.SubscriberLinks
                     .Select(sl => new SocialLinksDto
                     {
-                        SocialLinksGuid = sl.SubscriberLinkGuid,
-                        Link = sl.Url,
-                        Label = sl.Label
+                        FriendlyName = sl.Label,
+                        Url = sl.Url
                     })
                     .ToList(),
-                Skills = subscriber.SubscriberSkills
-                    .Select(ss => new SkillDto
-                    {
-                        SkillGuid = ss.Skill.SkillGuid ?? Guid.NewGuid(),
-                        Name = ss.Skill.SkillName
-                    })
-                    .ToList()
+                ElevatorPitch = subscriber.CoverLetter ?? string.Empty
             };
 
             return candidate360RoleDto;
@@ -204,23 +200,84 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             var subscriber = await _dbContext.Subscriber
                 .Include(s => s.SubscriberSkills)
+                    .ThenInclude(ss => ss.Skill)
                 .Include(s => s.SubscriberLinks)
                 .FirstOrDefaultAsync(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid);
 
             if (subscriber == null) { return; }
 
-            if (candidate360Role.Title != null) { subscriber.Title = candidate360Role.Title; }
-            if (candidate360Role.CurrentRoleProficiencies != null) { subscriber.CurrentRoleProficiencies = candidate360Role.CurrentRoleProficiencies; }
-            if (candidate360Role.DreamJob != null) { subscriber.DreamJob = candidate360Role.DreamJob; }
-            if (candidate360Role.PreferredLeaderStyle != null) { subscriber.PreferredLeaderStyle = candidate360Role.PreferredLeaderStyle; }
-            if (candidate360Role.PreferredTeamType != null) { subscriber.PreferredTeamType = candidate360Role.PreferredTeamType; }
-            if (candidate360Role.PassionProjects != null) { subscriber.PassionProjectsDescription = candidate360Role.PassionProjects; }
-            if (candidate360Role.CoverLetter != null) { subscriber.CoverLetter = candidate360Role.CoverLetter; }
+            var transaction = await _dbContext.Database.BeginTransactionAsync();
+            try
+            {
+                // Trying to implement a "patch" strategy...
+                if (candidate360Role.JobTitle != null) { subscriber.Title = candidate360Role.JobTitle; }
+                if (candidate360Role.DreamJob != null) { subscriber.CurrentRoleProficiencies = candidate360Role.DreamJob; }
+                if (candidate360Role.WhatSetsMeApart != null) { subscriber.DreamJob = candidate360Role.WhatSetsMeApart; }
+                if (candidate360Role.WhatKindOfLeader != null) { subscriber.PreferredLeaderStyle = candidate360Role.WhatKindOfLeader; }
+                if (candidate360Role.WhatKindOfTeam != null) { subscriber.PreferredTeamType = candidate360Role.WhatKindOfTeam; }
+                if (candidate360Role.VolunteerOrPassionProjects != null) { subscriber.PassionProjectsDescription = candidate360Role.VolunteerOrPassionProjects; }
+                if (candidate360Role.ElevatorPitch != null) { subscriber.CoverLetter = candidate360Role.ElevatorPitch; }
 
-            // TODO:  Add skills
-            // TODO:  Add links
+                var skillsToDelete = subscriber.SubscriberSkills
+                    .Where(ss => ss.IsDeleted == 0 && ss.Skill?.SkillGuid != null && !candidate360Role.SkillGuids.Contains(ss.Skill.SkillGuid.Value));
 
-            await _dbContext.SaveChangesAsync();
+                foreach (var skillToDelete in skillsToDelete) { skillToDelete.IsDeleted = 1; }
+
+                var skillGuidsToAdd = candidate360Role.SkillGuids
+                    .Where(sg => !subscriber.SubscriberSkills.Any(ss => ss.IsDeleted == 0 && ss.Skill?.SkillGuid == sg))
+                    .ToList();
+
+                if (skillGuidsToAdd.Any())
+                {
+                    var newSubscriberSkills = await _dbContext.Skill
+                        .Where(s => s.IsDeleted == 0 && s.SkillGuid != null && skillGuidsToAdd.Contains(s.SkillGuid.Value))
+                        .Select(s => new SubscriberSkill
+                        {
+                            CreateDate = DateTime.UtcNow,
+                            CreateGuid = Guid.NewGuid(),
+                            SubscriberSkillGuid = Guid.NewGuid(),
+                            IsDeleted = 0,
+                            SkillId = s.SkillId,
+                            SubscriberId = subscriber.SubscriberId
+                        })
+                        .ToListAsync();
+
+                    await _dbContext.SubscriberSkill.AddRangeAsync(newSubscriberSkills);
+                }
+
+                var linksToDelete = subscriber.SubscriberLinks
+                    .Where(link => link.IsDeleted == 0 && !candidate360Role.SocialLinks.Any(sl => sl.FriendlyName == link.Label));
+
+                foreach (var linkToDelete in linksToDelete) { linkToDelete.IsDeleted = 1; }
+
+                var linksToAdd = candidate360Role.SocialLinks
+                    .Where(link => !subscriber.SubscriberLinks.Any(sl => sl.IsDeleted == 0 && sl.Label == link.FriendlyName))
+                    .Select(link => new SubscriberLink
+                    {
+                        CreateDate = DateTime.UtcNow,
+                        CreateGuid = Guid.NewGuid(),
+                        SubscriberLinkGuid = Guid.NewGuid(),
+                        SubscriberId = subscriber.SubscriberId,
+                        IsDeleted = 0,
+                        Label = link.FriendlyName,
+                        Url = link.Url
+                    })
+                    .ToList();
+
+                if (linksToAdd.Any())
+                {
+                    await _dbContext.SubscriberLinks.AddRangeAsync(linksToDelete);
+                }
+
+                await _dbContext.SaveChangesAsync();
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                throw;
+            }
+            finally { transaction.Dispose(); }
         }
 
         private async Task UpdateHubSpotDetails(Subscriber subscriber, long hubSpotVid)

@@ -1,12 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyApi.Authorization;
 using UpDiddyLib.Domain.Models.Candidate360;
 
 namespace UpDiddyApi.Controllers.V2
 {
+    [Route("/V2/[controller]/")]
+    [ApiController]
     public class CandidatesController : BaseApiController
     {
         private readonly ICandidatesService _candidatesService;
@@ -36,6 +40,8 @@ namespace UpDiddyApi.Controllers.V2
 
         #region Role Preferences
 
+        [HttpGet("role-preferences")]
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
         public async Task<ActionResult<Candidate360RoleDto>> GetCandidate360Role()
         {
             var subscriberGuid = GetSubscriberGuid();
@@ -44,6 +50,8 @@ namespace UpDiddyApi.Controllers.V2
             return candidate360Role;
         }
 
+        [HttpPost("role-preferences")]
+        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
         public async Task<IActionResult> UpdateCandidate360Role(Candidate360RoleDto candidate360Role)
         {
             var subscriberGuid = GetSubscriberGuid();
