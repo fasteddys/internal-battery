@@ -41,17 +41,18 @@ namespace UpDiddyApi.Controllers.V2
         #region Role Preferences
 
         [HttpGet("role-preferences")]
-        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
+        [Authorize]
         public async Task<ActionResult<Candidate360RoleDto>> GetCandidate360Role()
         {
             var subscriberGuid = GetSubscriberGuid();
+
 
             var candidate360Role = await _candidatesService.GetCandidate360Role(subscriberGuid);
             return candidate360Role;
         }
 
         [HttpPost("role-preferences")]
-        [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
+        [Authorize]
         public async Task<IActionResult> UpdateCandidate360Role(Candidate360RoleDto candidate360Role)
         {
             var subscriberGuid = GetSubscriberGuid();

@@ -164,6 +164,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             var subscriber = await _dbContext.Subscriber
                 .Include(s => s.SubscriberSkills)
+                    .ThenInclude(ss => ss.Skill)
                 .Include(s => s.SubscriberLinks)
                 .FirstOrDefaultAsync(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid);
 
@@ -178,10 +179,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 WhatKindOfTeam = subscriber.PreferredTeamType ?? string.Empty,
                 VolunteerOrPassionProjects = subscriber.PassionProjectsDescription ?? string.Empty,
                 SkillGuids = subscriber.SubscriberSkills
-                    .Where(ss => ss.Skill.SkillGuid.HasValue)
+                    .Where(ss => ss.IsDeleted == 0 && ss.Skill.SkillGuid.HasValue)
                     .Select(ss => ss.Skill.SkillGuid.Value)
                     .ToList(),
                 SocialLinks = subscriber.SubscriberLinks
+                    .Where(sl => sl.IsDeleted == 0)
                     .Select(sl => new SocialLinksDto
                     {
                         FriendlyName = sl.Label,
@@ -266,7 +268,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
                 if (linksToAdd.Any())
                 {
-                    await _dbContext.SubscriberLinks.AddRangeAsync(linksToDelete);
+                    await _dbContext.SubscriberLinks.AddRangeAsync(linksToAdd);
                 }
 
                 await _dbContext.SaveChangesAsync();
