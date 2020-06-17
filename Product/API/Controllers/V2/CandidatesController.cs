@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
-using UpDiddyApi.Authorization;
+using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.Candidate360;
 
 namespace UpDiddyApi.Controllers.V2
@@ -25,16 +24,30 @@ namespace UpDiddyApi.Controllers.V2
             _logger = logger;
         }
 
-        // This empty controller will be used for stories:
-        //   #2480 - Candidate 360: Personal Info
-        //   #2481 - Candidate 360: Employment Preferences
-        //   #2482 - Candidate 360: Role Preferences
-
         #region Personal Info
 
         #endregion Personal Info
 
         #region Employment Preferences
+
+
+        [HttpGet]
+        [Route("employment-preferences")]
+        public async Task<IActionResult> GetCandidateEmploymentPreference()
+        {
+            var response = await _candidatesService.GetCandidateEmploymentPreference(GetSubscriberGuid());
+            return Ok(response);
+        }
+
+        [HttpPut]
+        [Route("employment-preferences")]
+        public async Task<IActionResult> UpdateCandidateEmploymentPreference([FromBody] CandidateEmploymentPreferenceDto request)
+        {
+            await _candidatesService.UpdateCandidateEmploymentPreference(GetSubscriberGuid(), request);
+            return StatusCode(202);
+        }
+
+
 
         #endregion Employment Preferences
 
