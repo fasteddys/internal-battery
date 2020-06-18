@@ -31,6 +31,21 @@ namespace UpDiddyApi.Controllers.V2
 
         #region Personal Info
 
+        [HttpGet]
+        [Route("personal-information")]
+        public async Task<IActionResult> GetCandidatePersonalInfo()
+        {
+            var response = await _candidatesService.GetCandidatePersonalInfo(GetSubscriberGuid());
+            return Ok(response);
+        }
+
+        [HttpPut]
+        [Route("personal-information")]
+        public async Task<IActionResult> UpdateCandidatePersonalInfo([FromBody] CandidatePersonalInfoDto request)
+        {
+            await _candidatesService.UpdateCandidatePersonalInfo(GetSubscriberGuid(), request);
+            return StatusCode(202);
+        }
         #endregion Personal Info
 
         #region Employment Preferences

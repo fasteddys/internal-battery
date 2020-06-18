@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             _dbContext = dbContext;
         }
+
+        public async Task AddUSState(State state)
+        {
+            _dbContext.State.Add(state);
+            await _dbContext.SaveChangesAsync();
+        }
+
 
         public async Task<State> GetStateBySubscriberGuid(Guid subscriberGuid)
         {
@@ -60,5 +68,14 @@ namespace UpDiddyApi.ApplicationCore.Repository
                           && s.IsDeleted == 0
                           select s).FirstOrDefaultAsync();
         }
+
+        public async Task<State> GetUSCanadaStateByCode(string stateCode)
+        {
+            var countryList = new List<string> { "USA","CAN"};
+            return await _dbContext.State
+                    .Where(s => s.IsDeleted == 0 && s.Code == stateCode.Trim() && countryList.Contains(s.Country.Code3))
+                    .FirstOrDefaultAsync();
+        }
+
     }
 }
