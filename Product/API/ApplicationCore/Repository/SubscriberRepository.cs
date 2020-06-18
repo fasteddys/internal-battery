@@ -254,7 +254,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                         })
                         .ToListAsync();
 
-                    await _dbContext.SubscriberSkill.AddRangeAsync(newSubscriberSkills);
+                    subscriber.SubscriberSkills.AddRange(newSubscriberSkills);
                 }
 
                 foreach (var linkToUpdate in subscriber.SubscriberLinks)
