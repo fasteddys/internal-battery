@@ -16,7 +16,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly ISubscriberService _subscriberService;
-
+        private readonly ILogger _logger;
+        private readonly IMapper _mapper;
 
         public CandidatesService(
             ILogger<CandidatesService> logger,
