@@ -287,27 +287,6 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     if (distinctSkillsDto.Count() > 0)
                         jobPostingDto.JobPostingSkills = distinctSkillsDto;
                 }
-                if (_employmentTypes != null)
-                {
-                    string rawEmploymentType = Helpers.ConvertJValueToString(jobData.structureData.employmentType);
-
-                    // todo: may need to revisit these values - not accounting for other values I have seen appear in the new phenom jobs: 'Direct Hire', 'Direct Placement', 'Contract-to-Hire' - those don't map to existing values - should we create new lookups?
-                    switch (rawEmploymentType)
-                    {
-                        case "Contract":
-                            jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Contractor").FirstOrDefault();
-                            break;
-                        case "Full-Time":
-                            jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Full-Time").FirstOrDefault();
-                            break;
-                        case "Part-Time":
-                            jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Part-Time").FirstOrDefault();
-                            break;
-                        default:
-                            jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Other").FirstOrDefault();
-                            break;
-                    }
-                }
 
                 return jobPostingDto;
             }
