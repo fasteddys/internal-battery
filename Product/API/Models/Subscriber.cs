@@ -49,8 +49,15 @@ namespace UpDiddyApi.Models
         public DateTime? LastSignIn { get; set; }
         public string Title { get; set; }
         public string Biography { get; set; }
+        public string DreamJob { get; set; }
+        public string CurrentRoleProficiencies { get; set; }
+        public string PreferredLeaderStyle { get; set; }
+        public string PreferredTeamType { get; set; }
+        public string PassionProjectsDescription { get; set; }
+        public string CoverLetter { get; set; }
         public Topic Topic { get; set; }
         public int? TopicId { get; set; }
+        public virtual List<SubscriberLink> SubscriberLinks { get; set; }
 
         public List<SubscriberEmploymentTypes> SubscriberEmploymentTypes { get; set; } = new List<SubscriberEmploymentTypes>();
 
@@ -100,10 +107,6 @@ namespace UpDiddyApi.Models
         public string  ConnectedId { get; set; }
         public DateTime? ConnectedModifyDate { get; set; }
         #endregion
-
-
-
-
 
         #region Computed Columns
 

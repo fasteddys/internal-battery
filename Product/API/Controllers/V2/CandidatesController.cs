@@ -1,15 +1,15 @@
-﻿using Microsoft.Extensions.Logging;
-using UpDiddyApi.ApplicationCore.Interfaces.Business;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
-using System;
+using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyLib.Domain.Models;
+using UpDiddyLib.Domain.Models.Candidate360;
 
 namespace UpDiddyApi.Controllers.V2
 {
-    [Route("v2/[controller]/")]
+    [Route("/V2/[controller]/")]
+    [ApiController]
     public class CandidatesController : BaseApiController
     {
         private readonly ICandidatesService _candidatesService;
@@ -23,11 +23,6 @@ namespace UpDiddyApi.Controllers.V2
             _candidatesService = candidatesService;
             _logger = logger;
         }
-
-        // This empty controller will be used for stories:
-        //   #2480 - Candidate 360: Personal Info
-        //   #2481 - Candidate 360: Employment Preferences
-        //   #2482 - Candidate 360: Role Preferences
 
         #region Personal Info
 
@@ -72,6 +67,26 @@ namespace UpDiddyApi.Controllers.V2
         #endregion Employment Preferences
 
         #region Role Preferences
+
+        [HttpGet("role-preferences")]
+        [Authorize]
+        public async Task<ActionResult<RolePreferenceDto>> GetRolePreferenceDto()
+        {
+            var subscriberGuid = GetSubscriberGuid();
+
+            var rolePreferenceDto = await _candidatesService.GetRolePreference(subscriberGuid);
+            return rolePreferenceDto;
+        }
+
+        [HttpPut("role-preferences")]
+        [Authorize]
+        public async Task<IActionResult> UpdateRolePreferenceDto(RolePreferenceDto rolePreference)
+        {
+            var subscriberGuid = GetSubscriberGuid();
+
+            await _candidatesService.UpdateRolePreference(subscriberGuid, rolePreference);
+            return Ok();
+        }
 
         #endregion Role Preferences
     }

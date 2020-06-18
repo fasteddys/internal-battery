@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
@@ -10,9 +11,10 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200612204641_CandidateRole_Subscriber_Fields")]
+    partial class CandidateRole_Subscriber_Fields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -650,32 +652,6 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("CommunicationTypeId");
 
                     b.ToTable("CommunicationType");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.CommuteDistance", b =>
-                {
-                    b.Property<int?>("CommuteDistanceId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<Guid>("CommuteDistanceGuid");
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<string>("DistanceRange")
-                        .HasMaxLength(100);
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.HasKey("CommuteDistanceId");
-
-                    b.ToTable("CommuteDistance");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Company", b =>
@@ -4520,8 +4496,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("CloudTalentUri");
 
-                    b.Property<int?>("CommuteDistanceId");
-
                     b.Property<string>("ConnectedId");
 
                     b.Property<DateTime?>("ConnectedModifyDate");
@@ -4559,12 +4533,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsDeleted");
 
-                    b.Property<bool?>("IsFlexibleWorkScheduleRequired");
-
                     b.Property<bool>("IsVerified")
                         .HasColumnName("IsEmailVerifiedLegacy");
-
-                    b.Property<bool?>("IsWillingToTravel");
 
                     b.Property<string>("LastName");
 
@@ -4617,8 +4587,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<string>("TwitterUrl");
 
                     b.HasKey("SubscriberId");
-
-                    b.HasIndex("CommuteDistanceId");
 
                     b.HasIndex("StateId");
 
@@ -4711,39 +4679,6 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("SubscriberId");
 
                     b.ToTable("SubscriberEducationHistory");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.SubscriberEmploymentTypes", b =>
-                {
-                    b.Property<int>("SubscriberEmploymentTypesId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("EmploymentTypeId");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<Guid>("SubscriberEmploymentTypesGuid");
-
-                    b.Property<int>("SubscriberId");
-
-                    b.HasKey("SubscriberEmploymentTypesId");
-
-                    b.HasIndex("EmploymentTypeId");
-
-                    b.HasIndex("SubscriberId", "EmploymentTypeId")
-                        .IsUnique()
-                        .HasName("UIX_SubscriberEmploymentTypes_Subscriber_EmploymentType");
-
-                    b.ToTable("SubscriberEmploymentTypes");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberFile", b =>
@@ -6526,10 +6461,6 @@ namespace UpDiddyApi.Migrations
 
             modelBuilder.Entity("UpDiddyApi.Models.Subscriber", b =>
                 {
-                    b.HasOne("UpDiddyApi.Models.CommuteDistance", "CommuteDistance")
-                        .WithMany()
-                        .HasForeignKey("CommuteDistanceId");
-
                     b.HasOne("UpDiddyApi.Models.State", "State")
                         .WithMany()
                         .HasForeignKey("StateId");
@@ -6573,19 +6504,6 @@ namespace UpDiddyApi.Migrations
 
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany("SubscriberEducationHistory")
-                        .HasForeignKey("SubscriberId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.SubscriberEmploymentTypes", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.EmploymentType", "EmploymentType")
-                        .WithMany()
-                        .HasForeignKey("EmploymentTypeId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany("SubscriberEmploymentTypes")
                         .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });

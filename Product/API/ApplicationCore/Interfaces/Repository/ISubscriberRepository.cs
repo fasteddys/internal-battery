@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
+using UpDiddyLib.Domain.Models.Candidate360;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Domain.Models;
 
@@ -35,5 +36,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task UpdateCandidateEmploymentPreferencesBySubscriberGuidAsync(Guid subscriberGuid, CandidateEmploymentPreferenceDto candidateEmploymentPreferenceDto);
         Task UpdateSubscriberPersonalInfo(Guid subscriberGuid, State subscriberState, CandidatePersonalInfoDto candidatePersonalInfoDto);
 
+        Task<RolePreferenceDto> GetRolePreference(Guid subscriberGuid);
+
+        Task UpdateRolePreference(Guid subscriberGuid, RolePreferenceDto rolePreference);
     }
 }
