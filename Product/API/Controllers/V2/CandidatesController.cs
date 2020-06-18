@@ -63,7 +63,7 @@ namespace UpDiddyApi.Controllers.V2
             return rolePreferenceDto;
         }
 
-        [HttpPost("role-preferences")]
+        [HttpPut("role-preferences")]
         [Authorize]
         public async Task<IActionResult> UpdateRolePreferenceDto(RolePreferenceDto rolePreference)
         {
