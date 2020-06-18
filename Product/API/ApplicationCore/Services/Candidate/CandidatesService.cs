@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
@@ -106,6 +107,14 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
         public async Task UpdateRolePreference(Guid subscriberGuid, RolePreferenceDto rolePreference)
         {
+            if (rolePreference == null) { throw new ArgumentNullException(nameof(rolePreference)); }
+
+            var hasDuplicates = rolePreference.SocialLinks
+                .GroupBy(sl => sl.FriendlyName)
+                .Any(sl => sl.Count() > 1);
+
+            if (hasDuplicates) { throw new FailedValidationException("Cannot specify more than one social link of the same type"); }
+
             try
             {
                 _logger.LogDebug("CandidatesService:UpdateRolePreference: Updating Candidate 360 Role information for {subscriber}", subscriberGuid);

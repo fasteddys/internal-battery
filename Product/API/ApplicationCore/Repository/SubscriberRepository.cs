@@ -222,14 +222,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var transaction = await _dbContext.Database.BeginTransactionAsync();
             try
             {
-                // Trying to implement a "patch" strategy...
-                if (rolePreference.JobTitle != null) { subscriber.Title = rolePreference.JobTitle; }
-                if (rolePreference.DreamJob != null) { subscriber.CurrentRoleProficiencies = rolePreference.DreamJob; }
-                if (rolePreference.WhatSetsMeApart != null) { subscriber.DreamJob = rolePreference.WhatSetsMeApart; }
-                if (rolePreference.WhatKindOfLeader != null) { subscriber.PreferredLeaderStyle = rolePreference.WhatKindOfLeader; }
-                if (rolePreference.WhatKindOfTeam != null) { subscriber.PreferredTeamType = rolePreference.WhatKindOfTeam; }
-                if (rolePreference.VolunteerOrPassionProjects != null) { subscriber.PassionProjectsDescription = rolePreference.VolunteerOrPassionProjects; }
-                if (rolePreference.ElevatorPitch != null) { subscriber.CoverLetter = rolePreference.ElevatorPitch; }
+                subscriber.Title = rolePreference.JobTitle;
+                subscriber.CurrentRoleProficiencies = rolePreference.DreamJob;
+                subscriber.DreamJob = rolePreference.WhatSetsMeApart;
+                subscriber.PreferredLeaderStyle = rolePreference.WhatKindOfLeader;
+                subscriber.PreferredTeamType = rolePreference.WhatKindOfTeam;
+                subscriber.PassionProjectsDescription = rolePreference.VolunteerOrPassionProjects;
+                subscriber.CoverLetter = rolePreference.ElevatorPitch;
 
                 var skillsToDelete = subscriber.SubscriberSkills
                     .Where(ss => ss.IsDeleted == 0 && ss.Skill?.SkillGuid != null && !rolePreference.SkillGuids.Contains(ss.Skill.SkillGuid.Value));
@@ -256,6 +255,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
                         .ToListAsync();
 
                     await _dbContext.SubscriberSkill.AddRangeAsync(newSubscriberSkills);
+                }
+
+                foreach (var linkToUpdate in subscriber.SubscriberLinks)
+                {
+                    var link = rolePreference.SocialLinks
+                        .FirstOrDefault(l => l.FriendlyName == linkToUpdate.Label);
+                    if (link != null) { linkToUpdate.Url = link.Url; }
                 }
 
                 var linksToDelete = subscriber.SubscriberLinks
