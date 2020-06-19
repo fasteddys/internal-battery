@@ -245,6 +245,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
                 foreach (var skillToDelete in skillsToDelete) { skillToDelete.IsDeleted = 1; }
 
+                var skillGuidsToUndelete = subscriber.SubscriberSkills
+                    .Where(ss => ss.IsDeleted == 1 && ss.Skill?.SkillGuid != null && rolePreference.SkillGuids.Contains(ss.Skill.SkillGuid.Value));
+
+                foreach (var skillToUndelete in skillGuidsToUndelete) { skillToUndelete.IsDeleted = 0; }
+
                 var skillGuidsToAdd = rolePreference.SkillGuids
                     .Where(sg => !subscriber.SubscriberSkills.Any(ss => ss.IsDeleted == 0 && ss.Skill?.SkillGuid == sg))
                     .ToList();
@@ -264,7 +269,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                         })
                         .ToListAsync();
 
-                    await _dbContext.SubscriberSkill.AddRangeAsync(newSubscriberSkills);
+                    subscriber.SubscriberSkills.AddRange(newSubscriberSkills);
                 }
 
                 foreach (var linkToUpdate in subscriber.SubscriberLinks)
