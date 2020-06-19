@@ -9,7 +9,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface ICrosschqRepository
     {
-        Task AddReferenceCheck(Guid profileGuid, Guid recruiterGuid, ReferenceRequest referenceRequest, string referenceCheckRequestId);
+        Task AddReferenceCheck(Guid profileGuid, Guid recruiterGuid, ReferenceRequestDto referenceRequest, string referenceCheckRequestId);
         Task<ReferenceCheck> GetReferenceCheckByRequestId(string requestId);
 
         Task<List<ReferenceCheck>> GetReferenceCheckByProfileGuid(Guid profileGuid);

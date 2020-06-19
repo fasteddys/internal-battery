@@ -406,7 +406,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 .FirstOrDefault();
 
             if (recruiter == null)
-                throw new FailedValidationException($"The subscriber {SubscriberGuid} is not a recruiter");
+                throw new InsufficientPermissionException($"The subscriber {SubscriberGuid} is not a recruiter");
 
             RecruiterInfoDto rVal = _mapper.Map<RecruiterInfoDto>(recruiter);
             rVal.IsInAuth0RecruiterGroup = await CheckRecruiterPermissionAsync(recruiter);

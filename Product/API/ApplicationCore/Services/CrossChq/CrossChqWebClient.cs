@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.Models.CrossChq;
 using UpDiddyLib.Domain.Models.CrossChq;
 
@@ -23,7 +24,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
             _logger = logger;
         }
 
-        public async Task<string> PostReferenceRequestAsync(ReferenceRequest request)
+        public async Task<string> PostReferenceRequestAsync(ReferenceRequestDto request)
         {
             try
             {
@@ -37,6 +38,11 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
                 var json = JObject.Parse(content);
                 return json["request_id"]?.ToString();
             }
+            catch (AlreadyExistsException aee)
+            {
+                _logger.LogError(aee, "Error occurred while retrieving a Reference Request");
+                throw;
+            }
             catch (HttpRequestException ex)
             {
                 _logger.LogError(ex, "Error occurred while posting a new Reference Request");
@@ -44,7 +50,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
             }
         }
 
-        public async Task<ReferenceResponse> GetReferenceRequestAsync(string referenceId)
+        public async Task<ReferenceResponseDto> GetReferenceRequestAsync(string referenceId)
         {
             try
             {
@@ -55,7 +61,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
 
                 var content = await GetContent(responseMessage);
 
-                return JsonConvert.DeserializeObject<ReferenceResponse>(content);
+                return JsonConvert.DeserializeObject<ReferenceResponseDto>(content);
             }
             catch (HttpRequestException ex)
             {
@@ -73,6 +79,11 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
                 var errorJson = JObject.Parse(content);
                 var errorMsg = errorJson["errors"]?.ToString()
                     ?? errorJson["detail"]?.ToString();
+
+                if (statusCode == (int)System.Net.HttpStatusCode.Conflict)
+                {
+                    throw new AlreadyExistsException(errorMsg);
+                }
 
                 throw new HttpRequestException(
                     string.IsNullOrEmpty(errorMsg)

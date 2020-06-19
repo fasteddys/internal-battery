@@ -2,13 +2,7 @@
 
 namespace UpDiddyLib.Domain.Models.CrossChq
 {
-    public class ReferenceCandidate : ReferenceHiringManager
-    {
-        [JsonProperty("mobile_phone")]
-        public string MobilePhone { get; set; }
-    }
-
-    public class ReferenceHiringManager
+    public class ReferenceDto
     {
         [JsonProperty("first_name")]
         public string FirstName { get; set; }
@@ -18,10 +12,10 @@ namespace UpDiddyLib.Domain.Models.CrossChq
 
         [JsonProperty("email")]
         public string Email { get; set; }
-    }
 
-    public class Reference : ReferenceCandidate
-    {
+        [JsonProperty("mobile_phone")]
+        public string MobilePhone { get; set; }
+
         [JsonProperty("status")]
         public string Status { get; set; }
     }

@@ -276,7 +276,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 await _repository.HiringManagerRepository.AddHiringManager(subscriber.SubscriberId);
 
             // add user to hubspot
-            await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid, lastLoginDateTime: null);
+            await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid, lastLoginDateTime: null, nonBlocking: false);
 
             // add the user to the Google Talent Cloud
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriberGuid));

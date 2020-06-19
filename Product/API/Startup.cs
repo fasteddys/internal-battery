@@ -49,6 +49,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager;
 using UpDiddyApi.ApplicationCore.Services.HiringManager;
 using UpDiddyApi.ApplicationCore.Interfaces.Business.B2B;
 using UpDiddyApi.ApplicationCore.Services.B2B;
+using UpDiddyApi.ApplicationCore.Services.Candidate;
 
 namespace UpDiddyApi
 {
@@ -265,8 +266,9 @@ namespace UpDiddyApi
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.PurgeSendGridAuditRecords(), Cron.Daily());
 
        
-            string HiringSolvedCronExpression = $"*/{Configuration["HiringSolved:PollIntervalInSeconds"]} * * * * *";
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.GetHiringSolvedResumeParseUpdates(), HiringSolvedCronExpression);
+            //disabled 2020.06.10 - the remote rest service does not seem to be working since 2020.04.13
+            //string HiringSolvedCronExpression = $"*/{Configuration["HiringSolved:PollIntervalInSeconds"]} * * * * *";
+            //RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.GetHiringSolvedResumeParseUpdates(), HiringSolvedCronExpression);
 
 
 
@@ -371,9 +373,10 @@ namespace UpDiddyApi
             services.AddScoped<IHiringManagerService, HiringManagerService>();
             services.AddScoped<IPipelineService, PipelineService>();
             services.AddTransient<IInterviewRequestService, InterviewRequestService>(); // y'all know most of these can be transient!!!
+            services.AddTransient<ICandidatesService, CandidatesService>();
             services.AddCareerTalentPipelineService(Configuration.GetSection("CreateTalentPipeline"));
             services.AddCrossChq(Configuration.GetSection("CrossChq"));
-
+            services.AddTransient<ICommuteDistancesService, CommuteDistancesService>();
             #endregion
 
             // Configure SnapshotCollector from application settings

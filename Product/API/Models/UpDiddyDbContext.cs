@@ -219,8 +219,9 @@ namespace UpDiddyApi.Models
         public DbSet<ReferenceCheckVendor> ReferenceCheckVendor { get; set; }
         public DbSet<ReferenceCheck> ReferenceCheck { get; set; }
         public DbSet<ReferenceCheckReport> ReferenceCheckReport { get; set; }
-
-
+        public DbSet<SubscriberEmploymentTypes> SubscriberEmploymentTypes { get; set; }
+        public DbSet<CommuteDistance> CommuteDistance { get; set; }
+        public DbSet<SubscriberLink> SubscriberLinks { get; set; }
 
         #endregion
 
@@ -278,6 +279,7 @@ namespace UpDiddyApi.Models
         public DbQuery<UpDiddyLib.Domain.Models.JobSiteScrapeStatisticDto> JobSiteScrapeStatistics { get; set; }
         public DbQuery<UsersDto> Users { get; set; }
         public DbQuery<UsersDetailDto> UsersDetail { get; set; }
+        public DbQuery<HiringManagerDetailDto> HiringManagersDetail { get; set; }
         public DbQuery<PartnerUsers> PartnerUsers { get; set; } 
         public DbQuery<SubscriberEmailStatisticDto> SubscriberEmailStatistics { get; set; }
         public DbQuery<ProfileWishlistDto> ProfileWishlists { get; set; }
@@ -679,6 +681,11 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<Subscriber>()
                 .Property(s => s.PostalGuid).HasComputedColumnSql("[dbo].[fn_GetPostalGuidForSubscriber]([PostalCode], [City], [StateId])");
 
+            modelBuilder.Entity<SubscriberLink>()
+                .HasOne(sl => sl.Subscriber)
+                .WithMany(s => s.SubscriberLinks)
+                .HasForeignKey(sl => sl.SubscriberId);
+
             modelBuilder.Entity<NotificationGroup>()
                .HasIndex(p => new { p.NotificationGroupId, p.GroupId })
                .HasName("UIX_NotificationGroup_Group")
@@ -706,6 +713,11 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<ReferenceCheck>()
                 .HasIndex(i => i.ReferenceCheckGuid)
                 .HasName("UIX_ReferenceCheck_ReferenceCheckGuid")
+                .IsUnique(true);
+
+            modelBuilder.Entity<SubscriberEmploymentTypes>()
+                .HasIndex(set => new { set.SubscriberId, set.EmploymentTypeId })
+                .HasName("UIX_SubscriberEmploymentTypes_Subscriber_EmploymentType")
                 .IsUnique(true);
         }
     }

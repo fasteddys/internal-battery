@@ -126,28 +126,6 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
             jobPostingDto.ThirdPartyIdentifier = jobPage.UniqueIdentifier;
             jobPostingDto.PostingExpirationDateUTC = DateTime.UtcNow.AddYears(1);
 
-            if (_employmentTypes != null)
-            {
-                var jobData = JsonConvert.DeserializeObject<dynamic>(jobPage.RawData);
-                string rawEmploymentType = Helpers.ConvertJValueToString(jobData.employmentType);
-
-                switch (rawEmploymentType)
-                {
-                    case "CONTRACTOR":
-                        jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Contractor").FirstOrDefault();
-                        break;
-                    case "FULL_TIME":
-                        jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Full-Time").FirstOrDefault();
-                        break;
-                    case "PART_TIME":
-                        jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Part-Time").FirstOrDefault();
-                        break;
-                    default:
-                        jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Other").FirstOrDefault();
-                        break;
-                }
-            }
-
             // For Allegis Group Corporate Jobs statically set recruiter for now
             jobPostingDto.Recruiter = new RecruiterDto()
             {

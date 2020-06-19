@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
+using UpDiddyLib.Domain.Models.Candidate360;
 using UpDiddyLib.Dto;
+using UpDiddyLib.Domain.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
@@ -12,6 +14,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IQueryable<Subscriber> GetAllSubscribersAsync();
 
         Task<SubscriberSourceDto> GetSubscriberSource(int subscriberId);
+
+        Task<List<SubscriberEmploymentTypes>> GetCandidateEmploymentPreferencesBySubscriberGuidAsync(Guid subscriberGuid);
 
         Task<Subscriber> GetSubscriberByGuidAsync(Guid subscriberGuid);
         Subscriber GetSubscriberByGuid(Guid subscriberGuid);
@@ -27,5 +31,11 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task UpdateHubSpotDetails(Guid subscriberId, long hubSpotVid);
 
         Task UpdateHubSpotDetails(int subscriberId, long hubSpotVid);
+
+        Task UpdateCandidateEmploymentPreferencesBySubscriberGuidAsync(Guid subscriberGuid, CandidateEmploymentPreferenceDto candidateEmploymentPreferenceDto);
+
+        Task<RolePreferenceDto> GetRolePreference(Guid subscriberGuid);
+
+        Task UpdateRolePreference(Guid subscriberGuid, RolePreferenceDto rolePreference);
     }
 }

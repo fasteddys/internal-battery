@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Graph;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,8 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyApi.Models.CrossChq;
 using UpDiddyLib.Domain.Models.CrossChq;
+using UpDiddyLib.Helpers;
+using Constants = UpDiddyLib.Helpers.Constants;
 using IProfileService = UpDiddyApi.ApplicationCore.Interfaces.Business.G2.IProfileService;
 
 namespace UpDiddyApi.ApplicationCore.Services.CrossChq
@@ -32,6 +35,8 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
         private readonly IMapper _mapper;
         private readonly IHangfireService _hangfireService;
         private readonly ICrossChqWebClient _webClient;
+        private readonly ISysEmail _emailService;
+        private readonly CrossChqOptions _options;
 
         public CrosschqService(
             UpDiddyDbContext context,
@@ -42,7 +47,9 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
             ILogger<SubscriberService> logger,
             IMapper mapper,
             IHangfireService hangfireService,
-            ICrossChqWebClient webClient)
+            ICrossChqWebClient webClient,
+            ISysEmail emailService,
+            IOptions<CrossChqOptions> optionsAccessor)
         {
             _db = context;
             _profileService = profileService;
@@ -53,6 +60,8 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
             _mapper = mapper;
             _hangfireService = hangfireService;
             _webClient = webClient;
+            _emailService = emailService;
+            _options = optionsAccessor.Value;
         }
 
         public async Task UpdateReferenceChkStatus(CrosschqWebhookDto crosschqWebhookDto)
@@ -99,19 +108,19 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
                 var recruiter = await _recruiterService
                     .GetRecruiterBySubscriberAsync(subscriberGuid);
 
-                var request = new ReferenceRequest // TODO:  rename to "ReferenceRequestDto" when I know there won't be a merge collision!
+                var request = new ReferenceRequestDto
                 {
-                    Candidate = new ReferenceCandidate // TODO:  rename to "ReferenceCandidateDto"
+                    Candidate = new ReferenceCandidateDto
                     {
                         FirstName = profile.FirstName,
                         LastName = profile.LastName,
                         Email = profile.Email,
-                        MobilePhone = $"+1{PreparePhoneNumber(profile.PhoneNumber)}"
+                        MobilePhone = PreparePhoneNumber(profile.PhoneNumber)
                     },
                     JobRole = referenceRequest.JobRole,
                     RequestorEmailAddress = recruiter.Email,
                     UseSMS = false,
-                    ConfigurationParameters = new ReferenceRequestConfigurationParameters
+                    ConfigurationParameters = new ConfigurationParametersDto
                     {
                         Managers = referenceRequest?.ConfigurationParameters.Managers ?? 0,
                         Employees = referenceRequest?.ConfigurationParameters.Employees ?? 0,
@@ -123,7 +132,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
                     SendCompletedNotification = false,
                     CandidateMessage = referenceRequest.CandidateMessage,
                     JobPosition = referenceRequest.JobPosition,
-                    HiringManager = new ReferenceHiringManager
+                    HiringManager = new ReferenceHiringManagerDto
                     {
                         FirstName = recruiter.FirstName,
                         LastName = recruiter.LastName,
@@ -137,7 +146,14 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
 
                 await _repository.CrosschqRepository.AddReferenceCheck(profileGuid, recruiter.RecruiterGuid, request, requestId);
 
+                await SendSuccessEmail(profile.Email);
+
                 return requestId;
+            }
+            catch (AlreadyExistsException aee)
+            {
+                _logger.LogError(aee, "Error occurred while retrieving a Reference Request");
+                throw;
             }
             catch (Exception ex)
             {
@@ -165,13 +181,13 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
                     .Select((rc, status) => new ReferenceStatusDto
                     {
                         ReferenceCheckId = rc.referenceCheck.ReferenceCheckGuid,
-                        Status = rc.status?.Status ?? "",
+                        Status = rc.status?.Status ?? "Initiated",
                         JobRole = rc.referenceCheck.ReferenceCheckType,
                         JobPosition = rc.referenceCheck.CandidateJobTitle,
                         PercentComplete = rc.status?.Progress ?? 0,
-                        CreateDate = rc.status?.CreateDate,
+                        CreateDate = rc.status?.CreateDate ?? rc.referenceCheck?.CreateDate,
                         References = rc.referenceCheck.CandidateReference
-                            ?.Select(r => new Reference
+                            ?.Select(r => new ReferenceDto
                             {
                                 FirstName = r.FirstName,
                                 LastName = r.LastName,
@@ -237,17 +253,27 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
             }
         }
 
+        private async Task SendSuccessEmail(string emailAddress)
+            => await _emailService.SendTemplatedEmailAsync(
+                emailAddress,
+                _options.NotificationEmailTemplate,
+                null,
+                Constants.SendGridAccount.Transactional);
+
         private static string PreparePhoneNumber(string phoneNumber)
         {
-            if (string.IsNullOrEmpty(phoneNumber)) { throw new ArgumentNullException(nameof(phoneNumber)); }
+            var gasOnaFire = new BadRequestException("Invalid or missing phone number");
+
+            if(string.IsNullOrEmpty(phoneNumber)) { throw gasOnaFire; }
 
             var digits = new Regex(@"\d")
                 .Matches(phoneNumber)
-                .Select(regex => regex.Value);
+                .Select(regex => regex.Value)
+                .ToList();
 
-            return string.Join(
-                separator: null,
-                values: digits);
+            if (digits.Count < 10) { throw gasOnaFire; }
+
+            return $"+1{string.Join(null, digits)}";
         }
 
         #endregion

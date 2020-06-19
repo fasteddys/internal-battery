@@ -17,6 +17,6 @@ namespace UpDiddyLib.Domain.Models.CrossChq
 
         public DateTime? CreateDate { get; set; }
 
-        public List<Reference> References { get; set; }
+        public List<ReferenceDto> References { get; set; }
     }
 }
