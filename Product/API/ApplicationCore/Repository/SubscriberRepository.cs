@@ -387,6 +387,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             subscriber.City = candidatePersonalInfoDto?.City;
             subscriber.StateId = subscriberState?.StateId;
             subscriber.PostalCode = candidatePersonalInfoDto?.Postal;
+            subscriber.ModifyDate = DateTime.UtcNow;
 
             await _dbContext.SaveChangesAsync();
         }
