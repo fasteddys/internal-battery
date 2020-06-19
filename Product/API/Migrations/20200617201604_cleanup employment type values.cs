@@ -25,23 +25,32 @@ namespace UpDiddyApi.Migrations
 
             // cleanup references to employment types using mappings provided by Kim
             migrationBuilder.Sql(@"INSERT INTO G2.ProfileEmploymentTypes (IsDeleted, CreateDate, CreateGuid, ProfileEmploymentTypeGuid, ProfileId, EmploymentTypeId)
-SELECT 0, '2020-06-17', '00000000-0000-0000-0000-000000000000', NEWID(), pet.ProfileId, (SELECT TOP 1 EmploymentTypeId FROM dbo.EmploymentType WHERE [Name] = 'Full-Time Contract')
-FROM G2.ProfileEmploymentTypes pet
-INNER JOIN dbo.EmploymentType et ON pet.EmploymentTypeId = et.EmploymentTypeId
-WHERE et.[Name] IN ('Temporary', 'Contractor')");
-
-            migrationBuilder.Sql(@"
-INSERT INTO G2.ProfileEmploymentTypes (IsDeleted, CreateDate, CreateGuid, ProfileEmploymentTypeGuid, ProfileId, EmploymentTypeId)
-SELECT 0, '2020-06-17', '00000000-0000-0000-0000-000000000000', NEWID(), pet.ProfileId, (SELECT TOP 1 EmploymentTypeId FROM dbo.EmploymentType WHERE [Name] = 'Full-Time Contract')
-FROM G2.ProfileEmploymentTypes pet
-INNER JOIN dbo.EmploymentType et ON pet.EmploymentTypeId = et.EmploymentTypeId
-WHERE et.[Name] = 'Full-Time'");
+SELECT 0, '2020-06-17', '00000000-0000-0000-0000-000000000000', NEWID(), uniqueProfiles.ProfileId, (SELECT TOP 1 EmploymentTypeId FROM dbo.EmploymentType WHERE [Name] = 'Full-Time Contract')
+FROM (
+	SELECT DISTINCT pet.ProfileId
+	FROM G2.ProfileEmploymentTypes pet
+	INNER JOIN dbo.EmploymentType et ON pet.EmploymentTypeId = et.EmploymentTypeId
+	WHERE et.[Name] IN ('Temporary', 'Contractor', 'Full-Time')
+	AND NOT EXISTS(
+		SELECT *
+		FROM G2.ProfileEmploymentTypes e_pet
+		INNER JOIN dbo.EmploymentType e_et ON e_pet.EmploymentTypeId = e_et.EmploymentTypeId
+		AND e_et.[Name] = 'Full-Time Contract')
+	) uniqueProfiles");
 
             migrationBuilder.Sql(@"INSERT INTO G2.ProfileEmploymentTypes (IsDeleted, CreateDate, CreateGuid, ProfileEmploymentTypeGuid, ProfileId, EmploymentTypeId)
-SELECT 0, '2020-06-17', '00000000-0000-0000-0000-000000000000', NEWID(), pet.ProfileId, (SELECT TOP 1 EmploymentTypeId FROM dbo.EmploymentType WHERE [Name] = 'Full-Time Employee')
-FROM G2.ProfileEmploymentTypes pet
-INNER JOIN dbo.EmploymentType et ON pet.EmploymentTypeId = et.EmploymentTypeId
-WHERE et.[Name] = 'Full-Time'");
+SELECT 0, '2020-06-17', '00000000-0000-0000-0000-000000000000', NEWID(), uniqueProfiles.ProfileId, (SELECT TOP 1 EmploymentTypeId FROM dbo.EmploymentType WHERE [Name] = 'Full-Time Employee')
+FROM (
+	SELECT DISTINCT pet.ProfileId
+	FROM G2.ProfileEmploymentTypes pet
+	INNER JOIN dbo.EmploymentType et ON pet.EmploymentTypeId = et.EmploymentTypeId
+	WHERE et.[Name] IN ('Full-Time')
+	AND NOT EXISTS(
+		SELECT *
+		FROM G2.ProfileEmploymentTypes e_pet
+		INNER JOIN dbo.EmploymentType e_et ON e_pet.EmploymentTypeId = e_et.EmploymentTypeId
+		AND e_et.[Name] = 'Full-Time Employee')
+	) uniqueProfiles");
 
             migrationBuilder.Sql(@"UPDATE 
 	pet
