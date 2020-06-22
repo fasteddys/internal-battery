@@ -39,7 +39,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> UpdateCandidatePersonalInfo([FromBody] CandidatePersonalInfoDto request)
         {
             await _candidatesService.UpdateCandidatePersonalInfo(GetSubscriberGuid(), request);
-            return StatusCode(202);
+            return StatusCode(204);
         }
         #endregion Personal Info
 
@@ -59,7 +59,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> UpdateCandidateEmploymentPreference([FromBody] CandidateEmploymentPreferenceDto request)
         {
             await _candidatesService.UpdateCandidateEmploymentPreference(GetSubscriberGuid(), request);
-            return StatusCode(202);
+            return StatusCode(204);
         }
 
 
