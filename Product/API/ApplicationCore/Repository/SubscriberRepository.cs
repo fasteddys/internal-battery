@@ -74,6 +74,16 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return subscriberResult;
         }
 
+        public async Task<Subscriber> GetSubscriberPersonalInfoByGuidAsync(Guid subscriberGuid)
+        {
+            var subscriberResult = await _dbContext.Subscriber
+                              .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                              .Include(s => s.State)
+                              .FirstOrDefaultAsync();
+
+            return subscriberResult;
+        }
+
         public async Task<Subscriber> GetSubscriberByIdAsync(int subscriberId)
         {
             return await _dbContext.Subscriber
@@ -361,7 +371,26 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 subscriber.SubscriberEmploymentTypes = null;
             }
 
-            _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
         }
+
+        public async Task UpdateSubscriberPersonalInfo(Guid subscriberGuid, State subscriberState, CandidatePersonalInfoDto candidatePersonalInfoDto)
+        {
+            var subscriber = await _dbContext.Subscriber
+                              .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                              .FirstOrDefaultAsync();
+
+            subscriber.FirstName = candidatePersonalInfoDto?.FirstName;
+            subscriber.LastName = candidatePersonalInfoDto?.LastName;
+            subscriber.PhoneNumber = candidatePersonalInfoDto?.MobilePhone;
+            subscriber.Address = candidatePersonalInfoDto?.StreetAddress;
+            subscriber.City = candidatePersonalInfoDto?.City;
+            subscriber.StateId = subscriberState?.StateId;
+            subscriber.PostalCode = candidatePersonalInfoDto?.Postal;
+            subscriber.ModifyDate = DateTime.UtcNow;
+
+            await _dbContext.SaveChangesAsync();
+        }
+
     }
 }

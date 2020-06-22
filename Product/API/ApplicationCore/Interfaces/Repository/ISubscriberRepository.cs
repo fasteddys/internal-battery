@@ -18,6 +18,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<List<SubscriberEmploymentTypes>> GetCandidateEmploymentPreferencesBySubscriberGuidAsync(Guid subscriberGuid);
 
         Task<Subscriber> GetSubscriberByGuidAsync(Guid subscriberGuid);
+        Task<Subscriber> GetSubscriberPersonalInfoByGuidAsync(Guid subscriberGuid);
         Subscriber GetSubscriberByGuid(Guid subscriberGuid);
         Task<Subscriber> GetSubscriberByEmailAsync(string email);
         Subscriber GetSubscriberByEmail(string email);
@@ -33,6 +34,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task UpdateHubSpotDetails(int subscriberId, long hubSpotVid);
 
         Task UpdateCandidateEmploymentPreferencesBySubscriberGuidAsync(Guid subscriberGuid, CandidateEmploymentPreferenceDto candidateEmploymentPreferenceDto);
+        Task UpdateSubscriberPersonalInfo(Guid subscriberGuid, State subscriberState, CandidatePersonalInfoDto candidatePersonalInfoDto);
 
         Task<RolePreferenceDto> GetRolePreference(Guid subscriberGuid);
 

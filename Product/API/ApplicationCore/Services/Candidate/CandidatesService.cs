@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,29 +7,100 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.Candidate360;
+using AutoMapper;
+using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Services.Candidate
 {
     public class CandidatesService : ICandidatesService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
-        private readonly IMapper _mapper;
+        private readonly ISubscriberService _subscriberService;
         private readonly ILogger _logger;
-
+        private readonly IMapper _mapper;
 
         public CandidatesService(
+            ILogger<CandidatesService> logger,
             IRepositoryWrapper repositoryWrapper,
             IMapper mapper,
-            ILogger<CandidatesService> logger
-            )
+            ISubscriberService subscriberService
+        )
         {
             _logger = logger;
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
+            _subscriberService = subscriberService;
         }
 
         #region Personal Info
+        public async Task<CandidatePersonalInfoDto> GetCandidatePersonalInfo(Guid subscriberGuid)
+        {
+            _logger.LogInformation($"CandidatesService:GetCandidatePersonalInfo begin.");
 
+            if (subscriberGuid == Guid.Empty) throw new FailedValidationException($"CandidatesService:GetCandidatePersonalInfo subscriber guid cannot be empty({subscriberGuid})");
+            var Subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
+            if (Subscriber == null)
+                throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
+            try
+            {
+                var subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberPersonalInfoByGuidAsync(subscriberGuid);
+                return _mapper.Map<CandidatePersonalInfoDto>(subscriber);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"CandidatesService:GetCandidatePersonalInfo  Error: {ex.ToString()} ");
+                throw ex;
+            }
+
+        }
+
+        public async Task UpdateCandidatePersonalInfo(Guid subscriberGuid, CandidatePersonalInfoDto candidatePersonalInfoDto)
+        {
+            _logger.LogInformation($"CandidatesService:UpdateCandidatePersonalInfo begin.");
+
+            if (subscriberGuid == Guid.Empty) throw new FailedValidationException($"CandidatesService:UpdateCandidatePersonalInfo subscriber guid cannot be empty({subscriberGuid})");
+            var Subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
+            if (Subscriber == null)
+                throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
+            if (candidatePersonalInfoDto == null)
+                throw new FailedValidationException($"CandidatesService:UpdateCandidateEmploymentPreference candidatePersonalInfoDto cannot be null");
+
+            try
+            {
+                Models.State candidateState = null;
+                if (!String.IsNullOrWhiteSpace(candidatePersonalInfoDto.State) && candidatePersonalInfoDto.State.Trim().Length == 2)
+                {
+                    candidateState = await _repositoryWrapper.State.GetUSCanadaStateByCode(candidatePersonalInfoDto.State.Trim());
+                    //add the missing address and then return
+                    if(candidateState == null)
+                    {
+                        //add state if not recognised - assume its USA.
+                        var country = await _repositoryWrapper.Country.GetCountryByCode3("USA");
+                        await _repositoryWrapper.State.AddUSState(new State { 
+                                CreateDate = DateTime.UtcNow,
+                                CreateGuid = Guid.Empty,
+                                StateGuid = Guid.NewGuid(),
+                                Code = candidatePersonalInfoDto?.State,
+                                CountryId = country.CountryId,
+                                Name = candidatePersonalInfoDto?.State //Name will the new state code.
+                                //Sequence will default to 0
+                        });
+
+                        candidateState = await _repositoryWrapper.State.GetUSCanadaStateByCode(candidatePersonalInfoDto.State.Trim());
+                        if(candidateState==null) 
+                            throw new FailedValidationException($"CandidatesService:UpdateCandidateEmploymentPreference newly added state:{candidatePersonalInfoDto.State}, not found.");
+                    }
+                }
+                await _repositoryWrapper.SubscriberRepository.UpdateSubscriberPersonalInfo(subscriberGuid, candidateState, candidatePersonalInfoDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"CandidatesService:UpdateCandidatePersonalInfo  Error: {ex.ToString()} ");
+                throw ex;
+            }
+            _logger.LogInformation($"CandidatesService:UpdateCandidatePersonalInfo begin.");
+
+        }
         #endregion Personal Info
 
         #region Employment Preferences
@@ -40,7 +110,9 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             _logger.LogInformation($"CandidatesService:GetCandidateEmploymentPreference begin.");
 
             if (subscriberGuid == Guid.Empty) throw new FailedValidationException($"CandidatesService:GetCandidateEmploymentPreference subscriber guid cannot be empty({subscriberGuid})");
-
+            var Subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
+            if (Subscriber == null)
+                throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
             try
             {
                 var subscriberEmploymentTypes = await _repositoryWrapper.SubscriberRepository.GetCandidateEmploymentPreferencesBySubscriberGuidAsync(subscriberGuid);
@@ -58,8 +130,6 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 throw ex;
             }
 
-            _logger.LogInformation($"CandidatesService:GetCandidateEmploymentPreference end.");
-
         }
 
         public async Task UpdateCandidateEmploymentPreference(Guid subscriberGuid, CandidateEmploymentPreferenceDto candidateEmploymentPreferenceDto)
@@ -70,7 +140,9 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 throw new FailedValidationException($"CandidatesService:UpdateCandidateEmploymentPreference subscriber guid cannot be empty({subscriberGuid})");
             if(candidateEmploymentPreferenceDto == null) 
                 throw new FailedValidationException($"CandidatesService:UpdateCandidateEmploymentPreference candidateEmploymentPreferenceDto cannot be null");
-
+            var Subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
+            if (Subscriber == null)
+                throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
             try
             {
                 await _repositoryWrapper.SubscriberRepository.UpdateCandidateEmploymentPreferencesBySubscriberGuidAsync(subscriberGuid, candidateEmploymentPreferenceDto);

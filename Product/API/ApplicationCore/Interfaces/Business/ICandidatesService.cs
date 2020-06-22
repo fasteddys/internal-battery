@@ -9,8 +9,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     {
 
         Task<CandidateEmploymentPreferenceDto> GetCandidateEmploymentPreference(Guid subscriberGuid);
-
+        Task<CandidatePersonalInfoDto> GetCandidatePersonalInfo(Guid subscriberGuid);
         Task UpdateCandidateEmploymentPreference(Guid subscriberGuid, CandidateEmploymentPreferenceDto candidateEmploymentPreferenceDto);
+        Task UpdateCandidatePersonalInfo(Guid subscriberGuid, CandidatePersonalInfoDto candidatePersonalInfoDto);
 
         Task<RolePreferenceDto> GetRolePreference(Guid subscriberGuid);
 

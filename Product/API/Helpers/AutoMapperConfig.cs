@@ -1071,6 +1071,13 @@ namespace UpDiddyApi.Helpers
              .ForMember(dest => dest.CommuteDistanceGuid, opt => opt.MapFrom(src => src.FirstOrDefault().Subscriber.CommuteDistance.CommuteDistanceGuid))
              .ForMember(dest => dest.EmploymentTypeGuids, opt => opt.MapFrom(src => src.Select(set => set.EmploymentType.EmploymentTypeGuid).ToList()))
              .ReverseMap();
+
+            CreateMap<UpDiddyApi.Models.Subscriber, CandidatePersonalInfoDto>()
+             .ForMember(dest => dest.MobilePhone, opt => opt.MapFrom(src => src.PhoneNumber))
+             .ForMember(dest => dest.Postal, opt => opt.MapFrom(src => src.PostalCode))
+             .ForMember(dest => dest.StreetAddress, opt => opt.MapFrom(src => src.Address))
+             .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.State.Code))
+             .ReverseMap();
         }
     }
 }
