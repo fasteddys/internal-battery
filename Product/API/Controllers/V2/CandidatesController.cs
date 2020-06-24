@@ -85,7 +85,7 @@ namespace UpDiddyApi.Controllers.V2
             var subscriberGuid = GetSubscriberGuid();
 
             await _candidatesService.UpdateRolePreference(subscriberGuid, rolePreference);
-            return Ok();
+            return StatusCode(204);
         }
 
         #endregion Role Preferences

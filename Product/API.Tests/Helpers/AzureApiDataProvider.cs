@@ -65,7 +65,7 @@ namespace API.Tests.Helpers
                 string[] apiNameFiltersArray = rawFilters.Split(",");
                 foreach (string apiNameFilter in apiNameFiltersArray)
                 {
-                    apiNameFilters.Add(apiNameFilter);
+                    apiNameFilters.Add(apiNameFilter.Trim());
                 }
             }
             return apiNameFilters;
