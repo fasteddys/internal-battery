@@ -202,5 +202,29 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         }
 
         #endregion Role Preferences
+
+        #region Language Proficiencies
+
+        public Task<LanguageListDto> GetLanguageList()
+        {
+            throw new NotImplementedException("Stubbed out...");
+        }
+
+        public Task<ProficiencyListDto> GetProficiencyList()
+        {
+            throw new NotImplementedException("Stubbed out...");
+        }
+
+        public Task<LanguageAndProficiencyListDto> GetLanguagesAndProficiencies(Guid subscriberGuid)
+        {
+            throw new NotImplementedException("Stubbed out...");
+        }
+
+        public Task GetLanguagesAndProficiencies(LanguageAndProficiencyListDto languagesAndProficiencies, Guid subscriberGuid)
+        {
+            throw new NotImplementedException("Stubbed out...");
+        }
+
+        #endregion Language Proficiencies
     }
 }

@@ -89,5 +89,38 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         #endregion Role Preferences
+
+        #region Language Proficiencies
+
+        [HttpGet("languages")]
+        public async Task<ActionResult<LanguageListDto>> GetLanguageList()
+            => await _candidatesService.GetLanguageList();
+
+        [HttpGet("proficiencies")]
+        public async Task<ActionResult<ProficiencyListDto>> GetProficiencyList()
+            => await _candidatesService.GetProficiencyList();
+
+        [HttpGet("languages-and-proficiencies")]
+        [Authorize]
+        public async Task<ActionResult<LanguageAndProficiencyListDto>> GetLanguagesAndProficiencies()
+        {
+            var subscriberGuid = base.GetSubscriberGuid();
+            var languagesAndProficiencies = await _candidatesService.GetLanguagesAndProficiencies(subscriberGuid);
+
+            return languagesAndProficiencies;
+        }
+
+        [HttpPut("languages-and-proficiencies")]
+        [Authorize]
+        public async Task<IActionResult> UpdateLanguagesAndProficiencies(LanguageAndProficiencyListDto languagesAndProficiencies)
+        {
+            var subscriberGuid = base.GetSubscriberGuid();
+
+            await _candidatesService.GetLanguagesAndProficiencies(languagesAndProficiencies, subscriberGuid);
+
+            return NoContent();
+        }
+
+        #endregion Language Proficiencies
     }
 }
