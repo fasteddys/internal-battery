@@ -23,6 +23,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         Task<LanguageAndProficiencyListDto> GetLanguagesAndProficiencies(Guid subscriberGuid);
 
-        Task GetLanguagesAndProficiencies(LanguageAndProficiencyListDto languagesAndProficiencies, Guid subscriberGuid);
+        Task UpdateLanguagesAndProficiencies(LanguageAndProficiencyListDto languagesAndProficiencies, Guid subscriberGuid);
     }
 }

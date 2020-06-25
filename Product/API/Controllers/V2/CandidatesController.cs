@@ -116,7 +116,7 @@ namespace UpDiddyApi.Controllers.V2
         {
             var subscriberGuid = base.GetSubscriberGuid();
 
-            await _candidatesService.GetLanguagesAndProficiencies(languagesAndProficiencies, subscriberGuid);
+            await _candidatesService.UpdateLanguagesAndProficiencies(languagesAndProficiencies, subscriberGuid);
 
             return NoContent();
         }

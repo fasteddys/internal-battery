@@ -220,7 +220,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             throw new NotImplementedException("Stubbed out...");
         }
 
-        public Task GetLanguagesAndProficiencies(LanguageAndProficiencyListDto languagesAndProficiencies, Guid subscriberGuid)
+        public Task UpdateLanguagesAndProficiencies(LanguageAndProficiencyListDto languagesAndProficiencies, Guid subscriberGuid)
         {
             throw new NotImplementedException("Stubbed out...");
         }
