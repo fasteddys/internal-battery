@@ -205,14 +205,16 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
         #region Language Proficiencies
 
-        public Task<LanguageListDto> GetLanguageList()
+        public async Task<LanguageListDto> GetLanguageList()
         {
-            throw new NotImplementedException("Stubbed out...");
+            var languages = await _repositoryWrapper.SubscriberRepository.GetLanguagesAsync();
+            return _mapper.Map<LanguageListDto>(languages);
         }
 
-        public Task<ProficiencyListDto> GetProficiencyList()
+        public async Task<ProficiencyLevelListDto> GetProficiencyList()
         {
-            throw new NotImplementedException("Stubbed out...");
+            var proficiencyLevels = await _repositoryWrapper.SubscriberRepository.GetProficiencyLevelsAsync();
+            return _mapper.Map<ProficiencyLevelListDto>(proficiencyLevels);
         }
 
         public Task<LanguageAndProficiencyListDto> GetLanguagesAndProficiencies(Guid subscriberGuid)

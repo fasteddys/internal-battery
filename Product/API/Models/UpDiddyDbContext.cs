@@ -223,6 +223,9 @@ namespace UpDiddyApi.Models
         public DbSet<CommuteDistance> CommuteDistance { get; set; }
         public DbSet<SubscriberLink> SubscriberLinks { get; set; }
 
+        public DbSet<Language> Languages { get; set; }
+
+        public DbSet<ProficiencyLevel> ProficiencyLevels { get; set; }
         #endregion
 
         #region DBQueries

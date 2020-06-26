@@ -392,5 +392,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
             await _dbContext.SaveChangesAsync();
         }
 
+        public async Task<List<Language>> GetLanguagesAsync()
+            => await _dbContext.Languages.ToListAsync();
+
+        public async Task<List<ProficiencyLevel>> GetProficiencyLevelsAsync()
+            => await _dbContext.ProficiencyLevels.ToListAsync();
     }
 }

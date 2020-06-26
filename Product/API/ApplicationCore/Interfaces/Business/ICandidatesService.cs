@@ -19,7 +19,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         Task<LanguageListDto> GetLanguageList();
 
-        Task<ProficiencyListDto> GetProficiencyList();
+        Task<ProficiencyLevelListDto> GetProficiencyList();
 
         Task<LanguageAndProficiencyListDto> GetLanguagesAndProficiencies(Guid subscriberGuid);
 

@@ -23,6 +23,7 @@ using UpDiddyLib.Domain.AzureSearch;
 using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyLib.Domain.Models.G2;
 using UpDiddyLib.Domain.Models.B2B;
+using UpDiddyLib.Domain.Models.Candidate360;
 
 namespace UpDiddyApi.Helpers
 {
@@ -1078,6 +1079,12 @@ namespace UpDiddyApi.Helpers
              .ForMember(dest => dest.StreetAddress, opt => opt.MapFrom(src => src.Address))
              .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.State.Code))
              .ReverseMap();
+
+            CreateMap<UpDiddyApi.Models.Language, LanguageDto>()
+                .ReverseMap();
+
+            CreateMap<UpDiddyApi.Models.ProficiencyLevel, ProficiencyLevelDto>()
+                .ReverseMap();
         }
     }
 }

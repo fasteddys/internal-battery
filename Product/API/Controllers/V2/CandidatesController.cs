@@ -97,7 +97,7 @@ namespace UpDiddyApi.Controllers.V2
             => await _candidatesService.GetLanguageList();
 
         [HttpGet("proficiencies")]
-        public async Task<ActionResult<ProficiencyListDto>> GetProficiencyList()
+        public async Task<ActionResult<ProficiencyLevelListDto>> GetProficiencyList()
             => await _candidatesService.GetProficiencyList();
 
         [HttpGet("languages-and-proficiencies")]
