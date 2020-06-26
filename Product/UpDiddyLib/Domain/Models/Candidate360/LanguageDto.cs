@@ -7,7 +7,7 @@ namespace UpDiddyLib.Domain.Models.Candidate360
     {
         public Guid LanguageGuid { get; set; }
 
-        public Guid LanguageName { get; set; }
+        public string LanguageName { get; set; }
     }
 
     public class LanguageListDto

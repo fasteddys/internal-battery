@@ -3,16 +3,20 @@ using System.Collections.Generic;
 
 namespace UpDiddyLib.Domain.Models.Candidate360
 {
-    public class LanguageAndProficiencyDto
+    public class LanguageProficiencyDto
     {
         public Guid LanguageGuid { get; set; }
 
-        public Guid ProficiencyGuid { get; set; }
+        public string Language { get; set; }
+
+        public Guid ProficiencyLevelGuid { get; set; }
+
+        public string Level { get; set; }
     }
 
-    public class LanguageAndProficiencyListDto
+    public class LanguageProficiencyListDto
     {
-        public List<LanguageAndProficiencyDto> LanguagesAndProficiencies { get; set; } = new List<LanguageAndProficiencyDto>();
+        public List<LanguageProficiencyDto> LanguagesAndProficiencies { get; set; } = new List<LanguageProficiencyDto>();
 
         public int TotalRecords => LanguagesAndProficiencies?.Count ?? 0;
     }

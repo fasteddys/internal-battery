@@ -1083,8 +1083,60 @@ namespace UpDiddyApi.Helpers
             CreateMap<UpDiddyApi.Models.Language, LanguageDto>()
                 .ReverseMap();
 
+            CreateMap<List< UpDiddyApi.Models.Language>, LanguageListDto>()
+                .AfterMap((src, dest) =>
+                {
+                    if (src != null)
+                    {
+                        dest.Languages = src.Select(s => new LanguageDto
+                        {
+                            LanguageGuid = s.LanguageGuid,
+                            LanguageName = s.LanguageName
+                        }).ToList();
+                    }
+                })
+            .ReverseMap();
+
             CreateMap<UpDiddyApi.Models.ProficiencyLevel, ProficiencyLevelDto>()
                 .ReverseMap();
+
+            CreateMap<List<UpDiddyApi.Models.ProficiencyLevel>, ProficiencyLevelListDto>()
+                .AfterMap((src, dest) =>
+                {
+                    if (src != null)
+                    {
+                        dest.Proficiencies = src.Select(s => new ProficiencyLevelDto
+                        {
+                            ProficiencyLevelGuid = s.ProficiencyLevelGuid,
+                            ProficiencyLevelName = s.ProficiencyLevelName
+                        }).ToList();
+                    }
+                })
+            .ReverseMap();
+
+            CreateMap<SubscriberLanguageProficiency, LanguageProficiencyDto>()
+                .ForMember(dest => dest.LanguageGuid, opt => opt.MapFrom(src => src.Language.LanguageGuid))
+                .ForMember(dest => dest.Language, opt => opt.MapFrom(src => src.Language.LanguageName))
+                .ForMember(dest => dest.ProficiencyLevelGuid, opt => opt.MapFrom(src => src.ProficiencyLevel.ProficiencyLevelGuid))
+                .ForMember(dest => dest.Level, opt => opt.MapFrom(src => src.ProficiencyLevel.ProficiencyLevelName))
+                .ReverseMap();
+
+            CreateMap<List<UpDiddyApi.Models.SubscriberLanguageProficiency>, LanguageProficiencyListDto>()
+                .AfterMap((src, dest) =>
+                {
+                    if (src != null)
+                    {
+                        dest.LanguagesAndProficiencies = src.Select(s => new LanguageProficiencyDto
+                        {
+                            LanguageGuid = s.Language.LanguageGuid,
+                            Language = s.Language.LanguageName,
+                            ProficiencyLevelGuid = s.ProficiencyLevel.ProficiencyLevelGuid,
+                            Level = s.ProficiencyLevel.ProficiencyLevelName
+                        }).ToList();
+                    }
+                })
+                .ReverseMap();
+
         }
     }
 }

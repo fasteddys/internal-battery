@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace UpDiddyApi.Models
@@ -12,5 +13,7 @@ namespace UpDiddyApi.Models
         [Required]
         [StringLength(500)]
         public string LanguageName { get; set; }
+
+        public virtual List<SubscriberLanguageProficiency> SubscriberLanguageProficiencies { get; set; }
     }
 }

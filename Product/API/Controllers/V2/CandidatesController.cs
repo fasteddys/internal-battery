@@ -96,13 +96,13 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<ActionResult<LanguageListDto>> GetLanguageList()
             => await _candidatesService.GetLanguageList();
 
-        [HttpGet("proficiencies")]
+        [HttpGet("language-proficiencies")]
         public async Task<ActionResult<ProficiencyLevelListDto>> GetProficiencyList()
             => await _candidatesService.GetProficiencyList();
 
-        [HttpGet("languages-and-proficiencies")]
+        [HttpGet("language-fluency")]
         [Authorize]
-        public async Task<ActionResult<LanguageAndProficiencyListDto>> GetLanguagesAndProficiencies()
+        public async Task<ActionResult<LanguageProficiencyListDto>> GetLanguagesAndProficiencies()
         {
             var subscriberGuid = base.GetSubscriberGuid();
             var languagesAndProficiencies = await _candidatesService.GetLanguagesAndProficiencies(subscriberGuid);
@@ -110,9 +110,9 @@ namespace UpDiddyApi.Controllers.V2
             return languagesAndProficiencies;
         }
 
-        [HttpPut("languages-and-proficiencies")]
+        [HttpPut("language-fluency")]
         [Authorize]
-        public async Task<IActionResult> UpdateLanguagesAndProficiencies(LanguageAndProficiencyListDto languagesAndProficiencies)
+        public async Task<IActionResult> UpdateLanguagesAndProficiencies(LanguageProficiencyListDto languagesAndProficiencies)
         {
             var subscriberGuid = base.GetSubscriberGuid();
 

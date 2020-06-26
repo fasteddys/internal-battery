@@ -7,7 +7,7 @@ namespace UpDiddyLib.Domain.Models.Candidate360
     {
         public Guid ProficiencyLevelGuid { get; set; }
 
-        public Guid ProficiencyLevelName { get; set; }
+        public string ProficiencyLevelName { get; set; }
     }
 
     public class ProficiencyLevelListDto

@@ -1,14 +1,15 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using AutoMapper;
+using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.Models;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.Candidate360;
-using AutoMapper;
-using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Services.Candidate
 {
@@ -217,14 +218,42 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             return _mapper.Map<ProficiencyLevelListDto>(proficiencyLevels);
         }
 
-        public Task<LanguageAndProficiencyListDto> GetLanguagesAndProficiencies(Guid subscriberGuid)
+        public async Task<LanguageProficiencyListDto> GetLanguagesAndProficiencies(Guid subscriberGuid)
         {
-            throw new NotImplementedException("Stubbed out...");
+            try
+            {
+                _logger.LogDebug("CandidatesService:GetLanguagesAndProficiencies: Fetching Candidate 360 languages and proficiencies for {subscriber}", subscriberGuid);
+
+                var languageProficiencyLevels = await _repositoryWrapper.SubscriberRepository.GetSubscriberLanguageProficiencies(subscriberGuid);
+                var languageProficiencyListDto = _mapper.Map<LanguageProficiencyListDto>(languageProficiencyLevels);
+                _logger.LogDebug("CandidatesService:GetLanguagesAndProficiencies: Returning Candidate 360 languages and proficiencies for {subscriber}", subscriberGuid);
+
+                return languageProficiencyListDto;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "CandidatesService:GetLanguagesAndProficiencies: Error while fetching Candidate 360 languages and proficiencies for {subscriber}", subscriberGuid);
+                throw;
+            }
         }
 
-        public Task UpdateLanguagesAndProficiencies(LanguageAndProficiencyListDto languagesAndProficiencies, Guid subscriberGuid)
+        public async Task UpdateLanguagesAndProficiencies(LanguageProficiencyListDto languagesAndProficiencies, Guid subscriberGuid)
         {
-            throw new NotImplementedException("Stubbed out...");
+            try
+            {
+                _logger.LogDebug("CandidatesService:UpdateLanguagesAndProficiencies: Updating Candidate 360 languages and proficiencies for {subscriber}", subscriberGuid);
+
+                await _repositoryWrapper.SubscriberRepository.UpdateSubscriberLanguageProficiencies(
+                    _mapper.Map<List<SubscriberLanguageProficiency>>(languagesAndProficiencies),
+                    subscriberGuid);
+
+                _logger.LogDebug("CandidatesService:UpdateLanguagesAndProficiencies: Updated Candidate 360 languages and proficiencies for {subscriber}", subscriberGuid);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "CandidatesService:UpdateLanguagesAndProficiencies: Error while updating Candidate 360 languages and proficiencies for {subscriber}", subscriberGuid);
+                throw;
+            }
         }
 
         #endregion Language Proficiencies

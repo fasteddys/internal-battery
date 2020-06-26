@@ -68,6 +68,7 @@ namespace UpDiddyApi.Models
         public int? CommuteDistanceId { get; set; }
         public CommuteDistance CommuteDistance { get; set; }
 
+        public virtual List<SubscriberLanguageProficiency> SubscriberLanguageProficiencies { get; set; }
 
         #region Avatar Urls
         public string LinkedInAvatarUrl { get; set; }
