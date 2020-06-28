@@ -392,12 +392,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<List<Language>> GetLanguagesAsync()
+        public async Task<List<Language>> GetLanguages()
             => await _dbContext.Languages
                 .Where(l => l.IsDeleted == 0)
                 .ToListAsync();
 
-        public async Task<List<ProficiencyLevel>> GetProficiencyLevelsAsync()
+        public async Task<List<ProficiencyLevel>> GetProficiencyLevels()
             => await _dbContext.ProficiencyLevels
                 .Where(pl => pl.IsDeleted == 0)
                 .ToListAsync();
@@ -414,7 +414,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 )
                 .ToListAsync();
 
-        public async Task<List<SubscriberLanguageProficiency>> UpdateSubscriberLanguageProficiencies(List<SubscriberLanguageProficiency> languagesAndProficiencies, Guid subscriberGuid)
+        public async Task<List<SubscriberLanguageProficiency>> UpdateSubscriberLanguageProficiencies(
+            List<SubscriberLanguageProficiency> languagesAndProficiencies,
+            Guid subscriberGuid)
         {
             throw new NotImplementedException("Stubbed out...");
         }

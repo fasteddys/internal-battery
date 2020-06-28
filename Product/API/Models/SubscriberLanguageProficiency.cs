@@ -4,7 +4,7 @@ namespace UpDiddyApi.Models
 {
     public class SubscriberLanguageProficiency : BaseModel
     {
-        public int SubscriberLanguageProficienciesId { get; set; }
+        public int SubscriberLanguageProficiencyId { get; set; }
 
         public Guid SubscriberLanguageProficienciesGuid { get; set; }
 

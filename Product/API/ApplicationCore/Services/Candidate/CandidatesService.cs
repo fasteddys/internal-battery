@@ -208,13 +208,13 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
         public async Task<LanguageListDto> GetLanguageList()
         {
-            var languages = await _repositoryWrapper.SubscriberRepository.GetLanguagesAsync();
+            var languages = await _repositoryWrapper.SubscriberRepository.GetLanguages();
             return _mapper.Map<LanguageListDto>(languages);
         }
 
         public async Task<ProficiencyLevelListDto> GetProficiencyList()
         {
-            var proficiencyLevels = await _repositoryWrapper.SubscriberRepository.GetProficiencyLevelsAsync();
+            var proficiencyLevels = await _repositoryWrapper.SubscriberRepository.GetProficiencyLevels();
             return _mapper.Map<ProficiencyLevelListDto>(proficiencyLevels);
         }
 
