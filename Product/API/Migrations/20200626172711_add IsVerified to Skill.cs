@@ -59,9 +59,9 @@ BEGIN
 		-- create a local temp table so that we can modify the contents of the read-only user-defined table type
 		CREATE TABLE #SkillNames (SkillName NVARCHAR(450) NOT NULL)
 		
-		-- trim leading and trailing spaces from the skill names
+		-- trim leading and trailing spaces from the skill names and force them to be lower case
 		INSERT INTO #SkillNames (SkillName)
-		SELECT TRIM(string)
+		SELECT LOWER(TRIM(string))
 		FROM @SkillNames
 		
 		-- create skills that do not exist as non-verified
