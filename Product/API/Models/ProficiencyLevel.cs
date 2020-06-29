@@ -14,6 +14,8 @@ namespace UpDiddyApi.Models
         [StringLength(500)]
         public string ProficiencyLevelName { get; set; }
 
+        public int DisplayOrder { get; set; }
+
         public virtual List<SubscriberLanguageProficiency> SubscriberLanguageProficiencies { get; set; }
     }
 }

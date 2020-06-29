@@ -6,7 +6,7 @@ namespace UpDiddyApi.Models
     {
         public int SubscriberLanguageProficiencyId { get; set; }
 
-        public Guid SubscriberLanguageProficienciesGuid { get; set; }
+        public Guid SubscriberLanguageProficiencyGuid { get; set; }
 
         public int SubscriberId { get; set; }
 

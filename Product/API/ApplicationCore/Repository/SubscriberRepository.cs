@@ -460,7 +460,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     IsDeleted = 0,
                     CreateDate = DateTime.UtcNow,
                     CreateGuid = Guid.NewGuid(),
-                    SubscriberLanguageProficienciesGuid = Guid.NewGuid(),
+                    SubscriberLanguageProficiencyGuid = Guid.NewGuid(),
                     Subscriber = subscriber,
                     Language = language,
                     ProficiencyLevel = proficiencyLevel
@@ -471,7 +471,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
 
             await _dbContext.SaveChangesAsync();
-            return existingLanguageProficiency.SubscriberLanguageProficienciesGuid;
+            return existingLanguageProficiency.SubscriberLanguageProficiencyGuid;
         }
 
         public async Task UpdateSubscriberLanguageProficiency(SubscriberLanguageProficiency languageProficiency, Guid subscriberGuid)
@@ -483,7 +483,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 .SingleOrDefaultAsync(slp =>
                     slp.IsDeleted == 0 &&
                     slp.Subscriber.SubscriberGuid == subscriberGuid &&
-                    slp.SubscriberLanguageProficienciesGuid == languageProficiency.SubscriberLanguageProficienciesGuid);
+                    slp.SubscriberLanguageProficiencyGuid == languageProficiency.SubscriberLanguageProficiencyGuid);
             if (existingLanguageProficiency == null) { throw new NotFoundException("Couldn't find an existing language proficiency entry"); }
 
             var proficiencyLevel = await _dbContext.ProficiencyLevels
@@ -504,7 +504,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 .SingleOrDefaultAsync(slp =>
                     slp.IsDeleted == 0 &&
                     slp.Subscriber.SubscriberGuid == subscriberGuid &&
-                    slp.SubscriberLanguageProficienciesGuid == languageProficiencyGuid);
+                    slp.SubscriberLanguageProficiencyGuid == languageProficiencyGuid);
             if (existingLanguageProficiency == null) { throw new NotFoundException("Couldn't find an existing language proficiency entry"); }
 
             existingLanguageProficiency.IsDeleted = 1;

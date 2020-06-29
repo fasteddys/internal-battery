@@ -102,7 +102,7 @@ namespace UpDiddyApi.Controllers.V2
             => await _candidatesService.GetProficiencyLevelList();
 
         [HttpGet("language-proficiency")]
-        // [Authorize]
+        [Authorize]
         public async Task<ActionResult<LanguageProficiencyListDto>> GetLanguageProficiencies()
         {
             var subscriberGuid = base.GetSubscriberGuid();
@@ -112,7 +112,7 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         [HttpPost("language-proficiency")]
-        // [Authorize]
+        [Authorize]
         public async Task<IActionResult> CreateLanguageProficiency([FromBody] LanguageProficiencyDto languageProficiency)
         {
             var subscriberGuid = base.GetSubscriberGuid();
@@ -122,7 +122,7 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         [HttpPut("language-proficiency/{languageproficiencyguid}")]
-        // [Authorize]
+        [Authorize]
         public async Task<IActionResult> UpdateLanguageProficiency(Guid languageProficiencyGuid, [FromBody] LanguageProficiencyDto languageProficiency)
         {
             var subscriberGuid = base.GetSubscriberGuid();
@@ -132,7 +132,7 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         [HttpDelete("language-proficiency/{languageproficiencyguid}")]
-        // [Authorize]
+        [Authorize]
         public async Task<IActionResult> DeleteLanguageProficiency(Guid languageProficiencyGuid)
         {
             var subscriberGuid = base.GetSubscriberGuid();
