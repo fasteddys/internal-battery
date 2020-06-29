@@ -294,6 +294,7 @@ namespace UpDiddyApi.Models
         public DbQuery<EmailTemplateDto> EmailTemplates { get; set; }
         public DbQuery<PipelineProfileDto> PipelineProfiles { get; set; }
         public DbQuery<PipelineDto> Pipelines { get; set; }
+
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -607,6 +608,10 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<Skill>()
                 .HasIndex(u => u.SkillName)
                 .IsUnique();
+
+            modelBuilder.Entity<Skill>()
+                .Property(s => s.IsVerified)
+                .HasDefaultValue(true);
 
             modelBuilder.Entity<SubscriberSkill>()
                 .HasKey(ss => new { ss.SkillId, ss.SubscriberId });

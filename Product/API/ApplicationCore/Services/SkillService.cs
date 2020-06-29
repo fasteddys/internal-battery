@@ -64,7 +64,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             List<SkillDto> cachedAllSkills = (List<SkillDto>)_memoryCacheService.GetCacheValue(allSkillsCacheKey);
             if (cachedAllSkills == null)
             {
-                var skills = _repositoryWrapper.SkillRepository.GetAll().ToList();
+                var skills = _repositoryWrapper.SkillRepository.GetAll().Where(s => s.IsVerified.HasValue && s.IsVerified.Value).ToList();
                 if (skills == null)
                     throw new NotFoundException("Skills not found");
 
