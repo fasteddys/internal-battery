@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyLib.Domain.Models;
@@ -96,27 +97,46 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<ActionResult<LanguageListDto>> GetLanguageList()
             => await _candidatesService.GetLanguageList();
 
-        [HttpGet("language-proficiencies")]
-        public async Task<ActionResult<ProficiencyLevelListDto>> GetProficiencyList()
-            => await _candidatesService.GetProficiencyList();
+        [HttpGet("language-proficiency-levels")]
+        public async Task<ActionResult<ProficiencyLevelListDto>> GetProficiencyLevelList()
+            => await _candidatesService.GetProficiencyLevelList();
 
-        [HttpGet("language-fluency")]
-        [Authorize]
-        public async Task<ActionResult<LanguageProficiencyListDto>> GetLanguagesAndProficiencies()
+        [HttpGet("language-proficiency")]
+        // [Authorize]
+        public async Task<ActionResult<LanguageProficiencyListDto>> GetLanguageProficiencies()
         {
             var subscriberGuid = base.GetSubscriberGuid();
-            var languagesAndProficiencies = await _candidatesService.GetLanguagesAndProficiencies(subscriberGuid);
+            var languagesAndProficiencies = await _candidatesService.GetLanguageProficiencies(subscriberGuid);
 
             return languagesAndProficiencies;
         }
 
-        [HttpPut("language-fluency")]
-        [Authorize]
-        public async Task<IActionResult> UpdateLanguagesAndProficiencies(LanguageProficiencyListDto languagesAndProficiencies)
+        [HttpPost("language-proficiency")]
+        // [Authorize]
+        public async Task<IActionResult> CreateLanguageProficiency([FromBody] LanguageProficiencyDto languageProficiency)
         {
             var subscriberGuid = base.GetSubscriberGuid();
+            var languageproficiencyguid = await _candidatesService.CreateLanguageProficiency(languageProficiency, subscriberGuid);
 
-            await _candidatesService.UpdateLanguagesAndProficiencies(languagesAndProficiencies, subscriberGuid);
+            return StatusCode(201, languageproficiencyguid);
+        }
+
+        [HttpPut("language-proficiency/{languageproficiencyguid}")]
+        // [Authorize]
+        public async Task<IActionResult> UpdateLanguageProficiency(Guid languageProficiencyGuid, [FromBody] LanguageProficiencyDto languageProficiency)
+        {
+            var subscriberGuid = base.GetSubscriberGuid();
+            await _candidatesService.UpdateLanguageProficiency(languageProficiency, languageProficiencyGuid, subscriberGuid);
+
+            return NoContent();
+        }
+
+        [HttpDelete("language-proficiency/{languageproficiencyguid}")]
+        // [Authorize]
+        public async Task<IActionResult> DeleteLanguageProficiency(Guid languageProficiencyGuid)
+        {
+            var subscriberGuid = base.GetSubscriberGuid();
+            await _candidatesService.DeleteLanguageProficiency(languageProficiencyGuid, subscriberGuid);
 
             return NoContent();
         }

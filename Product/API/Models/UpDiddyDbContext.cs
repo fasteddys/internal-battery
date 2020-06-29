@@ -15,6 +15,7 @@ using UpDiddyLib.Domain.Models.G2;
 using UpDiddyApi.Models.B2B;
 using UpDiddyLib.Domain.Models.B2B;
 using UpDiddyApi.Models.CrossChq;
+using System.Linq;
 
 namespace UpDiddyApi.Models
 {
@@ -739,7 +740,189 @@ namespace UpDiddyApi.Models
                     .WithMany(pl => pl.SubscriberLanguageProficiencies)
                     .HasForeignKey(slp => slp.ProficiencyLevelId);
             });
+
+            modelBuilder.Entity<Language>(builder =>
+            {
+                var data = new[]
+                {
+                    "Afrikaans",
+                    "Albanian",
+                    "Amharic",
+                    "Arabic (Egyptian Spoken)",
+                    "Arabic (Levantine)",
+                    "Arabic (Modern Standard)",
+                    "Arabic (Moroccan Spoken)",
+                    "Arabic (Overview)",
+                    "Aramaic",
+                    "Armenian",
+                    "Assamese",
+                    "Aymara",
+                    "Azerbaijani",
+                    "Balochi",
+                    "Bamanankan",
+                    "Bashkort (Bashkir)",
+                    "Basque",
+                    "Belarusan",
+                    "Bengali",
+                    "Bhojpuri",
+                    "Bislama",
+                    "Bosnian",
+                    "Brahui",
+                    "Bulgarian",
+                    "Burmese",
+                    "Cantonese",
+                    "Catalan",
+                    "Cebuano",
+                    "Chechen",
+                    "Cherokee",
+                    "Croatian",
+                    "Czech",
+                    "Dakota",
+                    "Danish",
+                    "Dari",
+                    "Dholuo",
+                    "Dutch",
+                    "English",
+                    "Esperanto",
+                    "Estonian",
+                    "Éwé",
+                    "Finnish",
+                    "French",
+                    "Georgian",
+                    "German",
+                    "Gikuyu",
+                    "Greek",
+                    "Guarani",
+                    "Gujarati",
+                    "Haitian Creole",
+                    "Hausa",
+                    "Hawaiian",
+                    "Hawaiian Creole",
+                    "Hebrew",
+                    "Hiligaynon",
+                    "Hindi",
+                    "Hungarian",
+                    "Icelandic",
+                    "Igbo",
+                    "Ilocano",
+                    "Indonesian (Bahasa Indonesia)",
+                    "Inuit/Inupiaq",
+                    "Irish Gaelic",
+                    "Italian",
+                    "Japanese",
+                    "Jarai",
+                    "Javanese",
+                    "K’iche’",
+                    "Kabyle",
+                    "Kannada",
+                    "Kashmiri",
+                    "Kazakh",
+                    "Khmer",
+                    "Khoekhoe",
+                    "Korean",
+                    "Kurdish",
+                    "Kyrgyz",
+                    "Lao",
+                    "Latin",
+                    "Latvian",
+                    "Lingala",
+                    "Lithuanian",
+                    "Macedonian",
+                    "Maithili",
+                    "Malagasy",
+                    "Malay (Bahasa Melayu)",
+                    "Malayalam",
+                    "Mandarin (Chinese)",
+                    "Marathi",
+                    "Mende",
+                    "Mongolian",
+                    "Nahuatl",
+                    "Navajo",
+                    "Nepali",
+                    "Norwegian",
+                    "Ojibwa",
+                    "Oriya",
+                    "Oromo",
+                    "Pashto",
+                    "Persian",
+                    "Polish",
+                    "Portuguese",
+                    "Punjabi",
+                    "Quechua",
+                    "Romani",
+                    "Romanian",
+                    "Russian",
+                    "Rwanda",
+                    "Samoan",
+                    "Sanskrit",
+                    "Serbian",
+                    "Shona",
+                    "Sindhi",
+                    "Sinhala",
+                    "Slovak",
+                    "Slovene",
+                    "Somali",
+                    "Spanish",
+                    "Swahili",
+                    "Swedish",
+                    "Tachelhit",
+                    "Tagalog",
+                    "Tajiki",
+                    "Tamil",
+                    "Tatar",
+                    "Telugu",
+                    "Thai",
+                    "Tibetic Languages",
+                    "Tigrigna",
+                    "Tok Pisin",
+                    "Turkish",
+                    "Turkmen",
+                    "Ukrainian",
+                    "Urdu",
+                    "Uyghur",
+                    "Uzbek",
+                    "Vietnamese",
+                    "Warlpiri",
+                    "Welsh",
+                    "Wolof",
+                    "Xhosa",
+                    "Yakut",
+                    "Yiddish",
+                    "Yoruba",
+                    "Yucatec",
+                    "Zapotec",
+                    "Zulu"
+                }
+                    .Select((l, i) => new Language
+                    {
+                        LanguageId = i + 1, // EF Core requires an ID when seeding
+                        IsDeleted = 0,
+                        CreateDate = DateTime.UtcNow,
+                        CreateGuid = Guid.NewGuid(),
+                        LanguageGuid = Guid.NewGuid(),
+                        LanguageName = l
+                    });
+
+                builder.HasData(data);
+            });
+
+#warning Replace Proficiency Levels mock data with live data.  Languages are good
+            modelBuilder.Entity<ProficiencyLevel>(builder =>
+            {
+                var data = new[] { "Nope", "Meh", "Adequate", "Real Good", "Amazing" } // TODO:  Populate with real data
+                    .Select((pl, i) => new ProficiencyLevel
+                    {
+                        ProficiencyLevelId = i + 1,
+                        IsDeleted = 0,
+                        CreateDate = DateTime.UtcNow,
+                        CreateGuid = Guid.NewGuid(),
+                        ProficiencyLevelGuid = Guid.NewGuid(),
+                        ProficiencyLevelName = pl
+                    });
+
+                builder.HasData(data);
+            });
+
         }
     }
 }
-

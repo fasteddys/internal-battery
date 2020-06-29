@@ -212,46 +212,88 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             return _mapper.Map<LanguageListDto>(languages);
         }
 
-        public async Task<ProficiencyLevelListDto> GetProficiencyList()
+        public async Task<ProficiencyLevelListDto> GetProficiencyLevelList()
         {
             var proficiencyLevels = await _repositoryWrapper.SubscriberRepository.GetProficiencyLevels();
             return _mapper.Map<ProficiencyLevelListDto>(proficiencyLevels);
         }
 
-        public async Task<LanguageProficiencyListDto> GetLanguagesAndProficiencies(Guid subscriberGuid)
+        public async Task<LanguageProficiencyListDto> GetLanguageProficiencies(Guid subscriberGuid)
         {
             try
             {
-                _logger.LogDebug("CandidatesService:GetLanguagesAndProficiencies: Fetching Candidate 360 languages and proficiencies for {subscriber}", subscriberGuid);
+                _logger.LogDebug("CandidatesService:GetLanguagesAndProficiencies: Fetching Candidate 360 languages and proficiencies for subscriber {subscriber}", subscriberGuid);
 
                 var languageProficiencyLevels = await _repositoryWrapper.SubscriberRepository.GetSubscriberLanguageProficiencies(subscriberGuid);
                 var languageProficiencyListDto = _mapper.Map<LanguageProficiencyListDto>(languageProficiencyLevels);
-                _logger.LogDebug("CandidatesService:GetLanguagesAndProficiencies: Returning Candidate 360 languages and proficiencies for {subscriber}", subscriberGuid);
+                _logger.LogDebug("CandidatesService:GetLanguagesAndProficiencies: Returning Candidate 360 languages and proficiencies for subscriber {subscriber}", subscriberGuid);
 
                 return languageProficiencyListDto;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "CandidatesService:GetLanguagesAndProficiencies: Error while fetching Candidate 360 languages and proficiencies for {subscriber}", subscriberGuid);
+                _logger.LogError(ex, "CandidatesService:GetLanguagesAndProficiencies: Error while fetching Candidate 360 languages and proficiencies for subscriber {subscriber}", subscriberGuid);
                 throw;
             }
         }
 
-        public async Task UpdateLanguagesAndProficiencies(LanguageProficiencyListDto languagesAndProficiencies, Guid subscriberGuid)
+        public async Task<Guid> CreateLanguageProficiency(LanguageProficiencyDto languageProficiency, Guid subscriberGuid)
         {
+            if (languageProficiency == null) { throw new ArgumentNullException(nameof(languageProficiency)); }
+
             try
             {
-                _logger.LogDebug("CandidatesService:UpdateLanguagesAndProficiencies: Updating Candidate 360 languages and proficiencies for {subscriber}", subscriberGuid);
+                _logger.LogDebug("CandidatesService:CreateLanguageProficiency: Creating Candidate 360 languages and proficiencies for subscriber {subscriber}", subscriberGuid);
 
-                await _repositoryWrapper.SubscriberRepository.UpdateSubscriberLanguageProficiencies(
-                    _mapper.Map<List<SubscriberLanguageProficiency>>(languagesAndProficiencies),
+                var languageProficiencyGuid = await _repositoryWrapper.SubscriberRepository.CreateSubscriberLanguageProficiency(
+                    _mapper.Map<SubscriberLanguageProficiency>(languageProficiency),
                     subscriberGuid);
 
-                _logger.LogDebug("CandidatesService:UpdateLanguagesAndProficiencies: Updated Candidate 360 languages and proficiencies for {subscriber}", subscriberGuid);
+                _logger.LogDebug("CandidatesService:CreateLanguageProficiency: Created Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", languageProficiencyGuid, subscriberGuid);
+
+                return languageProficiencyGuid;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "CandidatesService:UpdateLanguagesAndProficiencies: Error while updating Candidate 360 languages and proficiencies for {subscriber}", subscriberGuid);
+                _logger.LogError(ex, "CandidatesService:CreateLanguageProficiency: Error while creating Candidate 360 languages and proficiencies for subscriber {subscriber}", subscriberGuid);
+                throw;
+            }
+        }
+
+        public async Task UpdateLanguageProficiency(LanguageProficiencyDto languageProficiency, Guid languageProficiencyGuid, Guid subscriberGuid)
+        {
+            if (languageProficiency == null) { throw new ArgumentNullException(nameof(languageProficiency)); }
+
+            try
+            {
+                _logger.LogDebug("CandidatesService:UpdateLanguageProficiency: Updating Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", languageProficiencyGuid, subscriberGuid);
+
+                var subscriberLanguageProficiency = _mapper.Map<SubscriberLanguageProficiency>(languageProficiency);
+                subscriberLanguageProficiency.SubscriberLanguageProficienciesGuid = languageProficiencyGuid;
+                await _repositoryWrapper.SubscriberRepository.UpdateSubscriberLanguageProficiency(subscriberLanguageProficiency, subscriberGuid);
+
+                _logger.LogDebug("CandidatesService:UpdateLanguageProficiency: Updated Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", languageProficiencyGuid, subscriberGuid);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "CandidatesService:UpdateLanguageProficiency: Error while updating Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", languageProficiencyGuid, subscriberGuid);
+                throw;
+            }
+        }
+
+        public async Task DeleteLanguageProficiency(Guid languageProficiencyGuid, Guid subscriberGuid)
+        {
+            try
+            {
+                _logger.LogDebug("CandidatesService:DeleteLanguageProficiency: Deleting Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", subscriberGuid);
+
+                await _repositoryWrapper.SubscriberRepository.DeleteSubscriberLanguageProficiency(languageProficiencyGuid, subscriberGuid);
+
+                _logger.LogDebug("CandidatesService:DeleteLanguageProficiency: Updated Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", subscriberGuid);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "CandidatesService:DeleteLanguageProficiency: Error while updating Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", subscriberGuid);
                 throw;
             }
         }

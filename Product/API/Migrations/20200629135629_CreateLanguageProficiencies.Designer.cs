@@ -11,7 +11,7 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    [Migration("20200628044613_CreateLanguageProficiencies")]
+    [Migration("20200629135629_CreateLanguageProficiencies")]
     partial class CreateLanguageProficiencies
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -3028,6 +3028,1331 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("LanguageId");
 
                     b.ToTable("Languages");
+
+                    b.HasData(
+                        new
+                        {
+                            LanguageId = 1,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(714),
+                            CreateGuid = new Guid("0cc58228-704c-4dd2-8002-77918633cf97"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("21d11543-2251-47d1-8d88-5561ad6da116"),
+                            LanguageName = "Afrikaans"
+                        },
+                        new
+                        {
+                            LanguageId = 2,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5068),
+                            CreateGuid = new Guid("9d3cd97f-5fd9-4cc3-a17d-854875c0d369"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("546e3ad3-4a8e-478c-b6a2-682e14fd3ebc"),
+                            LanguageName = "Albanian"
+                        },
+                        new
+                        {
+                            LanguageId = 3,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5275),
+                            CreateGuid = new Guid("e582b091-f17d-474e-9b0f-75ea7211b0e7"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("267e4850-afd8-4c30-ab2f-d3127a904079"),
+                            LanguageName = "Amharic"
+                        },
+                        new
+                        {
+                            LanguageId = 4,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5280),
+                            CreateGuid = new Guid("af716414-2de2-467d-bf4c-1031cdfe3cac"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("b9cf8453-871b-4fff-a0b7-faadc99cc909"),
+                            LanguageName = "Arabic (Egyptian Spoken)"
+                        },
+                        new
+                        {
+                            LanguageId = 5,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5282),
+                            CreateGuid = new Guid("b3f37546-f501-48c6-8e10-bbdc8769aa2f"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("9385889d-f83a-46af-82b2-b3522b40a05c"),
+                            LanguageName = "Arabic (Levantine)"
+                        },
+                        new
+                        {
+                            LanguageId = 6,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5288),
+                            CreateGuid = new Guid("6219a7ec-365c-484b-96f8-87515d8cb37a"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("d2c9c916-6b5e-48da-9cd8-5a1778dcb9d2"),
+                            LanguageName = "Arabic (Modern Standard)"
+                        },
+                        new
+                        {
+                            LanguageId = 7,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5293),
+                            CreateGuid = new Guid("b9e7253c-7de3-41a9-aabd-7821612494d6"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("ac26b9f3-346f-48f0-bd09-bac26d7fa2c0"),
+                            LanguageName = "Arabic (Moroccan Spoken)"
+                        },
+                        new
+                        {
+                            LanguageId = 8,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5295),
+                            CreateGuid = new Guid("bf008a72-f86d-4cd6-b4a4-37480ac99217"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("3d17bd0d-4411-4172-ae9a-5eac9742e2a9"),
+                            LanguageName = "Arabic (Overview)"
+                        },
+                        new
+                        {
+                            LanguageId = 9,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5297),
+                            CreateGuid = new Guid("fdf5131c-ca62-4947-b23f-6c73f6e8fc8f"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("b81f7955-e18b-4d57-9585-5452ade6b216"),
+                            LanguageName = "Aramaic"
+                        },
+                        new
+                        {
+                            LanguageId = 10,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5357),
+                            CreateGuid = new Guid("67bfc02c-d39c-4342-ae01-dbd3e659f6eb"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("a43a50f3-7bb3-4db5-8b9a-b26d0fb5573d"),
+                            LanguageName = "Armenian"
+                        },
+                        new
+                        {
+                            LanguageId = 11,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5361),
+                            CreateGuid = new Guid("ba5d6110-0d1d-4bea-9f99-e4913b92a1aa"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("12936988-7f01-4584-a1c0-ae48cf102405"),
+                            LanguageName = "Assamese"
+                        },
+                        new
+                        {
+                            LanguageId = 12,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5363),
+                            CreateGuid = new Guid("0612d853-0586-4231-893f-63b7c1a2d569"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("75c04225-8e89-4de8-a5f0-32de7e404c40"),
+                            LanguageName = "Aymara"
+                        },
+                        new
+                        {
+                            LanguageId = 13,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5365),
+                            CreateGuid = new Guid("81cbd5a5-2e99-4c87-b4bd-ae3b6f689501"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("09353ef6-de90-4814-bcf6-b2607269622f"),
+                            LanguageName = "Azerbaijani"
+                        },
+                        new
+                        {
+                            LanguageId = 14,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5367),
+                            CreateGuid = new Guid("841c3fdb-4c10-4e4e-9f33-bd25f03d8263"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("0ca174d7-0f9c-4b57-bab6-5b74478bc12b"),
+                            LanguageName = "Balochi"
+                        },
+                        new
+                        {
+                            LanguageId = 15,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5370),
+                            CreateGuid = new Guid("ef8e5b86-a6f3-40fb-a381-c3fe84beff01"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("e39ea499-dd0f-485f-9185-19eb22323675"),
+                            LanguageName = "Bamanankan"
+                        },
+                        new
+                        {
+                            LanguageId = 16,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5372),
+                            CreateGuid = new Guid("8ac790ae-febb-4d68-a645-9dc56687e0d3"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("a424cab6-fe7e-452e-94e4-08fd1ffb96ff"),
+                            LanguageName = "Bashkort (Bashkir)"
+                        },
+                        new
+                        {
+                            LanguageId = 17,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5374),
+                            CreateGuid = new Guid("ffd7b036-1b43-463a-80a9-04687208e81b"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("1fbf7734-b0c0-4522-a5eb-d282454a9e0f"),
+                            LanguageName = "Basque"
+                        },
+                        new
+                        {
+                            LanguageId = 18,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5376),
+                            CreateGuid = new Guid("41559152-ed6f-4133-b1ef-2f52ded27c87"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("10b44a08-e91a-45ea-8f81-88f37383422d"),
+                            LanguageName = "Belarusan"
+                        },
+                        new
+                        {
+                            LanguageId = 19,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5380),
+                            CreateGuid = new Guid("4e8d6b3f-d597-4471-a0d5-84d89242c4fa"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("4f513716-a162-4eea-8583-8ca10c03d985"),
+                            LanguageName = "Bengali"
+                        },
+                        new
+                        {
+                            LanguageId = 20,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5381),
+                            CreateGuid = new Guid("12428e99-ab84-4745-be38-a6c8e57d0fbc"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("be12697c-5366-4f75-a8cd-3296c1cff958"),
+                            LanguageName = "Bhojpuri"
+                        },
+                        new
+                        {
+                            LanguageId = 21,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5383),
+                            CreateGuid = new Guid("fe7c585b-3395-4277-b685-632ee82985e3"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("23227f7b-39f5-4fb0-92a5-a15de1134650"),
+                            LanguageName = "Bislama"
+                        },
+                        new
+                        {
+                            LanguageId = 22,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5385),
+                            CreateGuid = new Guid("330072ac-9e29-410c-97bf-04838294a7f5"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("66ab8789-fb34-492e-9c1d-78b0a2f4ecf9"),
+                            LanguageName = "Bosnian"
+                        },
+                        new
+                        {
+                            LanguageId = 23,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5388),
+                            CreateGuid = new Guid("04fbb35f-3d16-4e75-b039-5549e4c49eb4"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("d1179720-6490-4844-8f1d-93d9445edf5b"),
+                            LanguageName = "Brahui"
+                        },
+                        new
+                        {
+                            LanguageId = 24,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5390),
+                            CreateGuid = new Guid("929e71e2-f067-4da1-ba25-3260fbaf41f7"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("4c129b7a-3132-4ece-861d-b99f6a258188"),
+                            LanguageName = "Bulgarian"
+                        },
+                        new
+                        {
+                            LanguageId = 25,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5392),
+                            CreateGuid = new Guid("8e3f0575-461a-4bc6-9495-e0f4ab0088be"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("bb896b2f-014b-476d-a3c2-99d722b0973e"),
+                            LanguageName = "Burmese"
+                        },
+                        new
+                        {
+                            LanguageId = 26,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5394),
+                            CreateGuid = new Guid("5ca23afa-b41d-4826-afc1-34716e8864c8"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("1f4a9da5-71f1-41da-8825-42bbd0eec45c"),
+                            LanguageName = "Cantonese"
+                        },
+                        new
+                        {
+                            LanguageId = 27,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5397),
+                            CreateGuid = new Guid("9899ca15-675a-47d9-9e29-977bad4d6646"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("de49fb33-6dc5-4c83-ab46-526a140d1c1d"),
+                            LanguageName = "Catalan"
+                        },
+                        new
+                        {
+                            LanguageId = 28,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5399),
+                            CreateGuid = new Guid("9c083aa8-20b4-413c-99fa-90df092433e4"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("35a59708-571a-4db4-872d-78a4be90070d"),
+                            LanguageName = "Cebuano"
+                        },
+                        new
+                        {
+                            LanguageId = 29,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5401),
+                            CreateGuid = new Guid("75ab980e-82a8-40cd-b7e8-f48015fedff4"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("8e8aa0ff-af7f-4987-b434-7cf4e887992f"),
+                            LanguageName = "Chechen"
+                        },
+                        new
+                        {
+                            LanguageId = 30,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5402),
+                            CreateGuid = new Guid("fc5e5c93-bf6f-40b7-b511-4316e4c213f1"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("cd3a852d-0ed5-42d8-9112-289f5460cc84"),
+                            LanguageName = "Cherokee"
+                        },
+                        new
+                        {
+                            LanguageId = 31,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5406),
+                            CreateGuid = new Guid("e6a656cd-a56e-4129-8038-88893e9ba51e"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("5d49a6c7-d8b9-4264-ac81-73b29144ff79"),
+                            LanguageName = "Croatian"
+                        },
+                        new
+                        {
+                            LanguageId = 32,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5408),
+                            CreateGuid = new Guid("57bc0a4b-520c-4c94-ae13-c3846b58c3af"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("56df3c0d-7ff7-42a8-ac88-739c4cc31471"),
+                            LanguageName = "Czech"
+                        },
+                        new
+                        {
+                            LanguageId = 33,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5409),
+                            CreateGuid = new Guid("ed8d591c-5b1b-44db-8a7d-0b9ec9ecdad6"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("aeed59e0-e35b-490f-85bb-e9f51e273be9"),
+                            LanguageName = "Dakota"
+                        },
+                        new
+                        {
+                            LanguageId = 34,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5412),
+                            CreateGuid = new Guid("fe4b6ffe-ff22-4c7a-ac5e-e01590a2f6a2"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("60243f94-0777-4465-95a8-8e79bf1cf826"),
+                            LanguageName = "Danish"
+                        },
+                        new
+                        {
+                            LanguageId = 35,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5415),
+                            CreateGuid = new Guid("48ee3964-5753-444a-988b-a06435ddc166"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("921cd19b-2638-4bda-a450-3933d67467e7"),
+                            LanguageName = "Dari"
+                        },
+                        new
+                        {
+                            LanguageId = 36,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5417),
+                            CreateGuid = new Guid("28ddcc83-7e41-4c0a-a942-a177b00605dd"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("22180047-dadb-47a1-a612-909ed99ed6d3"),
+                            LanguageName = "Dholuo"
+                        },
+                        new
+                        {
+                            LanguageId = 37,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5418),
+                            CreateGuid = new Guid("8f43e569-8568-435b-ae8c-c23c4644d708"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("8d3460a2-127c-4007-a93c-4a7f7dde890a"),
+                            LanguageName = "Dutch"
+                        },
+                        new
+                        {
+                            LanguageId = 38,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5420),
+                            CreateGuid = new Guid("f6cbbfc7-190d-4e41-9867-ac4fe145be2c"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("6916f5c6-da7e-466a-bb20-b5a8740516f5"),
+                            LanguageName = "English"
+                        },
+                        new
+                        {
+                            LanguageId = 39,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5424),
+                            CreateGuid = new Guid("f6a13b2c-7a39-4b81-a1b4-24c82cd0ec1a"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("6784b357-5095-4e9e-9892-4a1656acb00a"),
+                            LanguageName = "Esperanto"
+                        },
+                        new
+                        {
+                            LanguageId = 40,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5425),
+                            CreateGuid = new Guid("3ef90314-fd2d-41a6-9499-087d43ab8454"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("6fe23e2d-05c5-41e9-96be-1a95c584184b"),
+                            LanguageName = "Estonian"
+                        },
+                        new
+                        {
+                            LanguageId = 41,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5427),
+                            CreateGuid = new Guid("f7c01d3c-222c-4188-a976-9582556d5c78"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("f229403f-de30-4f7c-a57c-218c0a55036a"),
+                            LanguageName = "Éwé"
+                        },
+                        new
+                        {
+                            LanguageId = 42,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5429),
+                            CreateGuid = new Guid("ba61ce91-45ee-4f38-a149-a5163c226751"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("90d25c21-4e9a-4f9c-bfb3-4c3c27d44dc2"),
+                            LanguageName = "Finnish"
+                        },
+                        new
+                        {
+                            LanguageId = 43,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5432),
+                            CreateGuid = new Guid("52dc6bb8-90fc-47f1-8e04-5994a0a00a29"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("4097139b-9dda-4dfc-93f0-56a1672b9138"),
+                            LanguageName = "French"
+                        },
+                        new
+                        {
+                            LanguageId = 44,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5434),
+                            CreateGuid = new Guid("c304ae38-0c02-4dab-82d2-b38f16763812"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("4c60a54f-ded4-4a4d-bb88-fa1f4166dc63"),
+                            LanguageName = "Georgian"
+                        },
+                        new
+                        {
+                            LanguageId = 45,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5436),
+                            CreateGuid = new Guid("756c9705-0f30-48f8-b4c5-5498801a81cd"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("6cd7dbe0-6c42-42b1-b514-43380b689ad8"),
+                            LanguageName = "German"
+                        },
+                        new
+                        {
+                            LanguageId = 46,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5438),
+                            CreateGuid = new Guid("ade543c2-2d05-4a80-8581-d5faa674ace4"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("d872050a-215f-47fa-b371-4176dac13f6a"),
+                            LanguageName = "Gikuyu"
+                        },
+                        new
+                        {
+                            LanguageId = 47,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5441),
+                            CreateGuid = new Guid("20871b10-4fc4-47b3-a7c4-6a51165b7059"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("4c3cfb51-bede-4d65-9c00-c62924327c78"),
+                            LanguageName = "Greek"
+                        },
+                        new
+                        {
+                            LanguageId = 48,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5443),
+                            CreateGuid = new Guid("d02b6500-9bd8-4e24-a441-9c52a6ceb65c"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("94c8aacd-99c7-423b-9f8a-a7510e21efb2"),
+                            LanguageName = "Guarani"
+                        },
+                        new
+                        {
+                            LanguageId = 49,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5445),
+                            CreateGuid = new Guid("139cccbc-85e1-46de-ae65-9c73e2966671"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("8bbdd6fd-24a9-4488-a4cb-61e8a397133c"),
+                            LanguageName = "Gujarati"
+                        },
+                        new
+                        {
+                            LanguageId = 50,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5446),
+                            CreateGuid = new Guid("b0e13e83-42b6-4d11-a954-17b18c6db80c"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("b3e08f9d-f66b-46b9-b3cf-0c713543a92d"),
+                            LanguageName = "Haitian Creole"
+                        },
+                        new
+                        {
+                            LanguageId = 51,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5450),
+                            CreateGuid = new Guid("44871cab-b33b-4954-94b9-070fe1f0f37b"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("46fb848f-44e6-4fea-816c-cdfb2a316789"),
+                            LanguageName = "Hausa"
+                        },
+                        new
+                        {
+                            LanguageId = 52,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5451),
+                            CreateGuid = new Guid("ced9ec1b-393e-4d7d-8573-fbd963e6ae6f"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("d54dea6c-f2c0-4857-9e12-d2b380f46ccf"),
+                            LanguageName = "Hawaiian"
+                        },
+                        new
+                        {
+                            LanguageId = 53,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5453),
+                            CreateGuid = new Guid("2097a851-e097-444c-a993-280a1342acd9"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("de778801-39c6-4438-bbb1-5352185034ab"),
+                            LanguageName = "Hawaiian Creole"
+                        },
+                        new
+                        {
+                            LanguageId = 54,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5455),
+                            CreateGuid = new Guid("3cdff5b8-ef77-4793-a019-8f816c22e012"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("04e9b57b-3ba0-4630-8dd4-ed92197354f6"),
+                            LanguageName = "Hebrew"
+                        },
+                        new
+                        {
+                            LanguageId = 55,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5458),
+                            CreateGuid = new Guid("62ffd98d-2e91-4ea2-9a3d-901f87dd96cd"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("bc7dafb4-90da-435e-a0f6-1f1169ea76be"),
+                            LanguageName = "Hiligaynon"
+                        },
+                        new
+                        {
+                            LanguageId = 56,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5460),
+                            CreateGuid = new Guid("fb7249e8-1300-4531-ab62-da27991940e1"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("e3a1bfd4-e60b-4110-b430-6f2f55e4ef99"),
+                            LanguageName = "Hindi"
+                        },
+                        new
+                        {
+                            LanguageId = 57,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5462),
+                            CreateGuid = new Guid("51d7d092-f08a-451c-85c5-eaddef47dac9"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("cbe554eb-b1af-443d-bda3-0bd87d64314f"),
+                            LanguageName = "Hungarian"
+                        },
+                        new
+                        {
+                            LanguageId = 58,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5463),
+                            CreateGuid = new Guid("649f73ca-159f-402e-aabd-c0390ab30c42"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("a9e9e0bc-6640-4030-8cd6-5fee5623be66"),
+                            LanguageName = "Icelandic"
+                        },
+                        new
+                        {
+                            LanguageId = 59,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5467),
+                            CreateGuid = new Guid("4e91dfaa-a049-454d-a4c7-255677ba5c72"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("69c4ae12-623c-418f-9c7e-4a0190fd6a23"),
+                            LanguageName = "Igbo"
+                        },
+                        new
+                        {
+                            LanguageId = 60,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5469),
+                            CreateGuid = new Guid("d44c1730-2c2e-42af-92bf-23ffc5879399"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("aba2ea27-9a57-4975-9211-b6c47ae17dc9"),
+                            LanguageName = "Ilocano"
+                        },
+                        new
+                        {
+                            LanguageId = 61,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5470),
+                            CreateGuid = new Guid("2970967b-ee95-4b68-917d-9b1d8aca542c"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("e02d46b7-95df-4475-8181-27dbf70f4b54"),
+                            LanguageName = "Indonesian (Bahasa Indonesia)"
+                        },
+                        new
+                        {
+                            LanguageId = 62,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5472),
+                            CreateGuid = new Guid("8aff8afb-0b26-494d-ac4b-55cb5b1f1a91"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("d5c90e8b-799f-499a-a115-a9e9aff42cc5"),
+                            LanguageName = "Inuit/Inupiaq"
+                        },
+                        new
+                        {
+                            LanguageId = 63,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5475),
+                            CreateGuid = new Guid("310fd944-d21b-4e15-8612-d66f045c8e2b"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("9fbcfe62-796f-4b47-a785-450ae2300de1"),
+                            LanguageName = "Irish Gaelic"
+                        },
+                        new
+                        {
+                            LanguageId = 64,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5477),
+                            CreateGuid = new Guid("25afd066-65c5-4033-ab46-6ae31e83559d"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("2c402e8d-5ca7-4fa4-9f17-11b4e1c316db"),
+                            LanguageName = "Italian"
+                        },
+                        new
+                        {
+                            LanguageId = 65,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5479),
+                            CreateGuid = new Guid("e0dd2f42-a649-40b2-b720-04929373cab6"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("a47e42b4-c767-45fd-a69d-1c5ba8045c9d"),
+                            LanguageName = "Japanese"
+                        },
+                        new
+                        {
+                            LanguageId = 66,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5518),
+                            CreateGuid = new Guid("43b5dd6b-8da6-4df8-bd79-c47da6632549"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("e5862113-802d-43fb-850b-8e5050fc785b"),
+                            LanguageName = "Jarai"
+                        },
+                        new
+                        {
+                            LanguageId = 67,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5522),
+                            CreateGuid = new Guid("5ad925bd-51a4-4e62-be25-37802fc79ca5"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("38bab8e1-1faa-48f7-8d38-dd7f6392ac5c"),
+                            LanguageName = "Javanese"
+                        },
+                        new
+                        {
+                            LanguageId = 68,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5524),
+                            CreateGuid = new Guid("65ad684c-16da-4a8e-80a5-ed7856319c07"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("9c9f7e3c-e62d-4205-8f30-6de20d2ffb3c"),
+                            LanguageName = "K’iche’"
+                        },
+                        new
+                        {
+                            LanguageId = 69,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5526),
+                            CreateGuid = new Guid("6afee934-40ec-4c2a-9283-72838ae0804c"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("0f40fc17-394b-4bdf-a3ad-0dbd5fe88305"),
+                            LanguageName = "Kabyle"
+                        },
+                        new
+                        {
+                            LanguageId = 70,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5527),
+                            CreateGuid = new Guid("fc1db583-ccaa-480c-9910-ec483d511862"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("547114ac-ed43-4f55-ae1c-a66b4cae5a73"),
+                            LanguageName = "Kannada"
+                        },
+                        new
+                        {
+                            LanguageId = 71,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5531),
+                            CreateGuid = new Guid("50ea6fd0-3628-4c2e-92a9-b8f5e72d82b7"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("a3af4ef8-c903-4d4a-a0c2-6ca2252c2150"),
+                            LanguageName = "Kashmiri"
+                        },
+                        new
+                        {
+                            LanguageId = 72,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5532),
+                            CreateGuid = new Guid("6102903a-e3b9-4127-9396-095f5bfab7f1"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("0d0c3013-6770-48d8-acd1-2e7033fc8fac"),
+                            LanguageName = "Kazakh"
+                        },
+                        new
+                        {
+                            LanguageId = 73,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5534),
+                            CreateGuid = new Guid("d9ad7d45-a4b6-4740-a0b0-7843561160f4"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("9c412217-c4d9-47e9-b26e-90c0b295b0a6"),
+                            LanguageName = "Khmer"
+                        },
+                        new
+                        {
+                            LanguageId = 74,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5536),
+                            CreateGuid = new Guid("208b2572-5ba5-4225-8752-d51d9ca9a741"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("69b94830-a2ee-478c-b47f-d70798c5f8b1"),
+                            LanguageName = "Khoekhoe"
+                        },
+                        new
+                        {
+                            LanguageId = 75,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5539),
+                            CreateGuid = new Guid("791dd725-ea51-426b-a712-5fb8636f81ff"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("ff142cf6-544c-44b8-aaa0-936eb302afd8"),
+                            LanguageName = "Korean"
+                        },
+                        new
+                        {
+                            LanguageId = 76,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5541),
+                            CreateGuid = new Guid("98a155ee-e8c9-4058-afcc-129c20dde54c"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("95268ed1-7dfc-46a9-8a80-87a487d20f99"),
+                            LanguageName = "Kurdish"
+                        },
+                        new
+                        {
+                            LanguageId = 77,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5543),
+                            CreateGuid = new Guid("8377b842-820f-4225-98d7-4cf8f29f39c6"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("4b7a3a6a-d5f1-4736-9466-e2e7176cabbd"),
+                            LanguageName = "Kyrgyz"
+                        },
+                        new
+                        {
+                            LanguageId = 78,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5545),
+                            CreateGuid = new Guid("d983292d-ce88-4560-bf3f-32f460d2ee2f"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("ea6501ad-77af-4b77-aeff-2ff9f9f982bf"),
+                            LanguageName = "Lao"
+                        },
+                        new
+                        {
+                            LanguageId = 79,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5548),
+                            CreateGuid = new Guid("e1fd3f63-22bb-48cd-afac-212b4f749749"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("4dcd610f-6c36-4b68-a523-23ed1f7cbf7f"),
+                            LanguageName = "Latin"
+                        },
+                        new
+                        {
+                            LanguageId = 80,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5550),
+                            CreateGuid = new Guid("8898e6c3-e4a0-4e5c-9318-f42cd50dc5a1"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("6ca63106-3c77-4dc4-a42c-9810c9f9f92d"),
+                            LanguageName = "Latvian"
+                        },
+                        new
+                        {
+                            LanguageId = 81,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5552),
+                            CreateGuid = new Guid("14e39028-d815-4e0a-adf3-fbf31d492a6c"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("99f64c73-6f33-4a32-859e-78d742d6ce1a"),
+                            LanguageName = "Lingala"
+                        },
+                        new
+                        {
+                            LanguageId = 82,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5553),
+                            CreateGuid = new Guid("04d98f2a-f544-42f8-9668-1d8a39a45162"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("0f57d846-de0a-49cc-a724-319db6889b33"),
+                            LanguageName = "Lithuanian"
+                        },
+                        new
+                        {
+                            LanguageId = 83,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5557),
+                            CreateGuid = new Guid("48232903-c0b4-4210-a689-9c57076f79ed"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("475c0325-df08-4949-b335-3499fd667e2f"),
+                            LanguageName = "Macedonian"
+                        },
+                        new
+                        {
+                            LanguageId = 84,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5559),
+                            CreateGuid = new Guid("bca1b399-8e49-4aea-857e-cdac09c83629"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("cc83e30a-3ef1-438b-bf7d-6430c8cbc6cd"),
+                            LanguageName = "Maithili"
+                        },
+                        new
+                        {
+                            LanguageId = 85,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5560),
+                            CreateGuid = new Guid("098df1fe-0336-4cbd-9190-555f23b6b4fd"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("21c48b97-8394-4289-a6a3-a0c661231285"),
+                            LanguageName = "Malagasy"
+                        },
+                        new
+                        {
+                            LanguageId = 86,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5562),
+                            CreateGuid = new Guid("ce00c63f-0ef5-4b6b-930f-1183fff7e7e1"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("9f5ba765-d3a2-49e1-85a4-e2ed8c1f8ea6"),
+                            LanguageName = "Malay (Bahasa Melayu)"
+                        },
+                        new
+                        {
+                            LanguageId = 87,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5566),
+                            CreateGuid = new Guid("b8132258-9e5a-4b17-a529-b1d624177ed2"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("e3fca79b-384a-4378-a2a0-6488f2602490"),
+                            LanguageName = "Malayalam"
+                        },
+                        new
+                        {
+                            LanguageId = 88,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5567),
+                            CreateGuid = new Guid("d2d920ab-9418-4509-9190-7dd5726453aa"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("860c956a-ec11-419a-89ee-2f779eb702a9"),
+                            LanguageName = "Mandarin (Chinese)"
+                        },
+                        new
+                        {
+                            LanguageId = 89,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5569),
+                            CreateGuid = new Guid("592e8b9c-e957-4d94-8a6b-a8155ce9e405"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("ed709f84-51b2-49e6-866f-3406f2d597fd"),
+                            LanguageName = "Marathi"
+                        },
+                        new
+                        {
+                            LanguageId = 90,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5571),
+                            CreateGuid = new Guid("5203d637-1869-4b20-a916-a9375b238bc5"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("e8b04fb3-eb1f-4b1a-8ea6-4af12117c5c0"),
+                            LanguageName = "Mende"
+                        },
+                        new
+                        {
+                            LanguageId = 91,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5574),
+                            CreateGuid = new Guid("1a31d255-5bb4-4b98-b9cc-a0a7dac3b845"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("ea9acc9e-424b-4d13-9123-7d894a735c91"),
+                            LanguageName = "Mongolian"
+                        },
+                        new
+                        {
+                            LanguageId = 92,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5576),
+                            CreateGuid = new Guid("d98941de-dd6c-434e-befa-721b590f1a29"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("d19de8c7-de65-407b-b9a6-af2fd1316b65"),
+                            LanguageName = "Nahuatl"
+                        },
+                        new
+                        {
+                            LanguageId = 93,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5578),
+                            CreateGuid = new Guid("560390f3-68c6-4eaf-9f9d-e4853fc51b90"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("0c17a7fc-97c2-480f-9458-07530e9a46e7"),
+                            LanguageName = "Navajo"
+                        },
+                        new
+                        {
+                            LanguageId = 94,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5579),
+                            CreateGuid = new Guid("a8269a51-1f9d-4902-943f-b83c4a7ce28c"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("3f89793a-96b1-4af5-b730-9b1329f7366e"),
+                            LanguageName = "Nepali"
+                        },
+                        new
+                        {
+                            LanguageId = 95,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5583),
+                            CreateGuid = new Guid("9fc39a64-ae47-47c6-8ff9-10274a0abb16"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("11c1bc5f-3a7a-49f2-80ae-65368c35733d"),
+                            LanguageName = "Norwegian"
+                        },
+                        new
+                        {
+                            LanguageId = 96,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5584),
+                            CreateGuid = new Guid("6faead20-2ccd-4913-96c7-4b08be64d87f"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("4f6b0b4d-bac5-4822-aa11-755dd9b7a3a6"),
+                            LanguageName = "Ojibwa"
+                        },
+                        new
+                        {
+                            LanguageId = 97,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5586),
+                            CreateGuid = new Guid("963f2896-0a32-4fec-ba7d-b5dab677e45f"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("b4fab608-943e-41c8-b2fc-eacdde20eec6"),
+                            LanguageName = "Oriya"
+                        },
+                        new
+                        {
+                            LanguageId = 98,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5588),
+                            CreateGuid = new Guid("b4fdd97e-e506-4f9f-91f6-f65b188fbb70"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("ddcfa4d6-7a6a-4a1c-861a-2b40bd694ab2"),
+                            LanguageName = "Oromo"
+                        },
+                        new
+                        {
+                            LanguageId = 99,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5591),
+                            CreateGuid = new Guid("f4d82db1-e284-4a2b-a1df-c1d74c934e59"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("37266f80-3ce6-4cfe-ac98-e3b699ddadbf"),
+                            LanguageName = "Pashto"
+                        },
+                        new
+                        {
+                            LanguageId = 100,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5593),
+                            CreateGuid = new Guid("e3f64393-df19-4348-9e7a-585d73ac96dc"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("a00028df-ca53-4ec4-8b55-07568f3cbe76"),
+                            LanguageName = "Persian"
+                        },
+                        new
+                        {
+                            LanguageId = 101,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5595),
+                            CreateGuid = new Guid("765f5220-1d31-4cd6-838e-c4e6c900e454"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("191b3ec9-08d2-4f52-92d0-e3d9b8503ad3"),
+                            LanguageName = "Polish"
+                        },
+                        new
+                        {
+                            LanguageId = 102,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5596),
+                            CreateGuid = new Guid("553cfbda-ff5a-4a7c-b0ff-e77d701e4630"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("25341b7e-6138-4fb8-aa0b-3e464a3a1a3d"),
+                            LanguageName = "Portuguese"
+                        },
+                        new
+                        {
+                            LanguageId = 103,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5600),
+                            CreateGuid = new Guid("dee4bbfa-016c-4967-9405-a04118e4ec3f"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("588fe0cf-1ac9-4731-9d7e-aa262eab7b67"),
+                            LanguageName = "Punjabi"
+                        },
+                        new
+                        {
+                            LanguageId = 104,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5602),
+                            CreateGuid = new Guid("d613ee5c-e174-49bc-a41c-dd370b8dc580"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("f2309129-2d4e-4409-86aa-f11e0d083362"),
+                            LanguageName = "Quechua"
+                        },
+                        new
+                        {
+                            LanguageId = 105,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5603),
+                            CreateGuid = new Guid("d100ab55-34a4-4e08-9475-a421b82bb8f8"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("e24798fb-36a1-47c5-8ea5-5b011fe9770c"),
+                            LanguageName = "Romani"
+                        },
+                        new
+                        {
+                            LanguageId = 106,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5605),
+                            CreateGuid = new Guid("aa5f5d12-13f7-4956-a169-88d1f2582dac"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("e8b419ba-8f9f-4dcd-a19c-3b9d67af1650"),
+                            LanguageName = "Romanian"
+                        },
+                        new
+                        {
+                            LanguageId = 107,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5609),
+                            CreateGuid = new Guid("0a2b8921-89f1-4722-b2b4-bac447c4062a"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("42f0b849-0d86-4149-877c-934cfcbf9db2"),
+                            LanguageName = "Russian"
+                        },
+                        new
+                        {
+                            LanguageId = 108,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5610),
+                            CreateGuid = new Guid("ec4e1ded-e240-4011-bdfa-a3ada0202736"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("778f3b4b-c084-4963-ba2a-a06d5ca06743"),
+                            LanguageName = "Rwanda"
+                        },
+                        new
+                        {
+                            LanguageId = 109,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5612),
+                            CreateGuid = new Guid("7aac94f4-f4a6-42b5-a756-4ec5273c1945"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("c29b76b7-afd8-4bf0-8f4e-b999fa32dfb6"),
+                            LanguageName = "Samoan"
+                        },
+                        new
+                        {
+                            LanguageId = 110,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5614),
+                            CreateGuid = new Guid("39c6ac0b-d20e-4190-8815-eae5452d808c"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("e3899f67-0b31-4fd8-af40-810c7665d9ef"),
+                            LanguageName = "Sanskrit"
+                        },
+                        new
+                        {
+                            LanguageId = 111,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5617),
+                            CreateGuid = new Guid("d9377596-fcdd-432e-a667-dca2e0f3df01"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("7bd62f47-2c4c-434c-80b6-bc7cc46d5170"),
+                            LanguageName = "Serbian"
+                        },
+                        new
+                        {
+                            LanguageId = 112,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5619),
+                            CreateGuid = new Guid("74f3c63a-b63f-4560-97dc-1f82f548c48b"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("543e91c8-40f6-4766-ac07-7d606107bafe"),
+                            LanguageName = "Shona"
+                        },
+                        new
+                        {
+                            LanguageId = 113,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5621),
+                            CreateGuid = new Guid("d3d1101d-6a90-4835-a8a6-4ccea45d74f9"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("29ef290f-8d86-4175-94be-1d062e177fe5"),
+                            LanguageName = "Sindhi"
+                        },
+                        new
+                        {
+                            LanguageId = 114,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5622),
+                            CreateGuid = new Guid("c8bb4e6f-841a-407a-8e8f-a2b16dcfe7f5"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("931d30b3-c748-4f49-b659-51be01447a9e"),
+                            LanguageName = "Sinhala"
+                        },
+                        new
+                        {
+                            LanguageId = 115,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5626),
+                            CreateGuid = new Guid("84ac7f0c-72a7-4ed5-b35e-1fd07258da5d"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("857b625a-633b-4bf2-8e2f-08120479d938"),
+                            LanguageName = "Slovak"
+                        },
+                        new
+                        {
+                            LanguageId = 116,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5628),
+                            CreateGuid = new Guid("de8bfe4c-119a-41ab-8aad-a6b8d199b71a"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("1dac80d6-4c55-4c2e-814f-27fae4ddcdb3"),
+                            LanguageName = "Slovene"
+                        },
+                        new
+                        {
+                            LanguageId = 117,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5629),
+                            CreateGuid = new Guid("7eab67e9-1cc3-4e84-a989-413377e28beb"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("f2eee25b-f3aa-49c7-9dab-c2e294d70199"),
+                            LanguageName = "Somali"
+                        },
+                        new
+                        {
+                            LanguageId = 118,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5631),
+                            CreateGuid = new Guid("63499295-372b-4b94-b4e8-639b0f826cad"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("e660423f-6759-49c2-8b4e-0737a4e2a1df"),
+                            LanguageName = "Spanish"
+                        },
+                        new
+                        {
+                            LanguageId = 119,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5634),
+                            CreateGuid = new Guid("a9fadc8e-6bf3-463b-ad70-99f8410e3615"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("67ee251a-4441-4dee-b91a-51451cbae49e"),
+                            LanguageName = "Swahili"
+                        },
+                        new
+                        {
+                            LanguageId = 120,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5636),
+                            CreateGuid = new Guid("b7a5c5b8-de7f-4acd-8145-1396fbd8299f"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("1792d38b-84f5-42fc-8477-af18990b8684"),
+                            LanguageName = "Swedish"
+                        },
+                        new
+                        {
+                            LanguageId = 121,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5638),
+                            CreateGuid = new Guid("729af7e7-9e7e-4d15-a594-f600b1b7bd19"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("2a1de813-602c-4ea8-ad6e-04835aa8e47e"),
+                            LanguageName = "Tachelhit"
+                        },
+                        new
+                        {
+                            LanguageId = 122,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5639),
+                            CreateGuid = new Guid("3cf9426b-81a8-48cd-9723-a5129612f9c6"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("aa98ec5c-2747-4b33-8257-cb16e6122541"),
+                            LanguageName = "Tagalog"
+                        },
+                        new
+                        {
+                            LanguageId = 123,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5643),
+                            CreateGuid = new Guid("afdb6b59-c4be-41d6-9a4b-6688732b86f3"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("908f3895-c1cc-4910-901e-5e1bb1fe6642"),
+                            LanguageName = "Tajiki"
+                        },
+                        new
+                        {
+                            LanguageId = 124,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5645),
+                            CreateGuid = new Guid("8e2ec2db-a22a-4508-b5f7-c61817d01038"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("f6cbf7a9-82dd-4088-8dca-543d1ee351cf"),
+                            LanguageName = "Tamil"
+                        },
+                        new
+                        {
+                            LanguageId = 125,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5646),
+                            CreateGuid = new Guid("ce04443a-5160-4560-a43a-df7d621b658b"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("4ed7ef22-abd1-402f-b48a-76c2efcd4881"),
+                            LanguageName = "Tatar"
+                        },
+                        new
+                        {
+                            LanguageId = 126,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5648),
+                            CreateGuid = new Guid("efc4b94a-a89a-4a11-bbe5-00adaf3bcb87"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("7941f9a2-6c5c-44b8-87a5-9ac595681519"),
+                            LanguageName = "Telugu"
+                        },
+                        new
+                        {
+                            LanguageId = 127,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5652),
+                            CreateGuid = new Guid("4d9c10ad-16b9-426f-940a-f6069ecb38fb"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("2d2eea5f-a847-4822-98b6-a7aa047598cc"),
+                            LanguageName = "Thai"
+                        },
+                        new
+                        {
+                            LanguageId = 128,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5653),
+                            CreateGuid = new Guid("662bec73-c198-4c2d-a65e-0df156aa4935"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("74ae9543-b1d5-4601-9265-8d531876160e"),
+                            LanguageName = "Tibetic Languages"
+                        },
+                        new
+                        {
+                            LanguageId = 129,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5655),
+                            CreateGuid = new Guid("1373c4bc-9823-459f-a0f6-3a117b459b92"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("cb7ce33d-f737-49bb-b216-7e41edb3fb09"),
+                            LanguageName = "Tigrigna"
+                        },
+                        new
+                        {
+                            LanguageId = 130,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5689),
+                            CreateGuid = new Guid("ed471094-4a2c-4ce2-8dfd-929b88755a5d"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("cf547108-cf29-4333-9336-e5de3cced73a"),
+                            LanguageName = "Tok Pisin"
+                        },
+                        new
+                        {
+                            LanguageId = 131,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5693),
+                            CreateGuid = new Guid("d6239a2f-07cf-42ca-bcb7-e49794eb475a"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("c7c425d3-a65b-4631-a14f-c0e22f48ede1"),
+                            LanguageName = "Turkish"
+                        },
+                        new
+                        {
+                            LanguageId = 132,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5695),
+                            CreateGuid = new Guid("ceac8273-06a8-4deb-8ac8-0369844e7e3b"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("e0466c15-2933-4372-a0d9-502715e06bf5"),
+                            LanguageName = "Turkmen"
+                        },
+                        new
+                        {
+                            LanguageId = 133,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5696),
+                            CreateGuid = new Guid("27bab9ef-0e24-4027-9fb6-b1dba1b175d5"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("dabd2cb6-fc01-42ee-91f2-53ff9d33ee46"),
+                            LanguageName = "Ukrainian"
+                        },
+                        new
+                        {
+                            LanguageId = 134,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5698),
+                            CreateGuid = new Guid("a38d83b2-fba9-459c-9382-23e68f25b07f"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("152c3f04-c359-41fa-bafa-33fbd484701e"),
+                            LanguageName = "Urdu"
+                        },
+                        new
+                        {
+                            LanguageId = 135,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5701),
+                            CreateGuid = new Guid("69de6ec9-f95a-4b93-994e-a506628f0b48"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("59962ed6-5d0f-4b06-a6ec-13a94d866c8b"),
+                            LanguageName = "Uyghur"
+                        },
+                        new
+                        {
+                            LanguageId = 136,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5703),
+                            CreateGuid = new Guid("ec6d6b3f-0c55-4c5a-8867-fbe5358ce9f8"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("aa2acd13-c0ad-4158-99fd-42f8dd17eb9d"),
+                            LanguageName = "Uzbek"
+                        },
+                        new
+                        {
+                            LanguageId = 137,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5705),
+                            CreateGuid = new Guid("8b834479-5a8f-4cd2-8ea4-80e1f1471ae6"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("66caacc6-f8d1-48be-9b34-8e978fe9b022"),
+                            LanguageName = "Vietnamese"
+                        },
+                        new
+                        {
+                            LanguageId = 138,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5707),
+                            CreateGuid = new Guid("c76e0728-fd86-4f6e-8ba5-70ed4f30c605"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("d9749448-efa5-479f-8649-894266f1ba54"),
+                            LanguageName = "Warlpiri"
+                        },
+                        new
+                        {
+                            LanguageId = 139,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5710),
+                            CreateGuid = new Guid("468428f5-1b7e-429d-bd3f-57f901cf2936"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("3a9bfd5f-bc8d-4536-920b-a65186dec73d"),
+                            LanguageName = "Welsh"
+                        },
+                        new
+                        {
+                            LanguageId = 140,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5712),
+                            CreateGuid = new Guid("995cef29-6f64-4968-af17-317f9457b231"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("bad19710-51c8-40bf-bd3d-7fdf327f0585"),
+                            LanguageName = "Wolof"
+                        },
+                        new
+                        {
+                            LanguageId = 141,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5713),
+                            CreateGuid = new Guid("390fb150-ead4-4ba2-bcf0-810e0c10e2d5"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("1ba88130-600d-4405-aac0-07f0eb3a12b7"),
+                            LanguageName = "Xhosa"
+                        },
+                        new
+                        {
+                            LanguageId = 142,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5715),
+                            CreateGuid = new Guid("84c65ab4-0abe-41f0-b30f-cc68ae5a000e"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("0f931be3-bd39-4ca0-84eb-3cc5c2b18ccd"),
+                            LanguageName = "Yakut"
+                        },
+                        new
+                        {
+                            LanguageId = 143,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5719),
+                            CreateGuid = new Guid("c66ef210-c98c-46f4-a292-40cb4d39b147"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("74681376-e668-4fd7-b172-324393c3dc3c"),
+                            LanguageName = "Yiddish"
+                        },
+                        new
+                        {
+                            LanguageId = 144,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5720),
+                            CreateGuid = new Guid("96bbb7c9-02db-445e-b730-385e1ebd4737"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("41805026-0bdf-433d-877b-4b6b16a45fe3"),
+                            LanguageName = "Yoruba"
+                        },
+                        new
+                        {
+                            LanguageId = 145,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5722),
+                            CreateGuid = new Guid("08fa67f5-1234-4f33-827d-4ab8ce61c4af"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("725176c9-62a6-416f-9019-aef87e0d42fd"),
+                            LanguageName = "Yucatec"
+                        },
+                        new
+                        {
+                            LanguageId = 146,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5724),
+                            CreateGuid = new Guid("15a84a76-9ad4-49d3-bfc3-0aa1f452c155"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("5432b788-21b2-4cf0-a07e-d10fb687f1b7"),
+                            LanguageName = "Zapotec"
+                        },
+                        new
+                        {
+                            LanguageId = 147,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 201, DateTimeKind.Utc).AddTicks(5727),
+                            CreateGuid = new Guid("54c958e7-3f8f-4cc9-b9e7-5e66f92256da"),
+                            IsDeleted = 0,
+                            LanguageGuid = new Guid("ee3a814e-0000-4ca2-9e9b-933866691b4c"),
+                            LanguageName = "Zulu"
+                        });
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.LeadStatus", b =>
@@ -3716,6 +5041,53 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("ProficiencyLevelId");
 
                     b.ToTable("ProficiencyLevels");
+
+                    b.HasData(
+                        new
+                        {
+                            ProficiencyLevelId = 1,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 202, DateTimeKind.Utc).AddTicks(1529),
+                            CreateGuid = new Guid("1a41920a-35ad-4bd9-9a6b-4d4344690238"),
+                            IsDeleted = 0,
+                            ProficiencyLevelGuid = new Guid("144291dd-0a2a-4371-8702-3930fa15d35b"),
+                            ProficiencyLevelName = "Nope"
+                        },
+                        new
+                        {
+                            ProficiencyLevelId = 2,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 202, DateTimeKind.Utc).AddTicks(2595),
+                            CreateGuid = new Guid("4a6cf6f8-0437-4d91-b309-05c3a27da8be"),
+                            IsDeleted = 0,
+                            ProficiencyLevelGuid = new Guid("ca703e6c-2fb8-44a8-9744-118c85bdd9d5"),
+                            ProficiencyLevelName = "Meh"
+                        },
+                        new
+                        {
+                            ProficiencyLevelId = 3,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 202, DateTimeKind.Utc).AddTicks(2607),
+                            CreateGuid = new Guid("1f158ffa-ea43-47df-a150-08fa8231e491"),
+                            IsDeleted = 0,
+                            ProficiencyLevelGuid = new Guid("e9cf61ab-60b4-4cb3-a672-91e4826f9aa1"),
+                            ProficiencyLevelName = "Adequate"
+                        },
+                        new
+                        {
+                            ProficiencyLevelId = 4,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 202, DateTimeKind.Utc).AddTicks(2618),
+                            CreateGuid = new Guid("d1538c7e-9815-4e8a-a30d-bc783d69cfe8"),
+                            IsDeleted = 0,
+                            ProficiencyLevelGuid = new Guid("d1349f97-f98d-4748-aa0d-0e9a6bb5f563"),
+                            ProficiencyLevelName = "Real Good"
+                        },
+                        new
+                        {
+                            ProficiencyLevelId = 5,
+                            CreateDate = new DateTime(2020, 6, 29, 13, 56, 28, 202, DateTimeKind.Utc).AddTicks(2620),
+                            CreateGuid = new Guid("133ce652-50eb-4024-90ab-924f93c794c1"),
+                            IsDeleted = 0,
+                            ProficiencyLevelGuid = new Guid("9070145f-eb7c-4765-9ec5-3d18c2b0e3ab"),
+                            ProficiencyLevelName = "Amazing"
+                        });
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.PromoCode", b =>
