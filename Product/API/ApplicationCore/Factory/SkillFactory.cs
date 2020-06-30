@@ -17,12 +17,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
             Skill rVal = new Skill();
             rVal.SkillName = skillName;
             rVal.CreateDate = DateTime.UtcNow;
-            rVal.ModifyDate = DateTime.UtcNow;
-            rVal.CreateGuid = Guid.NewGuid();
-            rVal.ModifyGuid = Guid.NewGuid();
+            rVal.CreateGuid = Guid.Empty;
             rVal.SkillGuid = Guid.NewGuid();
+            rVal.IsVerified = true;
             rVal.IsDeleted = 0;
-            rVal.SkillGuid = Guid.NewGuid();
             return rVal;
         }
 
@@ -51,7 +49,5 @@ namespace UpDiddyApi.ApplicationCore.Factory
                .Where(s => s.IsDeleted == 0 && s.SkillGuid == skillGuid)
                .FirstOrDefaultAsync();
         }
-
-
     }
 }

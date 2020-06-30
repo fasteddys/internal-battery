@@ -222,6 +222,10 @@ namespace UpDiddyApi.Models
         public DbSet<SubscriberEmploymentTypes> SubscriberEmploymentTypes { get; set; }
         public DbSet<CommuteDistance> CommuteDistance { get; set; }
         public DbSet<SubscriberLink> SubscriberLinks { get; set; }
+        public DbSet<EducationalDegreeTypeCategory> EducationalDegreeTypeCategory { get; set; }
+        public DbSet<TrainingType> TrainingType { get; set; }
+        public DbSet<SubscriberTraining> SubscriberTraining { get; set; }
+
 
         #endregion
 
@@ -294,6 +298,7 @@ namespace UpDiddyApi.Models
         public DbQuery<EmailTemplateDto> EmailTemplates { get; set; }
         public DbQuery<PipelineProfileDto> PipelineProfiles { get; set; }
         public DbQuery<PipelineDto> Pipelines { get; set; }
+
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -608,6 +613,10 @@ namespace UpDiddyApi.Models
                 .HasIndex(u => u.SkillName)
                 .IsUnique();
 
+            modelBuilder.Entity<Skill>()
+                .Property(s => s.IsVerified)
+                .HasDefaultValue(true);
+
             modelBuilder.Entity<SubscriberSkill>()
                 .HasKey(ss => new { ss.SkillId, ss.SubscriberId });
 
@@ -718,6 +727,21 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<SubscriberEmploymentTypes>()
                 .HasIndex(set => new { set.SubscriberId, set.EmploymentTypeId })
                 .HasName("UIX_SubscriberEmploymentTypes_Subscriber_EmploymentType")
+                .IsUnique(true);
+
+            modelBuilder.Entity<SubscriberTraining>()
+                .HasIndex(i => i.SubscriberTrainingGuid)
+                .HasName("UIX_SubscriberTraining_SubscriberTrainingGuid")
+                .IsUnique(true);
+
+            modelBuilder.Entity<TrainingType>()
+                .HasIndex(i => i.TrainingTypeGuid)
+                .HasName("UIX_TrainingType_TrainingTypeGuid")
+                .IsUnique(true);
+
+            modelBuilder.Entity<EducationalDegreeTypeCategory>()
+                .HasIndex(i => i.EducationalDegreeTypeCategoryGuid)
+                .HasName("UIX_EducationalDegreeTypeCategory_EducationalDegreeTypeCategoryGuid")
                 .IsUnique(true);
         }
     }

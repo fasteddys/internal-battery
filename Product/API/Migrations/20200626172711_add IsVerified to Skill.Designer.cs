@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
@@ -10,9 +11,10 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200626172711_add IsVerified to Skill")]
+    partial class addIsVerifiedtoSkill
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1555,56 +1557,17 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("DegreeType");
 
-                    b.Property<int?>("EducationalDegreeTypeCategoryId");
-
                     b.Property<Guid>("EducationalDegreeTypeGuid");
 
                     b.Property<int>("IsDeleted");
 
-                    b.Property<bool?>("IsVerified");
-
                     b.Property<DateTime?>("ModifyDate");
 
                     b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<int?>("Sequence");
 
                     b.HasKey("EducationalDegreeTypeId");
 
-                    b.HasIndex("EducationalDegreeTypeCategoryId");
-
                     b.ToTable("EducationalDegreeType");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.EducationalDegreeTypeCategory", b =>
-                {
-                    b.Property<int>("EducationalDegreeTypeCategoryId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<Guid>("EducationalDegreeTypeCategoryGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<string>("Name");
-
-                    b.Property<int?>("Sequence");
-
-                    b.HasKey("EducationalDegreeTypeCategoryId");
-
-                    b.HasIndex("EducationalDegreeTypeCategoryGuid")
-                        .IsUnique()
-                        .HasName("UIX_EducationalDegreeTypeCategory_EducationalDegreeTypeCategoryGuid");
-
-                    b.ToTable("EducationalDegreeTypeCategory");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.EducationalInstitution", b =>
@@ -4449,9 +4412,9 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsDeleted");
 
-                    b.Property<bool?>("IsVerified")
+                    b.Property<bool>("IsVerified")
                         .ValueGeneratedOnAdd()
-                        .HasDefaultValue(true);
+                        .HasDefaultValueSql("1");
 
                     b.Property<DateTime?>("ModifyDate");
 
@@ -4736,9 +4699,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<DateTime?>("ModifyDate");
 
                     b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<short?>("RelevantYear")
-                        .HasColumnType("SmallInt");
 
                     b.Property<DateTime?>("StartDate");
 
@@ -5098,52 +5058,6 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("SubscriberSkill");
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.SubscriberTraining", b =>
-                {
-                    b.Property<int>("SubscriberTrainingId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<short?>("RelevantYear")
-                        .HasColumnType("SmallInt");
-
-                    b.Property<int>("SubscriberId");
-
-                    b.Property<Guid>("SubscriberTrainingGuid");
-
-                    b.Property<string>("TrainingInstitution")
-                        .HasColumnType("Varchar(150)")
-                        .HasMaxLength(150);
-
-                    b.Property<string>("TrainingName")
-                        .HasColumnType("Varchar(150)")
-                        .HasMaxLength(150);
-
-                    b.Property<int>("TrainingTypeId");
-
-                    b.HasKey("SubscriberTrainingId");
-
-                    b.HasIndex("SubscriberId");
-
-                    b.HasIndex("SubscriberTrainingGuid")
-                        .IsUnique()
-                        .HasName("UIX_SubscriberTraining_SubscriberTrainingGuid");
-
-                    b.HasIndex("TrainingTypeId");
-
-                    b.ToTable("SubscriberTraining");
-                });
-
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberWorkHistory", b =>
                 {
                     b.Property<int>("SubscriberWorkHistoryId")
@@ -5344,37 +5258,6 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("TopicId");
 
                     b.ToTable("Topic");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.TrainingType", b =>
-                {
-                    b.Property<int>("TrainingTypeId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<string>("Name");
-
-                    b.Property<int?>("Sequence");
-
-                    b.Property<Guid>("TrainingTypeGuid");
-
-                    b.HasKey("TrainingTypeId");
-
-                    b.HasIndex("TrainingTypeGuid")
-                        .IsUnique()
-                        .HasName("UIX_TrainingType_TrainingTypeGuid");
-
-                    b.ToTable("TrainingType");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Traitify", b =>
@@ -6020,13 +5903,6 @@ namespace UpDiddyApi.Migrations
                         .WithMany("ReferenceCheckStatus")
                         .HasForeignKey("ReferenceCheckId")
                         .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.EducationalDegreeType", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.EducationalDegreeTypeCategory", "EducationalDegreeTypeCategory")
-                        .WithMany()
-                        .HasForeignKey("EducationalDegreeTypeCategoryId");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.EmailVerification", b =>
@@ -6793,19 +6669,6 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany("SubscriberSkills")
                         .HasForeignKey("SubscriberId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.SubscriberTraining", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany()
-                        .HasForeignKey("SubscriberId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UpDiddyApi.Models.TrainingType", "TrainingType")
-                        .WithMany()
-                        .HasForeignKey("TrainingTypeId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
