@@ -73,22 +73,23 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 {
                     candidateState = await _repositoryWrapper.State.GetUSCanadaStateByCode(candidatePersonalInfoDto.State.Trim());
                     //add the missing address and then return
-                    if(candidateState == null)
+                    if (candidateState == null)
                     {
                         //add state if not recognised - assume its USA.
                         var country = await _repositoryWrapper.Country.GetCountryByCode3("USA");
-                        await _repositoryWrapper.State.AddUSState(new State { 
-                                CreateDate = DateTime.UtcNow,
-                                CreateGuid = Guid.Empty,
-                                StateGuid = Guid.NewGuid(),
-                                Code = candidatePersonalInfoDto?.State,
-                                CountryId = country.CountryId,
-                                Name = candidatePersonalInfoDto?.State //Name will the new state code.
-                                //Sequence will default to 0
+                        await _repositoryWrapper.State.AddUSState(new State
+                        {
+                            CreateDate = DateTime.UtcNow,
+                            CreateGuid = Guid.Empty,
+                            StateGuid = Guid.NewGuid(),
+                            Code = candidatePersonalInfoDto?.State,
+                            CountryId = country.CountryId,
+                            Name = candidatePersonalInfoDto?.State //Name will the new state code.
+                                                                   //Sequence will default to 0
                         });
 
                         candidateState = await _repositoryWrapper.State.GetUSCanadaStateByCode(candidatePersonalInfoDto.State.Trim());
-                        if(candidateState==null) 
+                        if (candidateState == null)
                             throw new FailedValidationException($"CandidatesService:UpdateCandidateEmploymentPreference newly added state:{candidatePersonalInfoDto.State}, not found.");
                     }
                 }
@@ -137,9 +138,9 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         {
             _logger.LogInformation($"CandidatesService:UpdateCandidateEmploymentPreference begin.");
 
-            if (subscriberGuid == Guid.Empty) 
+            if (subscriberGuid == Guid.Empty)
                 throw new FailedValidationException($"CandidatesService:UpdateCandidateEmploymentPreference subscriber guid cannot be empty({subscriberGuid})");
-            if(candidateEmploymentPreferenceDto == null) 
+            if (candidateEmploymentPreferenceDto == null)
                 throw new FailedValidationException($"CandidatesService:UpdateCandidateEmploymentPreference candidateEmploymentPreferenceDto cannot be null");
             var Subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
             if (Subscriber == null)
@@ -203,6 +204,27 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         }
 
         #endregion Role Preferences
+
+        #region Skills
+
+        public async Task<SkillListDto> GetSkills(Guid subscriberGuid, int limit, int offset, string sort, string order)
+        {
+            if (subscriberGuid == null || subscriberGuid == Guid.Empty)
+                throw new NotFoundException("subscriberGuid cannot be null or empty");
+
+            var candidateSkills = await _repositoryWrapper.SubscriberSkillRepository.GetCandidateSkills(subscriberGuid, limit, offset, sort, order);
+           
+            return _mapper.Map<SkillListDto>(candidateSkills);
+        }
+        public async Task UpdateSkills(Guid subscriberGuid, List<string> skillNames)
+        {
+            if (subscriberGuid == null || subscriberGuid == Guid.Empty)
+                throw new NotFoundException("subscriberGuid cannot be null or empty");
+
+            await _repositoryWrapper.SubscriberSkillRepository.UpdateCandidateSkills(subscriberGuid, skillNames);
+        }
+
+        #endregion
 
         #region Language Proficiencies
 

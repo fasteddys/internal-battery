@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyLib.Domain.Models;
@@ -90,6 +91,25 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         #endregion Role Preferences
+
+        #region Skills 
+
+        [HttpGet("skills")]
+        [Authorize]
+        public async Task<ActionResult<SkillListDto>> GetSkills(int limit = 10, int offset = 0, string sort = "name", string order = "ascending")
+        {
+            return Ok(await _candidatesService.GetSkills(GetSubscriberGuid(), limit, offset, sort, order));
+        }
+
+        [HttpPut("skills")]
+        [Authorize]
+        public async Task<IActionResult> UpdateSkills([FromBody] List<string> skillNames)
+        {
+            await _candidatesService.UpdateSkills(GetSubscriberGuid(), skillNames);
+            return StatusCode(204);
+        }
+
+        #endregion
 
         #region Language Proficiencies
 
