@@ -225,5 +225,36 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         }
 
         #endregion
+
+        #region CompensationPreferences
+
+        public async Task<CompensationPreferencesDto> GetCompensationPreferences(Guid subscriberGuid)
+        {
+            var subscriber = await _repositoryWrapper.SubscriberRepository.GetByGuid(subscriberGuid);
+            if (subscriber == null) { throw new InsufficientPermissionException("Unable to find subscriber record"); }
+
+            return new CompensationPreferencesDto
+            {
+                CurrentRate = subscriber.CurrentRate,
+                CurrentSalary = subscriber.CurrentSalary,
+                DesiredRate = subscriber.DesiredRate,
+                DesiredSalary = subscriber.DesiredSalary
+            };
+        }
+
+        public async Task UpdateCompensationPreferences(CompensationPreferencesDto compensationPreferences, Guid subscriberGuid)
+        {
+            if (compensationPreferences == null) { throw new ArgumentNullException(nameof(compensationPreferences)); }
+            var subscriber = await _repositoryWrapper.SubscriberRepository.GetByGuid(subscriberGuid);
+            if (subscriber == null) { throw new InsufficientPermissionException("Unable to find subscriber record"); }
+
+            subscriber.CurrentRate = compensationPreferences.CurrentRate;
+            subscriber.CurrentSalary = compensationPreferences.CurrentSalary;
+            subscriber.DesiredRate = compensationPreferences.DesiredRate;
+            subscriber.DesiredSalary = compensationPreferences.DesiredSalary;
+            await _repositoryWrapper.SubscriberRepository.SaveAsync();
+        }
+
+        #endregion CompensationPreferences
     }
 }
