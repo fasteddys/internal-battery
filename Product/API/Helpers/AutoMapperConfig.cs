@@ -507,6 +507,7 @@ namespace UpDiddyApi.Helpers
                 .ForMember(s => s.CreateDate, opt => opt.MapFrom(src => src.CreateDate))
                 .ForMember(s => s.BlobName, opt => opt.MapFrom(src => src.BlobName))
                 .ReverseMap();
+
             CreateMap<State, StateDto>()
                 .ForMember(s => s.Country, opt => opt.MapFrom(src => src.Country))
                 .ReverseMap();
@@ -515,6 +516,7 @@ namespace UpDiddyApi.Helpers
             CreateMap<SubscriberWorkHistory, SubscriberWorkHistoryDto>()
                 .ForMember(x => x.Company, opt => opt.MapFrom(src => src.Company.CompanyName))
                 .ForMember(x => x.CompensationType, opt => opt.MapFrom(src => src.CompensationType.CompensationTypeName));
+
             CreateMap<SubscriberEducationHistory, UpDiddyLib.Dto.SubscriberEducationHistoryDto>()
                 .ForMember(x => x.EducationalInstitution, opt => opt.MapFrom(src => src.EducationalInstitution.Name))
                 .ForMember(x => x.EducationalDegree, opt => opt.MapFrom(src => src.EducationalDegree.Degree))
@@ -609,17 +611,17 @@ namespace UpDiddyApi.Helpers
 
 
             CreateMap<SubscriberNotification, UpDiddyLib.Dto.NotificationDto>()
-            .ForMember(c => c.CreateDate, opt => opt.MapFrom(src => src.CreateDate))
-            .ForMember(c => c.CreateGuid, opt => opt.MapFrom(src => src.CreateGuid))
-            .ForMember(c => c.Description, opt => opt.MapFrom(src => src.Notification.Description))
-            .ForMember(c => c.ExpirationDate, opt => opt.MapFrom(src => src.Notification.ExpirationDate))
-            .ForMember(c => c.HasRead, opt => opt.MapFrom(src => src.HasRead))
-            .ForMember(c => c.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted))
-            .ForMember(c => c.ModifyDate, opt => opt.MapFrom(src => src.ModifyDate))
-            .ForMember(c => c.ModifyGuid, opt => opt.MapFrom(src => src.ModifyGuid))
-            .ForMember(c => c.NotificationGuid, opt => opt.MapFrom(src => src.Notification.NotificationGuid))
-            .ForMember(c => c.Title, opt => opt.MapFrom(src => src.Notification.Title))
-            .ForAllOtherMembers(opts => opts.Ignore());
+                .ForMember(c => c.CreateDate, opt => opt.MapFrom(src => src.CreateDate))
+                .ForMember(c => c.CreateGuid, opt => opt.MapFrom(src => src.CreateGuid))
+                .ForMember(c => c.Description, opt => opt.MapFrom(src => src.Notification.Description))
+                .ForMember(c => c.ExpirationDate, opt => opt.MapFrom(src => src.Notification.ExpirationDate))
+                .ForMember(c => c.HasRead, opt => opt.MapFrom(src => src.HasRead))
+                .ForMember(c => c.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted))
+                .ForMember(c => c.ModifyDate, opt => opt.MapFrom(src => src.ModifyDate))
+                .ForMember(c => c.ModifyGuid, opt => opt.MapFrom(src => src.ModifyGuid))
+                .ForMember(c => c.NotificationGuid, opt => opt.MapFrom(src => src.Notification.NotificationGuid))
+                .ForMember(c => c.Title, opt => opt.MapFrom(src => src.Notification.Title))
+                .ForAllOtherMembers(opts => opts.Ignore());
 
             CreateMap<UpDiddyLib.Dto.JobPostingDto, JobCrudDto>()
                 .ForMember(dest => dest.CompanyGuid, opt => opt.MapFrom(src => src.Company.CompanyGuid))
