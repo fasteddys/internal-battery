@@ -134,14 +134,7 @@ namespace UpDiddyApi.Migrations
                 .ToArray();
 
 
-            var proficiencyLevelSeedData = new[] // TODO:  These are placeholder values for testing purposes.  Need real values before promoting
-            {
-                "Nope",
-                "Meh",
-                "Adequate",
-                "Real Good",
-                "Amazing"
-            }
+            var proficiencyLevelSeedData = new[] { "Limited Working Proficiency", "Bilingual Proficiency" }
                 .Select((proficiency, index) => new object[]
                 {
                     index + 1, // ProficiencyLevelId
