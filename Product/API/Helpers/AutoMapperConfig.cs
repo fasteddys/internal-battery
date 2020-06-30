@@ -515,7 +515,7 @@ namespace UpDiddyApi.Helpers
             CreateMap<SubscriberWorkHistory, SubscriberWorkHistoryDto>()
                 .ForMember(x => x.Company, opt => opt.MapFrom(src => src.Company.CompanyName))
                 .ForMember(x => x.CompensationType, opt => opt.MapFrom(src => src.CompensationType.CompensationTypeName));
-            CreateMap<SubscriberEducationHistory, SubscriberEducationHistoryDto>()
+            CreateMap<SubscriberEducationHistory, UpDiddyLib.Dto.SubscriberEducationHistoryDto>()
                 .ForMember(x => x.EducationalInstitution, opt => opt.MapFrom(src => src.EducationalInstitution.Name))
                 .ForMember(x => x.EducationalDegree, opt => opt.MapFrom(src => src.EducationalDegree.Degree))
                 .ForMember(x => x.EducationalDegreeType, opt => opt.MapFrom(src => src.EducationalDegreeType.DegreeType))

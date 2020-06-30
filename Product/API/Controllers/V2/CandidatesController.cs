@@ -89,5 +89,25 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         #endregion Role Preferences
+
+        #region Education & Assessments
+
+
+        [HttpGet]
+        [Route("education-assessments")]
+        public async Task<IActionResult> GetCandidateEducationAssessments()
+        {
+            var response = await _candidatesService.GetCandidateEmploymentPreference(GetSubscriberGuid());
+            return Ok(response);
+        }
+
+        [HttpPut]
+        [Route("education-assessments")]
+        public async Task<IActionResult> UpdateCandidateEducationAssessments([FromBody] CandidateEmploymentPreferenceDto request)
+        {
+            await _candidatesService.UpdateCandidateEmploymentPreference(GetSubscriberGuid(), request);
+            return StatusCode(204);
+        }
+        #endregion Education & Assessments
     }
 }
