@@ -1115,6 +1115,7 @@ namespace UpDiddyApi.Helpers
             .ReverseMap();
 
             CreateMap<SubscriberLanguageProficiency, LanguageProficiencyDto>()
+                .ForMember(dest => dest.LanguageProficiencyGuid, opt=> opt.MapFrom(src => src.SubscriberLanguageProficiencyGuid))
                 .ForMember(dest => dest.LanguageGuid, opt => opt.MapFrom(src => src.Language.LanguageGuid))
                 .ForMember(dest => dest.Language, opt => opt.MapFrom(src => src.Language.LanguageName))
                 .ForMember(dest => dest.ProficiencyLevelGuid, opt => opt.MapFrom(src => src.ProficiencyLevel.ProficiencyLevelGuid))
@@ -1128,6 +1129,7 @@ namespace UpDiddyApi.Helpers
                     {
                         dest.LanguagesAndProficiencies = src.Select(s => new LanguageProficiencyDto
                         {
+                            LanguageProficiencyGuid = s.SubscriberLanguageProficiencyGuid,
                             LanguageGuid = s.Language.LanguageGuid,
                             Language = s.Language.LanguageName,
                             ProficiencyLevelGuid = s.ProficiencyLevel.ProficiencyLevelGuid,
@@ -1136,7 +1138,6 @@ namespace UpDiddyApi.Helpers
                     }
                 })
                 .ReverseMap();
-
         }
     }
 }

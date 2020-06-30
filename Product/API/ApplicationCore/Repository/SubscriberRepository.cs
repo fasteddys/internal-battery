@@ -396,11 +396,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
         public async Task<List<Language>> GetLanguages()
             => await _dbContext.Languages
                 .Where(l => l.IsDeleted == 0)
+                .OrderBy(l => l.LanguageName)
                 .ToListAsync();
 
         public async Task<List<ProficiencyLevel>> GetProficiencyLevels()
             => await _dbContext.ProficiencyLevels
                 .Where(pl => pl.IsDeleted == 0)
+                .OrderBy(pl => pl.DisplayOrder)
                 .ToListAsync();
 
         public async Task<List<SubscriberLanguageProficiency>> GetSubscriberLanguageProficiencies(Guid subscriberGuid)
