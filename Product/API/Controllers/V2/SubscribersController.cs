@@ -1,19 +1,19 @@
-﻿using System.Net;
-using System;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Net;
+using System.Threading.Tasks;
+using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager;
 using UpDiddyApi.Authorization;
+using UpDiddyApi.Models;
+using UpDiddyLib.Domain.AzureSearch;
+using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Dto.User;
-using Microsoft.AspNetCore.Authorization;
-using UpDiddyApi.ApplicationCore.Interfaces;
-using UpDiddyLib.Domain.AzureSearchDocuments;
-using UpDiddyLib.Domain.AzureSearch;
-using UpDiddyApi.Models;
-using UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager;
 
 namespace UpDiddyApi.Controllers.V2
 {
@@ -31,6 +31,18 @@ namespace UpDiddyApi.Controllers.V2
             _subscriberService = services.GetService<ISubscriberService>();
             _azureSearchService = services.GetService<IAzureSearchService>();
             _hiringManagerService = services.GetService<IHiringManagerService>();
+        }
+
+        [HttpPut]
+        [HttpPost]
+        [Route("email-verification-success")]
+        public async Task<IActionResult> EmailVerificationSuccess([FromBody] dynamic payload)
+        {
+            // todo: parse successful email verification from auth0's authentication api webhook 
+            // https://auth0.com/docs/logs/references/log-event-type-codes
+            // ngrok: http://15f131880a6a.ngrok.io 
+            // todo: create task to capture configuration effort in downstream environments
+            return StatusCode(200);
         }
 
         [HttpPost]

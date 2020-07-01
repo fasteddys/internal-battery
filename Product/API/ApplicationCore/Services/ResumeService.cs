@@ -123,10 +123,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _repositoryWrapper.SaveAsync();
             var resumeParseGuid = await ResumeHelper.ImportSubscriberProfileDataAsync(_hiringSolvedService, _subscriberService, _repositoryWrapper, _sovrenApi, subscriber, subscriberFileResume, fileDto.Base64EncodedData);
 
-            //Call Hubspot to catpture last resume update date 
+            // Call Hubspot to capture last resume update date 
             await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid);
-
-
+            
             return resumeParseGuid;
         }
 
@@ -226,6 +225,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _cloudStorage.DeleteFileAsync(file.BlobName);
             file.IsDeleted = 1;
             await _repositoryWrapper.SaveAsync();
+
+            // Call Hubspot to remove last resume update date 
+            await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid);
         }
     }
 }

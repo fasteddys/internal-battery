@@ -10,6 +10,7 @@ using UpDiddyLib.Domain.Models.Candidate360;
 using AutoMapper;
 using UpDiddyApi.Models;
 using System.Collections.Generic;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.ApplicationCore.Services.Candidate
 {
@@ -19,18 +20,21 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         private readonly ISubscriberService _subscriberService;
         private readonly ILogger _logger;
         private readonly IMapper _mapper;
+        private readonly IHubSpotService _hubSpotService;
 
         public CandidatesService(
             ILogger<CandidatesService> logger,
             IRepositoryWrapper repositoryWrapper,
             IMapper mapper,
-            ISubscriberService subscriberService
+            ISubscriberService subscriberService,
+            IHubSpotService hubSpotService
         )
         {
             _logger = logger;
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
             _subscriberService = subscriberService;
+            _hubSpotService = hubSpotService;
         }
 
         #region Personal Info
@@ -94,6 +98,9 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                     }
                 }
                 await _repositoryWrapper.SubscriberRepository.UpdateSubscriberPersonalInfo(subscriberGuid, candidateState, candidatePersonalInfoDto);
+
+                // Call Hubspot to update the following properties which are a part of 'personal information': FirstName, LastName
+                await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid);
             }
             catch (Exception ex)
             {
@@ -195,6 +202,9 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
                 await _repositoryWrapper.SubscriberRepository.UpdateRolePreference(subscriberGuid, rolePreference);
                 _logger.LogDebug("CandidatesService:UpdateRolePreference: Updated Candidate 360 Role information for {subscriber}", subscriberGuid);
+
+                // Call Hubspot to update the following properties which are a part of 'role preferences': SelfCuratedSkills
+                await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid);
             }
             catch (Exception ex)
             {
@@ -213,7 +223,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 throw new NotFoundException("subscriberGuid cannot be null or empty");
 
             var candidateSkills = await _repositoryWrapper.SubscriberSkillRepository.GetCandidateSkills(subscriberGuid, limit, offset, sort, order);
-           
+
             return _mapper.Map<SkillListDto>(candidateSkills);
         }
         public async Task UpdateSkills(Guid subscriberGuid, List<string> skillNames)

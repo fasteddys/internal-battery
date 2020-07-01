@@ -240,38 +240,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 subscriber.PassionProjectsDescription = rolePreference.VolunteerOrPassionProjects;
                 subscriber.CoverLetter = rolePreference.ElevatorPitch;
 
-                var skillsToDelete = subscriber.SubscriberSkills
-                    .Where(ss => ss.IsDeleted == 0 && ss.Skill?.SkillGuid != null && !rolePreference.SkillGuids.Contains(ss.Skill.SkillGuid.Value));
-
-                foreach (var skillToDelete in skillsToDelete) { skillToDelete.IsDeleted = 1; }
-
-                var skillGuidsToUndelete = subscriber.SubscriberSkills
-                    .Where(ss => ss.IsDeleted == 1 && ss.Skill?.SkillGuid != null && rolePreference.SkillGuids.Contains(ss.Skill.SkillGuid.Value));
-
-                foreach (var skillToUndelete in skillGuidsToUndelete) { skillToUndelete.IsDeleted = 0; }
-
-                var skillGuidsToAdd = rolePreference.SkillGuids
-                    .Where(sg => !subscriber.SubscriberSkills.Any(ss => ss.IsDeleted == 0 && ss.Skill?.SkillGuid == sg))
-                    .ToList();
-
-                if (skillGuidsToAdd.Any())
-                {
-                    var newSubscriberSkills = await _dbContext.Skill
-                        .Where(s => s.IsDeleted == 0 && s.SkillGuid != null && skillGuidsToAdd.Contains(s.SkillGuid.Value))
-                        .Select(s => new SubscriberSkill
-                        {
-                            CreateDate = DateTime.UtcNow,
-                            CreateGuid = Guid.NewGuid(),
-                            SubscriberSkillGuid = Guid.NewGuid(),
-                            IsDeleted = 0,
-                            SkillId = s.SkillId,
-                            SubscriberId = subscriber.SubscriberId
-                        })
-                        .ToListAsync();
-
-                    subscriber.SubscriberSkills.AddRange(newSubscriberSkills);
-                }
-
                 foreach (var linkToUpdate in subscriber.SubscriberLinks)
                 {
                     var link = rolePreference.SocialLinks

@@ -152,7 +152,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 HubSpotContactDto contact = new HubSpotContactDto()
                 {
-                    SubscriberGuid = subscriberGuid,
+                    SubscriberGuid = subscriber.IsVerified ? (Guid?)subscriberGuid : null,
                     FirstName = subscriber.FirstName,
                     LastName = subscriber.LastName,
                     Email = subscriber.Email,
@@ -351,7 +351,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     value = hubSpotContactDto.HiringManagerCompanySize
                 };
                 rVal.properties.Add(p);
-                
+
                 p = new HubSpotProperty()
                 {
                     property = "industry",
