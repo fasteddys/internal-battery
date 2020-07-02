@@ -162,5 +162,27 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         #endregion Language Proficiencies
+
+        #region CompensationPreferences
+
+        [HttpGet("compensation-preferences")]
+        [Authorize]
+        public async Task<ActionResult<CompensationPreferencesDto>> GetCompensationPreferences()
+        {
+            var subscriberGuid = GetSubscriberGuid();
+            var compensationPreferences = await _candidatesService.GetCompensationPreferences(subscriberGuid);
+            return compensationPreferences;
+        }
+
+        [HttpPut("compensation-preferences")]
+        [Authorize]
+        public async Task<IActionResult> UpdateCompensationPreferences([FromBody] CompensationPreferencesDto compensationPreferences)
+        {
+            var subscriberGuid = GetSubscriberGuid();
+            await _candidatesService.UpdateCompensationPreferences(compensationPreferences, subscriberGuid);
+            return NoContent();
+        }
+
+        #endregion CompensationPreferences
     }
 }

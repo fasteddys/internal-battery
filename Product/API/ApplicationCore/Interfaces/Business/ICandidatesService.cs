@@ -36,5 +36,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task UpdateLanguageProficiency(LanguageProficiencyDto languageProficiency, Guid languageProficiencyGuid, Guid subscriberGuid);
 
         Task DeleteLanguageProficiency(Guid languageProficiencyGuid, Guid subscriberGuid);
+
+        Task<CompensationPreferencesDto> GetCompensationPreferences(Guid subscriberGuid);
+
+        Task UpdateCompensationPreferences(CompensationPreferencesDto compensationPreferences, Guid subscriberGuid);
     }
 }
