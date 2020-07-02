@@ -6,8 +6,8 @@ namespace UpDiddyLib.Domain.Models
 {
     public class SubscriberEducationAssessmentsDto
     {
-        public List<EducationalDegreeTypeDto> EducationalDegreeTypes { get; set; } = new List<EducationalDegreeTypeDto>();
-        public List<TrainingTypeDto> TrainingTypes { get; set; } = new List<TrainingTypeDto>();
+        public List<SubscriberEducationDto> EducationHistories { get; set; } = new List<SubscriberEducationDto>();
+        public List<SubscriberTrainingDto> TrainingHistories { get; set; } = new List<SubscriberTrainingDto>();
 
     }
 }

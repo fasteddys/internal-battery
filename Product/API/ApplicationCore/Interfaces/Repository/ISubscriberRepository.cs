@@ -12,7 +12,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     public interface ISubscriberRepository : IUpDiddyRepositoryBase<Subscriber>
     {
         IQueryable<Subscriber> GetAllSubscribersAsync();
-
+        Task<List<SubscriberTraining>> GetCandidateTrainingHistory(Guid subscriberGuid, int limit, int offset, string sort, string order);
         Task<SubscriberSourceDto> GetSubscriberSource(int subscriberId);
 
         Task<List<SubscriberEmploymentTypes>> GetCandidateEmploymentPreferencesBySubscriberGuidAsync(Guid subscriberGuid);

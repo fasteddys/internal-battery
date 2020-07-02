@@ -1080,6 +1080,45 @@ namespace UpDiddyApi.Helpers
              .ForMember(dest => dest.StreetAddress, opt => opt.MapFrom(src => src.Address))
              .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.State.Code))
              .ReverseMap();
+
+            CreateMap<List<UpDiddyApi.Models.TrainingType>, TrainingTypesDto>()
+             .ForMember(dest => dest.TrainingTypes, opt => opt.MapFrom(src => src.Select(tt => new { TrainingTypeGuid = tt.TrainingTypeGuid, TrainingTypeName  = tt.Name})))
+             .ForMember(dest => dest.TotalRecords, opt => opt.MapFrom(src => src.Count))
+             .ReverseMap();
+
+            CreateMap<List<UpDiddyApi.Models.EducationalDegreeType>, EducationalDegreeTypeListDto>()
+             .ForMember(dest => dest.EducationalDegreeTypes, opt => opt.MapFrom(src => src.Select(edt => new {
+                 EducationalDegreeTypeGuid = edt.EducationalDegreeTypeGuid,
+                 DegreeType = edt.DegreeType,
+                 //EducationalDegreeTypeCategoryGuid = (Guid?)edt.EducationalDegreeTypeCategory.EducationalDegreeTypeCategoryGuid,
+                 EducationalDegreeTypeCategory = edt.EducationalDegreeTypeCategory.Name,
+                 TotalRecords = 1
+             })))
+             .ForMember(dest => dest.TotalRecords, opt => opt.MapFrom(src => src.Count))
+             .ReverseMap();
+
+            CreateMap<List<UpDiddyApi.Models.SubscriberTraining>, SubscriberTrainingHistoryDto>()
+             .ForMember(dest => dest.TrainingHistories, opt => opt.MapFrom(src => src.Select(sth => new {
+                 TrainingTypeGuid = sth.TrainingType.TrainingTypeGuid,
+                 RelevantYear = sth.RelevantYear,
+                 TrainingInstitution = sth.TrainingInstitution,
+                 TrainingName = sth.TrainingName,
+                 SubscriberTrainingGuid = sth.SubscriberTrainingGuid
+             })))
+             .ForMember(dest => dest.TotalRecords, opt => opt.MapFrom(src => src.Count))
+             .ReverseMap();
+
+            CreateMap<List<UpDiddyApi.Models.SubscriberEducationHistory>, UpDiddyLib.Domain.Models.SubscriberEducationHistoryDto>()
+             .ForMember(dest => dest.EducationHistories, opt => opt.MapFrom(src => src.Select(seh => new {
+                 EducationHistoryGuid = seh.SubscriberEducationHistoryGuid,
+                 EducationalDegreeTypeGuid = seh.EducationalDegreeType == null ? (Guid?)null: seh.EducationalDegreeType.EducationalDegreeTypeGuid ,
+                 EducationalDegreeType = seh.EducationalDegreeType == null ? null : seh.EducationalDegreeType.DegreeType,
+                 Institution = seh.EducationalInstitution == null ? null : seh.EducationalInstitution.Name,
+                 RelevantYear = seh.RelevantYear,
+                 EducationalDegree = seh.EducationalDegree == null ? null : seh.EducationalDegree.Degree
+             })))
+             .ForMember(dest => dest.TotalRecords, opt => opt.MapFrom(src => src.Count))
+             .ReverseMap();
         }
     }
 }

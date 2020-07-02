@@ -124,7 +124,7 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet]
         [Route("educational-degrees")]
-        public async Task<IActionResult> GetAllEducationalDegrees(int limit = 10, int offset = 0, string sort = "createdate", string order = "ascending")
+        public async Task<IActionResult> GetAllEducationalDegrees(int limit = 10, int offset = 0, string sort = "sequence", string order = "ascending")
         {
             var response = await _candidatesService.GetAllEducationalDegrees(limit, offset, sort, order);
             return Ok(response);
@@ -141,7 +141,7 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet]
         [Route("training-types")]
-        public async Task<IActionResult> GetAllTrainingTypes(int limit = 10, int offset = 0, string sort = "createdate", string order = "ascending")
+        public async Task<IActionResult> GetAllTrainingTypes(int limit = 10, int offset = 0, string sort = "sequence", string order = "ascending")
         {
             var response = await _candidatesService.GetAllTrainingTypes(limit, offset, sort, order);
             return Ok(response);

@@ -6,6 +6,8 @@ namespace UpDiddyLib.Domain.Models
 {
     public class SubscriberTrainingDto
     {
+        public Guid? SubscriberTrainingGuid { get; set; }
+
         public Guid TrainingTypeGuid { get; set; }
 
         public short? RelevantYear { get; set; }
