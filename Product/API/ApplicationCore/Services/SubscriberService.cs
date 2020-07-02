@@ -1524,7 +1524,26 @@ namespace UpDiddyApi.ApplicationCore.Services
             return searchResults;
         }
 
+        public async Task ParseAuth0Logs(dynamic payload)
+        {
+            try
+            {
+                foreach (var item in payload)
+                {
+                    var type = ((JObject)item).SelectToken("type").Value<string>();
+                    var email = ((JObject)item).SelectToken("details.email").Value<string>();
 
-
+                    // sv indicates a successful email verification event (https://auth0.com/docs/logs/references/log-event-type-codes)
+                    if (type == "sv")
+                    {
+                        await _repository.SubscriberRepository.UpdateEmailVerificationStatus(email, true);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"SubscriberService.ParseAuth0Logs encountered an error: '{e.Message}'.", e);
+            }
+        }
     }
 }

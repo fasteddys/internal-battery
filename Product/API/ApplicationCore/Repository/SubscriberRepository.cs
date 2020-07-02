@@ -360,5 +360,19 @@ namespace UpDiddyApi.ApplicationCore.Repository
             await _dbContext.SaveChangesAsync();
         }
 
+        public async Task UpdateEmailVerificationStatus(string email, bool isVerified)
+        {
+            var subscriber = await _dbContext.Subscriber
+                .Where(s => s.IsDeleted == 0 && s.Email == email)
+                .FirstOrDefaultAsync();
+
+            if(subscriber != null)
+            {
+                subscriber.IsVerified = isVerified;
+                subscriber.ModifyDate = DateTime.UtcNow;
+                subscriber.ModifyGuid = Guid.Empty;
+                await _dbContext.SaveChangesAsync();
+            }
+        }
     }
 }

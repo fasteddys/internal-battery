@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Net;
 using System.Threading.Tasks;
@@ -33,15 +34,12 @@ namespace UpDiddyApi.Controllers.V2
             _hiringManagerService = services.GetService<IHiringManagerService>();
         }
 
-        [HttpPut]
         [HttpPost]
-        [Route("email-verification-success")]
-        public async Task<IActionResult> EmailVerificationSuccess([FromBody] dynamic payload)
+        [MiddlewareFilter(typeof(AuthenticationApiExtensionAuthorizationPipeline))]
+        [Route("parse-auth0-logs")]
+        public async Task<IActionResult> ParseAuth0Logs([FromBody] dynamic payload)
         {
-            // todo: parse successful email verification from auth0's authentication api webhook 
-            // https://auth0.com/docs/logs/references/log-event-type-codes
-            // ngrok: http://15f131880a6a.ngrok.io 
-            // todo: create task to capture configuration effort in downstream environments
+            await _subscriberService.ParseAuth0Logs(payload);
             return StatusCode(200);
         }
 
@@ -89,7 +87,6 @@ namespace UpDiddyApi.Controllers.V2
             return StatusCode(204);
         }
 
-
         [HttpGet]
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("query")]
@@ -107,10 +104,5 @@ namespace UpDiddyApi.Controllers.V2
             var rVal = await _hiringManagerService.AddHiringManager(GetSubscriberGuid(), true);
             return Ok(rVal);
         }
-
-
-
-
-
     }
 }
