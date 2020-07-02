@@ -1536,7 +1536,12 @@ namespace UpDiddyApi.ApplicationCore.Services
                     // sv indicates a successful email verification event (https://auth0.com/docs/logs/references/log-event-type-codes)
                     if (type == "sv")
                     {
-                        await _repository.SubscriberRepository.UpdateEmailVerificationStatus(email, true);
+                        var subscriberGuid = await _repository.SubscriberRepository.UpdateEmailVerificationStatus(email, true);
+                        if (subscriberGuid.HasValue)
+                        {
+                            // update the contact in HubSpot to reflect that the email has been verified (subscriberGuid not empty)
+                            await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid.Value);
+                        }
                     }
                 }
             }

@@ -28,6 +28,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task UpdateSubscriberPersonalInfo(Guid subscriberGuid, State subscriberState, CandidatePersonalInfoDto candidatePersonalInfoDto);
         Task<RolePreferenceDto> GetRolePreference(Guid subscriberGuid);
         Task UpdateRolePreference(Guid subscriberGuid, RolePreferenceDto rolePreference);
-        Task UpdateEmailVerificationStatus(string email, bool isVerified);
+        Task<Guid?> UpdateEmailVerificationStatus(string email, bool isVerified);
     }
 }
