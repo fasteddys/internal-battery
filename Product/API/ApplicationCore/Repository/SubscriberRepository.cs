@@ -402,7 +402,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         public async Task<List<ProficiencyLevel>> GetProficiencyLevels()
             => await _dbContext.ProficiencyLevels
                 .Where(pl => pl.IsDeleted == 0)
-                .OrderBy(pl => pl.DisplayOrder)
+                .OrderBy(pl => pl.Sequence)
                 .ToListAsync();
 
         public async Task<List<SubscriberLanguageProficiency>> GetSubscriberLanguageProficiencies(Guid subscriberGuid)
