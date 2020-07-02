@@ -17,5 +17,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task UpdateRolePreference(Guid subscriberGuid, RolePreferenceDto rolePreference);
         Task<SkillListDto> GetSkills(Guid subscriberGuid, int limit, int offset, string sort, string order);
         Task UpdateSkills(Guid subscriberGuid, List<string> skillNames);
+
+        Task<CompensationPreferencesDto> GetCompensationPreferences(Guid subscriberGuid);
+
+        Task UpdateCompensationPreferences(CompensationPreferencesDto compensationPreferences, Guid subscriberGuid);
     }
 }
