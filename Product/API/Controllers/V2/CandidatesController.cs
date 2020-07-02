@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
@@ -109,6 +110,58 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         #endregion
+
+        #region Language Proficiencies
+
+        [HttpGet("languages")]
+        public async Task<ActionResult<LanguageListDto>> GetLanguageList()
+            => await _candidatesService.GetLanguageList();
+
+        [HttpGet("language-proficiency-levels")]
+        public async Task<ActionResult<ProficiencyLevelListDto>> GetProficiencyLevelList()
+            => await _candidatesService.GetProficiencyLevelList();
+
+        [HttpGet("language-proficiency")]
+        [Authorize]
+        public async Task<ActionResult<LanguageProficiencyListDto>> GetLanguageProficiencies()
+        {
+            var subscriberGuid = base.GetSubscriberGuid();
+            var languagesAndProficiencies = await _candidatesService.GetLanguageProficiencies(subscriberGuid);
+
+            return languagesAndProficiencies;
+        }
+
+        [HttpPost("language-proficiency")]
+        [Authorize]
+        public async Task<IActionResult> CreateLanguageProficiency([FromBody] LanguageProficiencyDto languageProficiency)
+        {
+            var subscriberGuid = base.GetSubscriberGuid();
+            var languageproficiencyguid = await _candidatesService.CreateLanguageProficiency(languageProficiency, subscriberGuid);
+
+            return StatusCode(201, languageproficiencyguid);
+        }
+
+        [HttpPut("language-proficiency/{languageproficiencyguid}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateLanguageProficiency(Guid languageProficiencyGuid, [FromBody] LanguageProficiencyDto languageProficiency)
+        {
+            var subscriberGuid = base.GetSubscriberGuid();
+            await _candidatesService.UpdateLanguageProficiency(languageProficiency, languageProficiencyGuid, subscriberGuid);
+
+            return NoContent();
+        }
+
+        [HttpDelete("language-proficiency/{languageproficiencyguid}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteLanguageProficiency(Guid languageProficiencyGuid)
+        {
+            var subscriberGuid = base.GetSubscriberGuid();
+            await _candidatesService.DeleteLanguageProficiency(languageProficiencyGuid, subscriberGuid);
+
+            return NoContent();
+        }
+
+        #endregion Language Proficiencies
 
         #region CompensationPreferences
 

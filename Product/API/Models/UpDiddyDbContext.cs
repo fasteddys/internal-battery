@@ -15,6 +15,7 @@ using UpDiddyLib.Domain.Models.G2;
 using UpDiddyApi.Models.B2B;
 using UpDiddyLib.Domain.Models.B2B;
 using UpDiddyApi.Models.CrossChq;
+using System.Linq;
 
 namespace UpDiddyApi.Models
 {
@@ -223,6 +224,11 @@ namespace UpDiddyApi.Models
         public DbSet<CommuteDistance> CommuteDistance { get; set; }
         public DbSet<SubscriberLink> SubscriberLinks { get; set; }
 
+        public DbSet<Language> Languages { get; set; }
+
+        public DbSet<ProficiencyLevel> ProficiencyLevels { get; set; }
+
+        public DbSet<SubscriberLanguageProficiency> SubscriberLanguageProficiencies { get; set; }
         #endregion
 
         #region DBQueries
@@ -724,7 +730,21 @@ namespace UpDiddyApi.Models
                 .HasIndex(set => new { set.SubscriberId, set.EmploymentTypeId })
                 .HasName("UIX_SubscriberEmploymentTypes_Subscriber_EmploymentType")
                 .IsUnique(true);
+
+            modelBuilder.Entity<SubscriberLanguageProficiency>(builder =>
+            {
+                builder.HasOne(slp => slp.Subscriber)
+                    .WithMany(s => s.SubscriberLanguageProficiencies)
+                    .HasForeignKey(slp => slp.SubscriberId);
+
+                builder.HasOne(slp => slp.Language)
+                    .WithMany(l => l.SubscriberLanguageProficiencies)
+                    .HasForeignKey(slp => slp.LanguageId);
+
+                builder.HasOne(slp => slp.ProficiencyLevel)
+                    .WithMany(pl => pl.SubscriberLanguageProficiencies)
+                    .HasForeignKey(slp => slp.ProficiencyLevelId);
+            });
         }
     }
 }
-
