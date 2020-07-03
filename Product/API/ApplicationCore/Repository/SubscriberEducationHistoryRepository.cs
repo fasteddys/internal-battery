@@ -123,6 +123,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 {
                     var educationalDegree = _dbContext.EducationalDegree.FirstOrDefault(ed => !String.IsNullOrWhiteSpace(subscriberEducation.EducationalDegree) &&
                                             ed.Degree.Trim().Equals(subscriberEducation.EducationalDegree.Trim(), StringComparison.OrdinalIgnoreCase));
+                    //if the educationalDegree that was found above is soft-deleted, then unsoft-delete it and use.
                     if (educationalDegree != null && educationalDegree.IsDeleted == 1)
                     {
                         educationalDegree.IsDeleted = 0;
@@ -130,6 +131,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     }
                     var educationalInstitution = _dbContext.EducationalInstitution.FirstOrDefault(ed => !String.IsNullOrWhiteSpace(subscriberEducation.Institution) &&
                                                  ed.Name.Trim().Equals(subscriberEducation.Institution.Trim(), StringComparison.OrdinalIgnoreCase));
+                    //if the educationalInstitution that was found above is soft-deleted, then unsoft-delete it and use.
                     if (educationalInstitution != null && educationalDegree.IsDeleted == 1)
                     {
                         educationalInstitution.IsDeleted = 0;

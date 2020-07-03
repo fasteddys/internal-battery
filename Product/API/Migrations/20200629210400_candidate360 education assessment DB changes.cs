@@ -14,14 +14,6 @@ namespace UpDiddyApi.Migrations
                 type: "SmallInt",
                 nullable: true);
 
-            migrationBuilder.AlterColumn<bool>(
-                name: "IsVerified",
-                table: "Skill",
-                nullable: true,
-                defaultValue: true,
-                oldClrType: typeof(bool),
-                oldDefaultValueSql: "1");
-
             migrationBuilder.AddColumn<int>(
                 name: "EducationalDegreeTypeCategoryId",
                 table: "EducationalDegreeType",
@@ -243,14 +235,6 @@ namespace UpDiddyApi.Migrations
                 name: "Sequence",
                 table: "EducationalDegreeType");
 
-            migrationBuilder.AlterColumn<bool>(
-                name: "IsVerified",
-                table: "Skill",
-                nullable: false,
-                defaultValueSql: "1",
-                oldClrType: typeof(bool),
-                oldNullable: true,
-                oldDefaultValue: true);
         }
     }
 }
