@@ -417,16 +417,16 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 )
                 .ToListAsync();
 
-        public async Task<Guid> CreateSubscriberLanguageProficiency(SubscriberLanguageProficiency languageProficiency, Guid subscriberGuid)
+        public async Task<Guid> CreateSubscriberLanguageProficiency(LanguageProficiencyDto languageProficiencyDto, Guid subscriberGuid)
         {
-            if (languageProficiency == null) { throw new ArgumentNullException(nameof(languageProficiency)); }
+            if (languageProficiencyDto == null) { throw new ArgumentNullException(nameof(languageProficiencyDto)); }
 
             var existingLanguageProficiency = await _dbContext.SubscriberLanguageProficiencies
                 .Include(slp => slp.Subscriber)
                 .Include(slp => slp.Language)
                 .Where(slp =>
                     slp.Subscriber.SubscriberGuid == subscriberGuid &&
-                    slp.Language.LanguageGuid == languageProficiency.Language.LanguageGuid)
+                    slp.Language.LanguageGuid == languageProficiencyDto.LanguageGuid)
                 .SingleOrDefaultAsync();
 
             if (existingLanguageProficiency?.IsDeleted == 0)
@@ -436,7 +436,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             else if (existingLanguageProficiency?.IsDeleted == 1)
             {
                 var proficiencyLevel = await _dbContext.ProficiencyLevels
-                    .SingleOrDefaultAsync(pl => pl.IsDeleted == 0 && pl.ProficiencyLevelGuid == languageProficiency.ProficiencyLevel.ProficiencyLevelGuid);
+                    .SingleOrDefaultAsync(pl => pl.IsDeleted == 0 && pl.ProficiencyLevelGuid == languageProficiencyDto.LanguageProficiencyGuid);
                 if (proficiencyLevel == null) { throw new NotFoundException("Couldn't find the ProficiencyLevel"); }
 
                 existingLanguageProficiency.IsDeleted = 0;
@@ -450,11 +450,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     .SingleOrDefaultAsync(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid);
 
                 var language = await _dbContext.Languages
-                    .SingleOrDefaultAsync(l => l.IsDeleted == 0 && l.LanguageGuid == languageProficiency.Language.LanguageGuid);
+                    .SingleOrDefaultAsync(l => l.IsDeleted == 0 && l.LanguageGuid == languageProficiencyDto.LanguageGuid);
                 if (language == null) { throw new NotFoundException("Couldn't find the language"); }
 
                 var proficiencyLevel = await _dbContext.ProficiencyLevels
-                    .SingleOrDefaultAsync(pl => pl.IsDeleted == 0 && pl.ProficiencyLevelGuid == languageProficiency.ProficiencyLevel.ProficiencyLevelGuid);
+                    .SingleOrDefaultAsync(pl => pl.IsDeleted == 0 && pl.ProficiencyLevelGuid == languageProficiencyDto.ProficiencyLevelGuid);
                 if (proficiencyLevel == null) { throw new NotFoundException("Couldn't find the proficiency level"); }
 
                 existingLanguageProficiency = new SubscriberLanguageProficiency
@@ -476,23 +476,37 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return existingLanguageProficiency.SubscriberLanguageProficiencyGuid;
         }
 
-        public async Task UpdateSubscriberLanguageProficiency(SubscriberLanguageProficiency languageProficiency, Guid subscriberGuid)
+        public async Task UpdateSubscriberLanguageProficiency(LanguageProficiencyDto languageProficiencyDto, Guid subscriberGuid)
         {
-            if (languageProficiency == null) { throw new ArgumentNullException(nameof(languageProficiency)); }
+            if (languageProficiencyDto == null) { throw new ArgumentNullException(nameof(languageProficiencyDto)); }
 
-            var existingLanguageProficiency = await _dbContext.SubscriberLanguageProficiencies
-                .Include(slp => slp.Subscriber)
-                .SingleOrDefaultAsync(slp =>
-                    slp.IsDeleted == 0 &&
-                    slp.Subscriber.SubscriberGuid == subscriberGuid &&
-                    slp.SubscriberLanguageProficiencyGuid == languageProficiency.SubscriberLanguageProficiencyGuid);
+            var languageProficiencies = await GetSubscriberLanguageProficiencies(subscriberGuid);
+            var existingLanguageProficiency = languageProficiencies
+                .SingleOrDefault(slp => slp.SubscriberLanguageProficiencyGuid == languageProficiencyDto.LanguageProficiencyGuid);
+
             if (existingLanguageProficiency == null) { throw new NotFoundException("Couldn't find an existing language proficiency entry"); }
 
-            var proficiencyLevel = await _dbContext.ProficiencyLevels
-                .SingleOrDefaultAsync(pl => pl.IsDeleted == 0 && pl.ProficiencyLevelGuid == languageProficiency.ProficiencyLevel.ProficiencyLevelGuid);
-            if (proficiencyLevel == null) { throw new NotFoundException("Couldn't find the proficiency level"); }
+            if (languageProficiencyDto.LanguageGuid != existingLanguageProficiency.Language.LanguageGuid)
+            {
+                if (languageProficiencies.Any(slp => slp.Language.LanguageGuid == languageProficiencyDto.LanguageGuid))
+                {
+                    throw new AlreadyExistsException("Please select a different language");
+                }
 
-            existingLanguageProficiency.ProficiencyLevel = proficiencyLevel;
+                var language = await _dbContext.Languages
+                    .SingleOrDefaultAsync(l => l.IsDeleted == 0 && l.LanguageGuid == languageProficiencyDto.LanguageGuid);
+                if (language == null) { throw new NotFoundException("Couldn't find the language"); }
+                existingLanguageProficiency.Language = language;
+            }
+
+            if (languageProficiencyDto.ProficiencyLevelGuid != existingLanguageProficiency.ProficiencyLevel.ProficiencyLevelGuid)
+            {
+                var proficiencyLevel = await _dbContext.ProficiencyLevels
+                    .SingleOrDefaultAsync(pl => pl.IsDeleted == 0 && pl.ProficiencyLevelGuid == languageProficiencyDto.ProficiencyLevelGuid);
+                if (proficiencyLevel == null) { throw new NotFoundException("Couldn't find the proficiency level"); }
+
+                existingLanguageProficiency.ProficiencyLevel = proficiencyLevel;
+            }
             existingLanguageProficiency.ModifyDate = DateTime.UtcNow;
             existingLanguageProficiency.ModifyGuid = Guid.NewGuid();
 

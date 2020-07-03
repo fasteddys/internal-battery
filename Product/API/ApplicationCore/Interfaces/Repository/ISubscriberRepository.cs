@@ -46,9 +46,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 
         Task<List<SubscriberLanguageProficiency>> GetSubscriberLanguageProficiencies(Guid subscriberGuid);
 
-        Task<Guid> CreateSubscriberLanguageProficiency(SubscriberLanguageProficiency languageProficiency, Guid subscriberGuid);
+        Task<Guid> CreateSubscriberLanguageProficiency(LanguageProficiencyDto languageProficiencyDto, Guid subscriberGuid);
 
-        Task UpdateSubscriberLanguageProficiency(SubscriberLanguageProficiency languageProficiency, Guid subscriberGuid);
+        Task UpdateSubscriberLanguageProficiency(LanguageProficiencyDto languageProficiencyDto, Guid subscriberGuid);
 
         Task DeleteSubscriberLanguageProficiency(Guid languageProficiencyGuid, Guid subscriberGuid);
     }

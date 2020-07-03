@@ -267,9 +267,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             {
                 _logger.LogDebug("CandidatesService:CreateLanguageProficiency: Creating Candidate 360 languages and proficiencies for subscriber {subscriber}", subscriberGuid);
 
-                var languageProficiencyGuid = await _repositoryWrapper.SubscriberRepository.CreateSubscriberLanguageProficiency(
-                    _mapper.Map<SubscriberLanguageProficiency>(languageProficiency),
-                    subscriberGuid);
+                var languageProficiencyGuid = await _repositoryWrapper.SubscriberRepository.CreateSubscriberLanguageProficiency(languageProficiency, subscriberGuid);
 
                 _logger.LogDebug("CandidatesService:CreateLanguageProficiency: Created Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", languageProficiencyGuid, subscriberGuid);
 
@@ -290,9 +288,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             {
                 _logger.LogDebug("CandidatesService:UpdateLanguageProficiency: Updating Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", languageProficiencyGuid, subscriberGuid);
 
-                var subscriberLanguageProficiency = _mapper.Map<SubscriberLanguageProficiency>(languageProficiency);
-                subscriberLanguageProficiency.SubscriberLanguageProficiencyGuid = languageProficiencyGuid;
-                await _repositoryWrapper.SubscriberRepository.UpdateSubscriberLanguageProficiency(subscriberLanguageProficiency, subscriberGuid);
+                languageProficiency.LanguageProficiencyGuid = languageProficiencyGuid;
+                await _repositoryWrapper.SubscriberRepository.UpdateSubscriberLanguageProficiency(languageProficiency, subscriberGuid);
 
                 _logger.LogDebug("CandidatesService:UpdateLanguageProficiency: Updated Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", languageProficiencyGuid, subscriberGuid);
             }
