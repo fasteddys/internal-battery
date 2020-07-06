@@ -75,15 +75,15 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
 
-        public async Task UpdateCandidateEducationAndTraining(int subscriberId, SubscriberEducationAssessmentsDto subscriberEducationAssessmentsDto)
+        public async Task UpdateCandidateEducationAndTraining(Guid subscriberGuid, SubscriberEducationAssessmentsDto subscriberEducationAssessmentsDto)
         {
-            //var subscriber = _dbContext.Subscriber.FirstOrDefault(s => s.SubscriberGuid == subscriberGuid);
+            var subscriber = _dbContext.Subscriber.FirstOrDefault(s => s.SubscriberGuid == subscriberGuid);
             var verifiedEducationalDegreeTypes = _dbContext.EducationalDegreeType.Where(edt => edt.IsDeleted == 0 && edt.IsVerified.HasValue && edt.IsVerified.Value).ToList();
             var trainingType = _dbContext.TrainingType.Where(tt => tt.IsDeleted == 0).ToList();
 
             //get all including deleted ones
             var subscriberEducationHistory = _dbContext.SubscriberEducationHistory
-                                        .Where(seh => seh.Subscriber.SubscriberId == subscriberId &&
+                                        .Where(seh => seh.Subscriber.SubscriberId == subscriber.SubscriberId &&
                                                       seh.Subscriber.IsDeleted == 0)
                                         .Include(seh => seh.EducationalDegree)
                                         .Include(seh => seh.EducationalInstitution)
@@ -93,7 +93,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             //get all including deleted ones
             var subscriberTrainingHistory = _dbContext.SubscriberTraining
-                            .Where(st => st.Subscriber.SubscriberId == subscriberId &&
+                            .Where(st => st.Subscriber.SubscriberId == subscriber.SubscriberId &&
                                           st.Subscriber.IsDeleted == 0)
                             .Include(st => st.TrainingType)
                             .ToList();
@@ -148,7 +148,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                             SubscriberEducationHistoryGuid = subscriberEducation.EducationHistoryGuid.HasValue && subscriberEducation.EducationHistoryGuid.Value != Guid.Empty ?
                                      subscriberEducation.EducationHistoryGuid.Value : Guid.NewGuid(),
                             IsDeleted = 0,
-                            SubscriberId = subscriberId,
+                            SubscriberId = subscriber.SubscriberId,
                             StartDate = (DateTime?)null,
                             EndDate = (DateTime?)null,
                             DegreeDate = (DateTime?)null,
@@ -183,7 +183,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                             updateEducationHistory.SubscriberEducationHistoryGuid = subscriberEducation.EducationHistoryGuid.HasValue && subscriberEducation.EducationHistoryGuid.Value != Guid.Empty ?
                                                                                     subscriberEducation.EducationHistoryGuid.Value : Guid.NewGuid();
                             updateEducationHistory.IsDeleted = 0;
-                            updateEducationHistory.SubscriberId = subscriberId;
+                            updateEducationHistory.SubscriberId = subscriber.SubscriberId;
                             updateEducationHistory.StartDate = (DateTime?)null;
                             updateEducationHistory.EndDate = (DateTime?)null;
                             updateEducationHistory.DegreeDate = (DateTime?)null;
@@ -247,7 +247,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                             SubscriberTrainingGuid = subscriberTraining.SubscriberTrainingGuid.HasValue && subscriberTraining.SubscriberTrainingGuid.Value != Guid.Empty ?
                                                      subscriberTraining.SubscriberTrainingGuid.Value : Guid.NewGuid(),
                             IsDeleted = 0,
-                            SubscriberId = subscriberId,
+                            SubscriberId = subscriber.SubscriberId,
                             RelevantYear = subscriberTraining.RelevantYear,
                             TrainingInstitution = subscriberTraining.TrainingInstitution,
                             TrainingName = subscriberTraining.TrainingName,
@@ -264,7 +264,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                             updateTrainingHistory.SubscriberTrainingGuid = subscriberTraining.SubscriberTrainingGuid.HasValue && subscriberTraining.SubscriberTrainingGuid.Value != Guid.Empty ?
                                                                            subscriberTraining.SubscriberTrainingGuid.Value : Guid.NewGuid();
                             updateTrainingHistory.IsDeleted = 0;
-                            updateTrainingHistory.SubscriberId = subscriberId;
+                            updateTrainingHistory.SubscriberId = subscriber.SubscriberId;
                             updateTrainingHistory.RelevantYear = subscriberTraining.RelevantYear;
                             updateTrainingHistory.TrainingInstitution = subscriberTraining.TrainingInstitution;
                             updateTrainingHistory.TrainingName = subscriberTraining.TrainingName;

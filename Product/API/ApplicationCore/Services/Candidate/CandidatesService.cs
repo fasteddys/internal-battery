@@ -447,7 +447,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
             try
             {
-                await _repositoryWrapper.SubscriberEducationHistoryRepository.UpdateCandidateEducationAndTraining(Subscriber.SubscriberId, subscriberEducationAssessmentsDto);
+                await _repositoryWrapper.SubscriberEducationHistoryRepository.UpdateCandidateEducationAndTraining(subscriberGuid, subscriberEducationAssessmentsDto);
             }
             catch (Exception ex)
             {
