@@ -163,7 +163,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                         JobTitle = jobPosting.Title,
                         ApplicantUrl = _configuration["CareerCircle:ViewTalentUrl"] + subscriber.SubscriberGuid.ToString(),
                         JobUrl = _configuration["CareerCircle:ViewJobPostingUrl"] + jobPosting.JobPostingGuid.ToString(),
-                        Subject = isExternalMessage ? $"{jobPosting.Company.CompanyName} job posting via CareerCircle" : "Applicant Alert",
+                        Subject = isExternalMessage ? $"{jobPosting.Company.CompanyName} job applicant via CareerCircle" : "Applicant Alert",
                         RecruiterGuid = jobPosting.Recruiter.RecruiterGuid,
                         JobApplicationGuid = jobApplicationGuid
                     };
