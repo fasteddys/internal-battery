@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyLib.Domain.Models;
@@ -37,7 +38,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<Subscriber> GetSubscriberByEmailAsync(string email)
         {
-            var subscriberResult =  await _dbContext.Subscriber
+            var subscriberResult = await _dbContext.Subscriber
                               .Where(s => s.IsDeleted == 0 && s.Email == email)
                               .FirstOrDefaultAsync();
 
@@ -56,7 +57,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public Subscriber GetSubscriberByEmail(string email)
         {
-            var subscriberResult =  _dbContext.Subscriber
+            var subscriberResult = _dbContext.Subscriber
                               .Where(s => s.IsDeleted == 0 && s.Email == email)
                               .FirstOrDefault();
 
@@ -88,7 +89,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             return await _dbContext.Subscriber
               .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
-              .Include( s => s.State)
+              .Include(s => s.State)
               .FirstOrDefaultAsync();
         }
 
@@ -107,7 +108,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
 
 
-            var subscriberResult =  _dbContext.Subscriber
+            var subscriberResult = _dbContext.Subscriber
                               .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
                               .FirstOrDefault();
 
@@ -346,9 +347,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var employmentTypeIds = employmentTypes.Select(et => et.EmploymentTypeId).ToList();
 
             var newSubscriberEmploymentTypes = new List<SubscriberEmploymentTypes>();
-            if(employmentTypes != null && employmentTypes.Count > 0)
+            if (employmentTypes != null && employmentTypes.Count > 0)
             {
-                if(subscriber.SubscriberEmploymentTypes.Count != employmentTypeIds.Count || 
+                if (subscriber.SubscriberEmploymentTypes.Count != employmentTypeIds.Count ||
                    subscriber.SubscriberEmploymentTypes.Any(set => !employmentTypeIds.Contains(set.EmploymentTypeId)))
                 {
                     foreach (var et in employmentTypes)
@@ -392,5 +393,138 @@ namespace UpDiddyApi.ApplicationCore.Repository
             await _dbContext.SaveChangesAsync();
         }
 
+        public async Task<List<Language>> GetLanguages()
+            => await _dbContext.Languages
+                .Where(l => l.IsDeleted == 0)
+                .OrderBy(l => l.LanguageName)
+                .ToListAsync();
+
+        public async Task<List<ProficiencyLevel>> GetProficiencyLevels()
+            => await _dbContext.ProficiencyLevels
+                .Where(pl => pl.IsDeleted == 0)
+                .OrderBy(pl => pl.Sequence)
+                .ToListAsync();
+
+        public async Task<List<SubscriberLanguageProficiency>> GetSubscriberLanguageProficiencies(Guid subscriberGuid)
+            => await _dbContext.SubscriberLanguageProficiencies
+                .Include(slp => slp.Subscriber)
+                .Include(slp => slp.Language)
+                .Include(slp => slp.ProficiencyLevel)
+                .Where(slp =>
+                    slp.Subscriber.IsDeleted == 0 &&
+                    slp.Subscriber.SubscriberGuid == subscriberGuid &&
+                    slp.IsDeleted == 0
+                )
+                .ToListAsync();
+
+        public async Task<Guid> CreateSubscriberLanguageProficiency(LanguageProficiencyDto languageProficiencyDto, Guid subscriberGuid)
+        {
+            if (languageProficiencyDto == null) { throw new ArgumentNullException(nameof(languageProficiencyDto)); }
+
+            var existingLanguageProficiency = await _dbContext.SubscriberLanguageProficiencies
+                .Include(slp => slp.Subscriber)
+                .Include(slp => slp.Language)
+                .Where(slp =>
+                    slp.Subscriber.SubscriberGuid == subscriberGuid &&
+                    slp.Language.LanguageGuid == languageProficiencyDto.LanguageGuid)
+                .SingleOrDefaultAsync();
+
+            if (existingLanguageProficiency?.IsDeleted == 0)
+            {
+                throw new AlreadyExistsException("This language entry already exists");
+            }
+            else if (existingLanguageProficiency?.IsDeleted == 1)
+            {
+                var proficiencyLevel = await _dbContext.ProficiencyLevels
+                    .SingleOrDefaultAsync(pl => pl.IsDeleted == 0 && pl.ProficiencyLevelGuid == languageProficiencyDto.LanguageProficiencyGuid);
+                if (proficiencyLevel == null) { throw new NotFoundException("Couldn't find the ProficiencyLevel"); }
+
+                existingLanguageProficiency.IsDeleted = 0;
+                existingLanguageProficiency.ProficiencyLevel = proficiencyLevel;
+                existingLanguageProficiency.ModifyDate = DateTime.UtcNow;
+                existingLanguageProficiency.ModifyGuid = Guid.NewGuid();
+            }
+            else
+            {
+                var subscriber = await _dbContext.Subscriber
+                    .SingleOrDefaultAsync(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid);
+
+                var language = await _dbContext.Languages
+                    .SingleOrDefaultAsync(l => l.IsDeleted == 0 && l.LanguageGuid == languageProficiencyDto.LanguageGuid);
+                if (language == null) { throw new NotFoundException("Couldn't find the language"); }
+
+                var proficiencyLevel = await _dbContext.ProficiencyLevels
+                    .SingleOrDefaultAsync(pl => pl.IsDeleted == 0 && pl.ProficiencyLevelGuid == languageProficiencyDto.ProficiencyLevelGuid);
+                if (proficiencyLevel == null) { throw new NotFoundException("Couldn't find the proficiency level"); }
+
+                existingLanguageProficiency = new SubscriberLanguageProficiency
+                {
+                    IsDeleted = 0,
+                    CreateDate = DateTime.UtcNow,
+                    CreateGuid = Guid.NewGuid(),
+                    SubscriberLanguageProficiencyGuid = Guid.NewGuid(),
+                    Subscriber = subscriber,
+                    Language = language,
+                    ProficiencyLevel = proficiencyLevel
+                };
+
+                await _dbContext.SubscriberLanguageProficiencies
+                    .AddAsync(existingLanguageProficiency);
+            }
+
+            await _dbContext.SaveChangesAsync();
+            return existingLanguageProficiency.SubscriberLanguageProficiencyGuid;
+        }
+
+        public async Task UpdateSubscriberLanguageProficiency(LanguageProficiencyDto languageProficiencyDto, Guid subscriberGuid)
+        {
+            if (languageProficiencyDto == null) { throw new ArgumentNullException(nameof(languageProficiencyDto)); }
+
+            var languageProficiencies = await GetSubscriberLanguageProficiencies(subscriberGuid);
+            var existingLanguageProficiency = languageProficiencies
+                .SingleOrDefault(slp => slp.SubscriberLanguageProficiencyGuid == languageProficiencyDto.LanguageProficiencyGuid);
+
+            if (existingLanguageProficiency == null) { throw new NotFoundException("Couldn't find an existing language proficiency entry"); }
+
+            if (languageProficiencyDto.LanguageGuid != existingLanguageProficiency.Language.LanguageGuid)
+            {
+                if (languageProficiencies.Any(slp => slp.Language.LanguageGuid == languageProficiencyDto.LanguageGuid))
+                {
+                    throw new AlreadyExistsException("Please select a different language");
+                }
+
+                var language = await _dbContext.Languages
+                    .SingleOrDefaultAsync(l => l.IsDeleted == 0 && l.LanguageGuid == languageProficiencyDto.LanguageGuid);
+                if (language == null) { throw new NotFoundException("Couldn't find the language"); }
+                existingLanguageProficiency.Language = language;
+            }
+
+            if (languageProficiencyDto.ProficiencyLevelGuid != existingLanguageProficiency.ProficiencyLevel.ProficiencyLevelGuid)
+            {
+                var proficiencyLevel = await _dbContext.ProficiencyLevels
+                    .SingleOrDefaultAsync(pl => pl.IsDeleted == 0 && pl.ProficiencyLevelGuid == languageProficiencyDto.ProficiencyLevelGuid);
+                if (proficiencyLevel == null) { throw new NotFoundException("Couldn't find the proficiency level"); }
+
+                existingLanguageProficiency.ProficiencyLevel = proficiencyLevel;
+            }
+            existingLanguageProficiency.ModifyDate = DateTime.UtcNow;
+            existingLanguageProficiency.ModifyGuid = Guid.NewGuid();
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task DeleteSubscriberLanguageProficiency(Guid languageProficiencyGuid, Guid subscriberGuid)
+        {
+            var existingLanguageProficiency = await _dbContext.SubscriberLanguageProficiencies
+                .Include(slp => slp.Subscriber)
+                .SingleOrDefaultAsync(slp =>
+                    slp.IsDeleted == 0 &&
+                    slp.Subscriber.SubscriberGuid == subscriberGuid &&
+                    slp.SubscriberLanguageProficiencyGuid == languageProficiencyGuid);
+            if (existingLanguageProficiency == null) { throw new NotFoundException("Couldn't find an existing language proficiency entry"); }
+
+            existingLanguageProficiency.IsDeleted = 1;
+            await _dbContext.SaveChangesAsync();
+        }
     }
 }

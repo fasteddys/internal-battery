@@ -1,15 +1,15 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using AutoMapper;
+using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.Models;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.Candidate360;
-using AutoMapper;
-using UpDiddyApi.Models;
-using System.Collections.Generic;
 
 namespace UpDiddyApi.ApplicationCore.Services.Candidate
 {
@@ -225,5 +225,129 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         }
 
         #endregion
+
+        #region Language Proficiencies
+
+        public async Task<LanguageListDto> GetLanguageList()
+        {
+            var languages = await _repositoryWrapper.SubscriberRepository.GetLanguages();
+            return _mapper.Map<LanguageListDto>(languages);
+        }
+
+        public async Task<ProficiencyLevelListDto> GetProficiencyLevelList()
+        {
+            var proficiencyLevels = await _repositoryWrapper.SubscriberRepository.GetProficiencyLevels();
+            return _mapper.Map<ProficiencyLevelListDto>(proficiencyLevels);
+        }
+
+        public async Task<LanguageProficiencyListDto> GetLanguageProficiencies(Guid subscriberGuid)
+        {
+            try
+            {
+                _logger.LogDebug("CandidatesService:GetLanguagesAndProficiencies: Fetching Candidate 360 languages and proficiencies for subscriber {subscriber}", subscriberGuid);
+
+                var languageProficiencyLevels = await _repositoryWrapper.SubscriberRepository.GetSubscriberLanguageProficiencies(subscriberGuid);
+                var languageProficiencyListDto = _mapper.Map<LanguageProficiencyListDto>(languageProficiencyLevels);
+                _logger.LogDebug("CandidatesService:GetLanguagesAndProficiencies: Returning Candidate 360 languages and proficiencies for subscriber {subscriber}", subscriberGuid);
+
+                return languageProficiencyListDto;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "CandidatesService:GetLanguagesAndProficiencies: Error while fetching Candidate 360 languages and proficiencies for subscriber {subscriber}", subscriberGuid);
+                throw;
+            }
+        }
+
+        public async Task<Guid> CreateLanguageProficiency(LanguageProficiencyDto languageProficiency, Guid subscriberGuid)
+        {
+            if (languageProficiency == null) { throw new ArgumentNullException(nameof(languageProficiency)); }
+
+            try
+            {
+                _logger.LogDebug("CandidatesService:CreateLanguageProficiency: Creating Candidate 360 languages and proficiencies for subscriber {subscriber}", subscriberGuid);
+
+                var languageProficiencyGuid = await _repositoryWrapper.SubscriberRepository.CreateSubscriberLanguageProficiency(languageProficiency, subscriberGuid);
+
+                _logger.LogDebug("CandidatesService:CreateLanguageProficiency: Created Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", languageProficiencyGuid, subscriberGuid);
+
+                return languageProficiencyGuid;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "CandidatesService:CreateLanguageProficiency: Error while creating Candidate 360 languages and proficiencies for subscriber {subscriber}", subscriberGuid);
+                throw;
+            }
+        }
+
+        public async Task UpdateLanguageProficiency(LanguageProficiencyDto languageProficiency, Guid languageProficiencyGuid, Guid subscriberGuid)
+        {
+            if (languageProficiency == null) { throw new ArgumentNullException(nameof(languageProficiency)); }
+
+            try
+            {
+                _logger.LogDebug("CandidatesService:UpdateLanguageProficiency: Updating Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", languageProficiencyGuid, subscriberGuid);
+
+                languageProficiency.LanguageProficiencyGuid = languageProficiencyGuid;
+                await _repositoryWrapper.SubscriberRepository.UpdateSubscriberLanguageProficiency(languageProficiency, subscriberGuid);
+
+                _logger.LogDebug("CandidatesService:UpdateLanguageProficiency: Updated Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", languageProficiencyGuid, subscriberGuid);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "CandidatesService:UpdateLanguageProficiency: Error while updating Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", languageProficiencyGuid, subscriberGuid);
+                throw;
+            }
+        }
+
+        public async Task DeleteLanguageProficiency(Guid languageProficiencyGuid, Guid subscriberGuid)
+        {
+            try
+            {
+                _logger.LogDebug("CandidatesService:DeleteLanguageProficiency: Deleting Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", subscriberGuid);
+
+                await _repositoryWrapper.SubscriberRepository.DeleteSubscriberLanguageProficiency(languageProficiencyGuid, subscriberGuid);
+
+                _logger.LogDebug("CandidatesService:DeleteLanguageProficiency: Updated Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", subscriberGuid);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "CandidatesService:DeleteLanguageProficiency: Error while updating Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", subscriberGuid);
+                throw;
+            }
+        }
+
+        #endregion Language Proficiencies
+
+        #region CompensationPreferences
+
+        public async Task<CompensationPreferencesDto> GetCompensationPreferences(Guid subscriberGuid)
+        {
+            var subscriber = await _repositoryWrapper.SubscriberRepository.GetByGuid(subscriberGuid);
+            if (subscriber == null) { throw new InsufficientPermissionException("Unable to find subscriber record"); }
+
+            return new CompensationPreferencesDto
+            {
+                CurrentRate = subscriber.CurrentRate,
+                CurrentSalary = subscriber.CurrentSalary,
+                DesiredRate = subscriber.DesiredRate,
+                DesiredSalary = subscriber.DesiredSalary
+            };
+        }
+
+        public async Task UpdateCompensationPreferences(CompensationPreferencesDto compensationPreferences, Guid subscriberGuid)
+        {
+            if (compensationPreferences == null) { throw new ArgumentNullException(nameof(compensationPreferences)); }
+            var subscriber = await _repositoryWrapper.SubscriberRepository.GetByGuid(subscriberGuid);
+            if (subscriber == null) { throw new InsufficientPermissionException("Unable to find subscriber record"); }
+
+            subscriber.CurrentRate = compensationPreferences.CurrentRate;
+            subscriber.CurrentSalary = compensationPreferences.CurrentSalary;
+            subscriber.DesiredRate = compensationPreferences.DesiredRate;
+            subscriber.DesiredSalary = compensationPreferences.DesiredSalary;
+            await _repositoryWrapper.SubscriberRepository.SaveAsync();
+        }
+
+        #endregion CompensationPreferences
     }
 }

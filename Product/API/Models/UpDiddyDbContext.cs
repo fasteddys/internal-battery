@@ -15,6 +15,7 @@ using UpDiddyLib.Domain.Models.G2;
 using UpDiddyApi.Models.B2B;
 using UpDiddyLib.Domain.Models.B2B;
 using UpDiddyApi.Models.CrossChq;
+using System.Linq;
 
 namespace UpDiddyApi.Models
 {
@@ -226,7 +227,11 @@ namespace UpDiddyApi.Models
         public DbSet<TrainingType> TrainingType { get; set; }
         public DbSet<SubscriberTraining> SubscriberTraining { get; set; }
 
+        public DbSet<Language> Languages { get; set; }
 
+        public DbSet<ProficiencyLevel> ProficiencyLevels { get; set; }
+
+        public DbSet<SubscriberLanguageProficiency> SubscriberLanguageProficiencies { get; set; }
         #endregion
 
         #region DBQueries
@@ -728,22 +733,6 @@ namespace UpDiddyApi.Models
                 .HasIndex(set => new { set.SubscriberId, set.EmploymentTypeId })
                 .HasName("UIX_SubscriberEmploymentTypes_Subscriber_EmploymentType")
                 .IsUnique(true);
-
-            modelBuilder.Entity<SubscriberTraining>()
-                .HasIndex(i => i.SubscriberTrainingGuid)
-                .HasName("UIX_SubscriberTraining_SubscriberTrainingGuid")
-                .IsUnique(true);
-
-            modelBuilder.Entity<TrainingType>()
-                .HasIndex(i => i.TrainingTypeGuid)
-                .HasName("UIX_TrainingType_TrainingTypeGuid")
-                .IsUnique(true);
-
-            modelBuilder.Entity<EducationalDegreeTypeCategory>()
-                .HasIndex(i => i.EducationalDegreeTypeCategoryGuid)
-                .HasName("UIX_EducationalDegreeTypeCategory_EducationalDegreeTypeCategoryGuid")
-                .IsUnique(true);
         }
     }
 }
-

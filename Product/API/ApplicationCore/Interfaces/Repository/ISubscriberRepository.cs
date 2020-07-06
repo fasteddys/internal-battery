@@ -39,5 +39,17 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<RolePreferenceDto> GetRolePreference(Guid subscriberGuid);
 
         Task UpdateRolePreference(Guid subscriberGuid, RolePreferenceDto rolePreference);
+
+        Task<List<Language>> GetLanguages();
+
+        Task<List<ProficiencyLevel>> GetProficiencyLevels();
+
+        Task<List<SubscriberLanguageProficiency>> GetSubscriberLanguageProficiencies(Guid subscriberGuid);
+
+        Task<Guid> CreateSubscriberLanguageProficiency(LanguageProficiencyDto languageProficiencyDto, Guid subscriberGuid);
+
+        Task UpdateSubscriberLanguageProficiency(LanguageProficiencyDto languageProficiencyDto, Guid subscriberGuid);
+
+        Task DeleteSubscriberLanguageProficiency(Guid languageProficiencyGuid, Guid subscriberGuid);
     }
 }
