@@ -286,38 +286,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 subscriber.PassionProjectsDescription = rolePreference.VolunteerOrPassionProjects;
                 subscriber.CoverLetter = rolePreference.ElevatorPitch;
 
-                var skillsToDelete = subscriber.SubscriberSkills
-                    .Where(ss => ss.IsDeleted == 0 && ss.Skill?.SkillGuid != null && !rolePreference.SkillGuids.Contains(ss.Skill.SkillGuid.Value));
-
-                foreach (var skillToDelete in skillsToDelete) { skillToDelete.IsDeleted = 1; }
-
-                var skillGuidsToUndelete = subscriber.SubscriberSkills
-                    .Where(ss => ss.IsDeleted == 1 && ss.Skill?.SkillGuid != null && rolePreference.SkillGuids.Contains(ss.Skill.SkillGuid.Value));
-
-                foreach (var skillToUndelete in skillGuidsToUndelete) { skillToUndelete.IsDeleted = 0; }
-
-                var skillGuidsToAdd = rolePreference.SkillGuids
-                    .Where(sg => !subscriber.SubscriberSkills.Any(ss => ss.IsDeleted == 0 && ss.Skill?.SkillGuid == sg))
-                    .ToList();
-
-                if (skillGuidsToAdd.Any())
-                {
-                    var newSubscriberSkills = await _dbContext.Skill
-                        .Where(s => s.IsDeleted == 0 && s.SkillGuid != null && skillGuidsToAdd.Contains(s.SkillGuid.Value))
-                        .Select(s => new SubscriberSkill
-                        {
-                            CreateDate = DateTime.UtcNow,
-                            CreateGuid = Guid.NewGuid(),
-                            SubscriberSkillGuid = Guid.NewGuid(),
-                            IsDeleted = 0,
-                            SkillId = s.SkillId,
-                            SubscriberId = subscriber.SubscriberId
-                        })
-                        .ToListAsync();
-
-                    subscriber.SubscriberSkills.AddRange(newSubscriberSkills);
-                }
-
                 foreach (var linkToUpdate in subscriber.SubscriberLinks)
                 {
                     var link = rolePreference.SocialLinks
@@ -481,7 +449,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             else if (existingLanguageProficiency?.IsDeleted == 1)
             {
                 var proficiencyLevel = await _dbContext.ProficiencyLevels
-                    .SingleOrDefaultAsync(pl => pl.IsDeleted == 0 && pl.ProficiencyLevelGuid == languageProficiencyDto.LanguageProficiencyGuid);
+                    .SingleOrDefaultAsync(pl => pl.IsDeleted == 0 && pl.ProficiencyLevelGuid == languageProficiencyDto.ProficiencyLevelGuid);
                 if (proficiencyLevel == null) { throw new NotFoundException("Couldn't find the ProficiencyLevel"); }
 
                 existingLanguageProficiency.IsDeleted = 0;
@@ -570,6 +538,26 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             existingLanguageProficiency.IsDeleted = 1;
             await _dbContext.SaveChangesAsync();
+        }
+        
+        public async Task<Guid?> UpdateEmailVerificationStatus(string email, bool isVerified)
+        {
+            Guid? subscriberGuid = null;
+
+            var subscriber = await _dbContext.Subscriber
+                .Where(s => s.IsDeleted == 0 && s.Email == email)
+                .FirstOrDefaultAsync();
+
+            if (subscriber != null)
+            {
+                subscriberGuid = subscriber.SubscriberGuid;
+                subscriber.IsVerified = isVerified;
+                subscriber.ModifyDate = DateTime.UtcNow;
+                subscriber.ModifyGuid = Guid.Empty;
+                await _dbContext.SaveChangesAsync();
+            }
+
+            return subscriberGuid;
         }
     }
 }

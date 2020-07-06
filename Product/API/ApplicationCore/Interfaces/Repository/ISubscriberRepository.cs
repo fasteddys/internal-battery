@@ -14,31 +14,22 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IQueryable<Subscriber> GetAllSubscribersAsync();
         Task<List<SubscriberTraining>> GetCandidateTrainingHistory(Guid subscriberGuid, int limit, int offset, string sort, string order);
         Task<SubscriberSourceDto> GetSubscriberSource(int subscriberId);
-
         Task<List<SubscriberEmploymentTypes>> GetCandidateEmploymentPreferencesBySubscriberGuidAsync(Guid subscriberGuid);
-
         Task<Subscriber> GetSubscriberByGuidAsync(Guid subscriberGuid);
         Task<Subscriber> GetSubscriberPersonalInfoByGuidAsync(Guid subscriberGuid);
         Subscriber GetSubscriberByGuid(Guid subscriberGuid);
         Task<Subscriber> GetSubscriberByEmailAsync(string email);
         Subscriber GetSubscriberByEmail(string email);
-
         Task<Subscriber> GetSubscriberByIdAsync(int subscriberId);
-
         Task<IList<Partner>>  GetPartnersAssociatedWithSubscriber(int subscriberId);
-
         Task<int> GetSubscribersCountByStartEndDates(DateTime? startDate = null, DateTime? endDate = null);
-
         Task UpdateHubSpotDetails(Guid subscriberId, long hubSpotVid);
-
         Task UpdateHubSpotDetails(int subscriberId, long hubSpotVid);
-
         Task UpdateCandidateEmploymentPreferencesBySubscriberGuidAsync(Guid subscriberGuid, CandidateEmploymentPreferenceDto candidateEmploymentPreferenceDto);
         Task UpdateSubscriberPersonalInfo(Guid subscriberGuid, State subscriberState, CandidatePersonalInfoDto candidatePersonalInfoDto);
-
         Task<RolePreferenceDto> GetRolePreference(Guid subscriberGuid);
-
         Task UpdateRolePreference(Guid subscriberGuid, RolePreferenceDto rolePreference);
+        Task<Guid?> UpdateEmailVerificationStatus(string email, bool isVerified);
 
         Task<List<Language>> GetLanguages();
 
