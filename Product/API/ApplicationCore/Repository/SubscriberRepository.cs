@@ -436,7 +436,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             else if (existingLanguageProficiency?.IsDeleted == 1)
             {
                 var proficiencyLevel = await _dbContext.ProficiencyLevels
-                    .SingleOrDefaultAsync(pl => pl.IsDeleted == 0 && pl.ProficiencyLevelGuid == languageProficiencyDto.LanguageProficiencyGuid);
+                    .SingleOrDefaultAsync(pl => pl.IsDeleted == 0 && pl.ProficiencyLevelGuid == languageProficiencyDto.ProficiencyLevelGuid);
                 if (proficiencyLevel == null) { throw new NotFoundException("Couldn't find the ProficiencyLevel"); }
 
                 existingLanguageProficiency.IsDeleted = 0;
