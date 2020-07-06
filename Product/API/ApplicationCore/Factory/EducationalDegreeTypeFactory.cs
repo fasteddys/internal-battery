@@ -20,6 +20,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             rVal.ModifyGuid = Guid.Empty;
             rVal.EducationalDegreeTypeGuid = Guid.NewGuid();
             rVal.IsDeleted = 0;
+            rVal.IsVerified = (bool?)null;
             return rVal;
         }
 

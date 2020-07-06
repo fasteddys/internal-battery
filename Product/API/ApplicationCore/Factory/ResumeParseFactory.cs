@@ -271,6 +271,11 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     case "neither":
                         educationalDegreeType = await EducationalDegreeTypeFactory.GetOrAdd(repositoryWrapper, Constants.NotSpecifedOption);
                         subscriberEducationHistory.EducationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
+                        subscriberEducationHistory.RelevantYear = (short?)GetMaxYear(new List<DateTime> { 
+                                                                    subscriberEducationHistory.StartDate ?? DateTime.MinValue,
+                                                                    subscriberEducationHistory.EndDate ?? DateTime.MinValue,
+                                                                    subscriberEducationHistory.DegreeDate ?? DateTime.MinValue
+                                                                });
                         resumeParseResult.ParseStatus = (int)ResumeParseStatus.Declined;
                         break;
                 }
@@ -282,7 +287,15 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return true;
         }
 
+        private static int? GetMaxYear(List<DateTime> dateTimes)
+        {
+            var filteredDateTimes = dateTimes
+                  .Where(d => d != DateTime.MinValue && d != DateTime.MaxValue)
+                  .Select(d => d.Year)
+                  .ToList();
 
+            return (filteredDateTimes != null && filteredDateTimes.Count > 0 ? filteredDateTimes.Max() : (int?)null);
+        }
          private static async Task<bool> _resolveRadioQuestion(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, ResumeParseResult resumeParseResult, string info)
         {
             try
