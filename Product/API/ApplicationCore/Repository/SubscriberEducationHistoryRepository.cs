@@ -227,8 +227,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             foreach (var trainingsToDelete in subscriberTrainingHistoryToDelete)
             {
-                subscriberEducationHistory
-                    .FirstOrDefault(seh => seh.SubscriberEducationHistoryGuid == trainingsToDelete.SubscriberTrainingGuid)
+                subscriberTrainingHistory
+                    .FirstOrDefault(seh => seh.SubscriberTrainingGuid == trainingsToDelete.SubscriberTrainingGuid)
                     .IsDeleted = 1;
             }
 
