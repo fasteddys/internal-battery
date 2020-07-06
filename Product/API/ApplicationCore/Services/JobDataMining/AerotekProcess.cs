@@ -74,6 +74,22 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                 if (jobData == null)
                     throw new ApplicationException($"No job detail data discovered for the following job page uri: {jobPageUri.ToString()}");
 
+
+                
+                // remove unnecessary information from jobData before storing it
+                string[] requiredTokenNames = { "jobId", "title", "postedDate", "structureData", "recruiterName", "recruiterEmail", "recruiterPhone", "ml_skills" };
+                List<JToken> tokensToDelete = new List<JToken>();
+                foreach(JToken token in jobData.Children())
+                {
+                    string tokenName = ((JProperty)token).Name;
+                    if (!requiredTokenNames.Contains(tokenName))
+                        tokensToDelete.Add(token);
+                }
+                foreach(var token in tokensToDelete)
+                {
+                    token.Remove();
+                }
+
                 // check for an existing job page based on the RWS identifier
                 existingJobPage = existingJobPages.Where(jp => jp.UniqueIdentifier == jobData["jobId"].ToString()).FirstOrDefault();
                 if (existingJobPage != null)
