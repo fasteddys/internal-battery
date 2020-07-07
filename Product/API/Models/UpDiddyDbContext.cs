@@ -748,21 +748,6 @@ namespace UpDiddyApi.Models
                     .WithMany(pl => pl.SubscriberLanguageProficiencies)
                     .HasForeignKey(slp => slp.ProficiencyLevelId);
             });
-
-            modelBuilder.Entity<SubscriberTraining>()
-                .HasIndex(i => i.SubscriberTrainingGuid)
-                .HasName("UIX_SubscriberTraining_SubscriberTrainingGuid")
-                .IsUnique(true);
-
-            modelBuilder.Entity<TrainingType>()
-                .HasIndex(i => i.TrainingTypeGuid)
-                .HasName("UIX_TrainingType_TrainingTypeGuid")
-                .IsUnique(true);
-
-            modelBuilder.Entity<EducationalDegreeTypeCategory>()
-                .HasIndex(i => i.EducationalDegreeTypeCategoryGuid)
-                .HasName("UIX_EducationalDegreeTypeCategory_EducationalDegreeTypeCategoryGuid")
-                .IsUnique(true);
         }
     }
 }
