@@ -359,5 +359,115 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         }
 
         #endregion CompensationPreferences
+
+        #region Education & Training
+        public async Task<EducationalDegreeTypeListDto> GetAllEducationalDegrees(int limit, int offset, string sort, string order)
+        {
+            _logger.LogInformation($"CandidatesService:GetAllEducationalDegrees begin.");
+
+            try
+            {
+                var educationalDegrees = await _repositoryWrapper.EducationalDegreeTypeRepository.GetAllDefinedEducationDegreeTypes(limit, offset, sort, order);
+                if (educationalDegrees == null) return null;
+                return _mapper.Map<EducationalDegreeTypeListDto>(educationalDegrees);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"CandidatesService:GetAllEducationalDegrees  Error: {ex.ToString()} ");
+                throw ex;
+            }
+            _logger.LogInformation($"CandidatesService:GetAllEducationalDegrees end.");
+
+        }
+
+        public async Task<SubscriberEducationHistoryDto> GetCandidateEducationHistory(Guid subscriberGuid, int limit, int offset, string sort, string order)
+        {
+            _logger.LogInformation($"CandidatesService:GetCandidateEducationHistory begin.");
+            if (subscriberGuid == Guid.Empty)
+                throw new FailedValidationException($"CandidatesService:GetCandidateEducationHistory subscriber guid cannot be empty({subscriberGuid})");
+            var Subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
+            if (Subscriber == null)
+                throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
+
+            try
+            {
+                var candidateEducationHistory = await _repositoryWrapper.SubscriberEducationHistoryRepository.GetEducationalHistoryBySubscriberGuid(subscriberGuid, limit, offset, sort, order);
+                return _mapper.Map<SubscriberEducationHistoryDto>(candidateEducationHistory);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"CandidatesService:GetCandidateEducationHistory  Error: {ex.ToString()} ");
+                throw ex;
+            }
+            _logger.LogInformation($"CandidatesService:GetCandidateEducationHistory end.");
+        }
+
+        public async Task<TrainingTypesDto> GetAllTrainingTypes(int limit, int offset, string sort, string order)
+        {
+            _logger.LogInformation($"CandidatesService:GetAllTrainingTypes begin.");
+
+            try
+            {
+                var trainingTypes = await _repositoryWrapper.TrainingTypesRepository.GetAllTrainingTypes(limit, offset, sort, order);
+                return _mapper.Map<TrainingTypesDto>(trainingTypes);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"CandidatesService:GetAllTrainingTypes  Error: {ex.ToString()} ");
+                throw ex;
+            }
+            _logger.LogInformation($"CandidatesService:GetAllTrainingTypes end.");
+        }
+
+        public async Task<SubscriberTrainingHistoryDto> GetCandidateTrainingHistory(Guid subscriberGuid, int limit, int offset, string sort, string order)
+        {
+            _logger.LogInformation($"CandidatesService:GetCandidateTrainingHistory begin.");
+            if (subscriberGuid == Guid.Empty)
+                throw new FailedValidationException($"CandidatesService:GetCandidateTrainingHistory subscriber guid cannot be empty({subscriberGuid})");
+            var Subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
+            if (Subscriber == null)
+                throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
+
+            try
+            {
+                var candidateTrainingHistory = await _repositoryWrapper.SubscriberRepository.GetCandidateTrainingHistory(subscriberGuid, limit, offset, sort, order);
+                if (candidateTrainingHistory == null) return null;
+                return _mapper.Map<SubscriberTrainingHistoryDto>(candidateTrainingHistory);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"CandidatesService:GetCandidateTrainingHistory  Error: {ex.ToString()} ");
+                throw ex;
+            }
+            _logger.LogInformation($"CandidatesService:GetCandidateTrainingHistory end.");
+        }
+        public async Task UpdateCandidateEducationAndTraining(Guid subscriberGuid, SubscriberEducationAssessmentsDto subscriberEducationAssessmentsDto)
+        {
+            _logger.LogInformation($"CandidatesService:UpdateCandidateEducationAndTraining begin.");
+            if (subscriberEducationAssessmentsDto == null)
+                throw new FailedValidationException($"CandidatesService:UpdateCandidateEducationAndTraining subscriberEducationAssessmentsDto cannot be null (subscriberGuid:{subscriberGuid})");
+
+            if (subscriberGuid == Guid.Empty)
+                throw new FailedValidationException($"CandidatesService:UpdateCandidateEducationAndTraining subscriber guid cannot be empty({subscriberGuid})");
+            if (subscriberEducationAssessmentsDto == null)
+                throw new FailedValidationException($"CandidatesService:UpdateCandidateEducationAndTraining candidateEmploymentPreferenceDto cannot be null");
+            var Subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
+            if (Subscriber == null)
+                throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
+
+            try
+            {
+                await _repositoryWrapper.SubscriberEducationHistoryRepository.UpdateCandidateEducationAndTraining(subscriberGuid, subscriberEducationAssessmentsDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"CandidatesService:UpdateCandidateEducationAndTraining  Error: {ex.ToString()} ");
+                throw ex;
+            }
+
+            _logger.LogInformation($"CandidatesService:UpdateCandidateEducationAndTraining end.");
+        }
+
+        #endregion
     }
 }

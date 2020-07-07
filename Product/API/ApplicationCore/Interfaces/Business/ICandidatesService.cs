@@ -8,10 +8,14 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface ICandidatesService
     {
-
+        Task<EducationalDegreeTypeListDto> GetAllEducationalDegrees(int limit = 10, int offset = 0, string sort = "createdate", string order = "ascending");
+        Task<SubscriberEducationHistoryDto> GetCandidateEducationHistory(Guid subscriberGuid, int limit = 10, int offset = 0, string sort = "createdate", string order = "ascending");
+        Task<TrainingTypesDto> GetAllTrainingTypes(int limit = 10, int offset = 0, string sort = "createdate", string order = "ascending");
         Task<CandidateEmploymentPreferenceDto> GetCandidateEmploymentPreference(Guid subscriberGuid);
 
         Task<CandidatePersonalInfoDto> GetCandidatePersonalInfo(Guid subscriberGuid);
+        Task<SubscriberTrainingHistoryDto> GetCandidateTrainingHistory(Guid subscriberGuid, int limit = 10, int offset = 0, string sort = "createdate", string order = "ascending");
+        Task UpdateCandidateEducationAndTraining(Guid subscriberGuid, SubscriberEducationAssessmentsDto subscriberEducationAssessmentsDto);
 
         Task UpdateCandidateEmploymentPreference(Guid subscriberGuid, CandidateEmploymentPreferenceDto candidateEmploymentPreferenceDto);
 

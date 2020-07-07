@@ -900,9 +900,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             try
             {
                 bool requiresMerge = false;
-                List<SubscriberEducationHistoryDto> parsedEducationHistory = Utils.ParseEducationHistoryFromHrXml(resume);
+                List<UpDiddyLib.Dto.SubscriberEducationHistoryDto> parsedEducationHistory = Utils.ParseEducationHistoryFromHrXml(resume);
                 IList<SubscriberEducationHistory> educationHistory = await SubscriberFactory.GetSubscriberEducationHistoryById(_repository, subscriber.SubscriberId);
-                foreach (SubscriberEducationHistoryDto eh in parsedEducationHistory)
+                foreach (UpDiddyLib.Dto.SubscriberEducationHistoryDto eh in parsedEducationHistory)
                 {
                     string parsedInstitutionName = eh.EducationalInstitution.ToLower();
                     string parsedEducationalDegree = eh.EducationalDegree.ToLower();
@@ -943,7 +943,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         }
 
-        private async Task<bool> MergeEducationalHistories(ResumeParse resumeParse, SubscriberEducationHistory educationHistory, SubscriberEducationHistoryDto parsedEducationHistory)
+        private async Task<bool> MergeEducationalHistories(ResumeParse resumeParse, SubscriberEducationHistory educationHistory, UpDiddyLib.Dto.SubscriberEducationHistoryDto parsedEducationHistory)
         {
             bool requiresMerge = false;
             if (parsedEducationHistory.StartDate != null && parsedEducationHistory.StartDate != DateTime.MinValue)

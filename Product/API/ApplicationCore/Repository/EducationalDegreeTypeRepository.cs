@@ -22,5 +22,58 @@ namespace UpDiddyApi.ApplicationCore.Repository
                           select e).ToListAsync();
         }
 
+        public async Task<List<EducationalDegreeType>> GetAllDefinedEducationDegreeTypes(int limit, int offset, string sort, string order)
+        {
+            //filter only the predefined EducationDegreeTypes
+            var educationalDegreeTypesQuery = _dbContext.EducationalDegreeType
+                .Where(edt => edt.IsDeleted == 0 && edt.IsVerified.HasValue && edt.IsVerified.Value)
+                .Include(edt => edt.EducationalDegreeTypeCategory)
+                .OrderBy(edt => edt.EducationalDegreeTypeCategory.Sequence)
+                .Skip(limit * offset)
+                .Take(limit);
+
+            //sorting            
+            if (order.ToLower() == "descending")
+            {
+                switch (sort.ToLower())
+                {
+                    case "modifydate":
+                        educationalDegreeTypesQuery = educationalDegreeTypesQuery.OrderByDescending(s => s.ModifyDate);
+                        break;
+                    case "createdate":
+                        educationalDegreeTypesQuery = educationalDegreeTypesQuery.OrderByDescending(s => s.CreateDate);
+                        break;
+                    case "sequence":
+                        educationalDegreeTypesQuery = educationalDegreeTypesQuery.OrderByDescending(s => s.Sequence);
+                        break;
+                    default:
+                        educationalDegreeTypesQuery = educationalDegreeTypesQuery.OrderByDescending(s => s.Sequence);
+                        break;
+                }
+            }
+            else
+            {
+                switch (sort.ToLower())
+                {
+                    case "modifydate":
+                        educationalDegreeTypesQuery = educationalDegreeTypesQuery.OrderBy(s => s.ModifyDate);
+                        break;
+                    case "createdate":
+                        educationalDegreeTypesQuery = educationalDegreeTypesQuery.OrderBy(s => s.CreateDate);
+                        break;
+                    case "sequence":
+                        educationalDegreeTypesQuery = educationalDegreeTypesQuery.OrderBy(s => s.Sequence);
+                        break;
+                    default:
+                        educationalDegreeTypesQuery = educationalDegreeTypesQuery.OrderBy(s => s.Sequence);
+                        break;
+                }
+            }
+
+
+            return await educationalDegreeTypesQuery.ToListAsync();
+        }
+
+
     }
 }

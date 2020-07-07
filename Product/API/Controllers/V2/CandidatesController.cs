@@ -184,5 +184,53 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         #endregion CompensationPreferences
+
+        #region Education & Assessments
+
+
+        [HttpGet]
+        [Route("education-history")]
+        [Authorize]
+        public async Task<IActionResult> GetCandidateEducationHistory(int limit = 10, int offset = 0, string sort = "createdate", string order = "ascending")
+        {
+            var response = await _candidatesService.GetCandidateEducationHistory(GetSubscriberGuid(), limit, offset, sort, order);
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("educational-degrees")]
+        public async Task<IActionResult> GetAllEducationalDegrees(int limit = 10, int offset = 0, string sort = "sequence", string order = "ascending")
+        {
+            var response = await _candidatesService.GetAllEducationalDegrees(limit, offset, sort, order);
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("training-history")]
+        [Authorize]
+        public async Task<IActionResult> GetCandidateTrainingHistory(int limit = 10, int offset = 0, string sort = "createdate", string order = "ascending")
+        {
+            var response = await _candidatesService.GetCandidateTrainingHistory(GetSubscriberGuid(), limit, offset, sort, order);
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("training-types")]
+        public async Task<IActionResult> GetAllTrainingTypes(int limit = 10, int offset = 0, string sort = "sequence", string order = "ascending")
+        {
+            var response = await _candidatesService.GetAllTrainingTypes(limit, offset, sort, order);
+            return Ok(response);
+        }
+
+        [HttpPut]
+        [Authorize]
+        [Route("education-training-history")]
+        public async Task<IActionResult> UpdateCandidateEducationAndTraining([FromBody] SubscriberEducationAssessmentsDto request)
+        {
+            await _candidatesService.UpdateCandidateEducationAndTraining(GetSubscriberGuid(), request);
+            return StatusCode(204);
+        }
+
+        #endregion Education & Assessments
     }
 }

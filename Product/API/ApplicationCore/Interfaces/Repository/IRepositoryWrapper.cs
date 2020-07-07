@@ -101,5 +101,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IInterviewRequestRepository InterviewRequestRepository { get; }
         ICrosschqRepository CrosschqRepository { get; }
         ICommuteDistancesRepository CommuteDistancesRepository { get; }
+        ITrainingTypesRepository TrainingTypesRepository { get; }
     }
 }

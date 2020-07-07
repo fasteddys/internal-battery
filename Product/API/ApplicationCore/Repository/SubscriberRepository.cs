@@ -36,6 +36,51 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return GetAll();
         }
 
+        public async Task<List<SubscriberTraining>> GetCandidateTrainingHistory(Guid subscriberGuid, int limit, int offset, string sort, string order)
+        {
+            var subscriberTrainingQuery = _dbContext.SubscriberTraining
+                .Where(st => st.IsDeleted == 0 && st.Subscriber.IsDeleted == 0 && st.Subscriber.SubscriberGuid == subscriberGuid)
+                .Include(st => st.Subscriber)
+                .Include(st => st.TrainingType)
+                .Skip(limit * offset)
+                .Take(limit);
+
+            //sorting            
+            if (order.ToLower() == "descending")
+            {
+                switch (sort.ToLower())
+                {
+                    case "createdate":
+                        subscriberTrainingQuery = subscriberTrainingQuery.OrderByDescending(s => s.CreateDate);
+                        break;
+                    case "modifydate":
+                        subscriberTrainingQuery = subscriberTrainingQuery.OrderByDescending(s => s.ModifyDate);
+                        break;
+                    default:
+                        subscriberTrainingQuery = subscriberTrainingQuery.OrderByDescending(s => s.ModifyDate);
+                        break;
+                }
+            }
+            else
+            {
+                switch (sort.ToLower())
+                {
+                    case "createdate":
+                        subscriberTrainingQuery = subscriberTrainingQuery.OrderBy(s => s.CreateDate);
+                        break;
+                    case "modifydate":
+                        subscriberTrainingQuery = subscriberTrainingQuery.OrderBy(s => s.ModifyDate);
+                        break;
+                    default:
+                        subscriberTrainingQuery = subscriberTrainingQuery.OrderBy(s => s.ModifyDate);
+                        break;
+                }
+            }
+
+            return await subscriberTrainingQuery.ToListAsync();
+
+        }
+
         public async Task<Subscriber> GetSubscriberByEmailAsync(string email)
         {
             var subscriberResult = await _dbContext.Subscriber
