@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
@@ -10,9 +11,10 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200629210400_candidate360 education assessment DB changes")]
+    partial class candidate360educationassessmentDBchanges
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3040,33 +3042,6 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("JobSiteScrapeStatistic");
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.Language", b =>
-                {
-                    b.Property<int>("LanguageId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<Guid>("LanguageGuid");
-
-                    b.Property<string>("LanguageName")
-                        .IsRequired()
-                        .HasMaxLength(500);
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.HasKey("LanguageId");
-
-                    b.ToTable("Languages");
-                });
-
             modelBuilder.Entity("UpDiddyApi.Models.LeadStatus", b =>
                 {
                     b.Property<int>("LeadStatusId")
@@ -3726,35 +3701,6 @@ namespace UpDiddyApi.Migrations
                         .HasName("UIX_Postal_City_Code");
 
                     b.ToTable("Postal");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.ProficiencyLevel", b =>
-                {
-                    b.Property<int>("ProficiencyLevelId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("Sequence");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<Guid>("ProficiencyLevelGuid");
-
-                    b.Property<string>("ProficiencyLevelName")
-                        .IsRequired()
-                        .HasMaxLength(500);
-
-                    b.HasKey("ProficiencyLevelId");
-
-                    b.ToTable("ProficiencyLevels");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.PromoCode", b =>
@@ -4631,21 +4577,9 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
-                    b.Property<decimal?>("CurrentRate")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("CurrentRoleProficiencies");
 
-                    b.Property<decimal?>("CurrentSalary")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<DateTime?>("DateOfBirth");
-
-                    b.Property<decimal?>("DesiredRate")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal?>("DesiredSalary")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("DreamJob");
 
@@ -4920,41 +4854,6 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("SubscriberId");
 
                     b.ToTable("SubscriberGroup");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.SubscriberLanguageProficiency", b =>
-                {
-                    b.Property<int>("SubscriberLanguageProficiencyId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<int>("LanguageId");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<int>("ProficiencyLevelId");
-
-                    b.Property<int>("SubscriberId");
-
-                    b.Property<Guid>("SubscriberLanguageProficiencyGuid");
-
-                    b.HasKey("SubscriberLanguageProficiencyId");
-
-                    b.HasIndex("LanguageId");
-
-                    b.HasIndex("ProficiencyLevelId");
-
-                    b.HasIndex("SubscriberId");
-
-                    b.ToTable("SubscriberLanguageProficiencies");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberLink", b =>
@@ -6840,24 +6739,6 @@ namespace UpDiddyApi.Migrations
 
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany()
-                        .HasForeignKey("SubscriberId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.SubscriberLanguageProficiency", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.Language", "Language")
-                        .WithMany("SubscriberLanguageProficiencies")
-                        .HasForeignKey("LanguageId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UpDiddyApi.Models.ProficiencyLevel", "ProficiencyLevel")
-                        .WithMany("SubscriberLanguageProficiencies")
-                        .HasForeignKey("ProficiencyLevelId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany("SubscriberLanguageProficiencies")
                         .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });

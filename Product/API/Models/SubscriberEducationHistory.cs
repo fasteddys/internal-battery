@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -20,6 +21,9 @@ namespace UpDiddyApi.Models
         public virtual EducationalDegreeType EducationalDegreeType { get; set; }
         public int? EducationalDegreeId { get; set; }
         public virtual EducationalDegree EducationalDegree { get; set; }
+
+        [Column(TypeName = "SmallInt")]
+        public short? RelevantYear { get; set; }
 
     }
 }
