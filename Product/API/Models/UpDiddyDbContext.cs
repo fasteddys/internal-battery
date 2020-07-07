@@ -733,6 +733,21 @@ namespace UpDiddyApi.Models
                 .HasIndex(set => new { set.SubscriberId, set.EmploymentTypeId })
                 .HasName("UIX_SubscriberEmploymentTypes_Subscriber_EmploymentType")
                 .IsUnique(true);
+
+            modelBuilder.Entity<SubscriberLanguageProficiency>(builder =>
+            {
+                builder.HasOne(slp => slp.Subscriber)
+                    .WithMany(s => s.SubscriberLanguageProficiencies)
+                    .HasForeignKey(slp => slp.SubscriberId);
+
+                builder.HasOne(slp => slp.Language)
+                    .WithMany(l => l.SubscriberLanguageProficiencies)
+                    .HasForeignKey(slp => slp.LanguageId);
+
+                builder.HasOne(slp => slp.ProficiencyLevel)
+                    .WithMany(pl => pl.SubscriberLanguageProficiencies)
+                    .HasForeignKey(slp => slp.ProficiencyLevelId);
+            });
         }
     }
 }
