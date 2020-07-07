@@ -214,8 +214,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 }
             }
 
-            //await _dbContext.SaveChangesAsync();
-
             //list of all incoming valid guids in the request.
             var incomingSubscriberTrainingHistoryGuids = subscriberEducationAssessmentsDto.TrainingHistories
                         .Where(st => st.SubscriberTrainingGuid.HasValue && st.SubscriberTrainingGuid.Value != Guid.Empty)
