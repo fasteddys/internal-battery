@@ -109,6 +109,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IInterviewRequestRepository _interviewRequestRepository;
         private ICrosschqRepository _crosschqRepository;
         private ICommuteDistancesRepository _commuteDistancesRepository;
+        private ITrainingTypesRepository _trainingTypesRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
         {
@@ -452,6 +453,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _subscriberGroupRepository = new SubscriberGroupRepository(_dbContext);
                 }
                 return _subscriberGroupRepository;
+            }
+        }
+
+        public ITrainingTypesRepository TrainingTypesRepository
+        {
+            get
+            {
+                if (_trainingTypesRepository == null)
+                {
+                    _trainingTypesRepository = new TrainingTypesRepository(_dbContext);
+                }
+                return _trainingTypesRepository;
             }
         }
 

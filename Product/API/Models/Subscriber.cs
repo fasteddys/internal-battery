@@ -57,6 +57,19 @@ namespace UpDiddyApi.Models
         public string CoverLetter { get; set; }
         public Topic Topic { get; set; }
         public int? TopicId { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? CurrentRate { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? CurrentSalary { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? DesiredRate { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? DesiredSalary { get; set; }
+
         public virtual List<SubscriberLink> SubscriberLinks { get; set; }
 
         public List<SubscriberEmploymentTypes> SubscriberEmploymentTypes { get; set; } = new List<SubscriberEmploymentTypes>();
@@ -68,6 +81,7 @@ namespace UpDiddyApi.Models
         public int? CommuteDistanceId { get; set; }
         public CommuteDistance CommuteDistance { get; set; }
 
+        public virtual List<SubscriberLanguageProficiency> SubscriberLanguageProficiencies { get; set; }
 
         #region Avatar Urls
         public string LinkedInAvatarUrl { get; set; }

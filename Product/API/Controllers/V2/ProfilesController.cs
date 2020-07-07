@@ -133,7 +133,7 @@ namespace UpDiddyApi.Controllers.V2
         [HttpPost]
         [Authorize]
         [Route("education-histories")]
-        public async Task<IActionResult> AddProfileEducationHistory([FromBody] SubscriberEducationHistoryDto subscriberEducationHistoryDto)
+        public async Task<IActionResult> AddProfileEducationHistory([FromBody] UpDiddyLib.Dto.SubscriberEducationHistoryDto subscriberEducationHistoryDto)
         {
             var educationHistoryGuid = await _subscriberEducationalHistoryService.CreateEducationalHistory(subscriberEducationHistoryDto, GetSubscriberGuid());
             return StatusCode(201, educationHistoryGuid);
@@ -142,7 +142,7 @@ namespace UpDiddyApi.Controllers.V2
         [HttpPut]
         [Authorize]
         [Route("education-histories/{educationalHistoryGuid:guid}")]
-        public async Task<IActionResult> UpdateProfileEducationHistory([FromBody] SubscriberEducationHistoryDto subscriberEducationHistoryDto, Guid educationalHistoryGuid)
+        public async Task<IActionResult> UpdateProfileEducationHistory([FromBody] UpDiddyLib.Dto.SubscriberEducationHistoryDto subscriberEducationHistoryDto, Guid educationalHistoryGuid)
         {
             await _subscriberEducationalHistoryService.UpdateEducationalHistory(subscriberEducationHistoryDto, GetSubscriberGuid(), educationalHistoryGuid);
             return StatusCode(204);

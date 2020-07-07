@@ -282,7 +282,6 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return true;
         }
 
-
          private static async Task<bool> _resolveRadioQuestion(IRepositoryWrapper repositoryWrapper, Subscriber subscriber, ResumeParseResult resumeParseResult, string info)
         {
             try
