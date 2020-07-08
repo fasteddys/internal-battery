@@ -131,6 +131,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                         educationalDegree.ModifyDate = DateTime.UtcNow;
                     }
                     var educationalInstitution = _dbContext.EducationalInstitution.FirstOrDefault(ed => !String.IsNullOrWhiteSpace(subscriberEducation.Institution) &&
+                                                 !String.IsNullOrWhiteSpace(ed.Name) &&
                                                  ed.Name.Trim().Equals(subscriberEducation.Institution.Trim(), StringComparison.OrdinalIgnoreCase));
                     //if the educationalInstitution that was found above is soft-deleted, then unsoft-delete it and use.
                     if (educationalInstitution != null && educationalInstitution.IsDeleted == 1)
@@ -213,8 +214,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
                 }
             }
-
-            //await _dbContext.SaveChangesAsync();
 
             //list of all incoming valid guids in the request.
             var incomingSubscriberTrainingHistoryGuids = subscriberEducationAssessmentsDto.TrainingHistories
