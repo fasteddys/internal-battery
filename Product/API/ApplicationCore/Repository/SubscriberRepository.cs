@@ -141,7 +141,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         public async Task<List<SubscriberEmploymentTypes>> GetCandidateEmploymentPreferencesBySubscriberGuidAsync(Guid subscriberGuid)
         {
             var subscriberEmploymentTypes = await _dbContext.SubscriberEmploymentTypes
-                              .Where(s => s.Subscriber.IsDeleted == 0 && s.Subscriber.SubscriberGuid == subscriberGuid)
+                              .Where(s => s.Subscriber.IsDeleted == 0 && s.Subscriber.SubscriberGuid == subscriberGuid && s.IsDeleted == 0)
                               .Include(s => s.EmploymentType)
                               .Include(s => s.Subscriber.CommuteDistance)
                               .ToListAsync();
@@ -337,17 +337,74 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task UpdateCandidateEmploymentPreferencesBySubscriberGuidAsync(Guid subscriberGuid, CandidateEmploymentPreferenceDto candidateEmploymentPreferenceDto)
         {
-            var subscriber = _dbContext.Subscriber
-                              .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
-                              .Include(s => s.SubscriberEmploymentTypes)
-                              .Include(s => s.CommuteDistance)
-                              .FirstOrDefault();
+            //get all SubscriberEmploymentTypes, include deleted ones.
+            var subscriberEmploymentTypes = _dbContext.SubscriberEmploymentTypes
+                              .Where(s => s.Subscriber.IsDeleted == 0 && s.Subscriber.SubscriberGuid == subscriberGuid )
+                              .Include(s => s.Subscriber)
+                              .Include(s => s.EmploymentType)
+                              .Include(s => s.Subscriber.CommuteDistance)
+                              .ToList();
+            var subscriber = subscriberEmploymentTypes.FirstOrDefault().Subscriber;
 
+            //get all requested EmploymentTypes
             var employmentTypes = _dbContext.EmploymentType
                 .Where(et => candidateEmploymentPreferenceDto.EmploymentTypeGuids != null &&
                             candidateEmploymentPreferenceDto.EmploymentTypeGuids.Count > 0 &&
-                            candidateEmploymentPreferenceDto.EmploymentTypeGuids.Contains(et.EmploymentTypeGuid))
+                            candidateEmploymentPreferenceDto.EmploymentTypeGuids.Contains(et.EmploymentTypeGuid) &&
+                            et.IsDeleted == 0)
                 .ToList();
+
+            //ignore deleted ones when filtering to logically delete subscriberEmploymentTypes
+            var subscriberEmploymentTypesToDelete = subscriberEmploymentTypes
+                .Where(del => del.IsDeleted == 0 && 
+                            !employmentTypes.Select( et => et.EmploymentTypeGuid).ToList().Contains(del.EmploymentType.EmploymentTypeGuid))
+                .Select(set => set.EmploymentType.EmploymentTypeGuid)
+                .ToList();
+
+            //check against all the subscriberEmploymentTypes, including deleted ones.
+            var subscriberEmploymentTypesToAdd = employmentTypes.Select(et => et.EmploymentTypeGuid).ToList()
+                .Where(add => 
+                        !subscriberEmploymentTypes 
+                        .Select(set => set.EmploymentType.EmploymentTypeGuid).ToList().Contains(add))
+                .ToList();
+
+            //Updates will happen when we logically undelete a SubscriberEmploymentTypes
+            //Check againsted the deleted subscriberEmploymentTypes
+            var subscriberEmploymentTypesToUpdate = employmentTypes.Select(et => et.EmploymentTypeGuid).ToList()
+                .Where(add =>
+                         subscriberEmploymentTypes
+                        .Where(set => set.IsDeleted == 1)
+                        .Select(set => set.EmploymentType.EmploymentTypeGuid).ToList().Contains(add))
+                .ToList();
+
+            //logically delete SubscriberEmploymentTypes
+            foreach (var employmentTypesToDelete in subscriberEmploymentTypesToDelete)
+            {
+                var recordToDelete = subscriberEmploymentTypes.FirstOrDefault(set => set.EmploymentType.EmploymentTypeGuid == employmentTypesToDelete);
+                recordToDelete.IsDeleted = 1;
+                recordToDelete.ModifyDate = DateTime.UtcNow;
+            }
+
+            //logically undelete SubscriberEmploymentTypes
+            foreach (var employmentTypesToUpdate in subscriberEmploymentTypesToUpdate)
+            {
+                var recordToUpdate = subscriberEmploymentTypes.FirstOrDefault(set => set.EmploymentType.EmploymentTypeGuid == employmentTypesToUpdate);
+                recordToUpdate.IsDeleted = 0;
+                recordToUpdate.ModifyDate = DateTime.UtcNow;
+            }
+
+            //Add new SubscriberEmploymentTypes
+            foreach (var employmentTypesToAdd in subscriberEmploymentTypesToAdd)
+            {
+                _dbContext.SubscriberEmploymentTypes.Add(new SubscriberEmploymentTypes { 
+                      CreateDate = DateTime.UtcNow,
+                      CreateGuid = Guid.Empty,
+                      IsDeleted = 0,
+                      SubscriberEmploymentTypesGuid = Guid.NewGuid(),
+                      SubscriberId = subscriber.SubscriberId,
+                      EmploymentType = employmentTypes.FirstOrDefault(et => et.EmploymentTypeGuid == employmentTypesToAdd)
+                });
+            }
 
             var commuteDistance = _dbContext.CommuteDistance
                 .FirstOrDefault(cd => candidateEmploymentPreferenceDto.CommuteDistanceGuid.HasValue &&
@@ -356,34 +413,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
             subscriber.IsFlexibleWorkScheduleRequired = candidateEmploymentPreferenceDto.IsFlexibleWorkScheduleRequired;
             subscriber.IsWillingToTravel = candidateEmploymentPreferenceDto.IsWillingToTravel;
             subscriber.CommuteDistanceId = commuteDistance?.CommuteDistanceId;
-
-            var employmentTypeIds = employmentTypes.Select(et => et.EmploymentTypeId).ToList();
-
-            var newSubscriberEmploymentTypes = new List<SubscriberEmploymentTypes>();
-            if (employmentTypes != null && employmentTypes.Count > 0)
-            {
-                if (subscriber.SubscriberEmploymentTypes.Count != employmentTypeIds.Count ||
-                   subscriber.SubscriberEmploymentTypes.Any(set => !employmentTypeIds.Contains(set.EmploymentTypeId)))
-                {
-                    foreach (var et in employmentTypes)
-                    {
-                        newSubscriberEmploymentTypes.Add(new SubscriberEmploymentTypes
-                        {
-                            SubscriberEmploymentTypesGuid = Guid.NewGuid(),
-                            SubscriberId = subscriber.SubscriberId,
-                            EmploymentTypeId = et.EmploymentTypeId
-                        });
-
-                    }
-
-                    subscriber.SubscriberEmploymentTypes = newSubscriberEmploymentTypes;
-                }
-
-            }
-            else
-            {
-                subscriber.SubscriberEmploymentTypes = null;
-            }
 
             await _dbContext.SaveChangesAsync();
         }

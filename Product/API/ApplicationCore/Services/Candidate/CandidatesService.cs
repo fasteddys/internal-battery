@@ -116,6 +116,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
         public async Task<CandidateEmploymentPreferenceDto> GetCandidateEmploymentPreference(Guid subscriberGuid)
         {
+            //for test
+            subscriberGuid = Guid.Parse("29BB7329-22CB-4057-B428-6F5BF45564C5");
             _logger.LogInformation($"CandidatesService:GetCandidateEmploymentPreference begin.");
 
             if (subscriberGuid == Guid.Empty) throw new FailedValidationException($"CandidatesService:GetCandidateEmploymentPreference subscriber guid cannot be empty({subscriberGuid})");
@@ -143,6 +145,9 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
         public async Task UpdateCandidateEmploymentPreference(Guid subscriberGuid, CandidateEmploymentPreferenceDto candidateEmploymentPreferenceDto)
         {
+            //for test
+            subscriberGuid = Guid.Parse("29BB7329-22CB-4057-B428-6F5BF45564C5");
+
             _logger.LogInformation($"CandidatesService:UpdateCandidateEmploymentPreference begin.");
 
             if (subscriberGuid == Guid.Empty)
