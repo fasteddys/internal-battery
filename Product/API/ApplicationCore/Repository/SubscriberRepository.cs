@@ -1,13 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
+using UpDiddyLib.Domain.Models;
+using UpDiddyLib.Domain.Models.Candidate360;
 using UpDiddyLib.Dto;
-using Microsoft.EntityFrameworkCore.Extensions;
- 
+using SkillDto = UpDiddyLib.Domain.Models.SkillDto;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -33,9 +36,54 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return GetAll();
         }
 
+        public async Task<List<SubscriberTraining>> GetCandidateTrainingHistory(Guid subscriberGuid, int limit, int offset, string sort, string order)
+        {
+            var subscriberTrainingQuery = _dbContext.SubscriberTraining
+                .Where(st => st.IsDeleted == 0 && st.Subscriber.IsDeleted == 0 && st.Subscriber.SubscriberGuid == subscriberGuid)
+                .Include(st => st.Subscriber)
+                .Include(st => st.TrainingType)
+                .Skip(limit * offset)
+                .Take(limit);
+
+            //sorting            
+            if (order.ToLower() == "descending")
+            {
+                switch (sort.ToLower())
+                {
+                    case "createdate":
+                        subscriberTrainingQuery = subscriberTrainingQuery.OrderByDescending(s => s.CreateDate);
+                        break;
+                    case "modifydate":
+                        subscriberTrainingQuery = subscriberTrainingQuery.OrderByDescending(s => s.ModifyDate);
+                        break;
+                    default:
+                        subscriberTrainingQuery = subscriberTrainingQuery.OrderByDescending(s => s.ModifyDate);
+                        break;
+                }
+            }
+            else
+            {
+                switch (sort.ToLower())
+                {
+                    case "createdate":
+                        subscriberTrainingQuery = subscriberTrainingQuery.OrderBy(s => s.CreateDate);
+                        break;
+                    case "modifydate":
+                        subscriberTrainingQuery = subscriberTrainingQuery.OrderBy(s => s.ModifyDate);
+                        break;
+                    default:
+                        subscriberTrainingQuery = subscriberTrainingQuery.OrderBy(s => s.ModifyDate);
+                        break;
+                }
+            }
+
+            return await subscriberTrainingQuery.ToListAsync();
+
+        }
+
         public async Task<Subscriber> GetSubscriberByEmailAsync(string email)
         {
-            var subscriberResult =  await _dbContext.Subscriber
+            var subscriberResult = await _dbContext.Subscriber
                               .Where(s => s.IsDeleted == 0 && s.Email == email)
                               .FirstOrDefaultAsync();
 
@@ -54,7 +102,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public Subscriber GetSubscriberByEmail(string email)
         {
-            var subscriberResult =  _dbContext.Subscriber
+            var subscriberResult = _dbContext.Subscriber
                               .Where(s => s.IsDeleted == 0 && s.Email == email)
                               .FirstOrDefault();
 
@@ -64,9 +112,19 @@ namespace UpDiddyApi.ApplicationCore.Repository
         public async Task<Subscriber> GetSubscriberByGuidAsync(Guid subscriberGuid)
         {
 
-   
+
             var subscriberResult = await _dbContext.Subscriber
                               .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                              .FirstOrDefaultAsync();
+
+            return subscriberResult;
+        }
+
+        public async Task<Subscriber> GetSubscriberPersonalInfoByGuidAsync(Guid subscriberGuid)
+        {
+            var subscriberResult = await _dbContext.Subscriber
+                              .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                              .Include(s => s.State)
                               .FirstOrDefaultAsync();
 
             return subscriberResult;
@@ -76,16 +134,26 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             return await _dbContext.Subscriber
               .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
-              .Include( s => s.State)
-              .FirstOrDefaultAsync(); 
+              .Include(s => s.State)
+              .FirstOrDefaultAsync();
         }
 
+        public async Task<List<SubscriberEmploymentTypes>> GetCandidateEmploymentPreferencesBySubscriberGuidAsync(Guid subscriberGuid)
+        {
+            var subscriberEmploymentTypes = await _dbContext.SubscriberEmploymentTypes
+                              .Where(s => s.Subscriber.IsDeleted == 0 && s.Subscriber.SubscriberGuid == subscriberGuid)
+                              .Include(s => s.EmploymentType)
+                              .Include(s => s.Subscriber.CommuteDistance)
+                              .ToListAsync();
+
+            return subscriberEmploymentTypes;
+        }
 
         public Subscriber GetSubscriberByGuid(Guid subscriberGuid)
         {
 
 
-            var subscriberResult =  _dbContext.Subscriber
+            var subscriberResult = _dbContext.Subscriber
                               .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
                               .FirstOrDefault();
 
@@ -98,8 +166,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             var subscriberGroups = _subscriberGroupRepository.GetAll()
                 .Where(s => s.SubscriberId == subscriberId);
-            
-            var groupPartners = _groupPartnerRepository.GetAll();                
+
+            var groupPartners = _groupPartnerRepository.GetAll();
             var partners = _partnerRepository.GetAll();
 
             return await subscriberGroups
@@ -120,10 +188,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     PartnerType = partner.PartnerType,
                     PartnerTypeId = partner.PartnerTypeId,
                     Referrers = partner.Referrers,
-                    WebRedirect = partner.WebRedirect                    
+                    WebRedirect = partner.WebRedirect
                 })
                 .ToListAsync<Partner>();
-        
+
         }
 
         public async Task<int> GetSubscribersCountByStartEndDates(DateTime? startDate = null, DateTime? endDate = null)
@@ -159,11 +227,337 @@ namespace UpDiddyApi.ApplicationCore.Repository
             await UpdateHubSpotDetails(subscriber, hubSpotVid);
         }
 
+        public async Task<RolePreferenceDto> GetRolePreference(Guid subscriberGuid)
+        {
+            var subscriber = await _dbContext.Subscriber
+                .Include(s => s.SubscriberSkills)
+                    .ThenInclude(ss => ss.Skill)
+                .Include(s => s.SubscriberLinks)
+                .FirstOrDefaultAsync(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid);
+
+            if (subscriber == null) { return null; }
+
+            var rolePreference = new RolePreferenceDto
+            {
+                JobTitle = subscriber.Title ?? string.Empty,
+                DreamJob = subscriber.DreamJob ?? string.Empty,
+                WhatSetsMeApart = subscriber.CurrentRoleProficiencies ?? string.Empty,
+                WhatKindOfLeader = subscriber.PreferredLeaderStyle ?? string.Empty,
+                WhatKindOfTeam = subscriber.PreferredTeamType ?? string.Empty,
+                VolunteerOrPassionProjects = subscriber.PassionProjectsDescription ?? string.Empty,
+                SkillGuids = subscriber.SubscriberSkills
+                    .Where(ss => ss.IsDeleted == 0 && ss.Skill.SkillGuid.HasValue)
+                    .Select(ss => ss.Skill.SkillGuid.Value)
+                    .ToList(),
+                SocialLinks = subscriber.SubscriberLinks
+                    .Where(sl => sl.IsDeleted == 0)
+                    .Select(sl => new SocialLinksDto
+                    {
+                        FriendlyName = sl.Label,
+                        Url = sl.Url
+                    })
+                    .ToList(),
+                ElevatorPitch = subscriber.CoverLetter ?? string.Empty
+            };
+
+            return rolePreference;
+        }
+
+        public async Task UpdateRolePreference(Guid subscriberGuid, RolePreferenceDto rolePreference)
+        {
+            if (rolePreference == null) { throw new ArgumentNullException(nameof(rolePreference)); }
+
+            var subscriber = await _dbContext.Subscriber
+                .Include(s => s.SubscriberSkills)
+                    .ThenInclude(ss => ss.Skill)
+                .Include(s => s.SubscriberLinks)
+                .FirstOrDefaultAsync(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid);
+
+            if (subscriber == null) { return; }
+
+            var transaction = await _dbContext.Database.BeginTransactionAsync();
+            try
+            {
+                subscriber.Title = rolePreference.JobTitle;
+                subscriber.CurrentRoleProficiencies = rolePreference.DreamJob;
+                subscriber.DreamJob = rolePreference.WhatSetsMeApart;
+                subscriber.PreferredLeaderStyle = rolePreference.WhatKindOfLeader;
+                subscriber.PreferredTeamType = rolePreference.WhatKindOfTeam;
+                subscriber.PassionProjectsDescription = rolePreference.VolunteerOrPassionProjects;
+                subscriber.CoverLetter = rolePreference.ElevatorPitch;
+
+                foreach (var linkToUpdate in subscriber.SubscriberLinks)
+                {
+                    var link = rolePreference.SocialLinks
+                        .FirstOrDefault(l => l.FriendlyName == linkToUpdate.Label);
+                    if (link != null) { linkToUpdate.Url = link.Url; }
+                }
+
+                var linksToDelete = subscriber.SubscriberLinks
+                    .Where(link => link.IsDeleted == 0 && !rolePreference.SocialLinks.Any(sl => sl.FriendlyName == link.Label));
+
+                foreach (var linkToDelete in linksToDelete) { linkToDelete.IsDeleted = 1; }
+
+                var linksToAdd = rolePreference.SocialLinks
+                    .Where(link => !subscriber.SubscriberLinks.Any(sl => sl.IsDeleted == 0 && sl.Label == link.FriendlyName))
+                    .Select(link => new SubscriberLink
+                    {
+                        CreateDate = DateTime.UtcNow,
+                        CreateGuid = Guid.NewGuid(),
+                        SubscriberLinkGuid = Guid.NewGuid(),
+                        SubscriberId = subscriber.SubscriberId,
+                        IsDeleted = 0,
+                        Label = link.FriendlyName,
+                        Url = link.Url
+                    })
+                    .ToList();
+
+                if (linksToAdd.Any())
+                {
+                    await _dbContext.SubscriberLinks.AddRangeAsync(linksToAdd);
+                }
+
+                await _dbContext.SaveChangesAsync();
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                throw;
+            }
+            finally { transaction.Dispose(); }
+        }
+
         private async Task UpdateHubSpotDetails(Subscriber subscriber, long hubSpotVid)
         {
             subscriber.HubSpotVid = hubSpotVid;
             subscriber.HubSpotModifyDate = DateTime.UtcNow;
             await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task UpdateCandidateEmploymentPreferencesBySubscriberGuidAsync(Guid subscriberGuid, CandidateEmploymentPreferenceDto candidateEmploymentPreferenceDto)
+        {
+            var subscriber = _dbContext.Subscriber
+                              .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                              .Include(s => s.SubscriberEmploymentTypes)
+                              .Include(s => s.CommuteDistance)
+                              .FirstOrDefault();
+
+            var employmentTypes = _dbContext.EmploymentType
+                .Where(et => candidateEmploymentPreferenceDto.EmploymentTypeGuids != null &&
+                            candidateEmploymentPreferenceDto.EmploymentTypeGuids.Count > 0 &&
+                            candidateEmploymentPreferenceDto.EmploymentTypeGuids.Contains(et.EmploymentTypeGuid))
+                .ToList();
+
+            var commuteDistance = _dbContext.CommuteDistance
+                .FirstOrDefault(cd => candidateEmploymentPreferenceDto.CommuteDistanceGuid.HasValue &&
+                                      cd.CommuteDistanceGuid == candidateEmploymentPreferenceDto.CommuteDistanceGuid);
+
+            subscriber.IsFlexibleWorkScheduleRequired = candidateEmploymentPreferenceDto.IsFlexibleWorkScheduleRequired;
+            subscriber.IsWillingToTravel = candidateEmploymentPreferenceDto.IsWillingToTravel;
+            subscriber.CommuteDistanceId = commuteDistance?.CommuteDistanceId;
+
+            var employmentTypeIds = employmentTypes.Select(et => et.EmploymentTypeId).ToList();
+
+            var newSubscriberEmploymentTypes = new List<SubscriberEmploymentTypes>();
+            if (employmentTypes != null && employmentTypes.Count > 0)
+            {
+                if (subscriber.SubscriberEmploymentTypes.Count != employmentTypeIds.Count ||
+                   subscriber.SubscriberEmploymentTypes.Any(set => !employmentTypeIds.Contains(set.EmploymentTypeId)))
+                {
+                    foreach (var et in employmentTypes)
+                    {
+                        newSubscriberEmploymentTypes.Add(new SubscriberEmploymentTypes
+                        {
+                            SubscriberEmploymentTypesGuid = Guid.NewGuid(),
+                            SubscriberId = subscriber.SubscriberId,
+                            EmploymentTypeId = et.EmploymentTypeId
+                        });
+
+                    }
+
+                    subscriber.SubscriberEmploymentTypes = newSubscriberEmploymentTypes;
+                }
+
+            }
+            else
+            {
+                subscriber.SubscriberEmploymentTypes = null;
+            }
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task UpdateSubscriberPersonalInfo(Guid subscriberGuid, State subscriberState, CandidatePersonalInfoDto candidatePersonalInfoDto)
+        {
+            var subscriber = await _dbContext.Subscriber
+                              .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                              .FirstOrDefaultAsync();
+
+            subscriber.FirstName = candidatePersonalInfoDto?.FirstName;
+            subscriber.LastName = candidatePersonalInfoDto?.LastName;
+            subscriber.PhoneNumber = candidatePersonalInfoDto?.MobilePhone;
+            subscriber.Address = candidatePersonalInfoDto?.StreetAddress;
+            subscriber.City = candidatePersonalInfoDto?.City;
+            subscriber.StateId = subscriberState?.StateId;
+            subscriber.PostalCode = candidatePersonalInfoDto?.Postal;
+            subscriber.ModifyDate = DateTime.UtcNow;
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<List<Language>> GetLanguages()
+            => await _dbContext.Languages
+                .Where(l => l.IsDeleted == 0)
+                .OrderBy(l => l.LanguageName)
+                .ToListAsync();
+
+        public async Task<List<ProficiencyLevel>> GetProficiencyLevels()
+            => await _dbContext.ProficiencyLevels
+                .Where(pl => pl.IsDeleted == 0)
+                .OrderBy(pl => pl.Sequence)
+                .ToListAsync();
+
+        public async Task<List<SubscriberLanguageProficiency>> GetSubscriberLanguageProficiencies(Guid subscriberGuid)
+            => await _dbContext.SubscriberLanguageProficiencies
+                .Include(slp => slp.Subscriber)
+                .Include(slp => slp.Language)
+                .Include(slp => slp.ProficiencyLevel)
+                .Where(slp =>
+                    slp.Subscriber.IsDeleted == 0 &&
+                    slp.Subscriber.SubscriberGuid == subscriberGuid &&
+                    slp.IsDeleted == 0
+                )
+                .ToListAsync();
+
+        public async Task<Guid> CreateSubscriberLanguageProficiency(LanguageProficiencyDto languageProficiencyDto, Guid subscriberGuid)
+        {
+            if (languageProficiencyDto == null) { throw new ArgumentNullException(nameof(languageProficiencyDto)); }
+
+            var existingLanguageProficiency = await _dbContext.SubscriberLanguageProficiencies
+                .Include(slp => slp.Subscriber)
+                .Include(slp => slp.Language)
+                .Where(slp =>
+                    slp.Subscriber.SubscriberGuid == subscriberGuid &&
+                    slp.Language.LanguageGuid == languageProficiencyDto.LanguageGuid)
+                .SingleOrDefaultAsync();
+
+            if (existingLanguageProficiency?.IsDeleted == 0)
+            {
+                throw new AlreadyExistsException("This language entry already exists");
+            }
+            else if (existingLanguageProficiency?.IsDeleted == 1)
+            {
+                var proficiencyLevel = await _dbContext.ProficiencyLevels
+                    .SingleOrDefaultAsync(pl => pl.IsDeleted == 0 && pl.ProficiencyLevelGuid == languageProficiencyDto.ProficiencyLevelGuid);
+                if (proficiencyLevel == null) { throw new NotFoundException("Couldn't find the ProficiencyLevel"); }
+
+                existingLanguageProficiency.IsDeleted = 0;
+                existingLanguageProficiency.ProficiencyLevel = proficiencyLevel;
+                existingLanguageProficiency.ModifyDate = DateTime.UtcNow;
+                existingLanguageProficiency.ModifyGuid = Guid.NewGuid();
+            }
+            else
+            {
+                var subscriber = await _dbContext.Subscriber
+                    .SingleOrDefaultAsync(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid);
+
+                var language = await _dbContext.Languages
+                    .SingleOrDefaultAsync(l => l.IsDeleted == 0 && l.LanguageGuid == languageProficiencyDto.LanguageGuid);
+                if (language == null) { throw new NotFoundException("Couldn't find the language"); }
+
+                var proficiencyLevel = await _dbContext.ProficiencyLevels
+                    .SingleOrDefaultAsync(pl => pl.IsDeleted == 0 && pl.ProficiencyLevelGuid == languageProficiencyDto.ProficiencyLevelGuid);
+                if (proficiencyLevel == null) { throw new NotFoundException("Couldn't find the proficiency level"); }
+
+                existingLanguageProficiency = new SubscriberLanguageProficiency
+                {
+                    IsDeleted = 0,
+                    CreateDate = DateTime.UtcNow,
+                    CreateGuid = Guid.NewGuid(),
+                    SubscriberLanguageProficiencyGuid = Guid.NewGuid(),
+                    Subscriber = subscriber,
+                    Language = language,
+                    ProficiencyLevel = proficiencyLevel
+                };
+
+                await _dbContext.SubscriberLanguageProficiencies
+                    .AddAsync(existingLanguageProficiency);
+            }
+
+            await _dbContext.SaveChangesAsync();
+            return existingLanguageProficiency.SubscriberLanguageProficiencyGuid;
+        }
+
+        public async Task UpdateSubscriberLanguageProficiency(LanguageProficiencyDto languageProficiencyDto, Guid subscriberGuid)
+        {
+            if (languageProficiencyDto == null) { throw new ArgumentNullException(nameof(languageProficiencyDto)); }
+
+            var languageProficiencies = await GetSubscriberLanguageProficiencies(subscriberGuid);
+            var existingLanguageProficiency = languageProficiencies
+                .SingleOrDefault(slp => slp.SubscriberLanguageProficiencyGuid == languageProficiencyDto.LanguageProficiencyGuid);
+
+            if (existingLanguageProficiency == null) { throw new NotFoundException("Couldn't find an existing language proficiency entry"); }
+
+            if (languageProficiencyDto.LanguageGuid != existingLanguageProficiency.Language.LanguageGuid)
+            {
+                if (languageProficiencies.Any(slp => slp.Language.LanguageGuid == languageProficiencyDto.LanguageGuid))
+                {
+                    throw new AlreadyExistsException("Please select a different language");
+                }
+
+                var language = await _dbContext.Languages
+                    .SingleOrDefaultAsync(l => l.IsDeleted == 0 && l.LanguageGuid == languageProficiencyDto.LanguageGuid);
+                if (language == null) { throw new NotFoundException("Couldn't find the language"); }
+                existingLanguageProficiency.Language = language;
+            }
+
+            if (languageProficiencyDto.ProficiencyLevelGuid != existingLanguageProficiency.ProficiencyLevel.ProficiencyLevelGuid)
+            {
+                var proficiencyLevel = await _dbContext.ProficiencyLevels
+                    .SingleOrDefaultAsync(pl => pl.IsDeleted == 0 && pl.ProficiencyLevelGuid == languageProficiencyDto.ProficiencyLevelGuid);
+                if (proficiencyLevel == null) { throw new NotFoundException("Couldn't find the proficiency level"); }
+
+                existingLanguageProficiency.ProficiencyLevel = proficiencyLevel;
+            }
+            existingLanguageProficiency.ModifyDate = DateTime.UtcNow;
+            existingLanguageProficiency.ModifyGuid = Guid.NewGuid();
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task DeleteSubscriberLanguageProficiency(Guid languageProficiencyGuid, Guid subscriberGuid)
+        {
+            var existingLanguageProficiency = await _dbContext.SubscriberLanguageProficiencies
+                .Include(slp => slp.Subscriber)
+                .SingleOrDefaultAsync(slp =>
+                    slp.IsDeleted == 0 &&
+                    slp.Subscriber.SubscriberGuid == subscriberGuid &&
+                    slp.SubscriberLanguageProficiencyGuid == languageProficiencyGuid);
+            if (existingLanguageProficiency == null) { throw new NotFoundException("Couldn't find an existing language proficiency entry"); }
+
+            existingLanguageProficiency.IsDeleted = 1;
+            await _dbContext.SaveChangesAsync();
+        }
+        
+        public async Task<Guid?> UpdateEmailVerificationStatus(string email, bool isVerified)
+        {
+            Guid? subscriberGuid = null;
+
+            var subscriber = await _dbContext.Subscriber
+                .Where(s => s.IsDeleted == 0 && s.Email == email)
+                .FirstOrDefaultAsync();
+
+            if (subscriber != null)
+            {
+                subscriberGuid = subscriber.SubscriberGuid;
+                subscriber.IsVerified = isVerified;
+                subscriber.ModifyDate = DateTime.UtcNow;
+                subscriber.ModifyGuid = Guid.Empty;
+                await _dbContext.SaveChangesAsync();
+            }
+
+            return subscriberGuid;
         }
     }
 }

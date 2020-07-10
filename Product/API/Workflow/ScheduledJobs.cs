@@ -1780,21 +1780,18 @@ namespace UpDiddyApi.Workflow
 
         #region Cloud Talent Jobs 
 
-        [DisableConcurrentExecution(timeoutInSeconds: 30)]
         public async Task<bool> CloudTalentAddJob(Guid jobPostingGuid)
         {
             await _cloudTalentService.AddJobToCloudTalent(jobPostingGuid);
             return true;
         }
 
-        [DisableConcurrentExecution(timeoutInSeconds: 30)]
         public async Task<bool> CloudTalentUpdateJob(Guid jobPostingGuid)
         {
             await _cloudTalentService.UpdateJobToCloudTalent(jobPostingGuid);
             return true;
         }
 
-        [DisableConcurrentExecution(timeoutInSeconds: 30)]
         public async Task<bool> CloudTalentDeleteJob(Guid jobPostingGuid)
         {
             await _cloudTalentService.DeleteJobFromCloudTalent(jobPostingGuid);

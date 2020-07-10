@@ -146,7 +146,12 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         Task<SubscriberSearchResultDto> SearchSubscribersAsync(int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*");
 
-
-
+        /// <summary>
+        /// This is intended to be used in conjunction with Auth0 Authentication API webhooks (version 2.3). Right now we only need to take action on
+        /// email verification events, however we could easily expand on this to take action on any number of behaviors that occur within Auth0.
+        /// </summary>
+        /// <param name="payload">log export data from Auth0 in a batch format</param>
+        /// <returns></returns>
+        Task ParseAuth0Logs(dynamic payload);
     }
 }

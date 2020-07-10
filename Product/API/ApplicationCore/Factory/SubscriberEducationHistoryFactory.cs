@@ -35,6 +35,11 @@ namespace UpDiddyApi.ApplicationCore.Factory
             {
                 StartDate = educationkHistory.StartDate,
                 EndDate = educationkHistory.EndDate,
+                RelevantYear = (short?)GetMaxYear(new List<DateTime> {
+                                       educationkHistory.StartDate ?? DateTime.MinValue,
+                                       educationkHistory.EndDate ?? DateTime.MinValue,
+                                       educationkHistory.DegreeDate ?? DateTime.MinValue
+                }),
                 SubscriberId = subscriber.SubscriberId,
                 CreateDate = DateTime.UtcNow,
                 CreateGuid = Guid.Empty,
@@ -52,5 +57,17 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             return rVal;
         }
+
+    #region private methods
+    private static int? GetMaxYear(List<DateTime> dateTimes)
+    {
+        var filteredDateTimes = dateTimes
+              .Where(d => d != DateTime.MinValue && d != DateTime.MaxValue)
+              .Select(d => d.Year)
+              .ToList();
+
+        return (filteredDateTimes != null && filteredDateTimes.Count > 0 ? filteredDateTimes.Max() : (int?)null);
     }
+    #endregion
+}
 }

@@ -15,6 +15,7 @@ using UpDiddyLib.Domain.Models.G2;
 using UpDiddyApi.Models.B2B;
 using UpDiddyLib.Domain.Models.B2B;
 using UpDiddyApi.Models.CrossChq;
+using System.Linq;
 
 namespace UpDiddyApi.Models
 {
@@ -219,9 +220,18 @@ namespace UpDiddyApi.Models
         public DbSet<ReferenceCheckVendor> ReferenceCheckVendor { get; set; }
         public DbSet<ReferenceCheck> ReferenceCheck { get; set; }
         public DbSet<ReferenceCheckReport> ReferenceCheckReport { get; set; }
+        public DbSet<SubscriberEmploymentTypes> SubscriberEmploymentTypes { get; set; }
+        public DbSet<CommuteDistance> CommuteDistance { get; set; }
+        public DbSet<SubscriberLink> SubscriberLinks { get; set; }
+        public DbSet<EducationalDegreeTypeCategory> EducationalDegreeTypeCategory { get; set; }
+        public DbSet<TrainingType> TrainingType { get; set; }
+        public DbSet<SubscriberTraining> SubscriberTraining { get; set; }
 
+        public DbSet<Language> Languages { get; set; }
 
+        public DbSet<ProficiencyLevel> ProficiencyLevels { get; set; }
 
+        public DbSet<SubscriberLanguageProficiency> SubscriberLanguageProficiencies { get; set; }
         #endregion
 
         #region DBQueries
@@ -293,6 +303,7 @@ namespace UpDiddyApi.Models
         public DbQuery<EmailTemplateDto> EmailTemplates { get; set; }
         public DbQuery<PipelineProfileDto> PipelineProfiles { get; set; }
         public DbQuery<PipelineDto> Pipelines { get; set; }
+
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -607,6 +618,10 @@ namespace UpDiddyApi.Models
                 .HasIndex(u => u.SkillName)
                 .IsUnique();
 
+            modelBuilder.Entity<Skill>()
+                .Property(s => s.IsVerified)
+                .HasDefaultValue(true);
+
             modelBuilder.Entity<SubscriberSkill>()
                 .HasKey(ss => new { ss.SkillId, ss.SubscriberId });
 
@@ -680,6 +695,11 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<Subscriber>()
                 .Property(s => s.PostalGuid).HasComputedColumnSql("[dbo].[fn_GetPostalGuidForSubscriber]([PostalCode], [City], [StateId])");
 
+            modelBuilder.Entity<SubscriberLink>()
+                .HasOne(sl => sl.Subscriber)
+                .WithMany(s => s.SubscriberLinks)
+                .HasForeignKey(sl => sl.SubscriberId);
+
             modelBuilder.Entity<NotificationGroup>()
                .HasIndex(p => new { p.NotificationGroupId, p.GroupId })
                .HasName("UIX_NotificationGroup_Group")
@@ -708,7 +728,26 @@ namespace UpDiddyApi.Models
                 .HasIndex(i => i.ReferenceCheckGuid)
                 .HasName("UIX_ReferenceCheck_ReferenceCheckGuid")
                 .IsUnique(true);
+
+            modelBuilder.Entity<SubscriberEmploymentTypes>()
+                .HasIndex(set => new { set.SubscriberId, set.EmploymentTypeId })
+                .HasName("UIX_SubscriberEmploymentTypes_Subscriber_EmploymentType")
+                .IsUnique(true);
+
+            modelBuilder.Entity<SubscriberLanguageProficiency>(builder =>
+            {
+                builder.HasOne(slp => slp.Subscriber)
+                    .WithMany(s => s.SubscriberLanguageProficiencies)
+                    .HasForeignKey(slp => slp.SubscriberId);
+
+                builder.HasOne(slp => slp.Language)
+                    .WithMany(l => l.SubscriberLanguageProficiencies)
+                    .HasForeignKey(slp => slp.LanguageId);
+
+                builder.HasOne(slp => slp.ProficiencyLevel)
+                    .WithMany(pl => pl.SubscriberLanguageProficiencies)
+                    .HasForeignKey(slp => slp.ProficiencyLevelId);
+            });
         }
     }
 }
-

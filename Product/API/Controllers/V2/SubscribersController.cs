@@ -1,19 +1,20 @@
-﻿using System.Net;
-using System;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Net;
+using System.Threading.Tasks;
+using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager;
 using UpDiddyApi.Authorization;
+using UpDiddyApi.Models;
+using UpDiddyLib.Domain.AzureSearch;
+using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Dto.User;
-using Microsoft.AspNetCore.Authorization;
-using UpDiddyApi.ApplicationCore.Interfaces;
-using UpDiddyLib.Domain.AzureSearchDocuments;
-using UpDiddyLib.Domain.AzureSearch;
-using UpDiddyApi.Models;
-using UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager;
 
 namespace UpDiddyApi.Controllers.V2
 {
@@ -31,6 +32,15 @@ namespace UpDiddyApi.Controllers.V2
             _subscriberService = services.GetService<ISubscriberService>();
             _azureSearchService = services.GetService<IAzureSearchService>();
             _hiringManagerService = services.GetService<IHiringManagerService>();
+        }
+
+        [HttpPost]
+        [MiddlewareFilter(typeof(AuthenticationApiExtensionAuthorizationPipeline))]
+        [Route("parse-auth0-logs")]
+        public async Task<IActionResult> ParseAuth0Logs([FromBody] dynamic payload)
+        {
+            await _subscriberService.ParseAuth0Logs(payload);
+            return StatusCode(200);
         }
 
         [HttpPost]
@@ -77,7 +87,6 @@ namespace UpDiddyApi.Controllers.V2
             return StatusCode(204);
         }
 
-
         [HttpGet]
         [Authorize(Policy = "IsRecruiterPolicy")]
         [Route("query")]
@@ -95,10 +104,5 @@ namespace UpDiddyApi.Controllers.V2
             var rVal = await _hiringManagerService.AddHiringManager(GetSubscriberGuid(), true);
             return Ok(rVal);
         }
-
-
-
-
-
     }
 }

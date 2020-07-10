@@ -42,5 +42,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return await _dbContext.Country.Where(x => x.IsDeleted == 0).ToListAsync();
         }
 
+
+        public async Task<Country> GetCountryByCode3(String countryCode3)
+        {
+            return await _dbContext.Country.Where(x => x.IsDeleted == 0 && x.Code3 == countryCode3.Trim()).FirstOrDefaultAsync();
+
+        }
     }
 }

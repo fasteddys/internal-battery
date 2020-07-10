@@ -152,7 +152,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 HubSpotContactDto contact = new HubSpotContactDto()
                 {
-                    SubscriberGuid = subscriberGuid,
+                    SubscriberGuid = subscriber.IsVerified ? (Guid?)subscriberGuid : null,
                     FirstName = subscriber.FirstName,
                     LastName = subscriber.LastName,
                     Email = subscriber.Email,
@@ -287,6 +287,16 @@ namespace UpDiddyApi.ApplicationCore.Services
                 };
                 rVal.properties.Add(p);
             }
+            else
+            {
+                // this is being done in order to allow us to null out a property value: https://community.hubspot.com/t5/APIs-Integrations/How-to-unset-a-property/td-p/226613
+                p = new HubSpotProperty()
+                {
+                    property = "lastresumeuploaddate",
+                    value = ""
+                };
+                rVal.properties.Add(p);
+            }
 
             if (string.IsNullOrEmpty(hubSpotContactDto.SelfCuratedSkills) == false)
             {
@@ -351,7 +361,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     value = hubSpotContactDto.HiringManagerCompanySize
                 };
                 rVal.properties.Add(p);
-                
+
                 p = new HubSpotProperty()
                 {
                     property = "industry",

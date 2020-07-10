@@ -900,9 +900,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             try
             {
                 bool requiresMerge = false;
-                List<SubscriberEducationHistoryDto> parsedEducationHistory = Utils.ParseEducationHistoryFromHrXml(resume);
+                List<UpDiddyLib.Dto.SubscriberEducationHistoryDto> parsedEducationHistory = Utils.ParseEducationHistoryFromHrXml(resume);
                 IList<SubscriberEducationHistory> educationHistory = await SubscriberFactory.GetSubscriberEducationHistoryById(_repository, subscriber.SubscriberId);
-                foreach (SubscriberEducationHistoryDto eh in parsedEducationHistory)
+                foreach (UpDiddyLib.Dto.SubscriberEducationHistoryDto eh in parsedEducationHistory)
                 {
                     string parsedInstitutionName = eh.EducationalInstitution.ToLower();
                     string parsedEducationalDegree = eh.EducationalDegree.ToLower();
@@ -943,7 +943,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         }
 
-        private async Task<bool> MergeEducationalHistories(ResumeParse resumeParse, SubscriberEducationHistory educationHistory, SubscriberEducationHistoryDto parsedEducationHistory)
+        private async Task<bool> MergeEducationalHistories(ResumeParse resumeParse, SubscriberEducationHistory educationHistory, UpDiddyLib.Dto.SubscriberEducationHistoryDto parsedEducationHistory)
         {
             bool requiresMerge = false;
             if (parsedEducationHistory.StartDate != null && parsedEducationHistory.StartDate != DateTime.MinValue)
@@ -1524,7 +1524,31 @@ namespace UpDiddyApi.ApplicationCore.Services
             return searchResults;
         }
 
+        public async Task ParseAuth0Logs(dynamic payload)
+        {
+            try
+            {
+                foreach (var item in payload)
+                {
+                    var type = ((JObject)item).SelectToken("type").Value<string>();
+                    var email = ((JObject)item).SelectToken("details.email").Value<string>();
 
-
+                    // sv indicates a successful email verification event (https://auth0.com/docs/logs/references/log-event-type-codes)
+                    if (type == "sv")
+                    {
+                        var subscriberGuid = await _repository.SubscriberRepository.UpdateEmailVerificationStatus(email, true);
+                        if (subscriberGuid.HasValue)
+                        {
+                            // update the contact in HubSpot to reflect that the email has been verified (subscriberGuid not empty)
+                            await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid.Value);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"SubscriberService.ParseAuth0Logs encountered an error: '{e.Message}'.", e);
+            }
+        }
     }
 }

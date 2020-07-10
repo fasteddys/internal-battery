@@ -10,5 +10,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<IEnumerable<Country>> GetAllCountriesAsync();
         Task<Country> GetbyCountryGuid(Guid countryGuid);
         Task<List<Country>> GetAllCountries();
+        Task<Country> GetCountryByCode3(String countryCode3);
     }
 }

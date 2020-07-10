@@ -12,5 +12,6 @@ namespace UpDiddyApi.Models
         [Required]
         public string SkillName { get; set; }
         public Guid? SkillGuid { get; set; }
+        public bool? IsVerified { get; set; }
     }
 }

@@ -74,6 +74,22 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                 if (jobData == null)
                     throw new ApplicationException($"No job detail data discovered for the following job page uri: {jobPageUri.ToString()}");
 
+
+                
+                // remove unnecessary information from jobData before storing it
+                string[] requiredTokenNames = { "jobId", "title", "postedDate", "structureData", "recruiterName", "recruiterEmail", "recruiterPhone", "ml_skills" };
+                List<JToken> tokensToDelete = new List<JToken>();
+                foreach(JToken token in jobData.Children())
+                {
+                    string tokenName = ((JProperty)token).Name;
+                    if (!requiredTokenNames.Contains(tokenName))
+                        tokensToDelete.Add(token);
+                }
+                foreach(var token in tokensToDelete)
+                {
+                    token.Remove();
+                }
+
                 // check for an existing job page based on the RWS identifier
                 existingJobPage = existingJobPages.Where(jp => jp.UniqueIdentifier == jobData["jobId"].ToString()).FirstOrDefault();
                 if (existingJobPage != null)
@@ -286,27 +302,6 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     List<SkillDto> distinctSkillsDto = skillsDto.Distinct().ToList();
                     if (distinctSkillsDto.Count() > 0)
                         jobPostingDto.JobPostingSkills = distinctSkillsDto;
-                }
-                if (_employmentTypes != null)
-                {
-                    string rawEmploymentType = Helpers.ConvertJValueToString(jobData.structureData.employmentType);
-
-                    // todo: may need to revisit these values - not accounting for other values I have seen appear in the new phenom jobs: 'Direct Hire', 'Direct Placement', 'Contract-to-Hire' - those don't map to existing values - should we create new lookups?
-                    switch (rawEmploymentType)
-                    {
-                        case "Contract":
-                            jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Contractor").FirstOrDefault();
-                            break;
-                        case "Full-Time":
-                            jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Full-Time").FirstOrDefault();
-                            break;
-                        case "Part-Time":
-                            jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Part-Time").FirstOrDefault();
-                            break;
-                        default:
-                            jobPostingDto.EmploymentType = _employmentTypes.Where(et => et.Name == "Other").FirstOrDefault();
-                            break;
-                    }
                 }
 
                 return jobPostingDto;
