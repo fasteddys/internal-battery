@@ -452,21 +452,21 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpPost("admin/profiles/subscriber/{subscriberGuid}/forceVerification")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<ActionResult<UserStatsDto>> ForceVerification(Guid subscriberGuid)
+        public async Task<IActionResult> ForceVerification(Guid subscriberGuid)
         {
             throw new NotImplementedException();
         }
 
         [HttpPost("admin/profiles/subscriber/{subscriberGuid}/sendVerificationEmail")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<ActionResult<UserStatsDto>> SendVerificationEmail(Guid subscriberGuid)
+        public async Task<IActionResult> SendVerificationEmail(Guid subscriberGuid)
         {
             throw new NotImplementedException();
         }
 
         [HttpDelete("admin/profiles/subscriber/{subscriberGuid}/removeAccount")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<ActionResult<UserStatsDto>> RemoveAccount(Guid subscriberGuid)
+        public async Task<IActionResult> RemoveAccount(Guid subscriberGuid)
         {
             throw new NotImplementedException();
         }

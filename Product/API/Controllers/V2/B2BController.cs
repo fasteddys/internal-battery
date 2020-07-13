@@ -247,7 +247,7 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpDelete("admin/hiring-managers/{subscriberGuid}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<ActionResult<UserStatsListDto>> RemoveHiringManagerAccount(Guid subscriberGuid)
+        public async Task<IActionResult> RemoveHiringManagerAccount(Guid subscriberGuid)
         {
             throw new NotImplementedException();
         }
