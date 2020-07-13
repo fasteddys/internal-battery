@@ -16,7 +16,6 @@ using UpDiddyApi.Authorization;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.B2B;
 using UpDiddyLib.Dto;
-using UpDiddyLib.Dto.User;
 
 namespace UpDiddyApi.Controllers.V2
 {
@@ -28,7 +27,6 @@ namespace UpDiddyApi.Controllers.V2
         private readonly IInterviewRequestService _interviewRequestService;
         private readonly IG2Service _g2Service;
         private readonly ICareerTalentPipelineService _careerTalentPipelineService;
-        private readonly IAccountManagementService _accountManagementService;
 
         public B2BController(IServiceProvider services)
         {
@@ -37,7 +35,6 @@ namespace UpDiddyApi.Controllers.V2
             _interviewRequestService = services.GetService<IInterviewRequestService>();
             _g2Service = services.GetService<IG2Service>();
             _careerTalentPipelineService = services.GetService<ICareerTalentPipelineService>();
-            _accountManagementService = services.GetService<IAccountManagementService>();
         }
 
 
@@ -235,23 +232,5 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         #endregion
-
-        #region Admin
-
-        [HttpGet("admin/hiring-managers")]
-        [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<ActionResult<UserStatsListDto>> GetHiringManagerAccountList(int limit = 10, int offset = 0, string sort = "createDate", string order = "descending")
-        {
-            throw new NotImplementedException();
-        }
-
-        [HttpDelete("admin/hiring-managers/{subscriberGuid}")]
-        [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<IActionResult> RemoveHiringManagerAccount(Guid subscriberGuid)
-        {
-            throw new NotImplementedException();
-        }
-
-        #endregion Admin
     }
 }

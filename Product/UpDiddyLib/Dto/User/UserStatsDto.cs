@@ -6,20 +6,21 @@ namespace UpDiddyLib.Dto.User
     public class UserStatsDto
     {
         public Guid SubscriberGuid { get; set; }
-        
-        public bool IsAuth0Verified { get; set; }
+
+        public string Email { get; set; }
 
         public DateTime CreateDate { get; set; }
 
-        public DateTime LastKnownLogin { get; set; }
+        public string FirstName { get; set; }
 
-        public string PartnerSource { get; set; }
-    }
+        public string LastName { get; set; }
 
-    public class UserStatsListDto
-    {
-        public List<UserStatsDto> Users { get; set; } = new List<UserStatsDto>();
+        public DateTime LastSignIn { get; set; }
 
-        public int TotalRecords => Users?.Count ?? 0;
+        public string Auto0UserId { get; set; }
+
+        public bool IsHiringManager { get; set; }
+
+        public bool IsEmailVerified { get; set; }
     }
 }

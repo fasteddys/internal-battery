@@ -12,7 +12,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             throw new NotImplementedException();
         }
 
-        public async Task<UserStatsListDto> GetB2BUsersList(int limit, int offset, string sort, string order)
+        public async Task<bool> GetAuth0VerificationStatus(Guid subscriber)
         {
             throw new NotImplementedException();
         }

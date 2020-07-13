@@ -8,7 +8,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
     {
         Task<UserStatsDto> GetUserStatsByEmail(string email);
 
-        Task<UserStatsListDto> GetB2BUsersList(int limit, int offset, string sort, string order);
+        Task<bool> GetAuth0VerificationStatus(Guid subscriber);
 
         Task ForceVerification(Guid subscriberGuid);
 

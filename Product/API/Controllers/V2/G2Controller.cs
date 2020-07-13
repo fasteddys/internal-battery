@@ -33,7 +33,6 @@ namespace UpDiddyApi.Controllers.V2
         private readonly ISkillService _skillService;
         private readonly ITagService _tagService;
         private readonly IResumeService _resumeService;
-        private readonly IAccountManagementService _accountManagementService;
 
         public G2Controller(IServiceProvider services)
         {
@@ -46,7 +45,6 @@ namespace UpDiddyApi.Controllers.V2
             _skillService = services.GetService<ISkillService>();
             _tagService = services.GetService<ITagService>();
             _resumeService = services.GetService<IResumeService>();
-            _accountManagementService = services.GetService<IAccountManagementService>();
         }
  
         #region Recruiter Profile Operations
@@ -443,33 +441,6 @@ namespace UpDiddyApi.Controllers.V2
             return StatusCode(202);
         }
 
-        [HttpGet("admin/profiles/subscriber/{email}/stats")]
-        [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<ActionResult<UserStatsDto>> GetUserStatsByEmail(string email)
-        {
-            throw new NotImplementedException();
-        }
-
-        [HttpPost("admin/profiles/subscriber/{subscriberGuid}/forceVerification")]
-        [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<IActionResult> ForceVerification(Guid subscriberGuid)
-        {
-            throw new NotImplementedException();
-        }
-
-        [HttpPost("admin/profiles/subscriber/{subscriberGuid}/sendVerificationEmail")]
-        [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<IActionResult> SendVerificationEmail(Guid subscriberGuid)
-        {
-            throw new NotImplementedException();
-        }
-
-        [HttpDelete("admin/profiles/subscriber/{subscriberGuid}/removeAccount")]
-        [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<IActionResult> RemoveAccount(Guid subscriberGuid)
-        {
-            throw new NotImplementedException();
-        }
 
         #endregion
     }
