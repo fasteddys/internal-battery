@@ -16,6 +16,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<SubscriberSourceDto> GetSubscriberSource(int subscriberId);
         Task<List<SubscriberEmploymentTypes>> GetCandidateEmploymentPreferencesBySubscriberGuidAsync(Guid subscriberGuid);
         Task<Subscriber> GetSubscriberByGuidAsync(Guid subscriberGuid);
+        Task<Subscriber> GetSubscriberAccountDetailsByGuidAsync(Guid subscriberGuid);
         Task<Subscriber> GetSubscriberPersonalInfoByGuidAsync(Guid subscriberGuid);
         Subscriber GetSubscriberByGuid(Guid subscriberGuid);
         Task<Subscriber> GetSubscriberByEmailAsync(string email);

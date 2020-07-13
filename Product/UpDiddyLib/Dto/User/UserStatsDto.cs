@@ -17,7 +17,7 @@ namespace UpDiddyLib.Dto.User
 
         public DateTime LastSignIn { get; set; }
 
-        public string Auto0UserId { get; set; }
+        public string Auth0UserId { get; set; }
 
         public bool IsHiringManager { get; set; }
 
