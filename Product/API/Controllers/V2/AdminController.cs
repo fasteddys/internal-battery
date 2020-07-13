@@ -18,7 +18,7 @@ namespace UpDiddyApi.Controllers
             _accountManagementService = accountManagementService;
         }
 
-        [HttpGet("email/{email}")]
+        [HttpGet("subscriber/lookup-by-email/{email")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<ActionResult<UserStatsDto>> GetUserStatsByEmail(string email)
         {
