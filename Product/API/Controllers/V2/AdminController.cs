@@ -18,7 +18,7 @@ namespace UpDiddyApi.Controllers
             _accountManagementService = accountManagementService;
         }
 
-        [HttpGet("admin/email/{email}")]
+        [HttpGet("email/{email}")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<ActionResult<UserStatsDto>> GetUserStatsByEmail(string email)
         {
@@ -27,7 +27,7 @@ namespace UpDiddyApi.Controllers
             return userStats;
         }
 
-        [HttpGet("admin/subscriber/{subscriber}/auth0-verification-status")]
+        [HttpGet("subscriber/{subscriber}/auth0-verification-status")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<ActionResult<bool>> GetAuth0VerificationStatus(Guid subscriber)
         {
@@ -35,7 +35,7 @@ namespace UpDiddyApi.Controllers
             return isVerified;
         }
 
-        [HttpPost("admin/subscriber/{subscriber}/force-verification")]
+        [HttpPost("subscriber/{subscriber}/force-verification")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> ForceVerification(Guid subscriber)
         {
@@ -43,7 +43,7 @@ namespace UpDiddyApi.Controllers
             return NoContent();
         }
 
-        [HttpPost("admin/subscriber/{subscriber}/send-verification-email")]
+        [HttpPost("subscriber/{subscriber}/send-verification-email")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> SendVerificationEmail(Guid subscriber)
         {
@@ -51,7 +51,7 @@ namespace UpDiddyApi.Controllers
             return NoContent();
         }
 
-        [HttpDelete("admin/subscriber/{subscriber}/delete")]
+        [HttpDelete("subscriber/{subscriber}/delete")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> RemoveAccount(Guid subscriber)
         {
