@@ -111,10 +111,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<Subscriber> GetSubscriberByGuidAsync(Guid subscriberGuid)
         {
-
-
             var subscriberResult = await _dbContext.Subscriber
                               .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                              .FirstOrDefaultAsync();
+
+            return subscriberResult;
+        }
+
+        public async Task<Subscriber> GetSubscriberAccountDetailsByGuidAsync(Guid subscriberGuid)
+        {
+            var subscriberResult = await _dbContext.Subscriber
+                              .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                              .Include(s => s.EmailVerification)
                               .FirstOrDefaultAsync();
 
             return subscriberResult;
