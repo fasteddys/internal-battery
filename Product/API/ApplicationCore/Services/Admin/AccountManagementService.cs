@@ -33,10 +33,10 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
 
         public async Task<UserStatsDto> GetUserStatsByEmail(string email)
         {
-            _logger.LogInformation($"AccountManagementService:UpdateCandidateEmploymentPreference begin.");
+            _logger.LogInformation($"AccountManagementService:GetUserStatsByEmail begin.");
 
             if (String.IsNullOrWhiteSpace(email))
-                throw new FailedValidationException($"AccountManagementService:UpdateCandidateEmploymentPreference email cannot be null or empty.");
+                throw new FailedValidationException($"AccountManagementService:GetUserStatsByEmail email cannot be null or empty.");
             var Subscriber = await _subscriberService.GetSubscriberByEmail(email);
             if (Subscriber == null)
                 throw new NotFoundException($"Subscriber with email {email} does not exist exist");
@@ -45,20 +45,20 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             }
             catch (Exception ex)
             {
-                _logger.LogError($"AccountManagementService:UpdateCandidateEmploymentPreference  Error: {ex.ToString()} ");
+                _logger.LogError($"AccountManagementService:GetUserStatsByEmail  Error: {ex.ToString()} ");
                 throw ex;
             }
 
-            _logger.LogInformation($"AccountManagementService:UpdateCandidateEmploymentPreference end.");
+            _logger.LogInformation($"AccountManagementService:GetUserStatsByEmail end.");
             throw new NotImplementedException();
         }
 
         public async Task<bool> GetAuth0VerificationStatus(Guid subscriberGuid)
         {
-            _logger.LogInformation($"AccountManagementService:UpdateCandidateEmploymentPreference begin.");
+            _logger.LogInformation($"AccountManagementService:GetAuth0VerificationStatus begin.");
 
             if (subscriberGuid == Guid.Empty)
-                throw new FailedValidationException($"AccountManagementService:UpdateCandidateEmploymentPreference subscriber guid cannot be empty({subscriberGuid})");
+                throw new FailedValidationException($"AccountManagementService:GetAuth0VerificationStatus subscriber guid cannot be empty({subscriberGuid})");
             var Subscriber = await _subscriberService.GetSubscriberByGuid(subscriberGuid);
             if (Subscriber == null)
                 throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
@@ -67,11 +67,11 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             }
             catch (Exception ex)
             {
-                _logger.LogError($"AccountManagementService:UpdateCandidateEmploymentPreference  Error: {ex.ToString()} ");
+                _logger.LogError($"AccountManagementService:GetAuth0VerificationStatus  Error: {ex.ToString()} ");
                 throw ex;
             }
 
-            _logger.LogInformation($"AccountManagementService:UpdateCandidateEmploymentPreference end.");
+            _logger.LogInformation($"AccountManagementService:GetAuth0VerificationStatus end.");
             throw new NotImplementedException();
         }
 
