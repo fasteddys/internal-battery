@@ -20,7 +20,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
 
         private ILogger _logger { get; set; }
         private IRepositoryWrapper _repository { get; set; }
-        private IG2Service _g2Service;
+        private readonly IG2Service _g2Service;
+        private readonly IHubSpotService _hubSpotService;
         private readonly IMapper _mapper;
         private IUserService _userService { get;set; }
 
@@ -28,13 +29,15 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             ILogger<AccountManagementService> logger,
             IRepositoryWrapper repository,
             IG2Service g2Service,
-            IMapper mapper,
+            IHubSpotService hubSpotService,
+            IMapper mapper
             IUserService userService
             )
         {
             _logger = logger;
             _repository = repository;
             _g2Service = g2Service;
+            _hubSpotService = hubSpotService;
             _mapper = mapper;
             _userService = userService;
         }
@@ -107,12 +110,12 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             await DeleteG2Profile(subscriberGuid);
             await DeleteB2BProfile(subscriberGuid);
             await RemoveAzureIndex(subscriberGuid);
+            await RemoveHubSpotContact(subscriberGuid);
             await DeleteSubscriber(subscriberGuid);
 
             /* TODO:
-             * 1. HubSpot Remove contact
-             * 2. CloudTalent Remove Profile
-             * 3. Traitify remove account
+             * 1. CloudTalent Remove Profile
+             * 2. Traitify remove account
              */
 
             // Other TODOs before I forget:  Creating a new subscriber with same email:  test that it works!
@@ -151,5 +154,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
 
         private async Task RemoveAzureIndex(Guid subscriberGuid)
             => await _g2Service.G2IndexRemoveSubscriberAsync(subscriberGuid);
+
+        private async Task RemoveHubSpotContact(Guid subscriberGuid)
+            => await _hubSpotService.RemoveContactBySubscriberGuid(subscriberGuid);
     }
 }
