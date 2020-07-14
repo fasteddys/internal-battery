@@ -30,7 +30,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             IRepositoryWrapper repository,
             IG2Service g2Service,
             IHubSpotService hubSpotService,
-            IMapper mapper
+            IMapper mapper,
             IUserService userService
             )
         {
