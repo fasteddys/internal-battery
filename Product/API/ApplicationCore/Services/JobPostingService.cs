@@ -137,7 +137,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 this.OverridePostingAndExpirationDates(ref jobCrudDto);
                 createJobPostingResult = await _repositoryWrapper.StoredProcedureRepository.CreateJobPosting(jobCrudDto);
-
                 if (createJobPostingResult.Item1.HasValue && jobCrudDto.JobStatus == (int)JobPostingStatus.Active)
                     _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(createJobPostingResult.Item1.Value));
             }
