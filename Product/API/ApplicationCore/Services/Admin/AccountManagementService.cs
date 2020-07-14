@@ -19,16 +19,19 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
 
         private ILogger _logger { get; set; }
         private IRepositoryWrapper _repository { get; set; }
+        private IG2Service _g2Service;
         private readonly IMapper _mapper;
 
         public AccountManagementService(
             ILogger<AccountManagementService> logger,
             IRepositoryWrapper repository,
+            IG2Service g2Service,
             IMapper mapper
             )
         {
             _logger = logger;
             _repository = repository;
+            _g2Service = g2Service;
             _mapper = mapper;
         }
 
@@ -100,33 +103,21 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
         {
             await DeleteG2Profile(subscriberGuid);
             await DeleteB2BProfile(subscriberGuid);
+            await RemoveAzureIndex(subscriberGuid);
             await DeleteSubscriber(subscriberGuid);
 
             /* TODO:
-             * 1. Update Azure Index
-             * 2. HubSpot Remove contact
-             * 3. CloudTalent Remove Profile
-             * 4. Traitify remove account
+             * 1. HubSpot Remove contact
+             * 2. CloudTalent Remove Profile
+             * 3. Traitify remove account
              */
 
             // Other TODOs before I forget:  Creating a new subscriber with same email:  test that it works!
         }
 
         private async Task DeleteG2Profile(Guid subscriberGuid)
-        {
-            var g2 = await _repository.ProfileRepository.GetAllWithTracking()
-                .Include(profile => profile.Subscriber)
-                .SingleOrDefaultAsync(profile =>
-                    profile.IsDeleted == 0 &&
-                    profile.Subscriber.IsDeleted == 0 &&
-                    profile.Subscriber.SubscriberGuid == subscriberGuid);
-
-            if (g2 != null)
-            {
-                _repository.ProfileRepository.LogicalDelete(g2);
-                await _repository.ProfileRepository.SaveAsync();
-            }
-        }
+            => await _repository.StoredProcedureRepository
+                .DeleteSubscriberG2Profiles(subscriberGuid);
 
         private async Task DeleteB2BProfile(Guid subscriberGuid)
         {
@@ -151,8 +142,11 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             if (subscriber != null)
             {
                 _repository.SubscriberRepository.LogicalDelete(subscriber);
-                await _repository.SubscriberRepository.SaveAsync(); 
+                await _repository.SubscriberRepository.SaveAsync();
             }
         }
+
+        private async Task RemoveAzureIndex(Guid subscriberGuid)
+            => await _g2Service.G2IndexRemoveSubscriberAsync(subscriberGuid);
     }
 }
