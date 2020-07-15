@@ -24,6 +24,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
         private readonly IHubSpotService _hubSpotService;
         private readonly IMapper _mapper;
         private IUserService _userService { get;set; }
+        private IHangfireService _hangfireService { get; set; }
+
 
         public AccountManagementService(
             ILogger<AccountManagementService> logger,
@@ -31,7 +33,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             IG2Service g2Service,
             IHubSpotService hubSpotService,
             IMapper mapper,
-            IUserService userService
+            IUserService userService,
+            IHangfireService hangfireService
             )
         {
             _logger = logger;
@@ -40,6 +43,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             _hubSpotService = hubSpotService;
             _mapper = mapper;
             _userService = userService;
+            _hangfireService = hangfireService;
         }
 
         public async Task<UserStatsDto> GetUserStatsByEmail(string email)
@@ -102,7 +106,29 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
 
         public async Task SendVerificationEmail(Guid subscriberGuid)
         {
-            throw new NotImplementedException();
+            _logger.LogInformation($"AccountManagementService:SendVerificationEmail begin.");
+            try
+            {
+                if (subscriberGuid == Guid.Empty)
+                    throw new FailedValidationException($"AccountManagementService:SendVerificationEmail subscriber guid cannot be empty({subscriberGuid})");
+                var subscriber = await _repository.SubscriberRepository.GetSubscriberAccountDetailsByGuidAsync(subscriberGuid);
+                if (subscriber == null)
+                    throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
+
+                _logger.LogInformation($"AccountManagementService:SendVerificationEmail invoking hangfire job for userService.ResendVerificationEmailToUserAsync.");
+                
+                //To test use direct call
+                _userService.ResendVerificationEmailToUserAsync(subscriber.Email);
+
+                //_hangfireService.Enqueue<AccountManagementService>(j => j._userService.ResendVerificationEmailToUserAsync(subscriber.Email));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"AccountManagementService:SendVerificationEmail  Error: {ex.ToString()} ");
+                throw ex;
+            }
+
+            _logger.LogInformation($"AccountManagementService:SendVerificationEmail end.");
         }
 
         public async Task RemoveAccount(Guid subscriberGuid)

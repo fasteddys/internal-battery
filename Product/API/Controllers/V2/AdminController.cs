@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Graph;
 using System;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces;
@@ -48,7 +49,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> SendVerificationEmail(Guid subscriber)
         {
             await _accountManagementService.SendVerificationEmail(subscriber);
-            return NoContent();
+            return StatusCode(202);
         }
 
         [HttpDelete("subscriber/{subscriber}/delete")]

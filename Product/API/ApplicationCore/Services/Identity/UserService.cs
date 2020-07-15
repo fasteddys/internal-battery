@@ -21,6 +21,8 @@ using UpDiddyApi.Models;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using Auth0.Core.Collections;
 using UpDiddyLib.Helpers;
+using Remotion.Linq.Parsing.Structure.IntermediateModel;
+using Newtonsoft.Json;
 
 namespace UpDiddyApi.ApplicationCore.Services.Identity
 {
@@ -520,6 +522,62 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             catch (Exception e)
             {
                 _logger.LogError($"An unexpected exception occurred in UserService.AssignRolesToUserAsync (will not be retried): {e.Message}", e);
+            }
+        }
+
+        public async Task ResendVerificationEmailToUserAsync(string subscriberEmail)
+        {
+            _logger.LogInformation($"UserService:ResendVerificationEmailToUserAsync  Starting for subscriberEmail: {subscriberEmail} ");
+
+            var apiToken = await GetApiTokenAsync();
+            var managementApiClient = new ManagementApiClient(apiToken, _domain);
+            string userId = string.Empty;
+            try
+            {
+                var getUserResponse = await GetUserByEmailAsync(subscriberEmail);
+                if (!getUserResponse.Success || string.IsNullOrWhiteSpace(getUserResponse.User.UserId))
+                    throw new ApplicationException("User could not be found in Auth0");
+
+                userId = getUserResponse.User.UserId;
+                var verificationEmailResponse = managementApiClient.Jobs.SendVerificationEmailAsync(new VerifyEmailJobRequest
+                                                {
+                                                    ClientId = _tokenParameters["client_id"],
+                                                    UserId = userId
+                });
+                _logger.LogInformation($"UserService.ResendVerificationEmailToUserAsync verificationEmailResponse: {JsonConvert.SerializeObject(verificationEmailResponse.Result)}");
+            }
+            catch (ApiException ae)
+            {
+                _logger.LogWarning($"An Auth0 ApiException occurred in UserService.ResendVerificationEmailToUserAsync (will refresh token and retry one time): {ae.Message}", ae);
+                if (ae.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    try
+                    {
+                        // clear the token, get a new one, and try one more time
+                        ClearApiTokenAsync();
+                        apiToken = await GetApiTokenAsync();
+                        managementApiClient = new ManagementApiClient(apiToken, _domain);
+                        var verificationEmailRetryResponse = managementApiClient.Jobs.SendVerificationEmailAsync(new VerifyEmailJobRequest
+                        {
+                            ClientId = _tokenParameters["client_id"],
+                            UserId = userId
+                        });
+
+                        _logger.LogInformation($"UserService.ResendVerificationEmailToUserAsync on retry verificationEmailResponse: {JsonConvert.SerializeObject(verificationEmailRetryResponse.Result)}");
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError($"An unexpected exception occurred in UserService.ResendVerificationEmailToUserAsync (will not be retried): {e.Message}", e);
+                    }
+                }
+                else
+                {
+                    _logger.LogError($"An exception occurred in UserService.ResendVerificationEmailToUserAsync (will not be retried): {ae.Message}", ae);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"An unexpected exception occurred in UserService.ResendVerificationEmailToUserAsync (will not be retried): {e.Message}", e);
             }
         }
 
