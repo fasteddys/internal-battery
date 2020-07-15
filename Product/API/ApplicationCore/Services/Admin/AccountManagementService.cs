@@ -27,7 +27,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
         private readonly IHangfireService _hangfireService;
         private readonly ITraitifyService _traitifyService;
         private readonly IMapper _mapper;
-        private IUserService _userService { get;set; }
+        private IUserService _userService { get; set; }
 
 
         public AccountManagementService(
@@ -143,7 +143,15 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             await RemoveHubSpotContact(subscriberGuid);
             RemoveFromTalentCloud(subscriberGuid);
             await DeleteTraitify(subscriberGuid);
-            await DeleteSubscriber(subscriberGuid);
+
+            var subscriber = await _repository.SubscriberRepository
+                .GetSubscriberByGuidAsync(subscriberGuid);
+
+            if (subscriber != null)
+            {
+                await RemoveAuth0Account(subscriber);
+                await DeleteSubscriber(subscriber);
+            }
 
             // TODO - Creating a new subscriber with same email:  test that it works!
         }
@@ -168,16 +176,14 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             }
         }
 
-        private async Task DeleteSubscriber(Guid subscriberGuid)
+        private async Task DeleteSubscriber(Subscriber subscriber)
         {
-            var subscriber = await _repository.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
-
-            if (subscriber != null)
-            {
-                _repository.SubscriberRepository.LogicalDelete(subscriber);
-                await _repository.SubscriberRepository.SaveAsync();
-            }
+            _repository.SubscriberRepository.LogicalDelete(subscriber);
+            await _repository.SubscriberRepository.SaveAsync();
         }
+
+        private async Task RemoveAuth0Account(Subscriber subscriber)
+            => await _userService.DeleteUserAsync(subscriber.Auth0UserId);
 
         private async Task RemoveAzureIndex(Guid subscriberGuid)
             => await _g2Service.G2IndexRemoveSubscriberAsync(subscriberGuid);
