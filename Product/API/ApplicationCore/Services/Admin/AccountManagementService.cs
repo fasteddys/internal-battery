@@ -118,9 +118,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
                 _logger.LogInformation($"AccountManagementService:SendVerificationEmail invoking hangfire job for userService.ResendVerificationEmailToUserAsync.");
                 
                 //To test use direct call
-                _userService.ResendVerificationEmailToUserAsync(subscriber.Email);
-
-                //_hangfireService.Enqueue<AccountManagementService>(j => j._userService.ResendVerificationEmailToUserAsync(subscriber.Email));
+                //_userService.ResendVerificationEmailToUserAsync(subscriber.Email);
+                _hangfireService.Enqueue<AccountManagementService>(j => j._userService.ResendVerificationEmailToUserAsync(subscriber.Email));
             }
             catch (Exception ex)
             {
