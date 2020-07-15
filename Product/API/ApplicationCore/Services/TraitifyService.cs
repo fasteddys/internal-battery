@@ -14,6 +14,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using static UpDiddyLib.Helpers.Constants;
 using EntityTypeConst = UpDiddyLib.Helpers.Constants.EventType;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -171,6 +173,22 @@ namespace UpDiddyApi.ApplicationCore.Services
             EntityType entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync(EntityTypeConst.TraitifyAssessment);
             await _trackingService.TrackSubscriberAction(subscriber.SubscriberId, action, entityType, traitify.Id);
             await SendCompletionEmail(assessmentId, traitify.Email);
+        }
+
+        public async Task RemoveTraitifyResults(Guid subscriberGuid)
+        {
+            var traitifyList = await _repositoryWrapper.TraitifyRepository
+                .GetAllWithTracking()
+                .Include(t => t.Subscriber)
+                .Where(t => t.Subscriber.SubscriberGuid == subscriberGuid)
+                .ToListAsync();
+
+            foreach (var traitify in traitifyList)
+            {
+                _repositoryWrapper.TraitifyRepository.LogicalDelete(traitify);
+            }
+
+            await _repositoryWrapper.TraitifyRepository.SaveAsync();
         }
 
         private async Task SendCompletionEmail(string assessmentId, string sendTo)

@@ -11,6 +11,8 @@ using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Services.Identity.Interfaces;
+using UpDiddyApi.Models;
+using UpDiddyApi.Workflow;
 using UpDiddyLib.Dto.User;
 
 namespace UpDiddyApi.ApplicationCore.Services.Admin
@@ -22,6 +24,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
         private IRepositoryWrapper _repository { get; set; }
         private readonly IG2Service _g2Service;
         private readonly IHubSpotService _hubSpotService;
+        private readonly IHangfireService _hangfireService;
+        private readonly ITraitifyService _traitifyService;
         private readonly IMapper _mapper;
         private IUserService _userService { get;set; }
 
@@ -30,7 +34,9 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             IRepositoryWrapper repository,
             IG2Service g2Service,
             IHubSpotService hubSpotService,
-            IMapper mapper
+            IHangfireService hangfireService,
+            ITraitifyService traitifyService,
+            IMapper mapper,
             IUserService userService
             )
         {
@@ -38,6 +44,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             _repository = repository;
             _g2Service = g2Service;
             _hubSpotService = hubSpotService;
+            _hangfireService = hangfireService;
+            _traitifyService = traitifyService;
             _mapper = mapper;
             _userService = userService;
         }
@@ -111,14 +119,11 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             await DeleteB2BProfile(subscriberGuid);
             await RemoveAzureIndex(subscriberGuid);
             await RemoveHubSpotContact(subscriberGuid);
+            RemoveFromTalentCloud(subscriberGuid);
+            await DeleteTraitify(subscriberGuid);
             await DeleteSubscriber(subscriberGuid);
 
-            /* TODO:
-             * 1. CloudTalent Remove Profile
-             * 2. Traitify remove account
-             */
-
-            // Other TODOs before I forget:  Creating a new subscriber with same email:  test that it works!
+            // TODO - Creating a new subscriber with same email:  test that it works!
         }
 
         private async Task DeleteG2Profile(Guid subscriberGuid)
@@ -157,5 +162,12 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
 
         private async Task RemoveHubSpotContact(Guid subscriberGuid)
             => await _hubSpotService.RemoveContactBySubscriberGuid(subscriberGuid);
+
+        private void RemoveFromTalentCloud(Guid subscriberGuid)
+            => _hangfireService.Enqueue<ScheduledJobs>(j =>
+                j.CloudTalentDeleteProfile(subscriberGuid, null));
+
+        private async Task DeleteTraitify(Guid subscriberGuid)
+            => await _traitifyService.RemoveTraitifyResults(subscriberGuid);
     }
 }
