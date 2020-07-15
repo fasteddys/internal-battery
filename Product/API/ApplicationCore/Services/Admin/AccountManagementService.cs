@@ -28,7 +28,6 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
         private readonly ITraitifyService _traitifyService;
         private readonly IMapper _mapper;
         private IUserService _userService { get;set; }
-        private IHangfireService _hangfireService { get; set; }
 
 
         public AccountManagementService(
@@ -39,8 +38,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             IHangfireService hangfireService,
             ITraitifyService traitifyService,
             IMapper mapper,
-            IUserService userService,
-            IHangfireService hangfireService
+            IUserService userService
             )
         {
             _logger = logger;
@@ -51,7 +49,6 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             _traitifyService = traitifyService;
             _mapper = mapper;
             _userService = userService;
-            _hangfireService = hangfireService;
         }
 
         public async Task<UserStatsDto> GetUserStatsByEmail(string email)
