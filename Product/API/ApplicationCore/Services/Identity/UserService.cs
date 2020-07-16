@@ -581,9 +581,9 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             }
         }
 
-        public async Task ResetEmailVerificationFlagForUserAsync(string subscriberEmail)
+        public async Task SetEmailVerificationFlagForUserAsync(string subscriberEmail)
         {
-            _logger.LogInformation($"UserService:ResetAccountVerificationFlagForUserAsync  Starting for subscriberEmail: {subscriberEmail} ");
+            _logger.LogInformation($"UserService:SetEmailVerificationFlagForUserAsync  Starting for subscriberEmail: {subscriberEmail} ");
 
             var apiToken = await GetApiTokenAsync();
             var managementApiClient = new ManagementApiClient(apiToken, _domain);
@@ -596,11 +596,11 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
 
                 userId = getUserResponse.User.UserId;
                 var updateUserResponse = await managementApiClient.Users.UpdateAsync(userId, new UserUpdateRequest {EmailVerified = true });
-                _logger.LogInformation($"UserService.ResetAccountVerificationFlagForUserAsync updateUserResponse: {JsonConvert.SerializeObject(updateUserResponse)}");
+                _logger.LogInformation($"UserService.SetEmailVerificationFlagForUserAsync updateUserResponse: {JsonConvert.SerializeObject(updateUserResponse)}");
             }
             catch (ApiException ae)
             {
-                _logger.LogWarning($"An Auth0 ApiException occurred in UserService.ResetAccountVerificationFlagForUserAsync (will refresh token and retry one time): {ae.Message}", ae);
+                _logger.LogWarning($"An Auth0 ApiException occurred in UserService.SetEmailVerificationFlagForUserAsync (will refresh token and retry one time): {ae.Message}", ae);
                 if (ae.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     try
@@ -611,21 +611,21 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                         managementApiClient = new ManagementApiClient(apiToken, _domain);
                         var updateUserRetryResponse = await managementApiClient.Users.UpdateAsync(userId, new UserUpdateRequest { EmailVerified = true });
 
-                        _logger.LogInformation($"UserService.ResetAccountVerificationFlagForUserAsync on retry updateUserRetryResponse: {JsonConvert.SerializeObject(updateUserRetryResponse)}");
+                        _logger.LogInformation($"UserService.SetEmailVerificationFlagForUserAsync on retry updateUserRetryResponse: {JsonConvert.SerializeObject(updateUserRetryResponse)}");
                     }
                     catch (Exception e)
                     {
-                        _logger.LogError($"An unexpected exception occurred in UserService.ResetAccountVerificationFlagForUserAsync (will not be retried): {e.Message}", e);
+                        _logger.LogError($"An unexpected exception occurred in UserService.SetEmailVerificationFlagForUserAsync (will not be retried): {e.Message}", e);
                     }
                 }
                 else
                 {
-                    _logger.LogError($"An exception occurred in UserService.ResetAccountVerificationFlagForUserAsync (will not be retried): {ae.Message}", ae);
+                    _logger.LogError($"An exception occurred in UserService.SetEmailVerificationFlagForUserAsync (will not be retried): {ae.Message}", ae);
                 }
             }
             catch (Exception e)
             {
-                _logger.LogError($"An unexpected exception occurred in UserService.ResetAccountVerificationFlagForUserAsync (will not be retried): {e.Message}", e);
+                _logger.LogError($"An unexpected exception occurred in UserService.SetEmailVerificationFlagForUserAsync (will not be retried): {e.Message}", e);
             }
         }
 
