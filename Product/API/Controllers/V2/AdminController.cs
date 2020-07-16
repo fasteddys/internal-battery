@@ -36,12 +36,12 @@ namespace UpDiddyApi.Controllers
             return isVerified;
         }
 
-        [HttpPost("subscriber/{subscriber}/force-verification")]
+        [HttpPut("subscriber/{subscriber}/force-verification")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> ForceVerification(Guid subscriber)
         {
             await _accountManagementService.ForceVerification(subscriber);
-            return NoContent();
+            return StatusCode(202);
         }
 
         [HttpPost("subscriber/{subscriber}/send-verification-email")]

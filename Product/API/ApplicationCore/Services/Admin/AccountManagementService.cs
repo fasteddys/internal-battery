@@ -106,7 +106,30 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
 
         public async Task ForceVerification(Guid subscriberGuid)
         {
-            throw new NotImplementedException();
+
+            _logger.LogInformation($"AccountManagementService:ForceVerification begin.");
+            try
+            {
+                if (subscriberGuid == Guid.Empty)
+                    throw new FailedValidationException($"AccountManagementService:ForceVerification subscriber guid cannot be empty({subscriberGuid})");
+                var subscriber = await _repository.SubscriberRepository.GetSubscriberAccountDetailsByGuidAsync(subscriberGuid);
+                if (subscriber == null)
+                    throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
+
+                _logger.LogInformation($"AccountManagementService:ForceVerification invoking hangfire job for userService.ResendVerificationEmailToUserAsync.");
+
+                //To test use direct service call
+                //_userService.ResetAccountVerificationFlagForUserAsync(subscriber.Email);
+
+                _hangfireService.Enqueue<AccountManagementService>(j => j._userService.ResetAccountVerificationFlagForUserAsync(subscriber.Email));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"AccountManagementService:ForceVerification  Error: {ex.ToString()}");
+                throw ex;
+            }
+
+            _logger.LogInformation($"AccountManagementService:ForceVerification end.");
         }
 
         public async Task SendVerificationEmail(Guid subscriberGuid)
@@ -122,7 +145,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
 
                 _logger.LogInformation($"AccountManagementService:SendVerificationEmail invoking hangfire job for userService.ResendVerificationEmailToUserAsync.");
                 
-                //To test use direct call
+                //To test use direct service call
                 //_userService.ResendVerificationEmailToUserAsync(subscriber.Email);
                 _hangfireService.Enqueue<AccountManagementService>(j => j._userService.ResendVerificationEmailToUserAsync(subscriber.Email));
             }

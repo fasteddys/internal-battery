@@ -581,6 +581,54 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             }
         }
 
+        public async Task ResetAccountVerificationFlagForUserAsync(string subscriberEmail)
+        {
+            _logger.LogInformation($"UserService:ResetAccountVerificationFlagForUserAsync  Starting for subscriberEmail: {subscriberEmail} ");
+
+            var apiToken = await GetApiTokenAsync();
+            var managementApiClient = new ManagementApiClient(apiToken, _domain);
+            string userId = string.Empty;
+            try
+            {
+                var getUserResponse = await GetUserByEmailAsync(subscriberEmail);
+                if (!getUserResponse.Success || string.IsNullOrWhiteSpace(getUserResponse.User.UserId))
+                    throw new ApplicationException("User could not be found in Auth0");
+
+                userId = getUserResponse.User.UserId;
+                var updateUserResponse = await managementApiClient.Users.UpdateAsync(userId, new UserUpdateRequest {EmailVerified = true });
+                _logger.LogInformation($"UserService.ResetAccountVerificationFlagForUserAsync updateUserResponse: {JsonConvert.SerializeObject(updateUserResponse)}");
+            }
+            catch (ApiException ae)
+            {
+                _logger.LogWarning($"An Auth0 ApiException occurred in UserService.ResetAccountVerificationFlagForUserAsync (will refresh token and retry one time): {ae.Message}", ae);
+                if (ae.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    try
+                    {
+                        // clear the token, get a new one, and try one more time
+                        ClearApiTokenAsync();
+                        apiToken = await GetApiTokenAsync();
+                        managementApiClient = new ManagementApiClient(apiToken, _domain);
+                        var updateUserRetryResponse = await managementApiClient.Users.UpdateAsync(userId, new UserUpdateRequest { EmailVerified = true });
+
+                        _logger.LogInformation($"UserService.ResetAccountVerificationFlagForUserAsync on retry updateUserRetryResponse: {JsonConvert.SerializeObject(updateUserRetryResponse)}");
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError($"An unexpected exception occurred in UserService.ResetAccountVerificationFlagForUserAsync (will not be retried): {e.Message}", e);
+                    }
+                }
+                else
+                {
+                    _logger.LogError($"An exception occurred in UserService.ResetAccountVerificationFlagForUserAsync (will not be retried): {ae.Message}", ae);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"An unexpected exception occurred in UserService.ResetAccountVerificationFlagForUserAsync (will not be retried): {e.Message}", e);
+            }
+        }
+
         public async Task<bool> ResetPasswordAsync(string userId, string newPassword)
         {
             bool isAuth0PasswordReset = false;
