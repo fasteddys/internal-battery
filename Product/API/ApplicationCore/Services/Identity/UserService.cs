@@ -581,7 +581,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             }
         }
 
-        public async Task ResetAccountVerificationFlagForUserAsync(string subscriberEmail)
+        public async Task ResetEmailVerificationFlagForUserAsync(string subscriberEmail)
         {
             _logger.LogInformation($"UserService:ResetAccountVerificationFlagForUserAsync  Starting for subscriberEmail: {subscriberEmail} ");
 
