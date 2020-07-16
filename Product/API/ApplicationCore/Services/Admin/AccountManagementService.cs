@@ -121,7 +121,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
                 //To test use direct service call
                 //_userService.ResetAccountVerificationFlagForUserAsync(subscriber.Email);
 
-                _hangfireService.Enqueue<AccountManagementService>(j => j._userService.ResetEmailVerificationFlagForUserAsync(subscriber.Email));
+                _hangfireService.Enqueue(() => _userService.ResetEmailVerificationFlagForUserAsync(subscriber.Email));
             }
             catch (Exception ex)
             {
@@ -147,7 +147,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
                 
                 //To test use direct service call
                 //_userService.ResendVerificationEmailToUserAsync(subscriber.Email);
-                _hangfireService.Enqueue<AccountManagementService>(j => j._userService.ResendVerificationEmailToUserAsync(subscriber.Email));
+                _hangfireService.Enqueue(() => _userService.ResendVerificationEmailToUserAsync(subscriber.Email));
             }
             catch (Exception ex)
             {
