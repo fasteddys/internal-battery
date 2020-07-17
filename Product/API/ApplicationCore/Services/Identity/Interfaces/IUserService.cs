@@ -17,5 +17,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity.Interfaces
         Task RemoveRoleFromUserAsync(string userId, Role role);
         Task<GetUsersResponse> GetUsersInRoleAsync(Role role);
         Task<bool> ResetPasswordAsync(string userId, string newPassword);
+        Task ResendVerificationEmailToUserAsync(string subscriberEmail);
+        Task SetEmailVerificationFlagForUserAsync(string subscriberEmail);
     }
 }

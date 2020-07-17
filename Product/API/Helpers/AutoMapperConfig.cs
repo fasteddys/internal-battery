@@ -1178,6 +1178,18 @@ namespace UpDiddyApi.Helpers
              })))
              .ForMember(dest => dest.TotalRecords, opt => opt.MapFrom(src => src.Count))
              .ReverseMap();
+
+            CreateMap<UpDiddyApi.Models.Subscriber, UserStatsDto>()
+             .ForMember(dest => dest.Auth0UserId, opt => opt.MapFrom(src => src.Auth0UserId))
+             .ForMember(dest => dest.SubscriberGuid, opt => opt.MapFrom(src => src.SubscriberGuid))
+             .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
+             .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
+             .ForMember(dest => dest.LastSignIn, opt => opt.MapFrom(src => src.LastSignIn))
+             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+             .ForMember(dest => dest.CreateDate, opt => opt.MapFrom(src => src.CreateDate))
+             .ForMember(dest => dest.IsEmailVerified, opt => opt.MapFrom(src => src.IsVerified != null))
+             .ForMember(dest => dest.IsHiringManager, opt => opt.Ignore())
+             .ReverseMap();
         }
     }
 }
