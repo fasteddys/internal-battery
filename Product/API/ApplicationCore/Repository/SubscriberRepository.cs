@@ -138,7 +138,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
               .FirstOrDefaultAsync();
         }
 
-        public async Task<List<SubscriberEmploymentTypes>> GetCandidateEmploymentPreferencesBySubscriberGuidAsync(Guid subscriberGuid)
+        public async Task<Subscriber> GetCandidateEmploymentPreferencesBySubscriberGuidAsync(Guid subscriberGuid)
         {
             var subscriberEmploymentTypes = await _dbContext.SubscriberEmploymentTypes
                               .Where(s => s.Subscriber.IsDeleted == 0 && s.Subscriber.SubscriberGuid == subscriberGuid && s.IsDeleted == 0)
@@ -146,7 +146,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
                               .Include(s => s.Subscriber.CommuteDistance)
                               .ToListAsync();
 
-            return subscriberEmploymentTypes;
+            if (subscriberEmploymentTypes == null || subscriberEmploymentTypes.Count == 0)
+                return await _dbContext.Subscriber
+                    .Where(s => s.SubscriberGuid == subscriberGuid && s.IsDeleted == 0)
+                    .Include(s => s.CommuteDistance)
+                    .FirstOrDefaultAsync();
+
+            return subscriberEmploymentTypes.FirstOrDefault().Subscriber;
         }
 
         public Subscriber GetSubscriberByGuid(Guid subscriberGuid)
@@ -344,7 +350,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
                               .Include(s => s.EmploymentType)
                               .Include(s => s.Subscriber.CommuteDistance)
                               .ToList();
-            var subscriber = subscriberEmploymentTypes.FirstOrDefault().Subscriber;
+            var subscriber = subscriberEmploymentTypes.FirstOrDefault()?.Subscriber ??
+                                await _dbContext.Subscriber
+                                              .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                                              .FirstOrDefaultAsync(); 
 
             //get all requested EmploymentTypes
             var employmentTypes = _dbContext.EmploymentType
