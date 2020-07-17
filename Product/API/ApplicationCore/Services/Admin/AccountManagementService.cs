@@ -165,7 +165,6 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             await RemoveAzureIndex(subscriberGuid);
             await RemoveHubSpotContact(subscriberGuid);
             RemoveFromTalentCloud(subscriberGuid);
-            await DeleteTraitify(subscriberGuid);
 
             var subscriber = await _repository.SubscriberRepository
                 .GetSubscriberByGuidAsync(subscriberGuid);
@@ -217,8 +216,5 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
         private void RemoveFromTalentCloud(Guid subscriberGuid)
             => _hangfireService.Enqueue<ScheduledJobs>(j =>
                 j.CloudTalentDeleteProfile(subscriberGuid, null));
-
-        private async Task DeleteTraitify(Guid subscriberGuid)
-            => await _traitifyService.RemoveTraitifyResults(subscriberGuid);
     }
 }
