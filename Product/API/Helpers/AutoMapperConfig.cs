@@ -1068,11 +1068,11 @@ namespace UpDiddyApi.Helpers
              .ForMember(p => p.CommuteDistances, opt => opt.MapFrom(src => src.Select(cd => new {CommuteDistanceGuid = cd.CommuteDistanceGuid, Name = cd.DistanceRange}).ToList()))
              .ReverseMap();
 
-            CreateMap<List<UpDiddyApi.Models.SubscriberEmploymentTypes>, CandidateEmploymentPreferenceDto>()
-             .ForMember(dest => dest.IsFlexibleWorkScheduleRequired, opt => opt.MapFrom(src => src.FirstOrDefault().Subscriber.IsFlexibleWorkScheduleRequired))
-             .ForMember(dest => dest.IsWillingToTravel, opt => opt.MapFrom(src => src.FirstOrDefault().Subscriber.IsWillingToTravel))
-             .ForMember(dest => dest.CommuteDistanceGuid, opt => opt.MapFrom(src => src.FirstOrDefault().Subscriber.CommuteDistance.CommuteDistanceGuid))
-             .ForMember(dest => dest.EmploymentTypeGuids, opt => opt.MapFrom(src => src.Select(set => set.EmploymentType.EmploymentTypeGuid).ToList()))
+            CreateMap<UpDiddyApi.Models.Subscriber, CandidateEmploymentPreferenceDto>()
+             .ForMember(dest => dest.IsFlexibleWorkScheduleRequired, opt => opt.MapFrom(src => src.IsFlexibleWorkScheduleRequired))
+             .ForMember(dest => dest.IsWillingToTravel, opt => opt.MapFrom(src => src.IsWillingToTravel))
+             .ForMember(dest => dest.CommuteDistanceGuid, opt => opt.MapFrom(src => src.CommuteDistance.CommuteDistanceGuid))
+             .ForMember(dest => dest.EmploymentTypeGuids, opt => opt.MapFrom(src => src.SubscriberEmploymentTypes.Select(set => set.EmploymentType.EmploymentTypeGuid).ToList()))
              .ReverseMap();
 
             CreateMap<UpDiddyApi.Models.Subscriber, CandidatePersonalInfoDto>()
