@@ -15,7 +15,7 @@ namespace UpDiddyLib.Dto.User
 
         public string LastName { get; set; }
 
-        public DateTime LastSignIn { get; set; }
+        public DateTime? LastSignIn { get; set; }
 
         public string Auth0UserId { get; set; }
 

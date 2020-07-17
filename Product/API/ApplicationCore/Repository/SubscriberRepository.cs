@@ -122,7 +122,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             var subscriberResult = await _dbContext.Subscriber
                               .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
-                              .Include(s => s.EmailVerification)
                               .FirstOrDefaultAsync();
 
             return subscriberResult;
