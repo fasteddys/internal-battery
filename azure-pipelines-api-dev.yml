@@ -66,15 +66,12 @@ steps:
 # package up all dlls and compiled code
 - script: |
     cd $(Build.ArtifactStagingDirectory)
-    zip -rm api.zip *
-  displayName: Packaging
-
+    zip -r api.zip *
+  displayName: Packaging API
 
 - script: |
     cd $(Build.ArtifactStagingDirectory)
-    rm appsettings.*.json
-    rm appsettings.json
-    zip -rm *
+    zip -rm careercircle-api-veracode.zip * -x *.json* api.zip
   displayName: Packaging build output
 
 - task: Veracode@3
