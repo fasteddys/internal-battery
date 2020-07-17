@@ -69,6 +69,30 @@ steps:
     zip -rm api.zip *
   displayName: Packaging
 
+
+- script: |
+    cd $(Build.ArtifactStagingDirectory)
+    rm appsettings.*.json
+    rm appsettings.json
+    zip -rm *
+  displayName: Packaging build output
+
+- task: Veracode@3
+  inputs:
+    ConnectionDetailsSelection: 'Credentials'
+    apiId: 'a62af963845be301e225b9770cd91e8f'
+    apiKey: '6cd32d7b3c2bd847f5bc19debf8c968c2a85ac0fccd83b99564a1e8efb7c18c2eb4dcfccc170b7810301820524e829bb0c0243946f1d5618803b85666b283fba'
+    veracodeAppProfile: 'CareerCircle'
+    version: '$(build.buildNumber)'
+    filepath: '$(build.artifactstagingdirectory)/api-veracodeapi.zip'
+    sandboxName: 'API Sandbox'
+    createSandBox: true
+    createProfile: false
+    failTheBuildIfVeracodeScanDidNotInitiate: false
+    scanStatusCheckInterval: '60'
+    importResults: false
+    failBuildOnPolicyFail: false 
+
 # get secret for connection string to staging db
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-key-vault?view=azure-devops#yaml-snippet
 - task: AzureKeyVault@1
