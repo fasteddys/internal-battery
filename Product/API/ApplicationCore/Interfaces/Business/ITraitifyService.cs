@@ -12,7 +12,5 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<TraitifyDto> StartNewAssesment(TraitifyDto dto);
         Task<TraitifyDto> GetAssessment(string assessmentId);
         Task<TraitifyDto> CompleteAssessment(string assessmentId);
-
-        Task RemoveTraitifyResults(Guid subscriberGuid);
     }
 }

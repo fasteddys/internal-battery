@@ -175,22 +175,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             await SendCompletionEmail(assessmentId, traitify.Email);
         }
 
-        public async Task RemoveTraitifyResults(Guid subscriberGuid)
-        {
-            var traitifyList = await _repositoryWrapper.TraitifyRepository
-                .GetAllWithTracking()
-                .Include(t => t.Subscriber)
-                .Where(t => t.Subscriber.SubscriberGuid == subscriberGuid)
-                .ToListAsync();
-
-            foreach (var traitify in traitifyList)
-            {
-                _repositoryWrapper.TraitifyRepository.LogicalDelete(traitify);
-            }
-
-            await _repositoryWrapper.TraitifyRepository.SaveAsync();
-        }
-
         private async Task SendCompletionEmail(string assessmentId, string sendTo)
         {
             string results = await GetJsonResults(assessmentId);
