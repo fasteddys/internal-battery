@@ -81,7 +81,7 @@ steps:
     apiKey: '6cd32d7b3c2bd847f5bc19debf8c968c2a85ac0fccd83b99564a1e8efb7c18c2eb4dcfccc170b7810301820524e829bb0c0243946f1d5618803b85666b283fba'
     veracodeAppProfile: 'CareerCircle'
     version: '$(build.buildNumber)'
-    filepath: '$(build.artifactstagingdirectory)/api-veracodeapi.zip'
+    filepath: '$(build.artifactstagingdirectory)/careercircle-api-veracode.zip'
     sandboxName: 'API Sandbox'
     createSandBox: true
     createProfile: false
