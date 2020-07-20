@@ -1068,11 +1068,11 @@ namespace UpDiddyApi.Helpers
              .ForMember(p => p.CommuteDistances, opt => opt.MapFrom(src => src.Select(cd => new {CommuteDistanceGuid = cd.CommuteDistanceGuid, Name = cd.DistanceRange}).ToList()))
              .ReverseMap();
 
-            CreateMap<List<UpDiddyApi.Models.SubscriberEmploymentTypes>, CandidateEmploymentPreferenceDto>()
-             .ForMember(dest => dest.IsFlexibleWorkScheduleRequired, opt => opt.MapFrom(src => src.FirstOrDefault().Subscriber.IsFlexibleWorkScheduleRequired))
-             .ForMember(dest => dest.IsWillingToTravel, opt => opt.MapFrom(src => src.FirstOrDefault().Subscriber.IsWillingToTravel))
-             .ForMember(dest => dest.CommuteDistanceGuid, opt => opt.MapFrom(src => src.FirstOrDefault().Subscriber.CommuteDistance.CommuteDistanceGuid))
-             .ForMember(dest => dest.EmploymentTypeGuids, opt => opt.MapFrom(src => src.Select(set => set.EmploymentType.EmploymentTypeGuid).ToList()))
+            CreateMap<UpDiddyApi.Models.Subscriber, CandidateEmploymentPreferenceDto>()
+             .ForMember(dest => dest.IsFlexibleWorkScheduleRequired, opt => opt.MapFrom(src => src.IsFlexibleWorkScheduleRequired))
+             .ForMember(dest => dest.IsWillingToTravel, opt => opt.MapFrom(src => src.IsWillingToTravel))
+             .ForMember(dest => dest.CommuteDistanceGuid, opt => opt.MapFrom(src => src.CommuteDistance.CommuteDistanceGuid))
+             .ForMember(dest => dest.EmploymentTypeGuids, opt => opt.MapFrom(src => src.SubscriberEmploymentTypes.Select(set => set.EmploymentType.EmploymentTypeGuid).ToList()))
              .ReverseMap();
 
             CreateMap<UpDiddyApi.Models.Subscriber, CandidatePersonalInfoDto>()
@@ -1177,6 +1177,18 @@ namespace UpDiddyApi.Helpers
                  EducationalDegree = seh.EducationalDegree == null ? null : seh.EducationalDegree.Degree
              })))
              .ForMember(dest => dest.TotalRecords, opt => opt.MapFrom(src => src.Count))
+             .ReverseMap();
+
+            CreateMap<UpDiddyApi.Models.Subscriber, UserStatsDto>()
+             .ForMember(dest => dest.Auth0UserId, opt => opt.MapFrom(src => src.Auth0UserId))
+             .ForMember(dest => dest.SubscriberGuid, opt => opt.MapFrom(src => src.SubscriberGuid))
+             .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
+             .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
+             .ForMember(dest => dest.LastSignIn, opt => opt.MapFrom(src => src.LastSignIn))
+             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+             .ForMember(dest => dest.CreateDate, opt => opt.MapFrom(src => src.CreateDate))
+             .ForMember(dest => dest.IsEmailVerified, opt => opt.MapFrom(src => src.IsVerified != null))
+             .ForMember(dest => dest.IsHiringManager, opt => opt.Ignore())
              .ReverseMap();
         }
     }

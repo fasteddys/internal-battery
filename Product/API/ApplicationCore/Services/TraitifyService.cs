@@ -14,6 +14,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using static UpDiddyLib.Helpers.Constants;
 using EntityTypeConst = UpDiddyLib.Helpers.Constants.EventType;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {

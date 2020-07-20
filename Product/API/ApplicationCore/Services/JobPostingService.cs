@@ -137,13 +137,13 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 this.OverridePostingAndExpirationDates(ref jobCrudDto);
                 createJobPostingResult = await _repositoryWrapper.StoredProcedureRepository.CreateJobPosting(jobCrudDto);
-                if (jobCrudDto.JobStatus == (int)JobPostingStatus.Active)
+                if (createJobPostingResult.Item1.HasValue && jobCrudDto.JobStatus == (int)JobPostingStatus.Active)
                     _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(createJobPostingResult.Item1.Value));
             }
             catch (Exception e)
             {
-                _syslog.LogInformation($"JobPostingService.CreateJobPosting encountered an exception: {e.Message}");
-                throw new JobPostingCreation("An unexpected error occurred while attempting to create the job posting");
+                _syslog.LogInformation($"JobPostingService.CreateJobPosting encountered an exception; Message: {e.Message}, StackTrace: {e.StackTrace}");
+                throw new JobPostingCreation("An unexpected error occurred while attempting to create the job posting", e);
             }
 
             if (createJobPostingResult.Item1.HasValue)
@@ -173,13 +173,13 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 this.OverridePostingAndExpirationDates(ref jobCrudDto);
                 updateJobPostingResult = await _repositoryWrapper.StoredProcedureRepository.UpdateJobPosting(jobCrudDto);
-                if (jobCrudDto.JobStatus == (int)JobPostingStatus.Active)
+                if (string.IsNullOrWhiteSpace(updateJobPostingResult) && jobCrudDto.JobStatus == (int)JobPostingStatus.Active)
                     _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentUpdateJob(jobCrudDto.JobPostingGuid.Value));
             }
             catch (Exception e)
             {
-                _syslog.LogInformation($"JobPostingService.UpdateJobPosting encountered an exception: {e.Message}");
-                throw new JobPostingUpdate("An unexpected error occurred while attempting to update the job posting");
+                _syslog.LogInformation($"JobPostingService.UpdateJobPosting encountered an exception; Message: {e.Message}, StackTrace: {e.StackTrace}");
+                throw new JobPostingUpdate("An unexpected error occurred while attempting to update the job posting", e);
             }
 
             if (!string.IsNullOrWhiteSpace(updateJobPostingResult))

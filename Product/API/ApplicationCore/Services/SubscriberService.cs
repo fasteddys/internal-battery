@@ -1388,7 +1388,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     if (subscriber.StateId <= 0 || subscriber.State == null || state.StateId == subscriber.StateId)
                     {
                         subscriber.StateId = state.StateId;
-                        await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.ContactInfo, string.Empty, "Subscriber.StateCode", "StateCode", subscriber.State.Code, contactInfo.State, (int)ResumeParseStatus.Merged, subscriber.SubscriberGuid.Value);
+                        await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.ContactInfo, string.Empty, "Subscriber.StateCode", "StateCode", subscriber.State?.Code, contactInfo.State, (int)ResumeParseStatus.Merged, subscriber.SubscriberGuid.Value);
                     }
                     else
                     {
