@@ -68,7 +68,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
                 var userStatsDto = _mapper.Map<UserStatsDto>(subscriberAccountDetails);
 
                 //mapped outside of automapper
-                userStatsDto.IsHiringManager = userStatsDto != null;
+                userStatsDto.IsHiringManager = hiringManager != null;
 
                 return userStatsDto;
             }
