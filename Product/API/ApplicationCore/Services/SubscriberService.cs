@@ -264,7 +264,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 Auth0UserId = subscriberDto.Auth0UserId,
                 CreateDate = DateTime.UtcNow,
                 CreateGuid = Guid.Empty,
-                IsDeleted = 0
+                IsDeleted = 0,
+                IsVerified = false
             });
             await _repository.SubscriberRepository.SaveAsync();
 
