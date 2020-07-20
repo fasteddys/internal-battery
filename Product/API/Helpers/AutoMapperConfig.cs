@@ -1187,7 +1187,7 @@ namespace UpDiddyApi.Helpers
              .ForMember(dest => dest.LastSignIn, opt => opt.MapFrom(src => src.LastSignIn))
              .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
              .ForMember(dest => dest.CreateDate, opt => opt.MapFrom(src => src.CreateDate))
-             .ForMember(dest => dest.IsEmailVerified, opt => opt.MapFrom(src => src.IsVerified != null))
+             .ForMember(dest => dest.IsEmailVerified, opt => opt.MapFrom(src => src.IsVerified))
              .ForMember(dest => dest.IsHiringManager, opt => opt.Ignore())
              .ReverseMap();
         }
