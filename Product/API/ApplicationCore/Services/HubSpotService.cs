@@ -237,11 +237,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             // Fire off background job if non-block has been requested and hangfire is enabled 
             if (nonBlocking)
             {
-                _hangfireService.Enqueue<HubSpotService>(j => j._deleteHubSpotContact(subscriber.HubSpotVid.Value));
+                _hangfireService.Enqueue<HubSpotService>(j => j.DeleteHubSpotContact(subscriber.HubSpotVid.Value));
             }
             else
             {
-                _deleteHubSpotContact(subscriber.HubSpotVid.Value);
+                DeleteHubSpotContact(subscriber.HubSpotVid.Value);
             }
         }
 
@@ -412,7 +412,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return rVal;
         }
 
-        private async Task _deleteHubSpotContact(long hubSpotVid)
+        public async Task DeleteHubSpotContact(long hubSpotVid)
         {
             // Ref: https://legacydocs.hubspot.com/docs/methods/contacts/delete_contact
 
