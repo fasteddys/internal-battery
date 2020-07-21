@@ -174,8 +174,6 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
                 await RemoveAuth0Account(subscriber);
                 await DeleteSubscriber(subscriber);
             }
-
-            // TODO - Creating a new subscriber with same email:  test that it works!
         }
 
         private async Task DeleteG2Profile(Guid subscriberGuid)
