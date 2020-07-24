@@ -230,6 +230,8 @@ namespace UpDiddyApi.Models
         public DbSet<Language> Languages { get; set; }
 
         public DbSet<ProficiencyLevel> ProficiencyLevels { get; set; }
+        public DbSet<Tracking> Tracking { get; set; }
+        public DbSet<TrackingEventDay> TrackingEventDay { get; set; }
 
         public DbSet<SubscriberLanguageProficiency> SubscriberLanguageProficiencies { get; set; }
         #endregion
