@@ -75,7 +75,11 @@ namespace UpDiddyLib.Helpers
 
             // check debug mode to only send emails to actual users in the system is not in debug mode 
             if (isDebugMode == false)
+            {
                 message.AddTo(new EmailAddress(email));
+                message.AddCc(new EmailAddress(cc));
+                message.AddBcc(new EmailAddress(bcc));
+            }
             else
                 message.AddTo(new EmailAddress(_configuration[$"SysEmail:SystemDebugEmailAddress"]));
 
