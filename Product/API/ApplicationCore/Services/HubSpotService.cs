@@ -227,6 +227,24 @@ namespace UpDiddyApi.ApplicationCore.Services
             return rval;
         }
 
+        public async Task RemoveContactBySubscriberGuid(Guid subscriberGuid, bool nonBlocking = true)
+        {
+            var subscriber = await _repositoryWrapper.SubscriberRepository
+                .GetByGuid(subscriberGuid, true);
+
+            if (subscriber?.HubSpotVid == null) { return; }
+
+            // Fire off background job if non-block has been requested and hangfire is enabled 
+            if (nonBlocking)
+            {
+                _hangfireService.Enqueue<HubSpotService>(j => j.DeleteHubSpotContact(subscriber.HubSpotVid.Value));
+            }
+            else
+            {
+                DeleteHubSpotContact(subscriber.HubSpotVid.Value);
+            }
+        }
+
         #region private helper functions 
 
         //todo find a more elegant way to do this mapping when time allows 
@@ -392,6 +410,33 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
             return rVal;
+        }
+
+        public async Task DeleteHubSpotContact(long hubSpotVid)
+        {
+            // Ref: https://legacydocs.hubspot.com/docs/methods/contacts/delete_contact
+
+            string baseUrl = _configuration["HubSpot:BaseUrl"];
+            string apiKey = _configuration["HubSpot:ApiKey"];
+
+            var url = $"{baseUrl}/contacts/v1/contact/vid/{hubSpotVid}?hapikey={apiKey}";
+
+            _syslog.LogInformation("HubSpotService._deleteHubSpotContact: Removing HubSpotAccount for VID: {hubSpotVid}", hubSpotVid);
+
+            try
+            {
+                var client = _httpClientFactory.CreateClient(Constants.HttpDeleteClientName);
+                using (var response = await client.DeleteAsync(url))
+                {
+                    response.EnsureSuccessStatusCode();
+                }
+                _syslog.LogInformation("HubSpotService._deleteHubSpotContact: Successfully removed HubSpotAccount for VID: {hubSpotVid}", hubSpotVid);
+            }
+            catch (HttpRequestException ex)
+            {
+                _syslog.LogError(ex, "HubSpotService._deleteHubSpotContact: Removing HubSpotAccount for VID: {hubSpotVid}", hubSpotVid);
+                throw;
+            }
         }
 
         #endregion

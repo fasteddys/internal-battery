@@ -50,6 +50,7 @@ using UpDiddyApi.ApplicationCore.Services.HiringManager;
 using UpDiddyApi.ApplicationCore.Interfaces.Business.B2B;
 using UpDiddyApi.ApplicationCore.Services.B2B;
 using UpDiddyApi.ApplicationCore.Services.Candidate;
+using UpDiddyApi.ApplicationCore.Services.Admin;
 
 namespace UpDiddyApi
 {
@@ -377,6 +378,7 @@ namespace UpDiddyApi
             services.AddCareerTalentPipelineService(Configuration.GetSection("CreateTalentPipeline"));
             services.AddCrossChq(Configuration.GetSection("CrossChq"));
             services.AddTransient<ICommuteDistancesService, CommuteDistancesService>();
+            services.AddTransient<IAccountManagementService, AccountManagementService>();
             #endregion
 
             // Configure SnapshotCollector from application settings

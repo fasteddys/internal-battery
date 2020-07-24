@@ -124,14 +124,9 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
             try
             {
-                var subscriberEmploymentTypes = await _repositoryWrapper.SubscriberRepository.GetCandidateEmploymentPreferencesBySubscriberGuidAsync(subscriberGuid);
+                var subscriber = await _repositoryWrapper.SubscriberRepository.GetCandidateEmploymentPreferencesBySubscriberGuidAsync(subscriberGuid);
 
-                if (subscriberEmploymentTypes == null)
-                {
-                    throw new FailedValidationException($"CandidatesService:GetCandidateEmploymentPreference Cannot locate subscriber: {subscriberGuid}");
-                }
-
-                return _mapper.Map<CandidateEmploymentPreferenceDto>(subscriberEmploymentTypes);
+                return _mapper.Map<CandidateEmploymentPreferenceDto>(subscriber);
             }
             catch (Exception ex)
             {
