@@ -8,6 +8,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
+using UpDiddyLib.Domain.Models;
 using EntityTypeConst = UpDiddyLib.Helpers.Constants.EventType;
 
 namespace UpDiddyApi.ApplicationCore.Services
@@ -65,6 +66,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                 }
             }
             return subscribersToJobPostingMapping;
+        }
+
+        public async Task<UrlDto> GetQualifiedUrlAfterTracking(string url)
+        {
+            return new UrlDto();
         }
 
         /// <summary>
@@ -151,6 +157,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             };
             await _repositoryWrapper.SubscriberActionRepository.Create(subAction);
             await _repositoryWrapper.SubscriberActionRepository.SaveAsync();
+        }
+
+        public async Task UpdateLandingPageTracking(string slugName)
+        {
+
         }
     }
 }
