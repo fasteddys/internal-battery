@@ -16,6 +16,7 @@ namespace UpDiddyApi.Controllers.V2
     {
         private readonly ICandidatesService _candidatesService;
         private readonly ILogger _logger;
+ 
 
         public CandidatesController(
             ICandidatesService candidatesService,
@@ -232,5 +233,30 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         #endregion Education & Assessments
+
+
+
+        #region Candidate Indexing Operations
+
+        /// <summary>
+        /// Re-index subsriber.  This operation will update as well as create documents in the 
+        /// azure g2 index 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("index/subscriber/{subscriberGuid}")]
+        public async Task<IActionResult> IndexSubscriber(Guid subscriberGuid)
+        {
+            _candidatesService.CandidateIndexBySubscriberAsync(subscriberGuid);
+            return StatusCode(202);
+        }
+
+
+        #endregion
+
+
+
     }
 }

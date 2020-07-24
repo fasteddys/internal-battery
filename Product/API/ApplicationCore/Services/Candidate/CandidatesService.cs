@@ -11,6 +11,13 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.Candidate360;
 using UpDiddyApi.ApplicationCore.Interfaces;
+using Microsoft.Extensions.Configuration;
+using UpDiddyApi.Models.Views;
+using UpDiddyLib.Domain.AzureSearchDocuments;
+using GeoJSON.Net.Geometry;
+using UpDiddyApi.Workflow;
+using UpDiddyApi.ApplicationCore.Services.AzureSearch;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.ApplicationCore.Services.Candidate
 {
@@ -21,13 +28,22 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         private readonly ILogger _logger;
         private readonly IMapper _mapper;
         private readonly IHubSpotService _hubSpotService;
+        private readonly IConfiguration _configuration;           
+        private readonly UpDiddyDbContext _db;
+        private readonly IHangfireService _hangfireService;
+        private readonly IAzureSearchService _azureSearchService;
+
 
         public CandidatesService(
             ILogger<CandidatesService> logger,
             IRepositoryWrapper repositoryWrapper,
             IMapper mapper,
             ISubscriberService subscriberService,
-            IHubSpotService hubSpotService
+            IHubSpotService hubSpotService,
+            IConfiguration configuration,
+            UpDiddyDbContext context,
+           IHangfireService hangfireService,
+           IAzureSearchService azureSearchService
         )
         {
             _logger = logger;
@@ -35,6 +51,10 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             _mapper = mapper;
             _subscriberService = subscriberService;
             _hubSpotService = hubSpotService;
+            _configuration = configuration;
+            _db = context;
+            _hangfireService = hangfireService;
+            _azureSearchService = azureSearchService;
         }
 
         #region Personal Info
@@ -464,5 +484,98 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         }
 
         #endregion
+
+
+        #region Candidate Indexing
+
+        /// <summary>
+        /// Index the specified g2 document into azure search 
+        /// </summary>
+        /// <param name="g2"></param>
+        /// <returns></returns>
+        public async Task<bool> CandidateIndexAsync(CandidateSDOC candidate)
+        {
+            AzureIndexResult info = await _azureSearchService.AddOrUpdateCandidate(candidate);
+            // TODO JAB Implement 
+            await UpdateAzureStatus(info, Constants.AzureSearchIndexStatus.Indexed, info.StatusMsg);
+            return true;
+        }
+
+        /// <summary>
+        /// For the given subscriber, update or add their profile to the G2 azure index 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        public async Task<bool> CandidateIndexBySubscriberAsync(Guid subscriberGuid)
+        {
+           
+            // Get all non-public G2s for subscriber 
+             v_CandidateAzureSearch candidateProfile = _db.CandidateAzureSearch
+            .Where(p => p.SubscriberGuid == subscriberGuid)
+            .FirstOrDefault(); 
+            CandidateSDOC indexDoc = await MapToG2SDOC(candidateProfile);
+ 
+            // fire off as background job 
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexAddOrUpdate(indexDoc));
+
+            return true;
+        }
+
+
+
+
+        #endregion
+
+
+
+
+        #region private helper functions 
+
+
+
+        private async Task<bool> UpdateAzureStatus(AzureIndexResult results, string statusName, string info)
+        {
+            // Call stored procedure 
+            try
+            {
+                // TODO JAB
+                // _repository.StoredProcedureRepository.UpdateG2AzureIndexStatuses(results?.DOCResults?.Value ?? new List<AzureIndexResultStatus>(), statusName, info);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"G2Service:UpdateG2Status Error updating index statuses; message: {ex.Message}, stack trace: {ex.StackTrace}");
+                throw;
+            }
+            return true;
+        }
+
+
+        private async Task<CandidateSDOC> MapToG2SDOC(v_CandidateAzureSearch candidate)
+        {
+            try
+            {
+                CandidateSDOC indexDoc = _mapper.Map<CandidateSDOC>(candidate);
+                if (candidate.Location != null)
+                {
+                    Double lat = (double)candidate.Location.Lat;
+                    Double lng = (double)candidate.Location.Long;
+                    Position p = new Position(lat, lng);
+                    indexDoc.Location = new Point(p);
+                }
+                // manually map the location.  todo find a way for automapper to do this 
+                return indexDoc;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"CandidateService:MapToG2SDOC Exception for profile {candidate.ProfileGuid}; error: {ex.Message}, stack trace: {ex.StackTrace}");
+                throw;
+            }
+        }
+
+
+        #endregion
+
+
+
     }
 }

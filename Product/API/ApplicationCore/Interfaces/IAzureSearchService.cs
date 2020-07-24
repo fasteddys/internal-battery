@@ -23,5 +23,15 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
         Task<AzureIndexResult> AddOrUpdateG2Bulk(List<G2SDOC> g2);
 
 
+        Task<AzureIndexResult> AddOrUpdateCandidate(CandidateSDOC Candidate);
+        Task<AzureIndexResult> DeleteCandidate(CandidateSDOC Candidate);
+        Task<AzureIndexResult> DeleteCandidateBulk(List<CandidateSDOC> Candidate);
+        Task<AzureIndexResult> AddOrUpdateCandidateBulk(List<CandidateSDOC> Candidate);
+
+
+
+
+
+
     }
 }

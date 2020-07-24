@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.Candidate360;
 
@@ -44,5 +45,11 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<CompensationPreferencesDto> GetCompensationPreferences(Guid subscriberGuid);
 
         Task UpdateCompensationPreferences(CompensationPreferencesDto compensationPreferences, Guid subscriberGuid);
+
+
+        Task<bool> CandidateIndexBySubscriberAsync(Guid subscriberGuid);
+        Task<bool> CandidateIndexAsync(CandidateSDOC candidate);
+
+
     }
 }

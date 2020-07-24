@@ -117,7 +117,71 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
 
         #endregion
 
+
+
+        #region Candidate
+
+
+        public async Task<AzureIndexResult> AddOrUpdateCandidate(CandidateSDOC candidate)
+        {
+            return await SendCandidateRequest(candidate, "upload");
+
+        }
+
+        public async Task<AzureIndexResult> DeleteCandidate(CandidateSDOC candidate)
+        {
+            return await SendCandidateRequest(candidate, "delete");
+
+        }
+
+        public async Task<AzureIndexResult> DeleteCandidateBulk(List<CandidateSDOC> candidates)
+        {
+            return await SendCandidateRequestBulk(candidates, "delete");
+        }
+
+
+        public async Task<AzureIndexResult> AddOrUpdateCandidateBulk(List<CandidateSDOC> candidates)
+        {
+            return await SendCandidateRequestBulk(candidates, "upload");
+        }
+
+
+
+
+        #endregion
+
+
         #region helper functions 
+
+
+        private async Task<AzureIndexResult> SendCandidateRequestBulk(List<CandidateSDOC> candidateDocs, string cmd)
+        {
+            string index = _configuration["AzureSearch:CandidateIndexName"];
+            SDOCRequest<CandidateSDOC> docs = new SDOCRequest<CandidateSDOC>();
+            List<Guid> profileGuidList = new List<Guid>();
+            foreach (CandidateSDOC doc in candidateDocs)
+            {
+                profileGuidList.Add(doc.ProfileGuid);
+                doc.SearchAction = cmd;
+                docs.value.Add(doc);
+            }
+            string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffZ" });
+            AzureIndexResult rval = await SendSearchIndexRequest(index, cmd, Json);
+            return rval;
+        }
+
+        private async Task<AzureIndexResult> SendCandidateRequest(CandidateSDOC candidateDoc, string cmd)
+        {
+            string index = _configuration["AzureSearch:CandidateIndexName"];
+            SDOCRequest<CandidateSDOC> docs = new SDOCRequest<CandidateSDOC>();
+            candidateDoc.SearchAction = cmd;
+            docs.value.Add(candidateDoc);
+
+            string Json = Newtonsoft.Json.JsonConvert.SerializeObject(docs, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffZ" });
+            AzureIndexResult rval = await SendSearchIndexRequest(index, cmd, Json);
+            return rval;
+        }
+
 
 
         private async Task<AzureIndexResult> SendG2RequestBulk(List<G2SDOC> g2s, string cmd)

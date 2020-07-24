@@ -303,6 +303,7 @@ namespace UpDiddyApi.Models
         public DbQuery<EmailTemplateDto> EmailTemplates { get; set; }
         public DbQuery<PipelineProfileDto> PipelineProfiles { get; set; }
         public DbQuery<PipelineDto> Pipelines { get; set; }
+        public DbQuery<v_CandidateAzureSearch> CandidateAzureSearch { get; set; }
 
         #endregion
 

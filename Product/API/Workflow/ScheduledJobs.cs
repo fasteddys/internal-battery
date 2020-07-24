@@ -61,7 +61,7 @@ namespace UpDiddyApi.Workflow
         private readonly IG2Service _g2Service;
         private readonly ISendGridService _sendGridService;
         private readonly IHubSpotService _hubSpotService;
-
+        private readonly ICandidatesService _candidateService;
 
 
         public ScheduledJobs(
@@ -91,7 +91,8 @@ namespace UpDiddyApi.Workflow
             IG2Service g2Service,
             ISendGridService sendGridService,
             IHubSpotService hubSpotService,
-            IMemoryCacheService memoryCacheService
+            IMemoryCacheService memoryCacheService,
+            ICandidatesService candidateService
             )
         {
             _db = context;
@@ -123,6 +124,7 @@ namespace UpDiddyApi.Workflow
             _sendGridService = sendGridService;
             _hubSpotService = hubSpotService;
             _memoryCacheService = memoryCacheService;
+            _candidateService = candidateService;
         }
 
 
@@ -2161,11 +2163,7 @@ namespace UpDiddyApi.Workflow
 #endregion
 
 
-
-
-
-
-#region G2
+        #region G2
 
 
 
@@ -2311,7 +2309,7 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
             
 
             AzureIndexStatus noneStatus = _repositoryWrapper.AzureIndexStatusRepository.GetAll()
-                .Where(s => s.Name == Constants.G2AzureIndexStatus.None)
+                .Where(s => s.Name == Constants.AzureSearchIndexStatus.None)
                 .FirstOrDefault();
 
             if ( noneStatus == null )
@@ -2414,6 +2412,25 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
 
 
         #endregion
+
+
+        #region Candidate
+
+        /// <summary>
+        /// Add or update the G2 into the azure search index 
+        /// </summary>
+        /// <param name="g2"></param>
+        /// <returns></returns>
+        public async Task<bool> CandidateIndexAddOrUpdate(CandidateSDOC candidate)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdate starting index for candidate {candidate.ProfileGuid}");
+            await _candidateService.CandidateIndexAsync(candidate);
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdate done index for candidate {candidate.ProfileGuid}");
+            return true;
+        }
+
+        #endregion
+
 
 
 

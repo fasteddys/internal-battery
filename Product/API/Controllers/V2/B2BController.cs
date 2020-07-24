@@ -232,5 +232,97 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         #endregion
+
+
+        // todo jab add migration for ALTER VIEW [B2B].[v_CandidateAzureSearch]
+
+        #region Candidate Indexing Admin Operations 
+
+        // Admin functions will not be made public throught the APi gateway.  They are here for dev administration of the 
+        // g2 profiles and azure index 
+
+        /// <summary>
+        /// Creates G2 profiles for all active subscriber/company combinations
+        /// </summary>
+        /// 
+        /// <returns></returns>
+        [HttpPost]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("admin/index")]
+        public async Task<IActionResult> addNewSubscribers()
+        {
+            // 
+            _g2Service.G2AddNewSubscribers();
+            return StatusCode(202);
+        }
+
+
+        /*   Todo when the time arises ....
+
+        /// <summary>
+        /// Deletes all g2 records from the azure index 
+        /// </summary>
+        /// 
+        /// <returns></returns>
+        [HttpDelete]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("admin/index")]
+        public async Task<IActionResult> deleteG2()
+        {
+
+            _g2Service.G2IndexPurgeAsync();
+            return StatusCode(202);
+        }
+
+
+
+        [HttpDelete]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("admin/companies/{companyGuid}")]
+        public async Task<IActionResult> DeleteCompanyFromIndex(Guid companyGuid)
+        {
+
+            _g2Service.G2DeleteCompanyAsync(companyGuid);
+            return StatusCode(202);
+        }
+
+
+        /// <summary>
+        /// Add new company.  This will create a new G2 Profile for every active subscriber for the specified company  
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("admin/companies/{companyGuid}")]
+        public async Task<IActionResult> AddNewCompany(Guid companyGuid)
+        {
+            _g2Service.G2AddCompanyAsync(companyGuid);
+            return StatusCode(202);
+        }
+
+        /// <summary>
+        /// remove the subcribers profiles and remove them from the azure index 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        [HttpDelete]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("admin/profiles/subscriber/{subscriberGuid}")]
+        public async Task<IActionResult> DeleteSubscriberFromIndex(Guid subscriberGuid)
+        {
+
+            _g2Service.G2DeleteSubscriberAsync(subscriberGuid);
+            return StatusCode(202);
+        }
+
+    */
+
+        #endregion
+
+
+
+
+
     }
 }
