@@ -70,7 +70,8 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<UrlDto> GetQualifiedUrlAfterTracking(string url)
         {
-            return new UrlDto();
+            throw new NotImplementedException("Not yet Implemented");
+            //return new UrlDto();
         }
 
         /// <summary>
@@ -161,7 +162,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task UpdateLandingPageTracking(string slugName)
         {
-
+            throw new NotImplementedException("Not yet Implemented");
         }
     }
 }
