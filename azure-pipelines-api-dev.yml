@@ -83,7 +83,7 @@ steps:
     version: '$(build.buildNumber)'
     filepath: '$(build.artifactstagingdirectory)/careercircle-api-veracode.zip'
     sandboxName: 'API Sandbox'
-    createSandBox: true
+    createSandBox: false
     createProfile: false
     failTheBuildIfVeracodeScanDidNotInitiate: false
     scanStatusCheckInterval: '60'
