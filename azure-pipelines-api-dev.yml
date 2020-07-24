@@ -72,7 +72,33 @@ steps:
 - script: |
     cd $(Build.ArtifactStagingDirectory)
     zip -rm careercircle-api-veracode.zip * -x *.json* api.zip
-  displayName: Packaging build output
+    zip -rm careercircle-api-veracode.zip * -x X*.DLL api.zip
+    zip -rm careercircle-api-veracode.zip * -x zh-TW\* api.zip
+    zip -rm careercircle-api-veracode.zip * -x zh\* api.zip
+    zip -rm careercircle-api-veracode.zip * -x web.config api.zip
+    zip -rm careercircle-api-veracode.zip * -x System.* api.zip
+    zip -rm careercircle-api-veracode.zip * -x SeriLog.* api.zip
+    zip -rm careercircle-api-veracode.zip * -x Sendgrid.* api.zip
+    zip -rm careercircle-api-veracode.zip * -x runtimes\* api.zip
+    zip -rm careercircle-api-veracode.zip * -x Remotion.* api.zip
+    zip -rm careercircle-api-veracode.zip * -x pt-BR\* api.zip
+    zip -rm careercircle-api-veracode.zip * -x Polly*.dll api.zip
+    zip -rm careercircle-api-veracode.zip * -x NuGet.* api.zip
+    zip -rm careercircle-api-veracode.zip * -x nl\* api.zip
+    zip -rm careercircle-api-veracode.zip * -x NETCore.* api.zip
+    zip -rm careercircle-api-veracode.zip * -x MiniGuid.* api.zip
+    zip -rm careercircle-api-veracode.zip * -x Microsoft.* api.zip
+    zip -rm careercircle-api-veracode.zip * -x HtmlAgilityPack.* api.zip
+    zip -rm careercircle-api-veracode.zip * -x HangFire.* api.zip
+    zip -rm careercircle-api-veracode.zip * -x Google.* api.zip
+    zip -rm careercircle-api-veracode.zip * -x GeoJSON.* api.zip
+    zip -rm careercircle-api-veracode.zip * -x es\* api.zip
+    zip -rm careercircle-api-veracode.zip * -x dotnet-* api.zip
+    zip -rm careercircle-api-veracode.zip * -x com.tra* api.zip
+    zip -rm careercircle-api-veracode.zip * -x ButterCMS.* api.zip
+    zip -rm careercircle-api-veracode.zip * -x AutoMapper.* api.zip
+    zip -rm careercircle-api-veracode.zip * -x Auth0.* api.zip
+  displayName: Packaging build output for VeraCode, no config and only first party code
 
 - task: Veracode@3
   inputs:
