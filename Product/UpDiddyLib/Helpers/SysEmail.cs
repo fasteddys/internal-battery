@@ -51,7 +51,17 @@ namespace UpDiddyLib.Helpers
             return true;
         }
 
-        public async Task<bool> SendTemplatedEmailAsync(string email, string templateId, dynamic templateData, Constants.SendGridAccount SendGridAccount, string subject = null, List<Attachment> attachments = null, DateTime? sendAt = null, int? unsubscribeGroupId = null)
+        public async Task<bool> SendTemplatedEmailAsync(
+            string email,
+            string templateId,
+            dynamic templateData,
+            Constants.SendGridAccount SendGridAccount,
+            string subject = null,
+            List<Attachment> attachments = null,
+            DateTime? sendAt = null,
+            int? unsubscribeGroupId = null,
+            string cc = null,
+            string bcc = null)
         {
             bool isDebugMode = _configuration[$"SysEmail:DebugMode"] == "true";
             string SendGridAccountType = Enum.GetName(typeof(Constants.SendGridAccount), SendGridAccount);

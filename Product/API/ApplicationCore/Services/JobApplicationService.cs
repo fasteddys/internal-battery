@@ -167,7 +167,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                         RecruiterGuid = jobPosting.Recruiter.RecruiterGuid,
                         JobApplicationGuid = jobApplicationGuid
                     };
-                    _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(email, templateId, templateData, Constants.SendGridAccount.Transactional, null, attachments, null, null));
+                    _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(email, templateId, templateData, Constants.SendGridAccount.Transactional, null, attachments, null, null, null, null));
                 }
             }
             catch (Exception e)
