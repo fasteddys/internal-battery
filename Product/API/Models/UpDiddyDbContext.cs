@@ -304,6 +304,8 @@ namespace UpDiddyApi.Models
         public DbQuery<PipelineProfileDto> PipelineProfiles { get; set; }
         public DbQuery<PipelineDto> Pipelines { get; set; }
 
+        public DbQuery<EmailStatisticsDto> EmailStatistics { get; set; }
+
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

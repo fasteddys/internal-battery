@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Dto.User;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces
@@ -13,6 +14,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
         Task ForceVerification(Guid subscriberGuid);
 
         Task SendVerificationEmail(Guid subscriberGuid);
+
+        Task<EmailStatisticsListDto> GetEmailStatistics(Guid subscriberGuid);
 
         Task RemoveAccount(Guid subscriberGuid);
     }

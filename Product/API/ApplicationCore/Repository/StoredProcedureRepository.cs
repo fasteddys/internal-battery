@@ -1196,11 +1196,28 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return true;
         }
 
-
         public async Task<int>  BootG2Profiles()
         {
             var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Create_G2Profiles]");
             return rowsAffected;
+        }
+
+        public async Task<EmailStatisticsListDto> GetEmailStatistics(string emailAddress, TimeSpan duration)
+        {
+            var emailAddressParam = new SqlParameter("@emailAddress", SqlDbType.NVarChar, 500);
+            emailAddressParam.Value = emailAddress;
+
+            var startDate = DateTime.UtcNow.Subtract(duration);
+            var startDateParam = new SqlParameter("@startDate", SqlDbType.DateTime);
+            startDateParam.Value = startDate;
+
+            var spParams = new object[] { emailAddressParam, startDateParam };
+
+            var emailStatistics = await _dbContext.EmailStatistics
+                .FromSql<EmailStatisticsDto>("System_Get_SendgridEvents @emailAddress, @startDate", spParams)
+                .ToListAsync();
+
+            return new EmailStatisticsListDto { EmailStatistics = emailStatistics };
         }
     }
 }
