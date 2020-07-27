@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UpDiddyLib.Domain.Models
 {
@@ -13,14 +14,17 @@ namespace UpDiddyLib.Domain.Models
 
         public DateTime? Processed { get; set; }
 
+        [Column("Click")]
         public DateTime? Clicked { get; set; }
 
         public DateTime? Delivered { get; set; }
 
+        [Column("Bounce")]
         public DateTime? Bounced { get; set; }
 
         public DateTime? Deferred { get; set; }
 
+        [Column("Open")]
         public DateTime? Opened { get; set; }
     }
 
