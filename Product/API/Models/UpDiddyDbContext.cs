@@ -305,6 +305,7 @@ namespace UpDiddyApi.Models
         public DbQuery<EmailTemplateDto> EmailTemplates { get; set; }
         public DbQuery<PipelineProfileDto> PipelineProfiles { get; set; }
         public DbQuery<PipelineDto> Pipelines { get; set; }
+        public DbQuery<string> TrackingPageSlugs { get; set; }
 
         #endregion
 
@@ -750,6 +751,11 @@ namespace UpDiddyApi.Models
                     .WithMany(pl => pl.SubscriberLanguageProficiencies)
                     .HasForeignKey(slp => slp.ProficiencyLevelId);
             });
+
+            modelBuilder.Entity<SubscriberEmploymentTypes>()
+                .HasIndex(set => new { set.SubscriberId, set.EmploymentTypeId })
+                .HasName("UIX_Tracking_SourceSlug")
+                .IsUnique(true);
         }
     }
 }
