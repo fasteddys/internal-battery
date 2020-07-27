@@ -13,11 +13,10 @@ namespace UpDiddyLib.Domain.AzureSearchDocuments
 {
    public class CandidateSDOC
     {
+      
         [JsonProperty("@search.action")]
         public string SearchAction { get; set; }
-     
-        public Guid ProfileGuid { get; set; }
-
+      
         public string FirstName { get; set; }
 
         public string LastName { get; set; }
@@ -26,8 +25,6 @@ namespace UpDiddyLib.Domain.AzureSearchDocuments
 
         public string PhoneNumber { get; set; }
 
-        public string ContactType { get; set; }
-
         public string StreetAddress { get; set; }
 
         public string City { get; set; }
@@ -35,38 +32,13 @@ namespace UpDiddyLib.Domain.AzureSearchDocuments
         public string State { get; set; }
 
         public string Postal { get; set; }
-
-        public string ExperienceLevel { get; set; }
-
-        public string EmploymentTypes { get; set; }
-
+ 
         public string Title { get; set; }
-
-        public bool? IsWillingToTravel { get; set; }
-
-        public bool? IsActiveJobSeeker { get; set; }
-
-        public bool? IsCurrentlyEmployed { get; set; }
-
-        public bool? IsWillingToWorkProBono { get; set; }
-
-        public bool? IsWillingToRelocate { get; set; }
-
-
+         
         public float CurrentRate { get; set; }
-
-        public float DesiredRate { get; set; }
-
-        public string Tags { get; set; }
-
-        public string PublicSkills { get; set; }
-
-        public string PrivateSkills { get; set; }
-    
+                
         public Point Location { get; set; }
-
-        public Guid CompanyGuid { get; set; }
-
+ 
         public DateTime? ModifyDate { get; set; }
 
         public Guid SubscriberGuid { get; set; }
@@ -77,6 +49,9 @@ namespace UpDiddyLib.Domain.AzureSearchDocuments
 
         public DateTime? CreateDate { get; set; }
 
-     
+        public List<string> Skills { get; set; }
+
+        public List<LanguageSDOC> Languages { get; set; }
+
     }
 }

@@ -2423,9 +2423,9 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
         /// <returns></returns>
         public async Task<bool> CandidateIndexAddOrUpdate(CandidateSDOC candidate)
         {
-            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdate starting index for candidate {candidate.ProfileGuid}");
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdate starting index for candidate {candidate.SubscriberGuid}");
             await _candidateService.CandidateIndexAsync(candidate);
-            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdate done index for candidate {candidate.ProfileGuid}");
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdate done index for candidate {candidate.SubscriberGuid}");
             return true;
         }
 

@@ -157,11 +157,9 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureSearch
         private async Task<AzureIndexResult> SendCandidateRequestBulk(List<CandidateSDOC> candidateDocs, string cmd)
         {
             string index = _configuration["AzureSearch:CandidateIndexName"];
-            SDOCRequest<CandidateSDOC> docs = new SDOCRequest<CandidateSDOC>();
-            List<Guid> profileGuidList = new List<Guid>();
+            SDOCRequest<CandidateSDOC> docs = new SDOCRequest<CandidateSDOC>(); 
             foreach (CandidateSDOC doc in candidateDocs)
-            {
-                profileGuidList.Add(doc.ProfileGuid);
+            {         
                 doc.SearchAction = cmd;
                 docs.value.Add(doc);
             }

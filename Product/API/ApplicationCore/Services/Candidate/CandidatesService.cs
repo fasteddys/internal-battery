@@ -513,7 +513,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
              v_CandidateAzureSearch candidateProfile = _db.CandidateAzureSearch
             .Where(p => p.SubscriberGuid == subscriberGuid)
             .FirstOrDefault(); 
-            CandidateSDOC indexDoc = await MapToG2SDOC(candidateProfile);
+            CandidateSDOC indexDoc = await MapToCandidateSDOC(candidateProfile);
  
             // fire off as background job 
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexAddOrUpdate(indexDoc));
@@ -550,7 +550,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         }
 
 
-        private async Task<CandidateSDOC> MapToG2SDOC(v_CandidateAzureSearch candidate)
+        private async Task<CandidateSDOC> MapToCandidateSDOC(v_CandidateAzureSearch candidate)
         {
             try
             {
@@ -562,12 +562,47 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                     Position p = new Position(lat, lng);
                     indexDoc.Location = new Point(p);
                 }
+                // map skill to list 
+                // todo jab test without assigning this property
+                if (!string.IsNullOrEmpty(candidate.Skills))
+                {
+                    string[] skillArray = candidate.Skills.Split(';');
+                    List<string> skillList = new List<string>();
+                    foreach (string skill in skillArray)
+                        skillList.Add(skill);
+
+                    indexDoc.Skills = skillList;
+                }
+
+                // todo jab test without assigning this property
+                if (!string.IsNullOrEmpty(candidate.SubscriberLanguages))
+                {
+                    List<LanguageSDOC> languageSDOCs = new List<LanguageSDOC>();
+
+                    string[] languageArray = candidate.SubscriberLanguages.Split(';');            
+                    foreach (string languageInfo in languageArray)
+                    {
+                        string[] langInfo = languageInfo.Split('|');
+                        languageSDOCs.Add(new LanguageSDOC()
+                        {
+                            Language = langInfo[0],
+                            Proficiency = langInfo[1]
+                        });
+                    }                         
+                    indexDoc.Languages = languageSDOCs;
+                }
+
+
+
+ 
+
+
                 // manually map the location.  todo find a way for automapper to do this 
                 return indexDoc;
             }
             catch (Exception ex)
             {
-                _logger.LogError($"CandidateService:MapToG2SDOC Exception for profile {candidate.ProfileGuid}; error: {ex.Message}, stack trace: {ex.StackTrace}");
+                _logger.LogError($"CandidateService:MapToG2SDOC Exception for subscriber {candidate.SubscriberGuid}; error: {ex.Message}, stack trace: {ex.StackTrace}");
                 throw;
             }
         }

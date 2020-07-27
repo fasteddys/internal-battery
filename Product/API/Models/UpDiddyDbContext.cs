@@ -749,6 +749,14 @@ namespace UpDiddyApi.Models
                     .WithMany(pl => pl.SubscriberLanguageProficiencies)
                     .HasForeignKey(slp => slp.ProficiencyLevelId);
             });
+
+
+
+            modelBuilder
+                .Query<v_CandidateAzureSearch>()
+                .ToView("v_CandidateAzureSearch", "B2B");
+
+
         }
     }
 }
