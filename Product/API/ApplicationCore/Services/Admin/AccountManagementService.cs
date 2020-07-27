@@ -1,5 +1,6 @@
 ﻿using Auth0.ManagementApi.Models;
 using AutoMapper;
+using Braintree;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -225,7 +226,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
 
         private void NotifyUser(Subscriber subscriber)
             => _hangfireService.Enqueue(() => _emailService.SendTemplatedEmailAsync(
-                subscriber.Email,
+                new[] { subscriber.Email },
                 _configuration["SysEmail:Transactional:TemplateIds:AccountDeletionNotification"],
                 null,
                 Constants.SendGridAccount.Transactional,
@@ -234,6 +235,6 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
                 null,
                 null,
                 null,
-                _configuration["Admin:ccEmail"]));
+                _configuration.GetValue<string[]>("Admin:ccEmail")));
     }
 }

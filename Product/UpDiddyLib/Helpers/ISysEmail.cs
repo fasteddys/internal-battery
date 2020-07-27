@@ -22,6 +22,19 @@ namespace UpDiddyLib.Helpers
             string cc = null,
             string bcc = null);
 
+        Task<bool> SendTemplatedEmailAsync(
+            string[] to,
+            string templateId,
+            dynamic templateData,
+            Constants.SendGridAccount SendGridAccount,
+            string subject = null,
+            List<Attachment> attachments = null,
+            DateTime? sendAt = null,
+            int? unsubscribeGroupId = null,
+            string[] cc = null,
+            string[] bcc = null);
+
+
         Task<bool> SendTemplatedEmailWithReplyToAsync(
             string email,
             string templateId,
