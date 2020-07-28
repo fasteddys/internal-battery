@@ -10,7 +10,14 @@ pool:
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#variables
 variables:
-  buildConfiguration: 'Release'
+  buildConfiguration: 'Debug'
+  enableCustomProcessTemplate: true
+  customWorkItemType: 'Issue'
+  customPTActiveStatus: 'Active'
+  customPTNewStatus: 'New'
+  customPTResolvedStatus: 'Resolved'
+  customPTDesignStatus: 'Active'
+  customPTCloseStatus: 'Closed' 
 
 # trigger CI build for the following branches, and only trigger if changes are in UpDiddyLib or API
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#triggers
@@ -71,8 +78,8 @@ steps:
 
 - script: |
     cd $(Build.ArtifactStagingDirectory)
-    zip -rm careercircle-api-veracode.zip * -x *.json* api.zip
-  displayName: Packaging build output
+    zip -r careercircle-api-veracode.zip UpDiddy*.*
+  displayName: Packaging build output for VeraCode, no config and only first party code
 
 - task: Veracode@3
   inputs:
@@ -83,7 +90,7 @@ steps:
     version: '$(build.buildNumber)'
     filepath: '$(build.artifactstagingdirectory)/careercircle-api-veracode.zip'
     sandboxName: 'API Sandbox'
-    createSandBox: true
+    createSandBox: false
     createProfile: false
     failTheBuildIfVeracodeScanDidNotInitiate: false
     scanStatusCheckInterval: '60'
