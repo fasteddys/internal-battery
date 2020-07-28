@@ -96,6 +96,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 // consolidated logic for job application emails
                 await this.SendJobApplicationEmail(subscriber, jobPosting, applicationDto, jobApplication.JobApplicationGuid);
+                SendJobConfirmationEmail(subscriber);
 
                 return jobApplication.JobApplicationGuid;
             }
@@ -167,7 +168,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                         RecruiterGuid = jobPosting.Recruiter.RecruiterGuid,
                         JobApplicationGuid = jobApplicationGuid
                     };
-                    _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(email, templateId, templateData, Constants.SendGridAccount.Transactional, null, attachments, null, null));
+                    _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(email, templateId, templateData, Constants.SendGridAccount.Transactional, null, attachments, null, null, null, null));
                 }
             }
             catch (Exception e)
@@ -179,6 +180,19 @@ namespace UpDiddyApi.ApplicationCore.Services
                 _syslog.Log(LogLevel.Information, $"***** JobApplicationService.SendJobApplicationEmail started at: {DateTime.UtcNow.ToLongDateString()}");
             }
         }
+
+        private void SendJobConfirmationEmail(Subscriber subscriber)
+            => _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(
+                subscriber.Email,
+                _configuration["SysEmail:Transactional:TemplateIds:JobApplicationUserConfirmation"],
+                null, // templateData
+                Constants.SendGridAccount.Transactional,
+                null, // subject
+                null, // attachments
+                null, // sendAt
+                null, // unsubscribeGroupId
+                null, // cc
+                null)); // bcc
 
         // per Foley the requirment for a cover letter has been removed
         private bool ValidateJobApplication(ApplicationDto applicationDto, Guid subscriberGuid, Guid jobGuid, ref Subscriber subscriber, ref JobPosting jobPosting, ref string ErrorMsg)

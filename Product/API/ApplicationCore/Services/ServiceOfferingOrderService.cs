@@ -131,6 +131,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                null,
                null,
                null,
+               null,
+               null,
                null
                 ));
 
@@ -146,6 +148,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                     purchaseGuid = order.ServiceOfferingOrderGuid
                 },
                Constants.SendGridAccount.Transactional,
+               null,
+               null,
                null,
                null,
                null,

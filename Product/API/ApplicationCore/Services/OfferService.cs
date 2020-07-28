@@ -81,7 +81,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _repositoryWrapper.SaveAsync();
 
             _hangfireService.Enqueue(() =>
-                _sysEmail.SendTemplatedEmailAsync( subscriber.Email, _configuration["SysEmail:Transactional:TemplateIds:SubscriberOffer-Redemption"], offer, Constants.SendGridAccount.Transactional, null, null, null, null));
+                _sysEmail.SendTemplatedEmailAsync( subscriber.Email, _configuration["SysEmail:Transactional:TemplateIds:SubscriberOffer-Redemption"], offer, Constants.SendGridAccount.Transactional, null, null, null, null, null, null));
 
             return subscriberActionGuid;
         }

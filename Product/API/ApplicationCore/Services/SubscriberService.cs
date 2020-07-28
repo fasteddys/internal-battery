@@ -538,6 +538,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                  null,
                  null,
                  null,
+                 null,
+                 null,
                  null
              ));
         }
