@@ -190,7 +190,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                 null, // subject
                 null, // attachments
                 null, // sendAt
-                null)); // unsubscribeGroupId
+                null, // unsubscribeGroupId
+                null, // cc
+                null)); // bcc
 
         // per Foley the requirment for a cover letter has been removed
         private bool ValidateJobApplication(ApplicationDto applicationDto, Guid subscriberGuid, Guid jobGuid, ref Subscriber subscriber, ref JobPosting jobPosting, ref string ErrorMsg)
