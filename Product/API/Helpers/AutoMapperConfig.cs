@@ -1190,6 +1190,17 @@ namespace UpDiddyApi.Helpers
              .ForMember(dest => dest.IsEmailVerified, opt => opt.MapFrom(src => src.IsVerified))
              .ForMember(dest => dest.IsHiringManager, opt => opt.Ignore())
              .ReverseMap();
+
+            CreateMap<List<WorkHistoryDto>, WorkHistoryListDto>()
+                .AfterMap((src, dest) =>
+                {
+                    if (src != null && src.Count() > 0)
+                        dest.TotalRecords = src.FirstOrDefault().TotalRecords;
+                    else
+                        dest.TotalRecords = 0;
+                })
+                .ForMember(dest => dest.WorkHistories, opt => opt.MapFrom(src => src.ToList()))
+                .ReverseMap();
         }
     }
 }

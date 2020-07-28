@@ -464,5 +464,20 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         }
 
         #endregion
+
+        #region Work History
+
+        public async Task<WorkHistoryListDto> GetCandidateWorkHistory(Guid subscriberGuid, int limit, int offset, string sort, string order)
+        {
+            var candidateWorkHistory = await _repositoryWrapper.SubscriberRepository.GetCandidateWorkHistory(subscriberGuid, limit, offset, sort, order);
+            return _mapper.Map<WorkHistoryListDto>(candidateWorkHistory);
+        }
+
+        public async Task UpdateCandidateWorkHistory(Guid subscriberGuid, WorkHistoryUpdateDto request)
+        {
+            await _repositoryWrapper.SubscriberRepository.UpdateCandidateWorkHistory(subscriberGuid, request);
+        }
+
+        #endregion
     }
 }

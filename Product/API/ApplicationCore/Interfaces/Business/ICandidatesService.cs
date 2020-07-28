@@ -44,5 +44,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<CompensationPreferencesDto> GetCompensationPreferences(Guid subscriberGuid);
 
         Task UpdateCompensationPreferences(CompensationPreferencesDto compensationPreferences, Guid subscriberGuid);
+        Task<WorkHistoryListDto> GetCandidateWorkHistory(Guid subscriberGuid, int limit, int offset, string sort, string order);
+        Task UpdateCandidateWorkHistory(Guid subscriberGuid, WorkHistoryUpdateDto request);
     }
 }

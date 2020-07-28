@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
@@ -603,6 +605,46 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
 
             return subscriberGuid;
+        }
+
+        public async Task<List<WorkHistoryDto>> GetCandidateWorkHistory(Guid subscriberGuid, int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {                
+                new SqlParameter("@SubscriberGuid", subscriberGuid),
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+            List<WorkHistoryDto> workHistories = null;
+            workHistories = await _dbContext.WorkHistories.FromSql<WorkHistoryDto>("[dbo].[System_Get_SubscriberWorkHistory] @SubscriberGuid, @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return workHistories;
+        }
+
+        public async Task UpdateCandidateWorkHistory(Guid subscriberGuid, WorkHistoryUpdateDto request)
+        {
+            DataTable subscriberWorkHistoryTable = new DataTable();
+            subscriberWorkHistoryTable.Columns.Add("StartDate", typeof(DateTime?));
+            subscriberWorkHistoryTable.Columns.Add("CompanyName", typeof(string));
+            subscriberWorkHistoryTable.Columns.Add("EndDate", typeof(DateTime?));
+            subscriberWorkHistoryTable.Columns.Add("IsCurrent", typeof(bool?));
+            subscriberWorkHistoryTable.Columns.Add("JobDescription", typeof(string));
+            subscriberWorkHistoryTable.Columns.Add("JobTitle", typeof(string));
+            subscriberWorkHistoryTable.Columns.Add("SubscriberWorkHistoryGuid", typeof(Guid?));
+
+            if(request!= null && request.WorkHistories.Count > 0)
+            {
+                foreach(var workHistory in request.WorkHistories)
+                {
+                    subscriberWorkHistoryTable.Rows.Add(workHistory.BeginDate, workHistory.CompanyName, workHistory.EndDate, workHistory.IsCurrent, workHistory.JobDescription, workHistory.JobTitle, workHistory.WorkHistoryGuid);
+                }
+            }
+            var subscriberWorkHistory = new SqlParameter("@SubscriberWorkHistory", subscriberWorkHistoryTable);
+            subscriberWorkHistory.SqlDbType = SqlDbType.Structured;
+            subscriberWorkHistory.TypeName = "dbo.SubscriberWorkHistory";
+
+            var spParams = new object[] { subscriberGuid, subscriberWorkHistory };
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Update_SubscriberWorkHistory] @SubscriberGuid, @SubscriberWorkHistory", spParams);
         }
     }
 }
