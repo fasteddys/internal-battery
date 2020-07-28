@@ -113,8 +113,6 @@ steps:
   inputs:
     artifactName: 'api'
 
-
-
 - task: Veracode Flaw Importer@3
   inputs:
     ConnectionDetailsSelection: 'Credentials'
