@@ -11,6 +11,13 @@ pool:
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#variables
 variables:
   buildConfiguration: 'Debug'
+  enableCustomProcessTemplate: true
+  customWorkItemType: 'Issue'
+  customPTActiveStatus: 'Active'
+  customPTNewStatus: 'New'
+  customPTResolvedStatus: 'Resolved'
+  customPTDesignStatus: 'Active'
+  customPTCloseStatus: 'Closed' 
 
 # trigger CI build for the following branches, and only trigger if changes are in UpDiddyLib or API
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#triggers
@@ -113,18 +120,16 @@ steps:
   inputs:
     artifactName: 'api'
 
-
-
-#- task: Veracode Flaw Importer@3
-#  inputs:
-#    ConnectionDetailsSelection: 'Credentials'
-#    apiId: 'a62af963845be301e225b9770cd91e8f'
-#    apiKey: '6cd32d7b3c2bd847f5bc19debf8c968c2a85ac0fccd83b99564a1e8efb7c18c2eb4dcfccc170b7810301820524e829bb0c0243946f1d5618803b85666b283fba'
-#    veracodeAppProfile: 'CareerCircle'
-#    sandboxName: 'API Sandbox'
-#    importType: 'All Unmitigated Flaws Violating Policy'
-#    workItemType: 'Issue'
-#    area: 'UpDiddy'
-#    addCustomTag: 'Veracode'
-#    flawImportLimit: '1000'
+- task: Veracode Flaw Importer@3
+  inputs:
+    ConnectionDetailsSelection: 'Credentials'
+    apiId: 'a62af963845be301e225b9770cd91e8f'
+    apiKey: '6cd32d7b3c2bd847f5bc19debf8c968c2a85ac0fccd83b99564a1e8efb7c18c2eb4dcfccc170b7810301820524e829bb0c0243946f1d5618803b85666b283fba'
+    veracodeAppProfile: 'CareerCircle'
+    sandboxName: 'API Sandbox'
+    importType: 'All Unmitigated Flaws Violating Policy'
+    workItemType: 'Issue'
+    area: 'UpDiddy'
+    addCustomTag: 'Veracode'
+    flawImportLimit: '1000'
 
