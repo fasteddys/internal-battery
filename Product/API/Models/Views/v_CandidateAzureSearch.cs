@@ -37,6 +37,19 @@ namespace UpDiddyApi.Models.Views
         public DateTime? ModifyDate { get; set; }
         public string SubscriberLanguages { get; set; }
 
+        public string CommuteDistance { get; set; }
+        public string IsWillingToTravel { get; set; }
+        public string IsFlexibleWorkScheduleRequired { get; set; }
+        public string EmploymentTypes { get; set; }
+        public string SubscriberTraining { get; set; }
+        public string SubscriberEducation { get; set; }
+
+        public string SubscriberTitles { get; set; }
+
+
+
+
+
 
         // Possible Future 
 

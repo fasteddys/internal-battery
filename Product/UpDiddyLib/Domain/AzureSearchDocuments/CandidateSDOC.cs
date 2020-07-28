@@ -53,5 +53,17 @@ namespace UpDiddyLib.Domain.AzureSearchDocuments
 
         public List<LanguageSDOC> Languages { get; set; }
 
+        public string CommuteDistance { get; set; }
+        public string IsWillingToTravel { get; set; }
+        public string IsFlexibleWorkScheduleRequired { get; set; }
+
+        public List<string> EmploymentTypes { get; set; }
+
+
+        public List<TrainingSDOC> Training { get; set; }
+
+        public List<EducationSDOC> Education { get; set; }
+        public List<string> Titles { get; set; }
+
     }
 }

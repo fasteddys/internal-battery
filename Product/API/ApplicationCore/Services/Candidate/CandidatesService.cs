@@ -488,6 +488,9 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
         #region Candidate Indexing
 
+
+        //todo jab test on subscriber with nothing entered in related tables languges, workhistory etc 
+
         /// <summary>
         /// Index the specified g2 document into azure search 
         /// </summary>
@@ -506,7 +509,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         /// </summary>
         /// <param name="subscriberGuid"></param>
         /// <returns></returns>
-        public async Task<bool> CandidateIndexBySubscriberAsync(Guid subscriberGuid)
+        public async Task<bool> CandidateIndexBySubscriberAsync(Guid subscriberGuid, bool nonBlocking = true)
         {
            
             // Get all non-public G2s for subscriber 
@@ -514,9 +517,13 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             .Where(p => p.SubscriberGuid == subscriberGuid)
             .FirstOrDefault(); 
             CandidateSDOC indexDoc = await MapToCandidateSDOC(candidateProfile);
- 
+
             // fire off as background job 
-            _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexAddOrUpdate(indexDoc));
+            if (nonBlocking)
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexAddOrUpdate(indexDoc));
+            else
+               await CandidateIndexAsync(indexDoc);
+
 
             return true;
         }
@@ -531,7 +538,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
         #region private helper functions 
 
-
+        // TODO JAB Add migration for [System_Update_AzureCandidateStatus]
 
         private async Task<bool> UpdateAzureStatus(AzureIndexResult results, string statusName, string info)
         {
@@ -548,13 +555,16 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             }
             return true;
         }
-
-
+ 
+       
+        // IMPORTANT!         
+        // 1) Any colections of objects (e.g. Skills, Languages, etc.) must be hydrated with an empty list 
         private async Task<CandidateSDOC> MapToCandidateSDOC(v_CandidateAzureSearch candidate)
         {
             try
             {
                 CandidateSDOC indexDoc = _mapper.Map<CandidateSDOC>(candidate);
+                // manually map the location.  todo find a way for automapper to do this 
                 if (candidate.Location != null)
                 {
                     Double lat = (double)candidate.Location.Lat;
@@ -562,42 +572,92 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                     Position p = new Position(lat, lng);
                     indexDoc.Location = new Point(p);
                 }
-                // map skill to list 
-                // todo jab test without assigning this property
+                // map skills to list 
+                List<string> skillList = new List<string>();     
                 if (!string.IsNullOrEmpty(candidate.Skills))
                 {
                     string[] skillArray = candidate.Skills.Split(';');
-                    List<string> skillList = new List<string>();
+                
                     foreach (string skill in skillArray)
                         skillList.Add(skill);
+                 
+                }                
+                indexDoc.Skills = skillList;
 
-                    indexDoc.Skills = skillList;
-                }
-
-                // todo jab test without assigning this property
+                // map  languages 
+                indexDoc.Languages = new List<LanguageSDOC>();          
                 if (!string.IsNullOrEmpty(candidate.SubscriberLanguages))
-                {
-                    List<LanguageSDOC> languageSDOCs = new List<LanguageSDOC>();
-
+                {                   
                     string[] languageArray = candidate.SubscriberLanguages.Split(';');            
                     foreach (string languageInfo in languageArray)
                     {
                         string[] langInfo = languageInfo.Split('|');
-                        languageSDOCs.Add(new LanguageSDOC()
+                        indexDoc.Languages.Add(new LanguageSDOC()
                         {
                             Language = langInfo[0],
                             Proficiency = langInfo[1]
                         });
-                    }                         
-                    indexDoc.Languages = languageSDOCs;
+                    }
+                }
+
+                // map employment types to list 
+                List<string> employmentTypes = new List<string>();
+                if (!string.IsNullOrEmpty(candidate.Skills))
+                {
+                    string[] info = candidate.EmploymentTypes.Split(';');
+
+                    foreach (string employmentType in info)
+                        employmentTypes.Add(employmentType);
+                }
+                indexDoc.EmploymentTypes = employmentTypes;
+
+                // map trainings 
+                indexDoc.Training = new List<TrainingSDOC>();
+                if (!string.IsNullOrEmpty(candidate.SubscriberLanguages))
+                {
+                    string[] info = candidate.SubscriberTraining.Split(';');
+                    foreach (string data in info)
+                    {
+                        string[] trainingInfo = data.Split('|');
+                        indexDoc.Training.Add(new TrainingSDOC()
+                        {
+                             Type = trainingInfo[0],
+                             Institution = trainingInfo[1],
+                             Name = trainingInfo[2]                             
+                        });
+                    }
+                }
+
+                // map Education 
+                indexDoc.Education = new List<EducationSDOC>();
+                if (!string.IsNullOrEmpty(candidate.SubscriberLanguages))
+                {
+                    string[] info = candidate.SubscriberEducation.Split(';');
+                    foreach (string data in info)
+                    {
+                        string[] educationInfo = data.Split('|');
+                        indexDoc.Education.Add(new EducationSDOC()
+                        {
+                            Institution = educationInfo[0],
+                            DegreeType = educationInfo[1],
+                            Degree = educationInfo[2]
+                        });
+                    }
                 }
 
 
+                // map job titles
+                indexDoc.Titles = new List<string>();
+                if (!string.IsNullOrEmpty(candidate.Skills))
+                {
+                    string[] info = candidate.SubscriberTitles.Split(';');
 
- 
+                    foreach (string title in info)
+                        indexDoc.Titles.Add(title);
+
+                }
 
 
-                // manually map the location.  todo find a way for automapper to do this 
                 return indexDoc;
             }
             catch (Exception ex)

@@ -47,7 +47,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task UpdateCompensationPreferences(CompensationPreferencesDto compensationPreferences, Guid subscriberGuid);
 
 
-        Task<bool> CandidateIndexBySubscriberAsync(Guid subscriberGuid);
+        Task<bool> CandidateIndexBySubscriberAsync(Guid subscriberGuid, bool nonBlocking = true);
         Task<bool> CandidateIndexAsync(CandidateSDOC candidate);
 
 
