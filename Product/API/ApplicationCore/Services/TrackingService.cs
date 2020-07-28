@@ -191,10 +191,10 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task AddUpdateLandingPageTracking(string url)
         {
-            _logger.LogInformation($"TrackingService:UpdateLandingPageTracking  Starting for url: {url}");
+            _logger.LogInformation($"TrackingService:AddUpdateLandingPageTracking Starting for url: {url}");
 
             if (String.IsNullOrWhiteSpace(url))
-                throw new FailedValidationException($"TrackingService:UpdateLandingPageTracking url cannot be null or empty.");
+                throw new FailedValidationException($"TrackingService:AddUpdateLandingPageTracking url cannot be null or empty.");
             try
             {
                 _hangfireService.Enqueue(() => _repositoryWrapper.TrackingRepository.AddUpdateTracking(url));
@@ -203,11 +203,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError($"TrackingService:UpdateLandingPageTracking  Error: {ex.ToString()} ");
+                _logger.LogError($"TrackingService:AddUpdateLandingPageTracking Error: {ex.ToString()} ");
                 throw ex;
             }
 
-            _logger.LogInformation($"TrackingService:UpdateLandingPageTracking  Done for url: {url}");
+            _logger.LogInformation($"TrackingService:AddUpdateLandingPageTracking Done for url: {url}");
         }
     }
 }
