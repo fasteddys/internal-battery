@@ -14,6 +14,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Services.Identity.Interfaces;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
+using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Helpers;
 
@@ -164,6 +165,20 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             }
 
             _logger.LogInformation($"AccountManagementService:SendVerificationEmail end.");
+        }
+
+        public async Task<EmailStatisticsListDto> GetEmailStatistics(Guid subscriberGuid)
+        {
+            var subscriber = await _repository.SubscriberRepository
+                .GetSubscriberByGuidAsync(subscriberGuid);
+
+            if (subscriber == null)
+            {
+                throw new NotFoundException("No subscriber for the given subscriberGuid found");
+            }
+
+            return await _repository.StoredProcedureRepository
+                .GetEmailStatistics(subscriber.Email, TimeSpan.FromDays(30));
         }
 
         public async Task RemoveAccount(Guid subscriberGuid)
