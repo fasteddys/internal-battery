@@ -23,56 +23,35 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<string> GetFullUrlAfterTracking(string sourceSlug)
         {
-            var spParams = new object[] {
-                new SqlParameter("@sourceSlug", sourceSlug)
-                };
-            string fullUrl = _dbContext.TrackingPageSlugs.FromSql<string>("[dbo].[System_Get_FullUrlFromSlugTrackingEventLog]  @sourceSlug", spParams).ToString();
+            SqlParameter slugParam = new SqlParameter();
+            slugParam.ParameterName = "@sourceSlug";
+            slugParam.SqlDbType = SqlDbType.VarChar;
+            slugParam.Direction = ParameterDirection.Input;
+            slugParam.Size = 50;
+            slugParam.Value = sourceSlug;
 
-            //await _dbContext.Query<string>("[G2].[System_Get_ProfileSkillsForRecruiter] @ProfileGuid, @SubscriberGuid, @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            SqlParameter urlParam = new SqlParameter();
+            urlParam.ParameterName = "@url";
+            urlParam.SqlDbType = SqlDbType.VarChar;
+            urlParam.Size = 2048;
+            urlParam.Direction = ParameterDirection.Output;
+
+            var sprocResponse = await _dbContext.Database.ExecuteSqlCommandAsync("[dbo].[System_Get_FullUrlFromSlugTrackingEventLog]  @sourceSlug = @sourceSlug, @url = @url OUTPUT", new object[] { slugParam, urlParam });
+            string fullUrl = urlParam.Value.ToString();
+
             return fullUrl;
-
-            //var tracking = await _dbContext.Tracking.FirstOrDefaultAsync(t => t.SourceSlug.Equals(url.Trim(), StringComparison.OrdinalIgnoreCase));
-
-            //if (tracking == null) return null;
-
-            //var trackingEventDay = await _dbContext.TrackingEventDay.
-            //    FirstOrDefaultAsync(t => t.TrackingId == tracking.TrackingId &&
-            //                             t.Day.Date.Equals(DateTime.UtcNow.Date));
-
-            //if(trackingEventDay != null)
-            //{
-            //    //update count on existing tracking record
-            //    trackingEventDay.Count = trackingEventDay.Count + 1;
-            //    trackingEventDay.ModifyDate = DateTime.UtcNow;
-            //}
-            //else
-            //{
-            //    //add new tracking record
-            //    _dbContext.TrackingEventDay.Add(new TrackingEventDay
-            //    {
-            //        CreateDate = DateTime.UtcNow,
-            //        CreateGuid = Guid.Empty,
-            //        Tracking = tracking,
-            //        TrackingEventDayGuid = Guid.NewGuid(),
-            //        Count = 1,
-            //        Day = DateTime.UtcNow.Date,
-            //        IsDeleted = 0
-            //    });
-            //}
-
-            //await _dbContext.SaveChangesAsync();
-
-            //return tracking;
-
         }
 
         public async Task AddUpdateTracking(string url)
         {
-            var spParams = new object[] {
-                new SqlParameter("@url", url)
-                };
+            SqlParameter urlParam = new SqlParameter();
+            urlParam.ParameterName = "@url";
+            urlParam.SqlDbType = SqlDbType.VarChar;
+            urlParam.Size = 2048;
+            urlParam.Direction = ParameterDirection.Input;
+            urlParam.Value = url;
 
-            var fullUrl = _dbContext.Database.ExecuteSqlCommand("[dbo].[System_Create_Update_LandingPageTrackingEvent] @url", spParams);
+            var sprocResponse = await _dbContext.Database.ExecuteSqlCommandAsync("[dbo].[System_Create_Update_LandingPageTrackingEvent] @url = @url", new object[] { urlParam } );
         }
 
     }

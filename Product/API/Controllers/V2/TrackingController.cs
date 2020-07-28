@@ -23,14 +23,17 @@ namespace UpDiddyApi.Controllers.V2
         [HttpGet("redirect/{slug}")]
         public async Task<ActionResult<UrlDto>> GetQualifiedUrlAfterTracking(string slug)
         {
+            var response = await _trackingService.GetFullUrlAfterTracking(slug);
 
-            return new UrlDto();
+            if(response == null) return NotFound();
+
+            return response;
         }
 
         [HttpPut("landing-page")]
-        public async Task<ActionResult> UpdateLandingPageTracking(string fullUrl)
+        public async Task<ActionResult> AddUpdateLandingPageTracking(UrlDto urlDto)
         {
-
+            await _trackingService.AddUpdateLandingPageTracking(urlDto.Url.GetLeftPart(UriPartial.Path));
             return StatusCode(202);
         }
     }

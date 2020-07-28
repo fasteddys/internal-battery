@@ -6,6 +6,6 @@ namespace UpDiddyLib.Domain.Models
 {
     public class UrlDto
     {
-        public Uri Url { get; set; } = new Uri("https://www.careercircle.com/");
+        public Uri Url { get; set; }
     }
 }

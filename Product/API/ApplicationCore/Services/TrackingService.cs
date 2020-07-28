@@ -87,10 +87,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 fullUrl = await _repositoryWrapper.TrackingRepository.GetFullUrlAfterTracking(sourceSlug);
 
+                if (String.IsNullOrWhiteSpace(fullUrl)) return null;
             }
             catch (Exception ex)
             {
                 _logger.LogError($"TrackingService:GetFullUrlAfterTracking  Error: {ex.ToString()} ");
+                throw ex;
             }
 
             return new UrlDto
@@ -187,20 +189,22 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _repositoryWrapper.SubscriberActionRepository.SaveAsync();
         }
 
-        public async Task UpdateLandingPageTracking(string url)
+        public async Task AddUpdateLandingPageTracking(string url)
         {
             _logger.LogInformation($"TrackingService:UpdateLandingPageTracking  Starting for url: {url}");
 
             if (String.IsNullOrWhiteSpace(url))
-                throw new FailedValidationException($"TrackingService:UpdateLandingPageTracking slugName cannot be null or empty.");
+                throw new FailedValidationException($"TrackingService:UpdateLandingPageTracking url cannot be null or empty.");
             try
             {
-                //Add hangfire job
-                await _repositoryWrapper.TrackingRepository.AddUpdateTracking(url);
+                _hangfireService.Enqueue(() => _repositoryWrapper.TrackingRepository.AddUpdateTracking(url));
+                //To test use below statement
+                //await _repositoryWrapper.TrackingRepository.AddUpdateTracking(url);
             }
             catch (Exception ex)
             {
                 _logger.LogError($"TrackingService:UpdateLandingPageTracking  Error: {ex.ToString()} ");
+                throw ex;
             }
 
             _logger.LogInformation($"TrackingService:UpdateLandingPageTracking  Done for url: {url}");
