@@ -29,6 +29,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IHiringSolvedService _hiringSolvedService;
         private readonly IHubSpotService _hubSpotService;
         private readonly IMemoryCacheService _memoryCacheService;
+        private readonly ICandidatesService _candidatesService;
 
 
         public ResumeService(IHangfireService hangfireService
@@ -41,6 +42,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         , IHiringSolvedService hiringSolvedService
         , IHubSpotService hubSpotService
         , IMemoryCacheService memoryCacheService
+        , ICandidatesService candidatesService
            )
         {
             _repositoryWrapper = repositoryWrapper;
@@ -53,6 +55,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _hiringSolvedService = hiringSolvedService;
             _hubSpotService = hubSpotService;
             _memoryCacheService = memoryCacheService;
+            _candidatesService = candidatesService;
         }
 
         public async Task<bool> HasSubscriberUploadedResumeForRecruiter(Guid profileGuid, Guid subscriberGuid)
@@ -125,6 +128,9 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             // Call Hubspot to capture last resume update date 
             await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid);
+
+            // todo jab call candidate indexer from here 
+            await _candidatesService.IndexCandidateBySubscriberAsync(subscriberGuid);
             
             return resumeParseGuid;
         }

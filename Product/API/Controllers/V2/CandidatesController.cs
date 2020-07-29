@@ -250,7 +250,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> IndexSubscriber(Guid subscriberGuid)
         {
             // todo jab flip to blocking for release 
-            _candidatesService.CandidateIndexBySubscriberAsync(subscriberGuid, false);
+            _candidatesService.IndexCandidateBySubscriberAsync(subscriberGuid, false);
             return StatusCode(202);
         }
 

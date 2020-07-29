@@ -233,8 +233,7 @@ namespace UpDiddyApi.Controllers.V2
 
         #endregion
 
-
-        // todo jab add migration for ALTER VIEW [B2B].[v_CandidateAzureSearch]
+    
 
         #region Candidate Indexing Admin Operations 
 

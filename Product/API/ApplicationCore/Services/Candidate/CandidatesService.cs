@@ -118,6 +118,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                     }
                 }
                 await _repositoryWrapper.SubscriberRepository.UpdateSubscriberPersonalInfo(subscriberGuid, candidateState, candidatePersonalInfoDto);
+                // update candidate index
+                await IndexCandidateBySubscriberAsync(subscriberGuid);
 
                 // Call Hubspot to update the following properties which are a part of 'personal information': FirstName, LastName
                 await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid);
@@ -169,7 +171,9 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
             try
             {
-                await _repositoryWrapper.SubscriberRepository.UpdateCandidateEmploymentPreferencesBySubscriberGuidAsync(subscriberGuid, candidateEmploymentPreferenceDto);
+                await _repositoryWrapper.SubscriberRepository.UpdateCandidateEmploymentPreferencesBySubscriberGuidAsync  (subscriberGuid, candidateEmploymentPreferenceDto);
+                // update candidate index
+                await IndexCandidateBySubscriberAsync(subscriberGuid);
             }
             catch (Exception ex)
             {
@@ -216,6 +220,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 _logger.LogDebug("CandidatesService:UpdateRolePreference: Updating Candidate 360 Role information for {subscriber}", subscriberGuid);
 
                 await _repositoryWrapper.SubscriberRepository.UpdateRolePreference(subscriberGuid, rolePreference);
+                // update candidate index
+                await IndexCandidateBySubscriberAsync(subscriberGuid);
                 _logger.LogDebug("CandidatesService:UpdateRolePreference: Updated Candidate 360 Role information for {subscriber}", subscriberGuid);
 
                 // Call Hubspot to update the following properties which are a part of 'role preferences': SelfCuratedSkills
@@ -247,6 +253,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 throw new NotFoundException("subscriberGuid cannot be null or empty");
 
             await _repositoryWrapper.SubscriberSkillRepository.UpdateCandidateSkills(subscriberGuid, skillNames);
+            // update candidate index
+            await IndexCandidateBySubscriberAsync(subscriberGuid);
         }
 
         #endregion
@@ -315,6 +323,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
                 languageProficiency.LanguageProficiencyGuid = languageProficiencyGuid;
                 await _repositoryWrapper.SubscriberRepository.UpdateSubscriberLanguageProficiency(languageProficiency, subscriberGuid);
+                // update candidate index
+                await IndexCandidateBySubscriberAsync(subscriberGuid);
 
                 _logger.LogDebug("CandidatesService:UpdateLanguageProficiency: Updated Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", languageProficiencyGuid, subscriberGuid);
             }
@@ -473,6 +483,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             try
             {
                 await _repositoryWrapper.SubscriberEducationHistoryRepository.UpdateCandidateEducationAndTraining(subscriberGuid, subscriberEducationAssessmentsDto);
+                // update candidate index
+                await IndexCandidateBySubscriberAsync(subscriberGuid);
             }
             catch (Exception ex)
             {
@@ -488,9 +500,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
         #region Candidate Indexing
 
-
-        //todo jab test on subscriber with nothing entered in related tables languges, workhistory etc 
-
+       
         /// <summary>
         /// Index the specified g2 document into azure search 
         /// </summary>
@@ -499,17 +509,20 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         public async Task<bool> CandidateIndexAsync(CandidateSDOC candidate)
         {
             AzureIndexResult info = await _azureSearchService.AddOrUpdateCandidate(candidate);
-            // TODO JAB Implement 
+            // Update subscribers azure index status 
             await UpdateAzureStatus(info, Constants.AzureSearchIndexStatus.Indexed, info.StatusMsg);
             return true;
         }
+
+
+  
 
         /// <summary>
         /// For the given subscriber, update or add their profile to the G2 azure index 
         /// </summary>
         /// <param name="subscriberGuid"></param>
         /// <returns></returns>
-        public async Task<bool> CandidateIndexBySubscriberAsync(Guid subscriberGuid, bool nonBlocking = true)
+        public async Task<bool> IndexCandidateBySubscriberAsync(Guid subscriberGuid, bool nonBlocking = true)
         {
            
             // Get all non-public G2s for subscriber 
@@ -538,19 +551,16 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
         #region private helper functions 
 
-        // TODO JAB Add migration for [System_Update_AzureCandidateStatus]
-
         private async Task<bool> UpdateAzureStatus(AzureIndexResult results, string statusName, string info)
         {
             // Call stored procedure 
             try
-            {
-                // TODO JAB
-                // _repository.StoredProcedureRepository.UpdateG2AzureIndexStatuses(results?.DOCResults?.Value ?? new List<AzureIndexResultStatus>(), statusName, info);
+            {            
+                _repositoryWrapper.StoredProcedureRepository.UpdateCandidateAzureIndexStatuses(results?.DOCResults?.Value ?? new List<AzureIndexResultStatus>(), statusName, info);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"G2Service:UpdateG2Status Error updating index statuses; message: {ex.Message}, stack trace: {ex.StackTrace}");
+                _logger.LogError($"CandidateService:UpdateAzureStatus Error updating index statuses; message: {ex.Message}, stack trace: {ex.StackTrace}");
                 throw;
             }
             return true;
@@ -662,7 +672,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             }
             catch (Exception ex)
             {
-                _logger.LogError($"CandidateService:MapToG2SDOC Exception for subscriber {candidate.SubscriberGuid}; error: {ex.Message}, stack trace: {ex.StackTrace}");
+                _logger.LogError($"CandidateService:MapToCandidateSDOC Exception for subscriber {candidate.SubscriberGuid}; error: {ex.Message}, stack trace: {ex.StackTrace}");
                 throw;
             }
         }

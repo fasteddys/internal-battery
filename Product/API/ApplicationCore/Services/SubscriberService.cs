@@ -51,6 +51,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly ZeroBounceApi _zeroBounceApi;
         private IG2Service _g2Service;
         private IHubSpotService _hubSpotService;
+       
 
         public SubscriberService(UpDiddyDbContext context,
             IConfiguration configuration,
@@ -80,6 +81,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _butterCMSService = butterCMSService;
             _g2Service = g2Service;
             _hubSpotService = hubSpotService;
+      
 
         }
 
@@ -397,11 +399,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                     IsDeleted = 0
                 });
                 await _repository.SubscriberRepository.SaveAsync();
-                var subscriber = _repository.SubscriberRepository.GetSubscriberByGuid(createUserDto.SubscriberGuid);
+                var subscriber = _repository.SubscriberRepository.GetSubscriberByGuid(createUserDto.SubscriberGuid);     
 
                 // add the user to the Google Talent Cloud
-                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(createUserDto.SubscriberGuid));
-
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(createUserDto.SubscriberGuid));  
+;
                 if (!string.IsNullOrWhiteSpace(createUserDto.ReferrerUrl) && createUserDto.PartnerGuid != null && createUserDto.PartnerGuid != Guid.Empty)
                 {
                     // use the new tagging service for attribution
