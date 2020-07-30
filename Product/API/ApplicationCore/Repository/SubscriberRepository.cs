@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
@@ -352,7 +354,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             //get all SubscriberEmploymentTypes, include deleted ones.
             var subscriberEmploymentTypes = _dbContext.SubscriberEmploymentTypes
-                              .Where(s => s.Subscriber.IsDeleted == 0 && s.Subscriber.SubscriberGuid == subscriberGuid )
+                              .Where(s => s.Subscriber.IsDeleted == 0 && s.Subscriber.SubscriberGuid == subscriberGuid)
                               .Include(s => s.Subscriber)
                               .Include(s => s.EmploymentType)
                               .Include(s => s.Subscriber.CommuteDistance)
@@ -360,7 +362,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var subscriber = subscriberEmploymentTypes.FirstOrDefault()?.Subscriber ??
                                 await _dbContext.Subscriber
                                               .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
-                                              .FirstOrDefaultAsync(); 
+                                              .FirstOrDefaultAsync();
 
             //get all requested EmploymentTypes
             var employmentTypes = _dbContext.EmploymentType
@@ -372,15 +374,15 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             //ignore deleted ones when filtering to logically delete subscriberEmploymentTypes
             var subscriberEmploymentTypesToDelete = subscriberEmploymentTypes
-                .Where(del => del.IsDeleted == 0 && 
-                            !employmentTypes.Select( et => et.EmploymentTypeGuid).ToList().Contains(del.EmploymentType.EmploymentTypeGuid))
+                .Where(del => del.IsDeleted == 0 &&
+                            !employmentTypes.Select(et => et.EmploymentTypeGuid).ToList().Contains(del.EmploymentType.EmploymentTypeGuid))
                 .Select(set => set.EmploymentType.EmploymentTypeGuid)
                 .ToList();
 
             //check against all the subscriberEmploymentTypes, including deleted ones.
             var subscriberEmploymentTypesToAdd = employmentTypes.Select(et => et.EmploymentTypeGuid).ToList()
-                .Where(add => 
-                        !subscriberEmploymentTypes 
+                .Where(add =>
+                        !subscriberEmploymentTypes
                         .Select(set => set.EmploymentType.EmploymentTypeGuid).ToList().Contains(add))
                 .ToList();
 
@@ -412,13 +414,14 @@ namespace UpDiddyApi.ApplicationCore.Repository
             //Add new SubscriberEmploymentTypes
             foreach (var employmentTypesToAdd in subscriberEmploymentTypesToAdd)
             {
-                _dbContext.SubscriberEmploymentTypes.Add(new SubscriberEmploymentTypes { 
-                      CreateDate = DateTime.UtcNow,
-                      CreateGuid = Guid.Empty,
-                      IsDeleted = 0,
-                      SubscriberEmploymentTypesGuid = Guid.NewGuid(),
-                      SubscriberId = subscriber.SubscriberId,
-                      EmploymentType = employmentTypes.FirstOrDefault(et => et.EmploymentTypeGuid == employmentTypesToAdd)
+                _dbContext.SubscriberEmploymentTypes.Add(new SubscriberEmploymentTypes
+                {
+                    CreateDate = DateTime.UtcNow,
+                    CreateGuid = Guid.Empty,
+                    IsDeleted = 0,
+                    SubscriberEmploymentTypesGuid = Guid.NewGuid(),
+                    SubscriberId = subscriber.SubscriberId,
+                    EmploymentType = employmentTypes.FirstOrDefault(et => et.EmploymentTypeGuid == employmentTypesToAdd)
                 });
             }
 
@@ -584,7 +587,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             existingLanguageProficiency.IsDeleted = 1;
             await _dbContext.SaveChangesAsync();
         }
-        
+
         public async Task<Guid?> UpdateEmailVerificationStatus(string email, bool isVerified)
         {
             Guid? subscriberGuid = null;
@@ -603,6 +606,47 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
 
             return subscriberGuid;
+        }
+
+        public async Task<List<WorkHistoryDto>> GetCandidateWorkHistory(Guid subscriberGuid, int limit, int offset, string sort, string order)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@SubscriberGuid", subscriberGuid),
+                new SqlParameter("@Limit", limit),
+                new SqlParameter("@Offset", offset),
+                new SqlParameter("@Sort", sort),
+                new SqlParameter("@Order", order),
+                };
+            List<WorkHistoryDto> workHistories = null;
+            workHistories = await _dbContext.WorkHistories.FromSql<WorkHistoryDto>("[dbo].[System_Get_SubscriberWorkHistory] @SubscriberGuid, @Limit, @Offset, @Sort, @Order", spParams).ToListAsync();
+            return workHistories;
+        }
+
+        public async Task UpdateCandidateWorkHistory(Guid subscriber, WorkHistoryUpdateDto request)
+        {
+            var subscriberGuid = new SqlParameter("@SubscriberGuid", subscriber);
+            DataTable subscriberWorkHistoryTable = new DataTable();
+            subscriberWorkHistoryTable.Columns.Add("StartDate", typeof(DateTime));
+            subscriberWorkHistoryTable.Columns.Add("CompanyName", typeof(string));
+            subscriberWorkHistoryTable.Columns.Add("EndDate", typeof(DateTime));
+            subscriberWorkHistoryTable.Columns.Add("IsCurrent", typeof(bool));
+            subscriberWorkHistoryTable.Columns.Add("JobDescription", typeof(string));
+            subscriberWorkHistoryTable.Columns.Add("JobTitle", typeof(string));
+            subscriberWorkHistoryTable.Columns.Add("SubscriberWorkHistoryGuid", typeof(Guid));
+
+            if (request != null && request.WorkHistories.Count > 0)
+            {
+                foreach (var workHistory in request.WorkHistories)
+                {
+                    subscriberWorkHistoryTable.Rows.Add(workHistory.BeginDate, workHistory.CompanyName, workHistory.EndDate, workHistory.IsCurrent, workHistory.JobDescription, workHistory.JobTitle, workHistory.WorkHistoryGuid);
+                }
+            }
+            var subscriberWorkHistory = new SqlParameter("@SubscriberWorkHistory", subscriberWorkHistoryTable);
+            subscriberWorkHistory.SqlDbType = SqlDbType.Structured;
+            subscriberWorkHistory.TypeName = "dbo.SubscriberWorkHistory";
+
+            var spParams = new object[] { subscriberGuid, subscriberWorkHistory };
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Update_SubscriberWorkHistory] @SubscriberGuid, @SubscriberWorkHistory", spParams);
         }
     }
 }

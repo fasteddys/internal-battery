@@ -232,5 +232,27 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         #endregion Education & Assessments
+
+        #region Work History
+
+        [HttpGet]
+        [Authorize]
+        [Route("work-history")]
+        public async Task<IActionResult> GetCandidateWorkHistory(int limit = 10, int offset = 0, string sort = "createdate", string order = "ascending")
+        {
+            var response = await _candidatesService.GetCandidateWorkHistory(GetSubscriberGuid(), limit, offset, sort, order);
+            return Ok(response);
+        }
+
+        [HttpPut]
+        [Authorize]
+        [Route("work-history")]
+        public async Task<IActionResult> UpdateCandidateWorkHistory([FromBody] WorkHistoryUpdateDto request)
+        {
+            await _candidatesService.UpdateCandidateWorkHistory(GetSubscriberGuid(), request);
+            return StatusCode(204);
+        }
+
+        #endregion
     }
 }

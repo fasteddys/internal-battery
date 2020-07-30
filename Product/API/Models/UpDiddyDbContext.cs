@@ -16,6 +16,7 @@ using UpDiddyApi.Models.B2B;
 using UpDiddyLib.Domain.Models.B2B;
 using UpDiddyApi.Models.CrossChq;
 using System.Linq;
+using UpDiddyLib.Domain.Models.Candidate360;
 
 namespace UpDiddyApi.Models
 {
@@ -303,8 +304,8 @@ namespace UpDiddyApi.Models
         public DbQuery<EmailTemplateDto> EmailTemplates { get; set; }
         public DbQuery<PipelineProfileDto> PipelineProfiles { get; set; }
         public DbQuery<PipelineDto> Pipelines { get; set; }
-
         public DbQuery<EmailStatisticsDto> EmailStatistics { get; set; }
+        public DbQuery<WorkHistoryDto> WorkHistories { get; set; }
 
         #endregion
 

@@ -464,5 +464,36 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         }
 
         #endregion
+
+        #region Work History
+
+        public async Task<WorkHistoryListDto> GetCandidateWorkHistory(Guid subscriberGuid, int limit, int offset, string sort, string order)
+        {
+            try
+            {
+                var candidateWorkHistory = await _repositoryWrapper.SubscriberRepository.GetCandidateWorkHistory(subscriberGuid, limit, offset, sort, order);
+                return _mapper.Map<WorkHistoryListDto>(candidateWorkHistory);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"An error occurred in CandidateService.GetCandidateWorkHistory: {e.Message}", e);
+                throw new BadRequestException("An error occurred while processing the request.", e);
+            }
+        }
+
+        public async Task UpdateCandidateWorkHistory(Guid subscriberGuid, WorkHistoryUpdateDto request)
+        {
+            try
+            {
+                await _repositoryWrapper.SubscriberRepository.UpdateCandidateWorkHistory(subscriberGuid, request);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"An error occurred in CandidateService.UpdateCandidateWorkHistory: {e.Message}", e);
+                throw new BadRequestException("An error occurred while processing the request.", e);
+            }
+        }
+
+        #endregion
     }
 }
