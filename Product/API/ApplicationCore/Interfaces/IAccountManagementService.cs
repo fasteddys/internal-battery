@@ -15,7 +15,13 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
 
         Task SendVerificationEmail(Guid subscriberGuid);
 
-        Task<EmailStatisticsListDto> GetEmailStatistics(Guid subscriberGuid);
+        Task<EmailStatisticsListDto> GetEmailStatistics(
+            Guid subscriberGuid,
+            TimeSpan range,
+            string sort,
+            string order,
+            int limit,
+            int offset);
 
         Task RemoveAccount(Guid subscriberGuid);
     }

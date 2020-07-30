@@ -87,6 +87,12 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<bool> UpdateG2AzureIndexStatuses(List<AzureIndexResultStatus> profileGuids, string statusName, string statusInfo); 
         Task<int> BootG2Profiles();
 
-        Task<EmailStatisticsListDto> GetEmailStatistics(string emailAddress, TimeSpan duration);
+        Task<EmailStatisticsListDto> GetEmailStatistics(
+            string emailAddress,
+            TimeSpan duration,
+            string sort,
+            string order,
+            int limit,
+            int offset);
     }
 }

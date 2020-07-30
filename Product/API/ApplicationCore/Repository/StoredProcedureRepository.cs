@@ -1202,7 +1202,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return rowsAffected;
         }
 
-        public async Task<EmailStatisticsListDto> GetEmailStatistics(string emailAddress, TimeSpan duration)
+        public async Task<EmailStatisticsListDto> GetEmailStatistics(
+            string emailAddress,
+            TimeSpan duration,
+            string sort,
+            string order,
+            int limit,
+            int offset)
         {
             var emailAddressParam = new SqlParameter("@emailAddress", SqlDbType.NVarChar, 500);
             emailAddressParam.Value = emailAddress;
@@ -1211,13 +1217,41 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var startDateParam = new SqlParameter("@startDate", SqlDbType.DateTime);
             startDateParam.Value = startDate;
 
-            var spParams = new object[] { emailAddressParam, startDateParam };
+            var sortParam = new SqlParameter("@sort", SqlDbType.NVarChar, 500);
+            sortParam.Value = sort;
+
+            var orderParam = new SqlParameter("@order", SqlDbType.NVarChar, 500);
+            orderParam.Value = order;
+
+            var limitParam = new SqlParameter("@limit", SqlDbType.Int);
+            limitParam.Value = limit;
+
+            var offsetParam = new SqlParameter("@offset", SqlDbType.Int);
+            offsetParam.Value = offset;
+
+            var totalRecordsParam = new SqlParameter("@totalRecords", SqlDbType.Int);
+            totalRecordsParam.Direction = ParameterDirection.Output;
+
+            var spParams = new object[]
+            {
+                emailAddressParam,
+                startDateParam,
+                sortParam,
+                orderParam,
+                limitParam,
+                offsetParam,
+                totalRecordsParam
+            };
 
             var emailStatistics = await _dbContext.EmailStatistics
-                .FromSql<EmailStatisticsDto>("System_Get_SendgridEvents @emailAddress, @startDate", spParams)
+                .FromSql<EmailStatisticsDto>("System_Get_SendgridEvents @emailAddress, @startDate, @sort, @order, @limit, @offset, @totalRecords OUT", spParams)
                 .ToListAsync();
 
-            return new EmailStatisticsListDto { EmailStatistics = emailStatistics };
+            return new EmailStatisticsListDto
+            {
+                EmailStatistics = emailStatistics,
+                TotalRecords = (int)totalRecordsParam.Value
+            };
         }
     }
 }

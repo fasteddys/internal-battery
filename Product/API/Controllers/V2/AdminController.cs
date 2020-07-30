@@ -55,9 +55,22 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet("subscriber/{subscriber}/get-email-statistics")]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<ActionResult<EmailStatisticsListDto>> GetEmailStatistics(Guid subscriber)
+        public async Task<ActionResult<EmailStatisticsListDto>> GetEmailStatistics(
+            Guid subscriber,
+            TimeSpan? range,
+            string sort = "MessageId",
+            string order = "ascending",
+            int limit = 1000,
+            int offset = 0)
         {
-            var emailStatistics = await _accountManagementService.GetEmailStatistics(subscriber);
+            var emailStatistics = await _accountManagementService.GetEmailStatistics(
+                subscriber,
+                range ?? TimeSpan.FromDays(30),
+                sort,
+                order,
+                limit,
+                offset);
+
             return emailStatistics;
         }
 

@@ -167,7 +167,13 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             _logger.LogInformation($"AccountManagementService:SendVerificationEmail end.");
         }
 
-        public async Task<EmailStatisticsListDto> GetEmailStatistics(Guid subscriberGuid)
+        public async Task<EmailStatisticsListDto> GetEmailStatistics(
+            Guid subscriberGuid,
+            TimeSpan range,
+            string sort,
+            string order,
+            int limit,
+            int offset)
         {
             var subscriber = await _repository.SubscriberRepository
                 .GetSubscriberByGuidAsync(subscriberGuid);
@@ -178,7 +184,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             }
 
             return await _repository.StoredProcedureRepository
-                .GetEmailStatistics(subscriber.Email, TimeSpan.FromDays(30));
+                .GetEmailStatistics(subscriber.Email, range, sort, order, limit, offset);
         }
 
         public async Task RemoveAccount(Guid subscriberGuid)

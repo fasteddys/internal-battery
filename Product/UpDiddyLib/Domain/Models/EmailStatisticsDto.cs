@@ -32,7 +32,6 @@ namespace UpDiddyLib.Domain.Models
     {
         public List<EmailStatisticsDto> EmailStatistics { get; set; } = new List<EmailStatisticsDto>();
 
-        public int TotalRecords => EmailStatistics?.Count ?? 0;
+        public int TotalRecords { get; set; }
     }
-
 }
