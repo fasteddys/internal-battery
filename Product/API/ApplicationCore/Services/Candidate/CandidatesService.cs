@@ -498,6 +498,59 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         #endregion
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         #region Candidate Indexing
 
        
