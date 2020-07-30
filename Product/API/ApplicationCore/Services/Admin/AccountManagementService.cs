@@ -240,10 +240,18 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
                 j.CloudTalentDeleteProfile(subscriberGuid, null));
 
         private void NotifyUser(Subscriber subscriber)
-            => _hangfireService.Enqueue(() => _emailService.SendTemplatedEmailAsync(
+        {
+            var templateData = new
+            {
+                firstName = subscriber.FirstName,
+                lastName = subscriber.LastName,
+                email = _configuration["SysEmail:ContactUs:Recipient"]
+            };
+
+            _hangfireService.Enqueue(() => _emailService.SendTemplatedEmailAsync(
                 new[] { subscriber.Email },
                 _configuration["SysEmail:Transactional:TemplateIds:AccountDeletionNotification"],
-                null,
+                templateData,
                 Constants.SendGridAccount.Transactional,
                 null,
                 null,
@@ -251,5 +259,6 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
                 null,
                 null,
                 _configuration.GetValue<string[]>("Admin:ccEmail")));
+        }
     }
 }
