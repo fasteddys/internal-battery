@@ -231,6 +231,8 @@ namespace UpDiddyApi.Models
         public DbSet<Language> Languages { get; set; }
 
         public DbSet<ProficiencyLevel> ProficiencyLevels { get; set; }
+        public DbSet<Tracking> Tracking { get; set; }
+        public DbSet<TrackingEventDay> TrackingEventDay { get; set; }
 
         public DbSet<SubscriberLanguageProficiency> SubscriberLanguageProficiencies { get; set; }
         #endregion
@@ -751,6 +753,11 @@ namespace UpDiddyApi.Models
                     .WithMany(pl => pl.SubscriberLanguageProficiencies)
                     .HasForeignKey(slp => slp.ProficiencyLevelId);
             });
+
+            modelBuilder.Entity<SubscriberEmploymentTypes>()
+                .HasIndex(set => new { set.SubscriberId, set.EmploymentTypeId })
+                .HasName("UIX_Tracking_SourceSlug")
+                .IsUnique(true);
         }
     }
 }
