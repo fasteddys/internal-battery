@@ -1,10 +1,11 @@
 ﻿using Auth0.ManagementApi.Models;
 using AutoMapper;
+using Braintree;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces;
@@ -15,6 +16,7 @@ using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Dto.User;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.ApplicationCore.Services.Admin
 {
@@ -27,8 +29,10 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
         private readonly IHubSpotService _hubSpotService;
         private readonly IHangfireService _hangfireService;
         private readonly ITraitifyService _traitifyService;
+        private readonly ISysEmail _emailService;
         private readonly IMapper _mapper;
         private IUserService _userService { get; set; }
+        private readonly IConfiguration _configuration;
 
 
         public AccountManagementService(
@@ -38,8 +42,10 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             IHubSpotService hubSpotService,
             IHangfireService hangfireService,
             ITraitifyService traitifyService,
+            ISysEmail emailService,
             IMapper mapper,
-            IUserService userService
+            IUserService userService,
+            IConfiguration configuration
             )
         {
             _logger = logger;
@@ -48,8 +54,10 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             _hubSpotService = hubSpotService;
             _hangfireService = hangfireService;
             _traitifyService = traitifyService;
+            _emailService = emailService;
             _mapper = mapper;
             _userService = userService;
+            _configuration = configuration;
         }
 
         public async Task<UserStatsDto> GetUserStatsByEmail(string email)
@@ -188,6 +196,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             {
                 await RemoveAuth0Account(subscriber);
                 await DeleteSubscriber(subscriber);
+                NotifyUser(subscriber);
             }
         }
 
@@ -229,5 +238,18 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
         private void RemoveFromTalentCloud(Guid subscriberGuid)
             => _hangfireService.Enqueue<ScheduledJobs>(j =>
                 j.CloudTalentDeleteProfile(subscriberGuid, null));
+
+        private void NotifyUser(Subscriber subscriber)
+            => _hangfireService.Enqueue(() => _emailService.SendTemplatedEmailAsync(
+                new[] { subscriber.Email },
+                _configuration["SysEmail:Transactional:TemplateIds:AccountDeletionNotification"],
+                null,
+                Constants.SendGridAccount.Transactional,
+                null,
+                null,
+                null,
+                null,
+                null,
+                _configuration.GetValue<string[]>("Admin:ccEmail")));
     }
 }
