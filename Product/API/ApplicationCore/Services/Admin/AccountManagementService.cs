@@ -245,7 +245,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             {
                 firstName = subscriber.FirstName,
                 lastName = subscriber.LastName,
-                email = _configuration["SysEmail:ContactUs:Recipient"]
+                email = _configuration["SysEmail:Support:Recipient"]
             };
 
             _hangfireService.Enqueue(() => _emailService.SendTemplatedEmailAsync(
