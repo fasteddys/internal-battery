@@ -146,7 +146,7 @@ namespace UpDiddyLib.Helpers
             public static readonly string Failed = "failed";
         }
 
-        public static class G2AzureIndexStatus
+        public static class AzureSearchIndexStatus
         {
             public static readonly string None = "None";
             public static readonly string Pending = "Pending";

@@ -324,7 +324,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         public async Task<bool> G2IndexAsync(G2SDOC g2)
         {
             AzureIndexResult info = await _azureSearchService.AddOrUpdateG2(g2);
-            await UpdateG2Status(info, Constants.G2AzureIndexStatus.Indexed, info.StatusMsg);
+            await UpdateG2Status(info, Constants.AzureSearchIndexStatus.Indexed, info.StatusMsg);
             return true;
         }
 
@@ -365,7 +365,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         {
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexAddOrUpdateAsync starting index for g2 {g2.ProfileGuid}");
             AzureIndexResult info = await _azureSearchService.AddOrUpdateG2(g2);
-            await UpdateG2Status(info, Constants.G2AzureIndexStatus.Indexed, info.StatusMsg);
+            await UpdateG2Status(info, Constants.AzureSearchIndexStatus.Indexed, info.StatusMsg);
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexAddOrUpdateAsync done index for g2 {g2.ProfileGuid}");
             return true;
         }
@@ -509,7 +509,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         {
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexDeleteBulkAsync starting index delete");
             AzureIndexResult info = await _azureSearchService.DeleteG2Bulk(g2List);
-            await UpdateG2Status(info, Constants.G2AzureIndexStatus.Deleted, info.StatusMsg);
+            await UpdateG2Status(info, Constants.AzureSearchIndexStatus.Deleted, info.StatusMsg);
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexDeleteBulkAsync done index delete");
             return true;
         }
@@ -528,7 +528,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
             AzureIndexResult info = await _azureSearchService.DeleteG2Bulk(g2List);
             // set index status to "none" for purges so these items will be reindex the next time a global re-index of 
             // all un-indexed items is done 
-            await UpdateG2Status(info, Constants.G2AzureIndexStatus.None, info.StatusMsg);
+            await UpdateG2Status(info, Constants.AzureSearchIndexStatus.None, info.StatusMsg);
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexPurgeBulkAsync done index delete");
             return true;
         }
@@ -543,7 +543,7 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
         {
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexDeleteAsync starting index for g2 {g2.ProfileGuid}");
             AzureIndexResult info = await _azureSearchService.DeleteG2(g2);
-            await UpdateG2Status(info, Constants.G2AzureIndexStatus.Deleted, info.StatusMsg);
+            await UpdateG2Status(info, Constants.AzureSearchIndexStatus.Deleted, info.StatusMsg);
             _logger.Log(LogLevel.Information, $"G2Service.G2IndexDeleteAsync done index for g2 {g2.ProfileGuid}");
             return true;
         }
@@ -1050,13 +1050,13 @@ namespace UpDiddyApi.ApplicationCore.Services.G2
 
         private static string ResolveIndexStatusMessage(string statusMsg)
         {
-            if (string.IsNullOrEmpty(statusMsg)) { return Constants.G2AzureIndexStatus.None; }
-            if (statusMsg.StartsWith("Indexed On")) { return Constants.G2AzureIndexStatus.Indexed; }
-            if (statusMsg.StartsWith("Deleted On")) { return Constants.G2AzureIndexStatus.Deleted; }
-            if (statusMsg.StartsWith("StatusCode = ")) { return Constants.G2AzureIndexStatus.Error; }
-            if (statusMsg.Contains("error", StringComparison.CurrentCultureIgnoreCase)) { return Constants.G2AzureIndexStatus.Error; }
+            if (string.IsNullOrEmpty(statusMsg)) { return Constants.AzureSearchIndexStatus.None; }
+            if (statusMsg.StartsWith("Indexed On")) { return Constants.AzureSearchIndexStatus.Indexed; }
+            if (statusMsg.StartsWith("Deleted On")) { return Constants.AzureSearchIndexStatus.Deleted; }
+            if (statusMsg.StartsWith("StatusCode = ")) { return Constants.AzureSearchIndexStatus.Error; }
+            if (statusMsg.Contains("error", StringComparison.CurrentCultureIgnoreCase)) { return Constants.AzureSearchIndexStatus.Error; }
 
-            return Constants.G2AzureIndexStatus.Pending;
+            return Constants.AzureSearchIndexStatus.Pending;
         }
         #endregion
     }

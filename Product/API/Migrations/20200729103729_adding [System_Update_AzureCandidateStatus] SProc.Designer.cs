@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
@@ -10,9 +11,10 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200729103729_adding [System_Update_AzureCandidateStatus] SProc")]
+    partial class addingSystem_Update_AzureCandidateStatusSProc
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -4857,7 +4859,7 @@ namespace UpDiddyApi.Migrations
 
                     b.HasIndex("SubscriberId", "EmploymentTypeId")
                         .IsUnique()
-                        .HasName("UIX_Tracking_SourceSlug");
+                        .HasName("UIX_SubscriberEmploymentTypes_Subscriber_EmploymentType");
 
                     b.ToTable("SubscriberEmploymentTypes");
                 });
@@ -5445,68 +5447,6 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("TopicId");
 
                     b.ToTable("Topic");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.Tracking", b =>
-                {
-                    b.Property<int>("TrackingId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<string>("SourceSlug")
-                        .HasColumnType("VARCHAR(50)");
-
-                    b.Property<Guid>("TrackingGuid");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasColumnType("VARCHAR(2048)");
-
-                    b.HasKey("TrackingId");
-
-                    b.ToTable("Tracking");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.TrackingEventDay", b =>
-                {
-                    b.Property<int>("TrackingEventDayId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("Count");
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<DateTime>("Day")
-                        .HasColumnType("Date");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<Guid>("TrackingEventDayGuid");
-
-                    b.Property<int>("TrackingId");
-
-                    b.HasKey("TrackingEventDayId");
-
-                    b.HasIndex("TrackingId");
-
-                    b.ToTable("TrackingEventDay");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.TrainingType", b =>
@@ -7012,14 +6952,6 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Talent")
                         .WithMany()
                         .HasForeignKey("TalentId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.TrackingEventDay", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.Tracking", "Tracking")
-                        .WithMany()
-                        .HasForeignKey("TrackingId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

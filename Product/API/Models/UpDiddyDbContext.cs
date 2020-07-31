@@ -308,7 +308,7 @@ namespace UpDiddyApi.Models
         public DbQuery<PipelineDto> Pipelines { get; set; }
         public DbQuery<EmailStatisticsDto> EmailStatistics { get; set; }
         public DbQuery<WorkHistoryDto> WorkHistories { get; set; }
-
+        public DbQuery<v_CandidateAzureSearch> CandidateAzureSearch { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -758,6 +758,14 @@ namespace UpDiddyApi.Models
                 .HasIndex(set => new { set.SubscriberId, set.EmploymentTypeId })
                 .HasName("UIX_Tracking_SourceSlug")
                 .IsUnique(true);
+
+
+
+            modelBuilder
+                .Query<v_CandidateAzureSearch>()
+                .ToView("v_CandidateAzureSearch", "B2B");
+
+
         }
     }
 }

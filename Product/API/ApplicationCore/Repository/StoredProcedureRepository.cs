@@ -1201,6 +1201,44 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [G2].[System_Create_G2Profiles]");
             return rowsAffected;
         }
+       
+        public async Task<bool> UpdateCandidateAzureIndexStatuses(List<AzureIndexResultStatus> indexStatuses, string statusName, string statusInfo)
+        {
+
+            DataTable table = new DataTable();
+            table.Columns.Add("ErrorMessage", typeof(string));
+            table.Columns.Add("ProfileGuid", typeof(Guid));
+            table.Columns.Add("IndexStatus", typeof(int));
+            if (indexStatuses != null)
+            {
+                foreach (AzureIndexResultStatus Status in indexStatuses)
+                {
+                    Guid ProfileGuid = Guid.Parse(Status.Key);
+
+                    DataRow row = table.Rows.Add();
+                    row["IndexStatus"] = Status.StatusCode;
+                    row["ErrorMessage"] = Status.ErrorMessage;
+                    row["ProfileGuid"] = ProfileGuid;
+
+                }
+            }
+
+            var profileGuidsParam = new SqlParameter("@ProfileIndexStatuses", table);
+            profileGuidsParam.SqlDbType = SqlDbType.Structured;
+            profileGuidsParam.TypeName = "dbo.AzureIndexStatus";
+
+            var spParams = new object[] {
+                profileGuidsParam
+                ,new SqlParameter("@StatusName", statusName)
+                ,new SqlParameter("@IndexStatusInfo", statusInfo)
+            };
+            var rowsAffected = _dbContext.Database.ExecuteSqlCommand(@"EXEC [B2B].[System_Update_AzureCandidateStatus] @ProfileIndexStatuses, @StatusName, @IndexStatusInfo", spParams);
+
+            return true;
+        }
+
+
+
 
         public async Task<EmailStatisticsListDto> GetEmailStatistics(string emailAddress, TimeSpan duration)
         {
@@ -1219,5 +1257,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             return new EmailStatisticsListDto { EmailStatistics = emailStatistics };
         }
+
+
     }
 }

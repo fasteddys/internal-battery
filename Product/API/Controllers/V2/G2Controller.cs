@@ -363,7 +363,7 @@ namespace UpDiddyApi.Controllers.V2
 
         #endregion ContactTypes
                
-        #region Admin Functions 
+        #region G2 Indexing Admin Operations 
 
         // Admin functions will not be made public throught the APi gateway.  They are here for dev administration of the 
         // g2 profiles and azure index 

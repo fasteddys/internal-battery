@@ -11,6 +11,13 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.Candidate360;
 using UpDiddyApi.ApplicationCore.Interfaces;
+using Microsoft.Extensions.Configuration;
+using UpDiddyApi.Models.Views;
+using UpDiddyLib.Domain.AzureSearchDocuments;
+using GeoJSON.Net.Geometry;
+using UpDiddyApi.Workflow;
+using UpDiddyApi.ApplicationCore.Services.AzureSearch;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.ApplicationCore.Services.Candidate
 {
@@ -21,13 +28,22 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         private readonly ILogger _logger;
         private readonly IMapper _mapper;
         private readonly IHubSpotService _hubSpotService;
+        private readonly IConfiguration _configuration;           
+        private readonly UpDiddyDbContext _db;
+        private readonly IHangfireService _hangfireService;
+        private readonly IAzureSearchService _azureSearchService;
+
 
         public CandidatesService(
             ILogger<CandidatesService> logger,
             IRepositoryWrapper repositoryWrapper,
             IMapper mapper,
             ISubscriberService subscriberService,
-            IHubSpotService hubSpotService
+            IHubSpotService hubSpotService,
+            IConfiguration configuration,
+            UpDiddyDbContext context,
+           IHangfireService hangfireService,
+           IAzureSearchService azureSearchService
         )
         {
             _logger = logger;
@@ -35,6 +51,10 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             _mapper = mapper;
             _subscriberService = subscriberService;
             _hubSpotService = hubSpotService;
+            _configuration = configuration;
+            _db = context;
+            _hangfireService = hangfireService;
+            _azureSearchService = azureSearchService;
         }
 
         #region Personal Info
@@ -98,6 +118,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                     }
                 }
                 await _repositoryWrapper.SubscriberRepository.UpdateSubscriberPersonalInfo(subscriberGuid, candidateState, candidatePersonalInfoDto);
+                // update candidate index
+                await IndexCandidateBySubscriberAsync(subscriberGuid);
 
                 // Call Hubspot to update the following properties which are a part of 'personal information': FirstName, LastName
                 await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid);
@@ -149,7 +171,9 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
             try
             {
-                await _repositoryWrapper.SubscriberRepository.UpdateCandidateEmploymentPreferencesBySubscriberGuidAsync(subscriberGuid, candidateEmploymentPreferenceDto);
+                await _repositoryWrapper.SubscriberRepository.UpdateCandidateEmploymentPreferencesBySubscriberGuidAsync  (subscriberGuid, candidateEmploymentPreferenceDto);
+                // update candidate index
+                await IndexCandidateBySubscriberAsync(subscriberGuid);
             }
             catch (Exception ex)
             {
@@ -196,6 +220,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 _logger.LogDebug("CandidatesService:UpdateRolePreference: Updating Candidate 360 Role information for {subscriber}", subscriberGuid);
 
                 await _repositoryWrapper.SubscriberRepository.UpdateRolePreference(subscriberGuid, rolePreference);
+                // update candidate index
+                await IndexCandidateBySubscriberAsync(subscriberGuid);
                 _logger.LogDebug("CandidatesService:UpdateRolePreference: Updated Candidate 360 Role information for {subscriber}", subscriberGuid);
 
                 // Call Hubspot to update the following properties which are a part of 'role preferences': SelfCuratedSkills
@@ -227,6 +253,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 throw new NotFoundException("subscriberGuid cannot be null or empty");
 
             await _repositoryWrapper.SubscriberSkillRepository.UpdateCandidateSkills(subscriberGuid, skillNames);
+            // update candidate index
+            await IndexCandidateBySubscriberAsync(subscriberGuid);
         }
 
         #endregion
@@ -295,6 +323,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
                 languageProficiency.LanguageProficiencyGuid = languageProficiencyGuid;
                 await _repositoryWrapper.SubscriberRepository.UpdateSubscriberLanguageProficiency(languageProficiency, subscriberGuid);
+                // update candidate index
+                await IndexCandidateBySubscriberAsync(subscriberGuid);
 
                 _logger.LogDebug("CandidatesService:UpdateLanguageProficiency: Updated Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", languageProficiencyGuid, subscriberGuid);
             }
@@ -453,6 +483,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             try
             {
                 await _repositoryWrapper.SubscriberEducationHistoryRepository.UpdateCandidateEducationAndTraining(subscriberGuid, subscriberEducationAssessmentsDto);
+                // update candidate index
+                await IndexCandidateBySubscriberAsync(subscriberGuid);
             }
             catch (Exception ex)
             {
@@ -464,6 +496,164 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         }
 
         #endregion
+
+
+
+
+        #region Candidate Indexing
+
+
+
+
+        /// <summary>
+        /// Bulk index into azure 
+        /// </summary>
+        /// <param name="g2List"></param>
+        /// <returns></returns>
+        public async Task<bool> CandidateIndexBulkAsync(List<CandidateSDOC> candidateList)
+        {
+            // If there is no work to do jus return true
+            if (candidateList.Count == 0)
+                return true;
+            _logger.Log(LogLevel.Information, $"G2Service.G2IndexBulkAsync starting index for g2");
+            AzureIndexResult info = await _azureSearchService.AddOrUpdateCandidateBulk(candidateList);
+            await UpdateAzureStatus(info, ResolveIndexStatusMessage(info.StatusMsg), info.StatusMsg);
+            _logger.Log(LogLevel.Information, $"G2Service.G2IndexBulkAsync done index for g2");
+            return true;
+        }
+
+
+
+
+
+        /// <summary>
+        /// Index the specified document into azure search 
+        /// </summary>
+        /// <param name="g2"></param>
+        /// <returns></returns>
+        public async Task<bool> CandidateIndexAsync(CandidateSDOC candidate)
+        {
+            AzureIndexResult info = await _azureSearchService.AddOrUpdateCandidate(candidate);
+            // Update subscribers azure index status 
+            await UpdateAzureStatus(info, Constants.AzureSearchIndexStatus.Indexed, info.StatusMsg);
+            return true;
+        }
+
+
+
+
+        /// <summary>
+        /// Remove the specified document from azure search 
+        /// </summary>
+        /// <param name="g2"></param>
+        /// <returns></returns>
+        public async Task<bool> CandidateIndexRemoveAsync(CandidateSDOC candidate)
+        {
+            AzureIndexResult info = await _azureSearchService.DeleteCandidate(candidate);
+            // Update subscribers azure index status 
+            await UpdateAzureStatus(info, Constants.AzureSearchIndexStatus.Indexed, info.StatusMsg);
+            return true;
+        }
+
+
+
+
+
+        /// <summary>
+        /// For the given subscriber, update or add their profile to the G2 azure index 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        public async Task<bool> IndexCandidateBySubscriberAsync(Guid subscriberGuid, bool nonBlocking = true)
+        {
+           
+            // Get all non-public G2s for subscriber 
+             v_CandidateAzureSearch candidateProfile = _db.CandidateAzureSearch
+            .Where(p => p.SubscriberGuid == subscriberGuid)
+            .FirstOrDefault(); 
+            CandidateSDOC indexDoc = await MapToCandidateSDOC(candidateProfile);
+
+            // fire off as background job 
+            if (nonBlocking)
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexAddOrUpdate(indexDoc));
+            else
+               await CandidateIndexAsync(indexDoc);
+
+
+            return true;
+        }
+
+        /// <summary>
+        /// For the given subscriber, update or add their profile to the G2 azure index 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        /// 
+
+        
+        public async Task<bool> IndexRemoveCandidateBySubscriberAsync(Guid subscriberGuid, bool nonBlocking = true)
+        {
+
+            // Get all non-public G2s for subscriber 
+            v_CandidateAzureSearch candidateProfile = _db.CandidateAzureSearch
+           .Where(p => p.SubscriberGuid == subscriberGuid)
+           .FirstOrDefault();
+            CandidateSDOC indexDoc = await MapToCandidateSDOC(candidateProfile);
+
+            // fire off as background job 
+            if (nonBlocking)
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexRemove(indexDoc));
+            else
+                await CandidateIndexRemoveAsync(indexDoc);
+
+
+            return true;
+        }
+
+
+        /// <summary>
+        /// Index all unidexed subscrobers
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        public async Task<bool> IndexAllUnindexed(bool nonBlocking = true)
+        {
+
+            // Get all non-public G2s for subscriber 
+            List<v_CandidateAzureSearch> candidates = _db.CandidateAzureSearch
+           .Where(p => p.AzureIndexStatusId == 1)
+           .ToList();
+
+
+            if (candidates.Count == 0)
+                return false;
+
+            List<CandidateSDOC> Docs = new List<CandidateSDOC>();
+
+            int counter = 0;
+            foreach (v_CandidateAzureSearch candidate in candidates)
+            {            
+                ++counter;
+                CandidateSDOC indexDoc = await MapToCandidateSDOC(candidate);
+                Docs.Add(indexDoc);               
+
+            };
+       
+           
+            // fire off as background job 
+            if (nonBlocking)
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexAddOrUpdateBulk(Docs));
+            else
+                await CandidateIndexBulkAsync(Docs);
+
+
+            return true;
+        }
+
+
+
+        #endregion
+
 
         #region Work History
 
@@ -495,5 +685,175 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         }
 
         #endregion
+
+
+
+
+
+        #region private helper functions 
+
+        private static string ResolveIndexStatusMessage(string statusMsg)
+        {
+            if (string.IsNullOrEmpty(statusMsg)) { return Constants.AzureSearchIndexStatus.None; }
+            if (statusMsg.StartsWith("Indexed On")) { return Constants.AzureSearchIndexStatus.Indexed; }
+            if (statusMsg.StartsWith("Deleted On")) { return Constants.AzureSearchIndexStatus.Deleted; }
+            if (statusMsg.StartsWith("StatusCode = ")) { return Constants.AzureSearchIndexStatus.Error; }
+            if (statusMsg.Contains("error", StringComparison.CurrentCultureIgnoreCase)) { return Constants.AzureSearchIndexStatus.Error; }
+
+            return Constants.AzureSearchIndexStatus.Pending;
+        }
+
+
+        private async Task<bool> UpdateAzureStatus(AzureIndexResult results, string statusName, string info)
+        {
+            // Call stored procedure 
+            try
+            {
+                _repositoryWrapper.StoredProcedureRepository.UpdateCandidateAzureIndexStatuses(results?.DOCResults?.Value ?? new List<AzureIndexResultStatus>(), statusName, info);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"CandidateService:UpdateAzureStatus Error updating index statuses; message: {ex.Message}, stack trace: {ex.StackTrace}");
+                throw;
+            }
+            return true;
+        }
+
+
+        // IMPORTANT!         
+        // 1) Any colections of objects (e.g. Skills, Languages, etc.) must be hydrated with an empty list 
+        private async Task<CandidateSDOC> MapToCandidateSDOC(v_CandidateAzureSearch candidate)
+        {
+            try
+            {
+                CandidateSDOC indexDoc = _mapper.Map<CandidateSDOC>(candidate);
+                // manually map the location.  todo find a way for automapper to do this 
+                if (candidate.Location != null)
+                {
+                    Double lat = (double)candidate.Location.Lat;
+                    Double lng = (double)candidate.Location.Long;
+                    Position p = new Position(lat, lng);
+                    indexDoc.Location = new Point(p);
+                }
+                // map skills to list 
+                List<string> skillList = new List<string>();
+                if (!string.IsNullOrEmpty(candidate.Skills))
+                {
+                    string[] skillArray = candidate.Skills.Split(';');
+
+                    foreach (string skill in skillArray)
+                        skillList.Add(skill);
+
+                }
+                indexDoc.Skills = skillList;
+
+                // map  languages 
+                indexDoc.Languages = new List<LanguageSDOC>();
+                if (!string.IsNullOrEmpty(candidate.SubscriberLanguages))
+                {
+                    string[] languageArray = candidate.SubscriberLanguages.Split(';');
+                    foreach (string languageInfo in languageArray)
+                    {
+                        string[] langInfo = languageInfo.Split('|');
+                        indexDoc.Languages.Add(new LanguageSDOC()
+                        {
+                            Language = langInfo[0],
+                            Proficiency = langInfo[1]
+                        });
+                    }
+                }
+
+                // map employment types to list 
+                List<string> employmentTypes = new List<string>();
+                if (!string.IsNullOrEmpty(candidate.EmploymentTypes))
+                {
+                    string[] info = candidate.EmploymentTypes.Split(';');
+
+                    foreach (string employmentType in info)
+                        employmentTypes.Add(employmentType);
+                }
+                indexDoc.EmploymentTypes = employmentTypes;
+
+                // map trainings 
+                indexDoc.Training = new List<TrainingSDOC>();
+                if (!string.IsNullOrEmpty(candidate.SubscriberTraining))
+                {
+                    string[] info = candidate.SubscriberTraining.Split(';');
+                    foreach (string data in info)
+                    {
+                        string[] trainingInfo = data.Split('|');
+                        indexDoc.Training.Add(new TrainingSDOC()
+                        {
+                            Type = trainingInfo[0],
+                            Institution = trainingInfo[1],
+                            Name = trainingInfo[2]
+                        });
+                    }
+                }
+
+                // map Education 
+                indexDoc.Education = new List<EducationSDOC>();
+                if (!string.IsNullOrEmpty(candidate.SubscriberEducation))
+                {
+                    string[] info = candidate.SubscriberEducation.Split(';');
+                    foreach (string data in info)
+                    {
+                        string[] educationInfo = data.Split('|');
+                        indexDoc.Education.Add(new EducationSDOC()
+                        {
+                            Institution = educationInfo[0],
+                            DegreeType = educationInfo[1],
+                            Degree = educationInfo[2]
+                        });
+                    }
+                }
+
+
+                // map job titles
+                indexDoc.Titles = new List<string>();
+                if (!string.IsNullOrEmpty(candidate.SubscriberTitles))
+                {
+                    string[] info = candidate.SubscriberTitles.Split(';');
+
+                    foreach (string title in info)
+                        indexDoc.Titles.Add(title);
+
+                }
+
+                // map work histories
+                indexDoc.WorkHistories = new List<WorkHistorySDOC>();
+                if (!string.IsNullOrEmpty(candidate.SubscriberWorkHistory))
+                {
+                    string[] info = candidate.SubscriberWorkHistory.Split(';');
+                    foreach (string data in info)
+                    {
+                        string[] workInfo = data.Split('|');
+                        indexDoc.WorkHistories.Add(new WorkHistorySDOC()
+                        {
+                            CompanyName = workInfo[0],
+                            Title = workInfo[1]
+                        });
+                    }
+                }
+
+
+
+                return indexDoc;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"CandidateService:MapToCandidateSDOC Exception for subscriber {candidate.SubscriberGuid}; error: {ex.Message}, stack trace: {ex.StackTrace}");
+                throw;
+            }
+        }
+
+
+        #endregion
+
+
+
+
+
+
     }
 }

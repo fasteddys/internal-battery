@@ -129,5 +129,17 @@ namespace UpDiddyApi.Models
         public Guid? PostalGuid { get; set; }
 
         #endregion
+
+
+        #region Azure Index Info
+        
+        public int? AzureIndexStatusId { get; set; }
+        public DateTime? AzureIndexModifyDate { get; set; }
+        public string AzureSearchIndexInfo { get; set; }
+
+
+
+
+        #endregion
     }
 }

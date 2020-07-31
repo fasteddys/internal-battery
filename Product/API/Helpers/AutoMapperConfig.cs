@@ -827,6 +827,10 @@ namespace UpDiddyApi.Helpers
               .ForMember(x => x.Location, opt => opt.Ignore())
               .ReverseMap();
 
+            CreateMap<v_CandidateAzureSearch, CandidateSDOC>()
+                .ForMember(x => x.Location, opt => opt.Ignore())
+                .ReverseMap();
+
             CreateMap<Models.G2.Profile, ProfileDto>()
                 .ForMember(p => p.CityGuid, opt => opt.MapFrom(src => src.City.CityGuid))
                 .ForMember(p => p.CompanyGuid, opt => opt.MapFrom(src => src.Company.CompanyGuid))

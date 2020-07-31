@@ -25,6 +25,7 @@ namespace UpDiddyApi.Controllers.V2
         private readonly ISubscriberService _subscriberService;
         private readonly IAzureSearchService _azureSearchService;
         private readonly IHiringManagerService _hiringManagerService;
+        private readonly ICandidatesService _candidatesService;
 
         public SubscribersController(IServiceProvider services)
         {
@@ -32,7 +33,9 @@ namespace UpDiddyApi.Controllers.V2
             _subscriberService = services.GetService<ISubscriberService>();
             _azureSearchService = services.GetService<IAzureSearchService>();
             _hiringManagerService = services.GetService<IHiringManagerService>();
+            _candidatesService = services.GetService<ICandidatesService>();
         }
+    
 
         [HttpPost]
         [MiddlewareFilter(typeof(AuthenticationApiExtensionAuthorizationPipeline))]
@@ -56,6 +59,10 @@ namespace UpDiddyApi.Controllers.V2
                 return Conflict();
 
             var newSubscriberGuid = await _subscriberService.CreateSubscriberAsync(subscriberDto);
+
+            // add new subscriber to azure candidate index 
+            await _candidatesService.IndexCandidateBySubscriberAsync(newSubscriberGuid);
+
             return StatusCode(201, newSubscriberGuid);
         }
 
