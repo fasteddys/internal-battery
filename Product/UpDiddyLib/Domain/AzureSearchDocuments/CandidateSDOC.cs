@@ -65,5 +65,6 @@ namespace UpDiddyLib.Domain.AzureSearchDocuments
         public List<EducationSDOC> Education { get; set; }
         public List<string> Titles { get; set; }
 
+        public List<WorkHistorySDOC> WorkHistories { get; set; }
     }
 }

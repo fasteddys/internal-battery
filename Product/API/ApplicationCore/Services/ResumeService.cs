@@ -129,7 +129,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             // Call Hubspot to capture last resume update date 
             await _hubSpotService.AddOrUpdateContactBySubscriberGuid(subscriberGuid);
 
-            // todo jab call candidate indexer from here 
+            // Update candidate indexer
             await _candidatesService.IndexCandidateBySubscriberAsync(subscriberGuid);
             
             return resumeParseGuid;

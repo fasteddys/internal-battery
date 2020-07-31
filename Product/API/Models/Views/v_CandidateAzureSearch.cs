@@ -45,6 +45,9 @@ namespace UpDiddyApi.Models.Views
         public string SubscriberEducation { get; set; }
 
         public string SubscriberTitles { get; set; }
+        public string SubscriberWorkHistory { get; set; }
+
+        public int AzureIndexStatusId { get; set; }
 
 
 

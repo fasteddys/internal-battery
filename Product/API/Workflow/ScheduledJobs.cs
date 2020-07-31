@@ -2435,6 +2435,33 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
             return true;
         }
 
+
+
+        /// <summary>
+        /// Add or update the G2 into the azure search index 
+        /// </summary>
+        /// <param name="g2"></param>
+        /// <returns></returns>
+        public async Task<bool> CandidateIndexRemove(CandidateSDOC candidate)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdate starting index for candidate {candidate.SubscriberGuid}");
+            await _candidateService.CandidateIndexRemoveAsync(candidate);
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdate done index for candidate {candidate.SubscriberGuid}");
+            return true;
+        }
+
+
+
+        public async Task<bool> CandidateIndexAddOrUpdateBulk(List<CandidateSDOC> candidateList)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdateBulk starting index for candidate");
+            await _candidateService.CandidateIndexBulkAsync(candidateList);
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdateBulk done index for candidate");
+            return true;
+        }
+
+
+
         #endregion
 
 

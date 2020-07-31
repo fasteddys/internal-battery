@@ -90,5 +90,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<bool> UpdateCandidateAzureIndexStatuses(List<AzureIndexResultStatus> indexStatuses, string statusName, string statusInfo);
 
 
-    }  
+        Task<EmailStatisticsListDto> GetEmailStatistics(string emailAddress, TimeSpan duration);
+    }
 }
