@@ -4,6 +4,7 @@ using Microsoft.Graph;
 using System;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Dto.User;
 
 namespace UpDiddyApi.Controllers
@@ -50,6 +51,14 @@ namespace UpDiddyApi.Controllers
         {
             await _accountManagementService.SendVerificationEmail(subscriber);
             return StatusCode(202);
+        }
+
+        [HttpGet("subscriber/{subscriber}/get-email-statistics")]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        public async Task<ActionResult<EmailStatisticsListDto>> GetEmailStatistics(Guid subscriber)
+        {
+            var emailStatistics = await _accountManagementService.GetEmailStatistics(subscriber);
+            return emailStatistics;
         }
 
         [HttpDelete("subscriber/{subscriber}/delete")]

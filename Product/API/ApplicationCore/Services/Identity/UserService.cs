@@ -28,6 +28,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
 {
     public class UserService : IUserService
     {
+        private const string _PROVIDER_PREFIX_AUTH0 = "auth0|";
         private const string _CACHE_KEY = "AUTH0_ACCESS_TOKEN";
         private const string _CONNECTION_TYPE = "Username-Password-Authentication";
         private Dictionary<string, string> _tokenParameters = null;
@@ -540,9 +541,9 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
 
                 userId = getUserResponse.User.UserId;
                 var verificationEmailResponse = managementApiClient.Jobs.SendVerificationEmailAsync(new VerifyEmailJobRequest
-                                                {
-                                                    ClientId = _tokenParameters["client_id"],
-                                                    UserId = userId
+                {
+                    ClientId = _tokenParameters["client_id"],
+                    UserId = userId
                 });
                 _logger.LogInformation($"UserService.ResendVerificationEmailToUserAsync verificationEmailResponse: {JsonConvert.SerializeObject(verificationEmailResponse.Result)}");
             }
@@ -595,7 +596,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                     throw new ApplicationException("User could not be found in Auth0");
 
                 userId = getUserResponse.User.UserId;
-                var updateUserResponse = await managementApiClient.Users.UpdateAsync(userId, new UserUpdateRequest {EmailVerified = true });
+                var updateUserResponse = await managementApiClient.Users.UpdateAsync(userId, new UserUpdateRequest { EmailVerified = true });
                 _logger.LogInformation($"UserService.SetEmailVerificationFlagForUserAsync updateUserResponse: {JsonConvert.SerializeObject(updateUserResponse)}");
             }
             catch (ApiException ae)
@@ -647,7 +648,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                 if (string.IsNullOrEmpty(result))
                     isADB2CPasswordReset = true;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.LogError($"An unexpected exception occurred in UserService.ResetPasswordAsync (will not be retried): {e.Message}", e);
             }
@@ -655,7 +656,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
             // if we did not succesfully change the ADB2C password, abort immediately
             if (!isADB2CPasswordReset)
                 return false;
-            
+
             var apiToken = await GetApiTokenAsync();
             var managementApiClient = new ManagementApiClient(apiToken, _domain);
             try
@@ -693,7 +694,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
                 _logger.LogError($"An unexpected exception occurred in UserService.ResetPasswordAsync (will not be retried): {e.Message}", e);
             }
 
-            if(isAuth0PasswordReset != isADB2CPasswordReset)
+            if (isAuth0PasswordReset != isADB2CPasswordReset)
             {
                 _logger.LogCritical($"Password mismatch detected for user '{userId}': ADB2C reset = {isADB2CPasswordReset.ToString()}, Auth0 reset = {isAuth0PasswordReset.ToString()}");
             }
@@ -703,6 +704,14 @@ namespace UpDiddyApi.ApplicationCore.Services.Identity
 
         public async Task DeleteUserAsync(string userId)
         {
+            /* The 'user_id' property for accounts hosted within Auth0 always begins with 'auth0|' (which all of ours are). 
+             * Some user accounts that were migrated from ADB2C don't contain the provider prefix in our database.
+             * To solve for this, the following logic checks for an Auth0 prefix for a user and prepends it if it does not exist.
+             * Documentation: https://auth0.com/docs/users/normalized/auth0/identify-users and https://auth0.com/docs/api/management/v2#!/Users/delete_users_by_id
+             */
+            if (!userId.StartsWith(_PROVIDER_PREFIX_AUTH0, StringComparison.OrdinalIgnoreCase))
+                userId = userId.Insert(0, _PROVIDER_PREFIX_AUTH0);
+
             var apiToken = await GetApiTokenAsync();
             var managementApiClient = new ManagementApiClient(apiToken, _domain);
             try

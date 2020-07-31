@@ -16,6 +16,7 @@ namespace UpDiddyApi.Controllers.V2
     {
         private readonly ICandidatesService _candidatesService;
         private readonly ILogger _logger;
+ 
 
         public CandidatesController(
             ICandidatesService candidatesService,
@@ -232,5 +233,88 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         #endregion Education & Assessments
+
+
+
+        #region Candidate Indexing Operations
+
+        /// <summary>
+        /// Re-index subsriber.  This operation will update as well as create documents in the 
+        /// azure candidate index 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("index/subscriber/{subscriberGuid}")]
+        public async Task<IActionResult> IndexSubscriber(Guid subscriberGuid)
+        {
+ 
+            _candidatesService.IndexCandidateBySubscriberAsync(subscriberGuid, true);
+            return StatusCode(202);
+        }
+
+
+        /// <summary>
+        /// This operation will remove the subscriber from the azure candidate index
+        /// azure candidate index 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        [HttpDelete]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("index/subscriber/{subscriberGuid}")]
+        public async Task<IActionResult> IndexRemoveSubscriber(Guid subscriberGuid)
+        {
+           
+            _candidatesService.IndexRemoveCandidateBySubscriberAsync(subscriberGuid, true);
+            return StatusCode(202);
+        }
+
+
+        /// <summary>
+        /// Re-index subsriber.  This operation will update as well as create documents in the 
+        /// azure candidate index 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("index")]
+        public async Task<IActionResult> IndexAllUnindexedSubscriber()
+        {
+            _candidatesService.IndexAllUnindexed(true);
+            return StatusCode(202);
+        }
+
+
+
+
+        #endregion
+
+        #region Work History
+
+        [HttpGet]
+        [Authorize]
+        [Route("work-history")]
+        public async Task<IActionResult> GetCandidateWorkHistory(int limit = 10, int offset = 0, string sort = "createdate", string order = "ascending")
+        {
+            var response = await _candidatesService.GetCandidateWorkHistory(GetSubscriberGuid(), limit, offset, sort, order);
+            return Ok(response);
+        }
+
+        [HttpPut]
+        [Authorize]
+        [Route("work-history")]
+        public async Task<IActionResult> UpdateCandidateWorkHistory([FromBody] WorkHistoryUpdateDto request)
+        {
+            await _candidatesService.UpdateCandidateWorkHistory(GetSubscriberGuid(), request);
+            return StatusCode(204);
+        }
+
+        #endregion
+
+
+
     }
 }
