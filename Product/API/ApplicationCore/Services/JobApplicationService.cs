@@ -96,7 +96,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 // consolidated logic for job application emails
                 await this.SendJobApplicationEmail(subscriber, jobPosting, applicationDto, jobApplication.JobApplicationGuid);
-                SendJobConfirmationEmail(subscriber);
+                SendJobConfirmationEmail(subscriber, jobPosting);
 
                 return jobApplication.JobApplicationGuid;
             }
@@ -181,11 +181,20 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
-        private void SendJobConfirmationEmail(Subscriber subscriber)
-            => _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(
+        private void SendJobConfirmationEmail(Subscriber subscriber, JobPosting jobPosting)
+        {
+            var templateData = new
+            {
+                firstName = subscriber.FirstName,
+                lastName = subscriber.LastName,
+                jobTitle = jobPosting.Title,
+                company = jobPosting.Company?.CompanyName ?? ""
+            };
+
+            _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(
                 subscriber.Email,
                 _configuration["SysEmail:Transactional:TemplateIds:JobApplicationUserConfirmation"],
-                null, // templateData
+                templateData,
                 Constants.SendGridAccount.Transactional,
                 null, // subject
                 null, // attachments
@@ -193,6 +202,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 null, // unsubscribeGroupId
                 null, // cc
                 null)); // bcc
+        }
 
         // per Foley the requirment for a cover letter has been removed
         private bool ValidateJobApplication(ApplicationDto applicationDto, Guid subscriberGuid, Guid jobGuid, ref Subscriber subscriber, ref JobPosting jobPosting, ref string ErrorMsg)
