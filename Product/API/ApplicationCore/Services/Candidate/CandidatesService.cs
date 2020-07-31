@@ -611,8 +611,6 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         }
 
 
-
-        // todo jab test
         /// <summary>
         /// Index all unidexed subscrobers
         /// </summary>
