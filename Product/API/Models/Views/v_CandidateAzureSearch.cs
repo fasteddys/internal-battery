@@ -38,8 +38,8 @@ namespace UpDiddyApi.Models.Views
         public string SubscriberLanguages { get; set; }
 
         public string CommuteDistance { get; set; }
-        public string IsWillingToTravel { get; set; }
-        public string IsFlexibleWorkScheduleRequired { get; set; }
+        public bool? IsWillingToTravel { get; set; }
+        public bool? IsFlexibleWorkScheduleRequired { get; set; }
         public string EmploymentTypes { get; set; }
         public string SubscriberTraining { get; set; }
         public string SubscriberEducation { get; set; }
@@ -47,7 +47,7 @@ namespace UpDiddyApi.Models.Views
         public string SubscriberTitles { get; set; }
         public string SubscriberWorkHistory { get; set; }
 
-        public int AzureIndexStatusId { get; set; }
+        public int? AzureIndexStatusId { get; set; }
 
 
 

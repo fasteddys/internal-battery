@@ -515,10 +515,10 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             // If there is no work to do jus return true
             if (candidateList.Count == 0)
                 return true;
-            _logger.Log(LogLevel.Information, $"G2Service.G2IndexBulkAsync starting index for g2");
+            _logger.Log(LogLevel.Information, $"CandidateService.CandidateIndexBulkAsync starting index for g2");
             AzureIndexResult info = await _azureSearchService.AddOrUpdateCandidateBulk(candidateList);
             await UpdateAzureStatus(info, ResolveIndexStatusMessage(info.StatusMsg), info.StatusMsg);
-            _logger.Log(LogLevel.Information, $"G2Service.G2IndexBulkAsync done index for g2");
+            _logger.Log(LogLevel.Information, $"CandidateService.CandidateIndexBulkAsync done index for g2");
             return true;
         }
 
@@ -533,9 +533,11 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         /// <returns></returns>
         public async Task<bool> CandidateIndexAsync(CandidateSDOC candidate)
         {
+            _logger.LogInformation($"CandidateService:CandidateIndexAsync Starting subscriber = {candidate.SubscriberGuid}  ");
             AzureIndexResult info = await _azureSearchService.AddOrUpdateCandidate(candidate);
             // Update subscribers azure index status 
             await UpdateAzureStatus(info, Constants.AzureSearchIndexStatus.Indexed, info.StatusMsg);
+            _logger.LogInformation($"CandidateService:CandidateIndexAsync Done");
             return true;
         }
 
@@ -549,9 +551,12 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         /// <returns></returns>
         public async Task<bool> CandidateIndexRemoveAsync(CandidateSDOC candidate)
         {
+            _logger.LogInformation($"CandidateService:CandidateIndexRemoveAsync Starting subscriber = {candidate.SubscriberGuid}  ");
             AzureIndexResult info = await _azureSearchService.DeleteCandidate(candidate);
             // Update subscribers azure index status 
             await UpdateAzureStatus(info, Constants.AzureSearchIndexStatus.Indexed, info.StatusMsg);
+
+            _logger.LogInformation($"CandidateService:CandidateIndexRemoveAsync Done");
             return true;
         }
 
@@ -566,9 +571,10 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         /// <returns></returns>
         public async Task<bool> IndexCandidateBySubscriberAsync(Guid subscriberGuid, bool nonBlocking = true)
         {
-           
+
+            _logger.LogInformation($"CandidateService:IndexCandidateBySubscriberAsync Starting subscriber = {subscriberGuid}  nonBlocking = {nonBlocking}");
             // Get all non-public G2s for subscriber 
-             v_CandidateAzureSearch candidateProfile = _db.CandidateAzureSearch
+            v_CandidateAzureSearch candidateProfile = _db.CandidateAzureSearch
             .Where(p => p.SubscriberGuid == subscriberGuid)
             .FirstOrDefault(); 
             CandidateSDOC indexDoc = await MapToCandidateSDOC(candidateProfile);
@@ -579,7 +585,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             else
                await CandidateIndexAsync(indexDoc);
 
-
+            _logger.LogInformation($"CandidateService:IndexCandidateBySubscriberAsync Done");
             return true;
         }
 
@@ -593,6 +599,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         
         public async Task<bool> IndexRemoveCandidateBySubscriberAsync(Guid subscriberGuid, bool nonBlocking = true)
         {
+            _logger.LogInformation($"CandidateService:IndexRemoveCandidateBySubscriberAsync Starting subscriber = {subscriberGuid}  nonBlocking = {nonBlocking}");
 
             // Get all non-public G2s for subscriber 
             v_CandidateAzureSearch candidateProfile = _db.CandidateAzureSearch
@@ -606,6 +613,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             else
                 await CandidateIndexRemoveAsync(indexDoc);
 
+            _logger.LogInformation($"CandidateService:IndexRemoveCandidateBySubscriberAsync Done");
 
             return true;
         }
@@ -618,6 +626,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         /// <returns></returns>
         public async Task<bool> IndexAllUnindexed(bool nonBlocking = true)
         {
+
+            _logger.LogInformation($"CandidateService:IndexAllUnindexed Starting nonBlocking = {nonBlocking}");
 
             // Get all non-public G2s for subscriber 
             List<v_CandidateAzureSearch> candidates = _db.CandidateAzureSearch
@@ -645,6 +655,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexAddOrUpdateBulk(Docs));
             else
                 await CandidateIndexBulkAsync(Docs);
+
+            _logger.LogInformation($"CandidateService:IndexAllUnindexed Done");
 
 
             return true;
@@ -718,7 +730,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             }
             return true;
         }
-
+ 
 
         // IMPORTANT!         
         // 1) Any colections of objects (e.g. Skills, Languages, etc.) must be hydrated with an empty list 

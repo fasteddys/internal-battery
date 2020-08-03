@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Net;
@@ -26,14 +27,16 @@ namespace UpDiddyApi.Controllers.V2
         private readonly IAzureSearchService _azureSearchService;
         private readonly IHiringManagerService _hiringManagerService;
         private readonly ICandidatesService _candidatesService;
+        private readonly ILogger _logger;
 
-        public SubscribersController(IServiceProvider services)
+        public SubscribersController(IServiceProvider services, ILogger<SubscribersController> logger)
         {
             _configuration = services.GetService<IConfiguration>();
             _subscriberService = services.GetService<ISubscriberService>();
             _azureSearchService = services.GetService<IAzureSearchService>();
             _hiringManagerService = services.GetService<IHiringManagerService>();
             _candidatesService = services.GetService<ICandidatesService>();
+            _logger = logger;
         }
     
 
@@ -43,8 +46,7 @@ namespace UpDiddyApi.Controllers.V2
         public async Task<IActionResult> ParseAuth0Logs([FromBody] dynamic payload)
         {
             await _subscriberService.ParseAuth0Logs(payload);
-            return StatusCode(200);
-        }
+            return StatusCode(200);        }
 
         [HttpPost]
         [MiddlewareFilter(typeof(UserManagementAuthorizationPipeline))]
@@ -60,8 +62,19 @@ namespace UpDiddyApi.Controllers.V2
 
             var newSubscriberGuid = await _subscriberService.CreateSubscriberAsync(subscriberDto);
 
-            // add new subscriber to azure candidate index 
-            await _candidatesService.IndexCandidateBySubscriberAsync(newSubscriberGuid);
+            // don't let and indexing issue stop the new user regisration
+            try
+            {
+                // add new subscriber to azure candidate index 
+                await _candidatesService.IndexCandidateBySubscriberAsync(newSubscriberGuid);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation($"Candidate indexing failed for {newSubscriberGuid} Error: {ex.ToString()} ");
+            }
+
+
+        
 
             return StatusCode(201, newSubscriberGuid);
         }
