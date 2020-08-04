@@ -198,7 +198,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             try
             {
                 _hangfireService.Enqueue(() => _repositoryWrapper.TrackingRepository.AddUpdateTracking(url));
-                //To test use below statement
+                //To test use below statement, comment out the above statement to avoid hangfire.
                 //await _repositoryWrapper.TrackingRepository.AddUpdateTracking(url);
             }
             catch (Exception ex)
