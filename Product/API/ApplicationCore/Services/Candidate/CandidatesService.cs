@@ -629,11 +629,13 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
             _logger.LogInformation($"CandidateService:IndexAllUnindexed Starting nonBlocking = {nonBlocking}");
 
-            // Get all non-public G2s for subscriber 
-            List<v_CandidateAzureSearch> candidates = _db.CandidateAzureSearch
-           .Where(p => p.AzureIndexStatusId == 1)
-           .ToList();
-
+            try
+            {
+                // Get all non-public G2s for subscriber 
+                List<v_CandidateAzureSearch> candidates = _db.CandidateAzureSearch
+               .Where(p => p.AzureIndexStatusId == 1)
+               .ToList();
+    
 
             if (candidates.Count == 0)
                 return false;
@@ -657,6 +659,13 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 await CandidateIndexBulkAsync(Docs);
 
             _logger.LogInformation($"CandidateService:IndexAllUnindexed Done");
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"CandidateService:IndexAllUnindexed Error indexing = {ex.ToString()}");
+                 throw ex;
+            }
 
 
             return true;
@@ -731,6 +740,9 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             return true;
         }
  
+
+        //todo jab add migration for upgated view for current rate
+
 
         // IMPORTANT!         
         // 1) Any colections of objects (e.g. Skills, Languages, etc.) must be hydrated with an empty list 
