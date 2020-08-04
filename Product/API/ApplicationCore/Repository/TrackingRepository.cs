@@ -27,7 +27,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             slugParam.ParameterName = "@sourceSlug";
             slugParam.SqlDbType = SqlDbType.VarChar;
             slugParam.Direction = ParameterDirection.Input;
-            slugParam.Size = 50;
+            slugParam.Size = 150;
             slugParam.Value = sourceSlug;
 
             SqlParameter urlParam = new SqlParameter();

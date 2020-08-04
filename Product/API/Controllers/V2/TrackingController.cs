@@ -19,8 +19,7 @@ namespace UpDiddyApi.Controllers.V2
             _trackingService = trackingService;
         }
 
-
-        [HttpGet("redirect/{slug}")]
+        [HttpGet("redirect/{slug:length(1,150)}")]
         public async Task<ActionResult<UrlDto>> GetQualifiedUrlAfterTracking(string slug)
         {
             var response = await _trackingService.GetFullUrlAfterTracking(slug);
