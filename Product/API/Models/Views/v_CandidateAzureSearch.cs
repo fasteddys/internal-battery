@@ -48,40 +48,7 @@ namespace UpDiddyApi.Models.Views
         public string SubscriberWorkHistory { get; set; }
 
         public int? AzureIndexStatusId { get; set; }
-
-
-
-
-
-
-        // Possible Future 
-
-        /*
-
-    public Guid? ProfileGuid { get; set; }
-    public Guid? CompanyGuid { get; set; }
-
-
-    public string ContactType { get; set; }
-
-
-    public string ExperienceLevel { get; set; }
-    public string EmploymentTypes { get; set; }
-
-    public bool? IsWillingToRelocate { get; set; }
-    public bool? IsWillingToTravel { get; set; }
-    public bool? IsActiveJobSeeker { get; set; }
-    public bool? IsCurrentlyEmployed { get; set; }
-    public bool? IsWillingToWorkProBono { get; set; }
-
-    public double? DesiredRate { get; set; }
-    public string Tags { get; set; }
-
-    public string PrivateSkills { get; set; }
-
-
-    public int? AzureIndexStatusId { get; set; }
-    */
+ 
 
     }
 }

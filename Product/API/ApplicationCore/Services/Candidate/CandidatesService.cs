@@ -577,6 +577,14 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             v_CandidateAzureSearch candidateProfile = _db.CandidateAzureSearch
             .Where(p => p.SubscriberGuid == subscriberGuid)
             .FirstOrDefault(); 
+
+            // make sure the user is found in the indexing view, this will not be the case if they are a hiring manager. 
+           if ( candidateProfile == null)
+           {
+                _logger.LogInformation($"CandidateService:IndexCandidateBySubscriberAsync Unable to locate subscriber {subscriberGuid} in indexer view, if they are not a hiring manager this will need to be investigated.");
+                return false;
+           }
+
             CandidateSDOC indexDoc = await MapToCandidateSDOC(candidateProfile);
 
             // fire off as background job 
@@ -629,11 +637,13 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
             _logger.LogInformation($"CandidateService:IndexAllUnindexed Starting nonBlocking = {nonBlocking}");
 
-            // Get all non-public G2s for subscriber 
-            List<v_CandidateAzureSearch> candidates = _db.CandidateAzureSearch
-           .Where(p => p.AzureIndexStatusId == 1)
-           .ToList();
-
+            try
+            {
+                // Get all non-public G2s for subscriber 
+                List<v_CandidateAzureSearch> candidates = _db.CandidateAzureSearch
+               .Where(p => p.AzureIndexStatusId == 1)
+               .ToList();
+    
 
             if (candidates.Count == 0)
                 return false;
@@ -657,6 +667,13 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 await CandidateIndexBulkAsync(Docs);
 
             _logger.LogInformation($"CandidateService:IndexAllUnindexed Done");
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"CandidateService:IndexAllUnindexed Error",ex);
+                throw;
+            }
 
 
             return true;
