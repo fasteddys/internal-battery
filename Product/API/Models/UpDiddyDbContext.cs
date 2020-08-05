@@ -754,8 +754,8 @@ namespace UpDiddyApi.Models
                     .HasForeignKey(slp => slp.ProficiencyLevelId);
             });
 
-            modelBuilder.Entity<SubscriberEmploymentTypes>()
-                .HasIndex(set => new { set.SubscriberId, set.EmploymentTypeId })
+            modelBuilder.Entity<Tracking>()
+                .HasIndex(set => new { set.SourceSlug})
                 .HasName("UIX_Tracking_SourceSlug")
                 .IsUnique(true);
 

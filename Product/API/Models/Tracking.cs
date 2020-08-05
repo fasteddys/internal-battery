@@ -15,7 +15,7 @@ namespace UpDiddyApi.Models
         [Column(TypeName = "VARCHAR(2048)")]
         public string Url { get; set; }
 
-        [Column(TypeName = "VARCHAR(50)")]
+        [Column(TypeName = "VARCHAR(150)")]
         public string SourceSlug { get; set; }
 
         [Required]
