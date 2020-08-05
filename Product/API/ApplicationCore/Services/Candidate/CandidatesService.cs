@@ -663,8 +663,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             }
             catch (Exception ex)
             {
-                _logger.LogError($"CandidateService:IndexAllUnindexed Error indexing = {ex.ToString()}");
-                 throw ex;
+                _logger.LogError($"CandidateService:IndexAllUnindexed Error",ex);
+                throw;
             }
 
 
@@ -740,9 +740,6 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             return true;
         }
  
-
-        //todo jab add migration for upgated view for current rate
-
 
         // IMPORTANT!         
         // 1) Any colections of objects (e.g. Skills, Languages, etc.) must be hydrated with an empty list 
