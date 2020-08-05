@@ -578,7 +578,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             .Where(p => p.SubscriberGuid == subscriberGuid)
             .FirstOrDefault(); 
 
-            // make sure the user is found in the indexing view, this will not be the case if they are a hiring manager.
+            // make sure the user is found in the indexing view, this will not be the case if they are a hiring manager. 
            if ( candidateProfile == null)
            {
                 _logger.LogInformation($"CandidateService:IndexCandidateBySubscriberAsync Unable to locate subscriber {subscriberGuid} in indexer view, if they are not a hiring manager this will need to be investigated.");
