@@ -629,11 +629,13 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
             _logger.LogInformation($"CandidateService:IndexAllUnindexed Starting nonBlocking = {nonBlocking}");
 
-            // Get all non-public G2s for subscriber 
-            List<v_CandidateAzureSearch> candidates = _db.CandidateAzureSearch
-           .Where(p => p.AzureIndexStatusId == 1)
-           .ToList();
-
+            try
+            {
+                // Get all non-public G2s for subscriber 
+                List<v_CandidateAzureSearch> candidates = _db.CandidateAzureSearch
+               .Where(p => p.AzureIndexStatusId == 1)
+               .ToList();
+    
 
             if (candidates.Count == 0)
                 return false;
@@ -657,6 +659,13 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 await CandidateIndexBulkAsync(Docs);
 
             _logger.LogInformation($"CandidateService:IndexAllUnindexed Done");
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"CandidateService:IndexAllUnindexed Error",ex);
+                throw;
+            }
 
 
             return true;

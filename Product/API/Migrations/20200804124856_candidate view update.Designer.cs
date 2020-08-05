@@ -3,15 +3,18 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200804124856_candidate view update")]
+    partial class candidateviewupdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -4856,7 +4859,7 @@ namespace UpDiddyApi.Migrations
 
                     b.HasIndex("SubscriberId", "EmploymentTypeId")
                         .IsUnique()
-                        .HasName("UIX_SubscriberEmploymentTypes_Subscriber_EmploymentType");
+                        .HasName("UIX_Tracking_SourceSlug");
 
                     b.ToTable("SubscriberEmploymentTypes");
                 });
@@ -5463,7 +5466,7 @@ namespace UpDiddyApi.Migrations
                     b.Property<Guid?>("ModifyGuid");
 
                     b.Property<string>("SourceSlug")
-                        .HasColumnType("VARCHAR(150)");
+                        .HasColumnType("VARCHAR(50)");
 
                     b.Property<Guid>("TrackingGuid");
 
@@ -5472,11 +5475,6 @@ namespace UpDiddyApi.Migrations
                         .HasColumnType("VARCHAR(2048)");
 
                     b.HasKey("TrackingId");
-
-                    b.HasIndex("SourceSlug")
-                        .IsUnique()
-                        .HasName("UIX_Tracking_SourceSlug")
-                        .HasFilter("[SourceSlug] IS NOT NULL");
 
                     b.ToTable("Tracking");
                 });
