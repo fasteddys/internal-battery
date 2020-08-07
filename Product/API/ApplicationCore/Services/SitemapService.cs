@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,7 @@ using System.Xml.Linq;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Shared;
 
 namespace UpDiddyApi.ApplicationCore.Services
@@ -89,7 +91,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             sitemap.Root.Add(courseSitemapXElements);
 
             // generate job-related urls for the sitemap and append them to the document
-            var jobSitemapUrls = await _repositoryWrapper.StoredProcedureRepository.GetJobSitemapUrls(baseSiteUri);
+            var jobSitemapUrls = await _repositoryWrapper.JobSite.GetAll()
+                .Where(js => js.IsDeleted == 0)
+                .Select(js => new JobSitemapDto { Url = new Uri(baseSiteUri, $"job/{js.JobSiteGuid}") })
+                .ToListAsync();
+
             var jobSitemapXElements = jobSitemapUrls
                 .Select(u =>
                     new XElement(ns + "url",
