@@ -379,6 +379,7 @@ namespace UpDiddyApi
             services.AddCrossChq(Configuration.GetSection("CrossChq"));
             services.AddTransient<ICommuteDistancesService, CommuteDistancesService>();
             services.AddTransient<IAccountManagementService, AccountManagementService>();
+            services.AddTransient<IVideoService, VideoService>();
             #endregion
 
             // Configure SnapshotCollector from application settings
