@@ -11,7 +11,7 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    [Migration("20200807175116_SubscriberVideos")]
+    [Migration("20200810161905_SubscriberVideos")]
     partial class SubscriberVideos
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -5272,7 +5272,13 @@ namespace UpDiddyApi.Migrations
                     b.Property<string>("ThumbnailLink")
                         .HasMaxLength(500);
 
+                    b.Property<string>("ThumbnailMimeType")
+                        .HasMaxLength(500);
+
                     b.Property<string>("VideoLink")
+                        .HasMaxLength(500);
+
+                    b.Property<string>("VideoMimeType")
                         .HasMaxLength(500);
 
                     b.HasKey("SubscriberVideoId");

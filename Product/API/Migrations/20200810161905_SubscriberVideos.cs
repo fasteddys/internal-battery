@@ -27,7 +27,9 @@ namespace UpDiddyApi.Migrations
                     SubscriberVideoGuid = table.Column<Guid>(nullable: false),
                     SubscriberId = table.Column<int>(nullable: false),
                     VideoLink = table.Column<string>(maxLength: 500, nullable: true),
-                    ThumbnailLink = table.Column<string>(maxLength: 500, nullable: true)
+                    VideoMimeType = table.Column<string>(maxLength: 500, nullable: true),
+                    ThumbnailLink = table.Column<string>(maxLength: 500, nullable: true),
+                    ThumbnailMimeType = table.Column<string>(maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {

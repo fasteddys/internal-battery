@@ -17,6 +17,12 @@ namespace UpDiddyApi.Models
         public string VideoLink { get; set; }
 
         [StringLength(500)]
+        public string VideoMimeType { get; set; }
+
+        [StringLength(500)]
         public string ThumbnailLink { get; set; }
+
+        [StringLength(500)]
+        public string ThumbnailMimeType { get; set; }
     }
 }

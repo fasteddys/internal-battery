@@ -1205,6 +1205,10 @@ namespace UpDiddyApi.Helpers
                 })
                 .ForMember(dest => dest.WorkHistories, opt => opt.MapFrom(src => src.ToList()))
                 .ReverseMap();
+
+            CreateMap<SubscriberVideo, SubscriberVideoLinksDto>()
+                .ForMember(dest => dest.IsVisibleToHiringManager, opt => opt.MapFrom(src => src.Subscriber.IsVideoVisibleToHiringManager))
+                .ReverseMap();
         }
     }
 }
