@@ -9,5 +9,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     public interface ITraitifyRepository : IUpDiddyRepositoryBase<Traitify>
     {
         Task<Traitify> GetByAssessmentId(string assesmentId);
+        Task<Traitify> GetMostRecentAssessmentBySubscriber(Guid subscriber);
     }
 }

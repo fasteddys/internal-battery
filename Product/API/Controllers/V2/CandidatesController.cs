@@ -187,8 +187,7 @@ namespace UpDiddyApi.Controllers.V2
         #endregion CompensationPreferences
 
         #region Education & Assessments
-
-
+        
         [HttpGet]
         [Route("education-history")]
         [Authorize]
@@ -232,9 +231,16 @@ namespace UpDiddyApi.Controllers.V2
             return StatusCode(204);
         }
 
+        [HttpGet]
+        [Authorize]
+        [Route("assessments")]
+        public async Task<IActionResult> GetAssessments()
+        {
+            var response = await _candidatesService.GetAssessments(GetSubscriberGuid());
+            return Ok(response);
+        }
+
         #endregion Education & Assessments
-
-
 
         #region Candidate Indexing Operations
 
@@ -313,8 +319,5 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         #endregion
-
-
-
     }
 }
