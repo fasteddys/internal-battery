@@ -494,12 +494,16 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
             _logger.LogInformation($"CandidatesService:UpdateCandidateEducationAndTraining end.");
         }
-
+        
+        public async Task<AssessmentsDto> GetAssessments(Guid subscriber)
+        {
+            var traitify = await _repositoryWrapper.TraitifyRepository.GetMostRecentAssessmentBySubscriber(subscriber);
+            var traitifyDto = _mapper.Map<TraitifyDto>(traitify);
+            return new AssessmentsDto() { Traitify = traitifyDto };
+        }
+        
         #endregion
-
-
-
-
+                     
         #region Candidate Indexing
 
 
@@ -682,8 +686,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
 
         #endregion
-
-
+        
         #region Work History
 
         public async Task<WorkHistoryListDto> GetCandidateWorkHistory(Guid subscriberGuid, int limit, int offset, string sort, string order)
@@ -714,11 +717,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         }
 
         #endregion
-
-
-
-
-
+                          
         #region private helper functions 
 
         private static string ResolveIndexStatusMessage(string statusMsg)
@@ -878,11 +877,6 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
 
         #endregion
-
-
-
-
-
-
+                              
     }
 }
