@@ -46,6 +46,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         Task UpdateCompensationPreferences(CompensationPreferencesDto compensationPreferences, Guid subscriberGuid);
 
+        Task<AssessmentsDto> GetAssessments(Guid subscriber);
 
         #region Candidate Indexing 
         

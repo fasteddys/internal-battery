@@ -21,6 +21,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly ICloudStorage _cloudStorage;
         private readonly IButterCMSService _butterCMSService;
 
+        private static readonly XNamespace ns = "http://www.sitemaps.org/schemas/sitemap/0.9";
+
         public SitemapService(
             IRepositoryWrapper repositoryWrapper,
             ICloudStorage cloudStorage,
@@ -33,76 +35,46 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<XDocument> GenerateSiteMap(Uri baseSiteUri)
         {
-            XNamespace ns = "http://www.sitemaps.org/schemas/sitemap/0.9";
-
             XDocument sitemap = new XDocument(
                 new XDeclaration("1.0", "UTF-8", string.Empty),
                 new XElement(ns + "urlset")
                 );
 
             // generate static urls for the sitemap and append them to the document
-            var staticSitemapXElements = new List<XElement>();
-            staticSitemapXElements.Add(
-                new XElement(ns + "url",
-                    new XElement(ns + "loc", baseSiteUri),
-                    new XElement(ns + "changefreq", "monthly")));
-            staticSitemapXElements.Add(
-                new XElement(ns + "url",
-                    new XElement(ns + "loc", new Uri(baseSiteUri, "about")),
-                    new XElement(ns + "changefreq", "monthly")));
-            staticSitemapXElements.Add(
-                new XElement(ns + "url",
-                    new XElement(ns + "loc", new Uri(baseSiteUri, "offers")),
-                    new XElement(ns + "changefreq", "monthly")));
-            staticSitemapXElements.Add(
-                new XElement(ns + "url",
-                    new XElement(ns + "loc", new Uri(baseSiteUri, "contact")),
-                    new XElement(ns + "changefreq", "monthly")));
-            staticSitemapXElements.Add(
-                new XElement(ns + "url",
-                    new XElement(ns + "loc", new Uri(baseSiteUri, "privacy")),
-                    new XElement(ns + "changefreq", "monthly")));
-            staticSitemapXElements.Add(
-                new XElement(ns + "url",
-                    new XElement(ns + "loc", new Uri(baseSiteUri, "faq")),
-                    new XElement(ns + "changefreq", "monthly")));
-            staticSitemapXElements.Add(
-                new XElement(ns + "url",
-                    new XElement(ns + "loc", new Uri(baseSiteUri, "termsofservice")),
-                    new XElement(ns + "changefreq", "monthly")));
+
+            var url = GetUrlFactory(baseSiteUri); // putting baseSiteUrl into a closure in order to simplify this code a little bit.
+
+            var staticSitemapXElements = new List<XElement>
+            {
+                url(string.Empty, "monthly"),
+                url("about", "monthly"),
+                url("offers", "monthly"),
+                url("contact", "monthly"),
+                url("privacy", "monthly"),
+                url("faq", "monthly"),
+                url("termsofservice", "monthly")
+            };
             sitemap.Root.Add(staticSitemapXElements);
 
             // generate course-related urls for the sitemap and append them to the document
             var topics = await _repositoryWrapper.Topic.GetByConditionAsync(t => t.IsDeleted == 0 && !string.IsNullOrWhiteSpace(t.Slug));
-            var courseSitemapXElements = new List<XElement>();
-            courseSitemapXElements.Add(
-                new XElement(ns + "url",
-                    new XElement(ns + "loc", new Uri(baseSiteUri, "courses")),
-                    new XElement(ns + "changefreq", "monthly")));
-            courseSitemapXElements.AddRange(
-                topics.Select(u =>
-                    new XElement(ns + "url",
-                        new XElement(ns + "loc", new Uri(baseSiteUri, "/courses/topics/" + u.Slug).ToString()),
-                        new XElement(ns + "changefreq", "monthly")
-                        )
-                    )
-                    .ToList()
-                );
+            var courseSitemapXElements = new List<XElement>
+            {
+                url("courses", "monthly")
+            };
+
+            courseSitemapXElements.AddRange(topics
+                    .Select(u => url($"/courses/topics/{u.Slug}", "monthly"))
+                    .ToList());
+
             sitemap.Root.Add(courseSitemapXElements);
 
             // generate job-related urls for the sitemap and append them to the document
-            var jobSitemapUrls = await _repositoryWrapper.JobSite.GetAll()
-                .Where(js => js.IsDeleted == 0)
-                .Select(js => new JobSitemapDto { Url = new Uri(baseSiteUri, $"job/{js.JobSiteGuid}") })
+            var jobSitemapXElements = await _repositoryWrapper.JobPosting.GetAll()
+                .Where(jp => jp.IsDeleted == 0)
+                .Select(jp => url($"job/{jp.JobPostingGuid}", "daily"))
                 .ToListAsync();
 
-            var jobSitemapXElements = jobSitemapUrls
-                .Select(u =>
-                    new XElement(ns + "url",
-                        new XElement(ns + "loc", u.Url),
-                        new XElement(ns + "changefreq", "daily")
-                    )
-                ).ToList();
             sitemap.Root.Add(jobSitemapXElements);
             
             // generate ButterCMS urls for the sitemap and append them to the document
@@ -110,12 +82,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var butterXmlDocument = await _butterCMSService.GetButterSitemapAsync();
             foreach (XmlNode location in butterXmlDocument.GetElementsByTagName("loc"))
             {
-                butterSitemapXElements.Add(
-                    new XElement(ns + "url",
-                        new XElement(ns + "loc", location.InnerText),
-                        new XElement(ns + "changefreq", "daily")
-                    )
-                );
+                butterSitemapXElements.Add(GetUrl(location.InnerText, "daily"));
             }
             sitemap.Root.Add(butterSitemapXElements);
 
@@ -134,5 +101,13 @@ namespace UpDiddyApi.ApplicationCore.Services
                 var result = await _cloudStorage.UploadBlobAsync("sitemap.xml", docAsBytes);
             }
         }
+
+        private static Func<string, string, XElement> GetUrlFactory(Uri baseSiteUri)
+            => (location, changeFreq) => GetUrl((string.IsNullOrEmpty(location) ? baseSiteUri : new Uri(baseSiteUri, location)).ToString(), changeFreq);
+
+        private static XElement GetUrl(string location, string changeFreq)
+            => new XElement(ns + "url",
+                new XElement(ns + "loc", location),
+                new XElement(ns + "changefreq", changeFreq));
     }
 }
