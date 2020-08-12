@@ -48,8 +48,10 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         Task<AssessmentsDto> GetAssessments(Guid subscriber);
 
+        Task<bool> GetAssessmentsVisibility(Guid subscriber);
+
         #region Candidate Indexing 
-        
+
         Task<bool> CandidateIndexAsync(CandidateSDOC candidate);
         Task<bool> CandidateIndexBulkAsync(List<CandidateSDOC> candidateList);
         Task<bool> CandidateIndexRemoveAsync(CandidateSDOC candidate);

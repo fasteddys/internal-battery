@@ -32,7 +32,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         private readonly UpDiddyDbContext _db;
         private readonly IHangfireService _hangfireService;
         private readonly IAzureSearchService _azureSearchService;
-
+        private readonly string _hostUrl;
+        private readonly string _publicKey;
 
         public CandidatesService(
             ILogger<CandidatesService> logger,
@@ -55,6 +56,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             _db = context;
             _hangfireService = hangfireService;
             _azureSearchService = azureSearchService;
+            _publicKey = configuration["Traitify:PublicKey"];
+            _hostUrl = configuration["Traitify:HostUrl"];
         }
 
         #region Personal Info
@@ -386,6 +389,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         #endregion CompensationPreferences
 
         #region Education & Training
+
         public async Task<EducationalDegreeTypeListDto> GetAllEducationalDegrees(int limit, int offset, string sort, string order)
         {
             _logger.LogInformation($"CandidatesService:GetAllEducationalDegrees begin.");
@@ -466,6 +470,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             }
             _logger.LogInformation($"CandidatesService:GetCandidateTrainingHistory end.");
         }
+
         public async Task UpdateCandidateEducationAndTraining(Guid subscriberGuid, SubscriberEducationAssessmentsDto subscriberEducationAssessmentsDto)
         {
             _logger.LogInformation($"CandidatesService:UpdateCandidateEducationAndTraining begin.");
@@ -499,11 +504,19 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         {
             var traitify = await _repositoryWrapper.TraitifyRepository.GetMostRecentAssessmentBySubscriber(subscriber);
             var traitifyDto = _mapper.Map<TraitifyDto>(traitify);
+            traitifyDto.HostUrl = _hostUrl;
+            traitifyDto.PublicKey = _publicKey;
             return new AssessmentsDto() { Traitify = traitifyDto };
         }
-        
+
+        public async Task<bool> GetAssessmentsVisibility(Guid subscriber)
+        {
+            var isTraitifyAssessmentsVisibleToHiringManagers = (await _repositoryWrapper.SubscriberRepository.GetByGuid(subscriber)).IsTraitifyAssessmentsVisibleToHiringManagers ;
+            return isTraitifyAssessmentsVisibleToHiringManagers.HasValue ? isTraitifyAssessmentsVisibleToHiringManagers.Value : false;
+        }
+
         #endregion
-                     
+
         #region Candidate Indexing
 
 

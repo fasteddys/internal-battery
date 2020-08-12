@@ -233,6 +233,15 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet]
         [Authorize]
+        [Route("assessments-visibility")]
+        public async Task<IActionResult> GetAssessmentsVisibility()
+        {
+            var response = await _candidatesService.GetAssessmentsVisibility(GetSubscriberGuid());
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Authorize]
         [Route("assessments")]
         public async Task<IActionResult> GetAssessments()
         {
