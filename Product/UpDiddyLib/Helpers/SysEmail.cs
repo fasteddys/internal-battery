@@ -52,7 +52,7 @@ namespace UpDiddyLib.Helpers
             return true;
         }
 
-        public async Task<bool> SendTemplatedEmailAsync(
+        public Task<bool> SendTemplatedEmailAsync(
             string email,
             string templateId,
             dynamic templateData,
@@ -64,7 +64,7 @@ namespace UpDiddyLib.Helpers
             string cc = null,
             string bcc = null)
         {
-            return await SendTemplatedEmailAsync(
+            return SendTemplatedEmailAsync(
                 new[] { email },
                 templateId,
                 templateData,
