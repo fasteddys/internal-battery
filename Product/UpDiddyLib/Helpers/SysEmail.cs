@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using UpDiddyLib.Dto;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace UpDiddyLib.Helpers
 {
@@ -51,7 +52,42 @@ namespace UpDiddyLib.Helpers
             return true;
         }
 
-        public async Task<bool> SendTemplatedEmailAsync(string email, string templateId, dynamic templateData, Constants.SendGridAccount SendGridAccount, string subject = null, List<Attachment> attachments = null, DateTime? sendAt = null, int? unsubscribeGroupId = null)
+        public async Task<bool> SendTemplatedEmailAsync(
+            string email,
+            string templateId,
+            dynamic templateData,
+            Constants.SendGridAccount SendGridAccount,
+            string subject = null,
+            List<Attachment> attachments = null,
+            DateTime? sendAt = null,
+            int? unsubscribeGroupId = null,
+            string cc = null,
+            string bcc = null)
+        {
+            return await SendTemplatedEmailAsync(
+                new[] { email },
+                templateId,
+                templateData,
+                SendGridAccount,
+                subject,
+                attachments,
+                sendAt,
+                unsubscribeGroupId,
+                new[] { cc },
+                new[] { bcc });
+        }
+
+        public async Task<bool> SendTemplatedEmailAsync(
+            string[] to,
+            string templateId,
+            dynamic templateData,
+            Constants.SendGridAccount SendGridAccount,
+            string subject = null,
+            List<Attachment> attachments = null,
+            DateTime? sendAt = null,
+            int? unsubscribeGroupId = null,
+            string[] cc = null,
+            string[] bcc = null)
         {
             bool isDebugMode = _configuration[$"SysEmail:DebugMode"] == "true";
             string SendGridAccountType = Enum.GetName(typeof(Constants.SendGridAccount), SendGridAccount);
@@ -65,7 +101,20 @@ namespace UpDiddyLib.Helpers
 
             // check debug mode to only send emails to actual users in the system is not in debug mode 
             if (isDebugMode == false)
-                message.AddTo(new EmailAddress(email));
+            {
+                void addrecipient(Action<string, string> action, string[] emailList)
+                {
+                    if (emailList?.Any() != true) { return; }
+                    foreach (var email in emailList)
+                    {
+                        action(email, null);
+                    }
+                }
+
+                addrecipient(message.AddTo, to);
+                addrecipient(message.AddCc, cc);
+                addrecipient(message.AddBcc, bcc);
+            }
             else
                 message.AddTo(new EmailAddress(_configuration[$"SysEmail:SystemDebugEmailAddress"]));
 

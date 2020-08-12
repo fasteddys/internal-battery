@@ -97,6 +97,8 @@ namespace API.Tests.B2B
                     responseEmailSubject,
                     null,
                     null,
+                    null,
+                    null,
                     null))
                 .ReturnsAsync(true)
                 .Verifiable();
@@ -108,6 +110,8 @@ namespace API.Tests.B2B
                     It.IsAny<object>(),
                     Constants.SendGridAccount.Transactional,
                     ccEmailSubject,
+                    null,
+                    null,
                     null,
                     null,
                     null))

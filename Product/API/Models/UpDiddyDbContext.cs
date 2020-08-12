@@ -16,6 +16,7 @@ using UpDiddyApi.Models.B2B;
 using UpDiddyLib.Domain.Models.B2B;
 using UpDiddyApi.Models.CrossChq;
 using System.Linq;
+using UpDiddyLib.Domain.Models.Candidate360;
 
 namespace UpDiddyApi.Models
 {
@@ -230,6 +231,8 @@ namespace UpDiddyApi.Models
         public DbSet<Language> Languages { get; set; }
 
         public DbSet<ProficiencyLevel> ProficiencyLevels { get; set; }
+        public DbSet<Tracking> Tracking { get; set; }
+        public DbSet<TrackingEventDay> TrackingEventDay { get; set; }
 
         public DbSet<SubscriberLanguageProficiency> SubscriberLanguageProficiencies { get; set; }
         #endregion
@@ -303,7 +306,9 @@ namespace UpDiddyApi.Models
         public DbQuery<EmailTemplateDto> EmailTemplates { get; set; }
         public DbQuery<PipelineProfileDto> PipelineProfiles { get; set; }
         public DbQuery<PipelineDto> Pipelines { get; set; }
-
+        public DbQuery<EmailStatisticsDto> EmailStatistics { get; set; }
+        public DbQuery<WorkHistoryDto> WorkHistories { get; set; }
+        public DbQuery<v_CandidateAzureSearch> CandidateAzureSearch { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -748,6 +753,19 @@ namespace UpDiddyApi.Models
                     .WithMany(pl => pl.SubscriberLanguageProficiencies)
                     .HasForeignKey(slp => slp.ProficiencyLevelId);
             });
+
+            modelBuilder.Entity<Tracking>()
+                .HasIndex(set => new { set.SourceSlug})
+                .HasName("UIX_Tracking_SourceSlug")
+                .IsUnique(true);
+
+
+
+            modelBuilder
+                .Query<v_CandidateAzureSearch>()
+                .ToView("v_CandidateAzureSearch", "B2B");
+
+
         }
     }
 }

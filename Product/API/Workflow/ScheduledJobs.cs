@@ -61,7 +61,7 @@ namespace UpDiddyApi.Workflow
         private readonly IG2Service _g2Service;
         private readonly ISendGridService _sendGridService;
         private readonly IHubSpotService _hubSpotService;
-
+        private readonly ICandidatesService _candidateService;
 
 
         public ScheduledJobs(
@@ -91,7 +91,8 @@ namespace UpDiddyApi.Workflow
             IG2Service g2Service,
             ISendGridService sendGridService,
             IHubSpotService hubSpotService,
-            IMemoryCacheService memoryCacheService
+            IMemoryCacheService memoryCacheService,
+            ICandidatesService candidateService
             )
         {
             _db = context;
@@ -123,6 +124,7 @@ namespace UpDiddyApi.Workflow
             _sendGridService = sendGridService;
             _hubSpotService = hubSpotService;
             _memoryCacheService = memoryCacheService;
+            _candidateService = candidateService;
         }
 
 
@@ -1168,8 +1170,16 @@ namespace UpDiddyApi.Workflow
                 // Import the subscriber resume 
                 ResumeParse resumeParse = await _ImportSubscriberResume(_subscriberService, resume, parsedDocument);
 
+                // update candidate index 
+                await _candidateService.IndexCandidateBySubscriberAsync(subscriber.SubscriberGuid.Value);
                 // Request parse from hiring solved 
                 await _hiringSolvedService.RequestParse(subscriber.SubscriberId, resume.BlobName, base64EncodedString);
+
+
+
+
+
+      
 
                 // Callback to client to let them know upload is complete
                 ClientHubHelper hubHelper = new ClientHubHelper(_hub, _cache);
@@ -1195,9 +1205,7 @@ namespace UpDiddyApi.Workflow
                         {
                             ContractResolver = contractResolver
                         }));
-
-
-
+              
 
             }
             catch (Exception e)
@@ -2161,11 +2169,7 @@ namespace UpDiddyApi.Workflow
 #endregion
 
 
-
-
-
-
-#region G2
+        #region G2
 
 
 
@@ -2311,7 +2315,7 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
             
 
             AzureIndexStatus noneStatus = _repositoryWrapper.AzureIndexStatusRepository.GetAll()
-                .Where(s => s.Name == Constants.G2AzureIndexStatus.None)
+                .Where(s => s.Name == Constants.AzureSearchIndexStatus.None)
                 .FirstOrDefault();
 
             if ( noneStatus == null )
@@ -2414,6 +2418,52 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
 
 
         #endregion
+
+
+        #region Candidate
+
+        /// <summary>
+        /// Add or update the G2 into the azure search index 
+        /// </summary>
+        /// <param name="g2"></param>
+        /// <returns></returns>
+        public async Task<bool> CandidateIndexAddOrUpdate(CandidateSDOC candidate)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdate starting index for candidate {candidate.SubscriberGuid}");
+            await _candidateService.CandidateIndexAsync(candidate);
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdate done index for candidate {candidate.SubscriberGuid}");
+            return true;
+        }
+
+
+
+        /// <summary>
+        /// Add or update the G2 into the azure search index 
+        /// </summary>
+        /// <param name="g2"></param>
+        /// <returns></returns>
+        public async Task<bool> CandidateIndexRemove(CandidateSDOC candidate)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdate starting index for candidate {candidate.SubscriberGuid}");
+            await _candidateService.CandidateIndexRemoveAsync(candidate);
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdate done index for candidate {candidate.SubscriberGuid}");
+            return true;
+        }
+
+
+
+        public async Task<bool> CandidateIndexAddOrUpdateBulk(List<CandidateSDOC> candidateList)
+        {
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdateBulk starting index for candidate");
+            await _candidateService.CandidateIndexBulkAsync(candidateList);
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdateBulk done index for candidate");
+            return true;
+        }
+
+
+
+        #endregion
+
 
 
 

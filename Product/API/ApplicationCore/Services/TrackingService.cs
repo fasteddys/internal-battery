@@ -1,13 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
+using UpDiddyLib.Domain.Models;
 using EntityTypeConst = UpDiddyLib.Helpers.Constants.EventType;
 
 namespace UpDiddyApi.ApplicationCore.Services
@@ -17,13 +20,18 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IJobApplicationService _jobApplicationService;
         private readonly IHangfireService _hangfireService;
+        private readonly ILogger _logger;
 
-        public TrackingService(IRepositoryWrapper repositoryWrapper, IJobApplicationService jobApplicationService, IHangfireService hangfireService)
+
+        public TrackingService(IRepositoryWrapper repositoryWrapper, 
+            IJobApplicationService jobApplicationService, 
+            IHangfireService hangfireService,
+            ILogger<TrackingService> logger)
         {
             _repositoryWrapper = repositoryWrapper;
             _jobApplicationService = jobApplicationService;
             _hangfireService = hangfireService;
-
+            _logger = logger;
         }
 
 
@@ -65,6 +73,34 @@ namespace UpDiddyApi.ApplicationCore.Services
                 }
             }
             return subscribersToJobPostingMapping;
+        }
+
+        public async Task<UrlDto> GetFullUrlAfterTracking(string sourceSlug)
+        {
+            _logger.LogInformation($"TrackingService:GetFullUrlAfterTracking  Starting for url: {sourceSlug}");
+
+            if(String.IsNullOrWhiteSpace(sourceSlug))
+                throw new FailedValidationException($"TrackingService:GetFullUrlAfterTracking url cannot be null or empty.");
+
+            string fullUrl = null;
+            try
+            {
+                fullUrl = await _repositoryWrapper.TrackingRepository.GetFullUrlAfterTracking(sourceSlug);
+
+                if (String.IsNullOrWhiteSpace(fullUrl)) return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"TrackingService:GetFullUrlAfterTracking  Error: {ex.ToString()} ");
+                throw ex;
+            }
+
+            return new UrlDto
+            {
+                Url = new Uri(fullUrl)
+            };
+
+            _logger.LogInformation($"TrackingService:GetFullUrlAfterTracking  Done for url: {sourceSlug}");
         }
 
         /// <summary>
@@ -151,6 +187,27 @@ namespace UpDiddyApi.ApplicationCore.Services
             };
             await _repositoryWrapper.SubscriberActionRepository.Create(subAction);
             await _repositoryWrapper.SubscriberActionRepository.SaveAsync();
+        }
+
+        public async Task AddUpdateLandingPageTracking(string url)
+        {
+            _logger.LogInformation($"TrackingService:AddUpdateLandingPageTracking Starting for url: {url}");
+
+            if (String.IsNullOrWhiteSpace(url))
+                throw new FailedValidationException($"TrackingService:AddUpdateLandingPageTracking url cannot be null or empty.");
+            try
+            {
+                _hangfireService.Enqueue(() => _repositoryWrapper.TrackingRepository.AddUpdateTracking(url));
+                //To test use below statement, comment out the above statement to avoid hangfire.
+                //await _repositoryWrapper.TrackingRepository.AddUpdateTracking(url);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"TrackingService:AddUpdateLandingPageTracking Error: {ex.ToString()} ");
+                throw ex;
+            }
+
+            _logger.LogInformation($"TrackingService:AddUpdateLandingPageTracking Done for url: {url}");
         }
     }
 }

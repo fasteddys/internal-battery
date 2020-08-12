@@ -96,6 +96,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 // consolidated logic for job application emails
                 await this.SendJobApplicationEmail(subscriber, jobPosting, applicationDto, jobApplication.JobApplicationGuid);
+                SendJobConfirmationEmail(subscriber, jobPosting);
 
                 return jobApplication.JobApplicationGuid;
             }
@@ -167,7 +168,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                         RecruiterGuid = jobPosting.Recruiter.RecruiterGuid,
                         JobApplicationGuid = jobApplicationGuid
                     };
-                    _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(email, templateId, templateData, Constants.SendGridAccount.Transactional, null, attachments, null, null));
+                    _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(email, templateId, templateData, Constants.SendGridAccount.Transactional, null, attachments, null, null, null, null));
                 }
             }
             catch (Exception e)
@@ -178,6 +179,29 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 _syslog.Log(LogLevel.Information, $"***** JobApplicationService.SendJobApplicationEmail started at: {DateTime.UtcNow.ToLongDateString()}");
             }
+        }
+
+        private void SendJobConfirmationEmail(Subscriber subscriber, JobPosting jobPosting)
+        {
+            var templateData = new
+            {
+                firstName = subscriber.FirstName,
+                lastName = subscriber.LastName,
+                jobTitle = jobPosting.Title,
+                company = jobPosting.Company?.CompanyName ?? ""
+            };
+
+            _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(
+                subscriber.Email,
+                _configuration["SysEmail:Transactional:TemplateIds:JobApplicationUserConfirmation"],
+                templateData,
+                Constants.SendGridAccount.Transactional,
+                null, // subject
+                null, // attachments
+                null, // sendAt
+                null, // unsubscribeGroupId
+                null, // cc
+                null)); // bcc
         }
 
         // per Foley the requirment for a cover letter has been removed

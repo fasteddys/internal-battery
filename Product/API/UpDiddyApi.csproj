@@ -81,6 +81,8 @@
     <Compile Remove="Migrations\20200603153148_Reference Check DB Model.Designer.cs" />
     <Compile Remove="Migrations\20200603213655_Reference Check DB Model updates1.cs" />
     <Compile Remove="Migrations\20200603213655_Reference Check DB Model updates1.Designer.cs" />
+    <Compile Remove="Migrations\20200804125529_candidate view update1.cs" />
+    <Compile Remove="Migrations\20200804125529_candidate view update1.Designer.cs" />
     <Compile Remove="Models\_Company.cs" />
     <Compile Remove="Models\_Country.cs" />
     <Compile Remove="Models\_EducationalDegree.cs" />
