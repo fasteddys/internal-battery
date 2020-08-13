@@ -81,8 +81,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var verifiedEducationalDegreeTypes = _dbContext.EducationalDegreeType.Where(edt => edt.IsDeleted == 0 && edt.IsVerified.HasValue && edt.IsVerified.Value).ToList();
             var trainingType = _dbContext.TrainingType.Where(tt => tt.IsDeleted == 0).ToList();
 
-            subscriber.IsTraitifyAssessmentsVisibleToHiringManagers = subscriberEducationAssessmentsDto.IsTraitifyAssessmentsVisibleToHiringManagers;
-
             //get all including deleted ones
             var subscriberEducationHistory = _dbContext.SubscriberEducationHistory
                                         .Where(seh => seh.Subscriber.SubscriberId == subscriber.SubscriberId &&
