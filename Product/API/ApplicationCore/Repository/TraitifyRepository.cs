@@ -27,7 +27,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<Traitify> GetMostRecentAssessmentBySubscriber(Guid subscriber)
         {
-            return await _dbContext.Traitify.Where(t => t.Subscriber.SubscriberGuid == subscriber && t.IsDeleted == 0).OrderByDescending(t => t.CreateDate).FirstOrDefaultAsync();
+            return await _dbContext.Traitify.Where(t => t.Subscriber.SubscriberGuid == subscriber && t.IsDeleted == 0 && !string.IsNullOrWhiteSpace(t.ResultData)).OrderByDescending(t => t.CreateDate).FirstOrDefaultAsync();
         }
     }
 }
