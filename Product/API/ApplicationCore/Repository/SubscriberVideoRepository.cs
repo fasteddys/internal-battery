@@ -32,7 +32,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             if (subscriber == null)
             {
-                throw new NotFoundException($"No subscriber found for \"{subscriberGuid}\"");
+                throw new NotAuthorizedException($"No subscriber found for \"{subscriberGuid}\"");
             }
 
             subscriberVideo = new SubscriberVideo

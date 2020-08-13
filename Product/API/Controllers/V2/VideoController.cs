@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using System;
 using System.Net;
 using System.Threading.Tasks;
+using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyLib.Domain.Models;
 
@@ -13,10 +15,12 @@ namespace UpDiddyApi.Controllers.V2
     public class VideoController : BaseApiController
     {
         private readonly IVideoService _videoService;
+        private readonly IDistributedCache _distributedCache;
 
-        public VideoController(IVideoService videoService)
+        public VideoController(IVideoService videoService, IDistributedCache distributedCache)
         {
             _videoService = videoService;
+            _distributedCache = distributedCache;
         }
 
         [HttpGet]
@@ -28,11 +32,10 @@ namespace UpDiddyApi.Controllers.V2
             return videoLink;
         }
 
-        [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> SetSubscriberVideoLink([FromBody] SubscriberVideoLinksDto subscriberVideo)
+        [HttpPost("{redisKeyGuid}")]
+        public async Task<IActionResult> SetSubscriberVideoLink(Guid redisKeyGuid, [FromBody] SubscriberVideoLinksDto subscriberVideo)
         {
-            var subscriberGuid = GetSubscriberGuid();
+            var subscriberGuid = await GetSubscriberGuidFromRedis(redisKeyGuid);
             await _videoService.SetSubscriberVideoLink(subscriberGuid, subscriberVideo);
             return StatusCode((int)HttpStatusCode.Created);
         }
@@ -62,6 +65,18 @@ namespace UpDiddyApi.Controllers.V2
             var subscriberGuid = GetSubscriberGuid();
             await _videoService.SetVideoIsVisibleToHiringManager(subscriberGuid, visibility);
             return NoContent();
+        }
+
+        private async Task<Guid> GetSubscriberGuidFromRedis(Guid redisKeyGuid)
+        {
+            var subscriberId = await _distributedCache.GetStringAsync(redisKeyGuid.ToString());
+
+            if (string.IsNullOrEmpty(subscriberId) || !Guid.TryParse(subscriberId, out var subscriberGuid))
+            {
+                throw new NotAuthorizedException();
+            }
+
+            return subscriberGuid;
         }
     }
 }
