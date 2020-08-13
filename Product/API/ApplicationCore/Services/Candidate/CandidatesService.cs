@@ -506,15 +506,11 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             var traitifyDto = _mapper.Map<TraitifyDto>(traitify);
             traitifyDto.HostUrl = _hostUrl;
             traitifyDto.PublicKey = _publicKey;
+            var isTraitifyAssessmentsVisibleToHiringManagers = (await _repositoryWrapper.SubscriberRepository.GetByGuid(subscriber)).IsTraitifyAssessmentsVisibleToHiringManagers;
+            traitifyDto.IsTraitifyAssessmentsVisibleToHiringManagers = isTraitifyAssessmentsVisibleToHiringManagers.HasValue ? isTraitifyAssessmentsVisibleToHiringManagers.Value : false;
             return new AssessmentsDto() { Traitify = traitifyDto };
         }
-
-        public async Task<bool> GetAssessmentsVisibility(Guid subscriber)
-        {
-            var isTraitifyAssessmentsVisibleToHiringManagers = (await _repositoryWrapper.SubscriberRepository.GetByGuid(subscriber)).IsTraitifyAssessmentsVisibleToHiringManagers ;
-            return isTraitifyAssessmentsVisibleToHiringManagers.HasValue ? isTraitifyAssessmentsVisibleToHiringManagers.Value : false;
-        }
-
+        
         #endregion
 
         #region Candidate Indexing

@@ -20,5 +20,6 @@ namespace UpDiddyLib.Domain.Models.Candidate360
         public string Description { get; set; }
         public string PublicKey { get; set; }
         public string HostUrl { get; set; }
+        public bool IsTraitifyAssessmentsVisibleToHiringManagers { get; set; }
     }
 }
