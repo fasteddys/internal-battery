@@ -28,12 +28,11 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         private readonly ILogger _logger;
         private readonly IMapper _mapper;
         private readonly IHubSpotService _hubSpotService;
-        private readonly IConfiguration _configuration;
+        private readonly IConfiguration _configuration;           
         private readonly UpDiddyDbContext _db;
         private readonly IHangfireService _hangfireService;
         private readonly IAzureSearchService _azureSearchService;
-        private readonly string _hostUrl;
-        private readonly string _publicKey;
+
 
         public CandidatesService(
             ILogger<CandidatesService> logger,
@@ -56,8 +55,6 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             _db = context;
             _hangfireService = hangfireService;
             _azureSearchService = azureSearchService;
-            _publicKey = configuration["Traitify:PublicKey"];
-            _hostUrl = configuration["Traitify:HostUrl"];
         }
 
         #region Personal Info
@@ -174,7 +171,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
             try
             {
-                await _repositoryWrapper.SubscriberRepository.UpdateCandidateEmploymentPreferencesBySubscriberGuidAsync(subscriberGuid, candidateEmploymentPreferenceDto);
+                await _repositoryWrapper.SubscriberRepository.UpdateCandidateEmploymentPreferencesBySubscriberGuidAsync  (subscriberGuid, candidateEmploymentPreferenceDto);
                 // update candidate index
                 await IndexCandidateBySubscriberAsync(subscriberGuid);
             }
@@ -389,7 +386,6 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         #endregion CompensationPreferences
 
         #region Education & Training
-
         public async Task<EducationalDegreeTypeListDto> GetAllEducationalDegrees(int limit, int offset, string sort, string order)
         {
             _logger.LogInformation($"CandidatesService:GetAllEducationalDegrees begin.");
@@ -470,7 +466,6 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             }
             _logger.LogInformation($"CandidatesService:GetCandidateTrainingHistory end.");
         }
-
         public async Task UpdateCandidateEducationAndTraining(Guid subscriberGuid, SubscriberEducationAssessmentsDto subscriberEducationAssessmentsDto)
         {
             _logger.LogInformation($"CandidatesService:UpdateCandidateEducationAndTraining begin.");
@@ -499,26 +494,16 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
             _logger.LogInformation($"CandidatesService:UpdateCandidateEducationAndTraining end.");
         }
-
+        
         public async Task<AssessmentsDto> GetAssessments(Guid subscriber)
         {
             var traitify = await _repositoryWrapper.TraitifyRepository.GetMostRecentAssessmentBySubscriber(subscriber);
             var traitifyDto = _mapper.Map<TraitifyDto>(traitify);
-            if (traitifyDto != null)
-            {
-                traitifyDto.HostUrl = _hostUrl;
-                traitifyDto.PublicKey = _publicKey;
-            }
-            var isTraitifyAssessmentsVisibleToHiringManagers = (await _repositoryWrapper.SubscriberRepository.GetByGuid(subscriber)).IsTraitifyAssessmentsVisibleToHiringManagers;
-            return new AssessmentsDto()
-            {
-                Traitify = traitifyDto,
-                IsTraitifyAssessmentsVisibleToHiringManagers = isTraitifyAssessmentsVisibleToHiringManagers.HasValue ? isTraitifyAssessmentsVisibleToHiringManagers.Value : false
-            };
+            return new AssessmentsDto() { Traitify = traitifyDto };
         }
-
+        
         #endregion
-
+                     
         #region Candidate Indexing
 
 
@@ -595,14 +580,14 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             // Get all non-public G2s for subscriber 
             v_CandidateAzureSearch candidateProfile = _db.CandidateAzureSearch
             .Where(p => p.SubscriberGuid == subscriberGuid)
-            .FirstOrDefault();
+            .FirstOrDefault(); 
 
             // make sure the user is found in the indexing view, this will not be the case if they are a hiring manager. 
-            if (candidateProfile == null)
-            {
+           if ( candidateProfile == null)
+           {
                 _logger.LogInformation($"CandidateService:IndexCandidateBySubscriberAsync Unable to locate subscriber {subscriberGuid} in indexer view, if they are not a hiring manager this will need to be investigated.");
                 return false;
-            }
+           }
 
             CandidateSDOC indexDoc = await MapToCandidateSDOC(candidateProfile);
 
@@ -610,7 +595,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             if (nonBlocking)
                 _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexAddOrUpdate(indexDoc));
             else
-                await CandidateIndexAsync(indexDoc);
+               await CandidateIndexAsync(indexDoc);
 
             _logger.LogInformation($"CandidateService:IndexCandidateBySubscriberAsync Done");
             return true;
@@ -623,7 +608,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         /// <returns></returns>
         /// 
 
-
+        
         public async Task<bool> IndexRemoveCandidateBySubscriberAsync(Guid subscriberGuid, bool nonBlocking = true)
         {
             _logger.LogInformation($"CandidateService:IndexRemoveCandidateBySubscriberAsync Starting subscriber = {subscriberGuid}  nonBlocking = {nonBlocking}");
@@ -662,35 +647,35 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 List<v_CandidateAzureSearch> candidates = _db.CandidateAzureSearch
                .Where(p => p.AzureIndexStatusId == 1)
                .ToList();
+    
 
+            if (candidates.Count == 0)
+                return false;
 
-                if (candidates.Count == 0)
-                    return false;
+            List<CandidateSDOC> Docs = new List<CandidateSDOC>();
 
-                List<CandidateSDOC> Docs = new List<CandidateSDOC>();
+            int counter = 0;
+            foreach (v_CandidateAzureSearch candidate in candidates)
+            {            
+                ++counter;
+                CandidateSDOC indexDoc = await MapToCandidateSDOC(candidate);
+                Docs.Add(indexDoc);               
 
-                int counter = 0;
-                foreach (v_CandidateAzureSearch candidate in candidates)
-                {
-                    ++counter;
-                    CandidateSDOC indexDoc = await MapToCandidateSDOC(candidate);
-                    Docs.Add(indexDoc);
+            };
+       
+           
+            // fire off as background job 
+            if (nonBlocking)
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexAddOrUpdateBulk(Docs));
+            else
+                await CandidateIndexBulkAsync(Docs);
 
-                };
-
-
-                // fire off as background job 
-                if (nonBlocking)
-                    _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexAddOrUpdateBulk(Docs));
-                else
-                    await CandidateIndexBulkAsync(Docs);
-
-                _logger.LogInformation($"CandidateService:IndexAllUnindexed Done");
+            _logger.LogInformation($"CandidateService:IndexAllUnindexed Done");
 
             }
             catch (Exception ex)
             {
-                _logger.LogError($"CandidateService:IndexAllUnindexed Error", ex);
+                _logger.LogError($"CandidateService:IndexAllUnindexed Error",ex);
                 throw;
             }
 
@@ -701,7 +686,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
 
         #endregion
-
+        
         #region Work History
 
         public async Task<WorkHistoryListDto> GetCandidateWorkHistory(Guid subscriberGuid, int limit, int offset, string sort, string order)
@@ -732,7 +717,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         }
 
         #endregion
-
+                          
         #region private helper functions 
 
         private static string ResolveIndexStatusMessage(string statusMsg)
@@ -761,7 +746,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             }
             return true;
         }
-
+ 
 
         // IMPORTANT!         
         // 1) Any colections of objects (e.g. Skills, Languages, etc.) must be hydrated with an empty list 
@@ -892,6 +877,6 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
 
         #endregion
-
+                              
     }
 }

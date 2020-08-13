@@ -4674,8 +4674,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<bool?>("IsFlexibleWorkScheduleRequired");
 
-                    b.Property<bool?>("IsTraitifyAssessmentsVisibleToHiringManagers");
-
                     b.Property<bool>("IsVerified")
                         .HasColumnName("IsEmailVerifiedLegacy");
 
