@@ -6,6 +6,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface ISubscriberVideoRepository : IUpDiddyRepositoryBase<SubscriberVideo>
     {
-        Task<SubscriberVideo> GetSubscriberVideoLink(Guid subscriberGuid);
+        Task<SubscriberVideo> GetExistingSubscriberVideo(Guid subscriberGuid);
+
+        Task<SubscriberVideo> GetExistingOrCreateNewSubscriberVideo(Guid subscriberGuid);
     }
 }

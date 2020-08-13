@@ -23,7 +23,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<SubscriberVideoLinksDto> GetSubscriberVideoLink(Guid subscriberGuid)
         {
             var videoLink = await _repositoryWrapper.SubscriberVideoRepository
-                .GetSubscriberVideoLink(subscriberGuid);
+                .GetExistingSubscriberVideo(subscriberGuid);
 
             return _mapper.Map<SubscriberVideoLinksDto>(videoLink);
         }
@@ -31,7 +31,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task SetSubscriberVideoLink(Guid subscriberGuid, SubscriberVideoLinksDto subscriberVideo)
         {
             var videoLink = await _repositoryWrapper.SubscriberVideoRepository
-                .GetSubscriberVideoLink(subscriberGuid);
+                .GetExistingOrCreateNewSubscriberVideo(subscriberGuid);
 
             if (videoLink == null) { return; }
 
@@ -47,7 +47,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task DeleteSubscriberVideoLink(Guid subscriberGuid)
         {
             var videoLink = await _repositoryWrapper.SubscriberVideoRepository
-                .GetSubscriberVideoLink(subscriberGuid);
+                .GetExistingSubscriberVideo(subscriberGuid);
 
             if (videoLink == null) { return; }
 
