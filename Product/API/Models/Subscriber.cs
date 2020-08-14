@@ -39,7 +39,7 @@ namespace UpDiddyApi.Models
         public List<SubscriberEducationHistory> SubscriberEducationHistory { get; } = new List<SubscriberEducationHistory>();
         public List<SubscriberWorkHistory> SubscriberWorkHistory { get; } = new List<SubscriberWorkHistory>();
         public List<SubscriberFile> SubscriberFile { get; set; } = new List<SubscriberFile>();
-        public EmailVerification EmailVerification {get; set;}
+        public EmailVerification EmailVerification { get; set; }
         public List<SubscriberProfileStagingStore> ProfileStagingStore { get; set; } = new List<SubscriberProfileStagingStore>();
         public DateTime? LinkedInSyncDate { get; set; }
         public List<SubscriberNotification> SubscriberNotifications { get; } = new List<SubscriberNotification>();
@@ -118,7 +118,7 @@ namespace UpDiddyApi.Models
         #endregion
 
         #region Connected
-        public string  ConnectedId { get; set; }
+        public string ConnectedId { get; set; }
         public DateTime? ConnectedModifyDate { get; set; }
         #endregion
 
@@ -130,15 +130,20 @@ namespace UpDiddyApi.Models
 
         #endregion
 
-
         #region Azure Index Info
-        
+
         public int? AzureIndexStatusId { get; set; }
         public DateTime? AzureIndexModifyDate { get; set; }
         public string AzureSearchIndexInfo { get; set; }
 
 
 
+
+        #endregion
+
+        #region Traitify
+
+        public bool? IsTraitifyAssessmentsVisibleToHiringManagers { get; set; }
 
         #endregion
     }
