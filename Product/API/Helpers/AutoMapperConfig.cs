@@ -1221,6 +1221,10 @@ namespace UpDiddyApi.Helpers
                 .ForMember(dest => dest.Personality2ImageUrl, opt => opt.MapFrom(src => JObject.Parse(src.ResultData).SelectToken("personality_blend.personality_type_2.badge.image_small")))
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => JObject.Parse(src.ResultData).SelectToken("personality_blend.description")))
                 .ReverseMap();
+
+            CreateMap<SubscriberVideo, SubscriberVideoLinksDto>()
+                .ForMember(dest => dest.IsVisibleToHiringManager, opt => opt.MapFrom(src => src.Subscriber.IsVideoVisibleToHiringManager))
+                .ReverseMap();
         }
     }
 }
