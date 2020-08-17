@@ -8,5 +8,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface IAzureIndexStatusRepository : IUpDiddyRepositoryBase<AzureIndexStatus>
     {
+       Task<AzureIndexStatus> GetAzureIndexStatusByName(string name);
     }
 }

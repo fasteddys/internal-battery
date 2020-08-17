@@ -525,6 +525,48 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
 
         /// <summary>
+        /// Index a batch of g2 profiles 
+        /// </summary>
+        /// <param name="g2Profiles"></param>
+        /// <returns></returns>F
+        public async Task<bool> CandidateIndexBulkByProfileAzureSearchAsync(List<v_CandidateAzureSearch> profiles)
+        {
+            if (profiles == null || profiles.Count == 0)
+            {
+                _logger.LogInformation($"CandidateService:CandidateIndexBulkByProfileAzureSearchAsync There are no profiles to index in the current batch, returing false");
+                return false;
+            }
+
+            _logger.LogInformation($"CandidateService:CandidateIndexBulkByProfileAzureSearchAsync Starting with a batch of  {profiles.Count} for indexing");
+            List<CandidateSDOC> Docs = new List<CandidateSDOC>();
+            foreach (v_CandidateAzureSearch p in profiles)
+            {       
+                try
+                {
+                  CandidateSDOC indexDoc = await MapToCandidateSDOC(p);
+                  Docs.Add(indexDoc);
+                }
+                catch ( Exception ex )
+                {
+                    // mark subscriber record as bad index 
+                    _subscriberService.UpdateCandidateIndexStatus(p.SubscriberGuid, $"Indexing Error in CandidateService.CandidateIndexBulkByProfileAzureSearchAsync  Ex={ex.ToString()} ", "Error");                 
+                }
+
+
+            };
+
+            // Don't queue the hangfire job if there is nothing to do
+            if (Docs.Count == 0)
+                return true;
+
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexAddOrUpdateBulk(Docs));
+            _logger.LogInformation($"CandidateService:CandidateIndexBulkByProfileAzureSearchAsync Done");
+
+            return true;
+        }
+
+
+        /// <summary>
         /// Bulk index into azure 
         /// </summary>
         /// <param name="g2List"></param>
@@ -592,7 +634,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         {
 
             _logger.LogInformation($"CandidateService:IndexCandidateBySubscriberAsync Starting subscriber = {subscriberGuid}  nonBlocking = {nonBlocking}");
-            // Get all non-public G2s for subscriber 
+           
             v_CandidateAzureSearch candidateProfile = _db.CandidateAzureSearch
             .Where(p => p.SubscriberGuid == subscriberGuid)
             .FirstOrDefault();
@@ -604,16 +646,28 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 return false;
             }
 
-            CandidateSDOC indexDoc = await MapToCandidateSDOC(candidateProfile);
 
-            // fire off as background job 
-            if (nonBlocking)
-                _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexAddOrUpdate(indexDoc));
-            else
-                await CandidateIndexAsync(indexDoc);
+            try
+            {
+                CandidateSDOC indexDoc = await MapToCandidateSDOC(candidateProfile);
 
-            _logger.LogInformation($"CandidateService:IndexCandidateBySubscriberAsync Done");
-            return true;
+                // fire off as background job 
+                if (nonBlocking)
+                    _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexAddOrUpdate(indexDoc));
+                else
+                    await CandidateIndexAsync(indexDoc);
+
+                _logger.LogInformation($"CandidateService:IndexCandidateBySubscriberAsync Done");
+                return true;
+            }
+            catch ( Exception ex)
+            {
+                // mark subscriber record as bad index 
+                _subscriberService.UpdateCandidateIndexStatus(subscriberGuid, $"Indexing Error in CandidateService.IndexCandidateBySubscriberAsync  Ex={ex.ToString()} ", "Error");
+                return false;
+            }
+
+            
         }
 
         /// <summary>
@@ -632,69 +686,43 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             v_CandidateAzureSearch candidateProfile = _db.CandidateAzureSearch
            .Where(p => p.SubscriberGuid == subscriberGuid)
            .FirstOrDefault();
-            CandidateSDOC indexDoc = await MapToCandidateSDOC(candidateProfile);
-
-            // fire off as background job 
-            if (nonBlocking)
-                _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexRemove(indexDoc));
-            else
-                await CandidateIndexRemoveAsync(indexDoc);
-
-            _logger.LogInformation($"CandidateService:IndexRemoveCandidateBySubscriberAsync Done");
-
-            return true;
-        }
-
-
-        /// <summary>
-        /// Index all unidexed subscrobers
-        /// </summary>
-        /// <param name="subscriberGuid"></param>
-        /// <returns></returns>
-        public async Task<bool> IndexAllUnindexed(bool nonBlocking = true)
-        {
-
-            _logger.LogInformation($"CandidateService:IndexAllUnindexed Starting nonBlocking = {nonBlocking}");
 
             try
             {
-                // Get all non-public G2s for subscriber 
-                List<v_CandidateAzureSearch> candidates = _db.CandidateAzureSearch
-               .Where(p => p.AzureIndexStatusId == 1)
-               .ToList();
-
-
-                if (candidates.Count == 0)
-                    return false;
-
-                List<CandidateSDOC> Docs = new List<CandidateSDOC>();
-
-                int counter = 0;
-                foreach (v_CandidateAzureSearch candidate in candidates)
-                {
-                    ++counter;
-                    CandidateSDOC indexDoc = await MapToCandidateSDOC(candidate);
-                    Docs.Add(indexDoc);
-
-                };
-
+                CandidateSDOC indexDoc = await MapToCandidateSDOC(candidateProfile);
 
                 // fire off as background job 
                 if (nonBlocking)
-                    _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexAddOrUpdateBulk(Docs));
+                    _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexRemove(indexDoc));
                 else
-                    await CandidateIndexBulkAsync(Docs);
+                    await CandidateIndexRemoveAsync(indexDoc);
 
-                _logger.LogInformation($"CandidateService:IndexAllUnindexed Done");
+                _logger.LogInformation($"CandidateService:IndexRemoveCandidateBySubscriberAsync Done");
 
+                return true;
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
-                _logger.LogError($"CandidateService:IndexAllUnindexed Error", ex);
-                throw;
+                // mark subscriber record as bad index 
+                _subscriberService.UpdateCandidateIndexStatus(subscriberGuid, $"Indexing Deletion Error in CandidateService.IndexRemoveCandidateBySubscriberAsync  Ex={ex.ToString()} ", "Error");
+
+                return false;
             }
+            
+        }
 
 
+ 
+
+        /// <summary>
+        /// Indexes every candidate that has an index status of unindexed         
+        /// </summary>
+        /// <returns></returns>
+        public async Task<bool> IndexAllUnindexed()
+        {
+            
+            // Kick off job to index any unindexed g2 profiles 
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexUnindexedCandidates());
             return true;
         }
 
@@ -796,13 +824,20 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 {
                     string[] languageArray = candidate.SubscriberLanguages.Split(';');
                     foreach (string languageInfo in languageArray)
-                    {
-                        string[] langInfo = languageInfo.Split('|');
-                        indexDoc.Languages.Add(new LanguageSDOC()
+                    {                       
+                        try
                         {
-                            Language = langInfo[0],
-                            Proficiency = langInfo[1]
-                        });
+                            string[] langInfo = languageInfo.Split('|');
+                            indexDoc.Languages.Add(new LanguageSDOC()
+                            {             
+                                Language = langInfo[0],
+                                Proficiency = langInfo[1]
+                            });
+                        }
+                        catch ( Exception ex )
+                        {
+                            LogMappingError(candidate, $"LanguageInfo = {languageInfo}", ex);
+                        }                 
                     }
                 }
 
@@ -823,14 +858,23 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 {
                     string[] info = candidate.SubscriberTraining.Split(';');
                     foreach (string data in info)
-                    {
-                        string[] trainingInfo = data.Split('|');
-                        indexDoc.Training.Add(new TrainingSDOC()
+                    {                 
+                        try
                         {
-                            Type = trainingInfo[0],
-                            Institution = trainingInfo[1],
-                            Name = trainingInfo[2]
-                        });
+                            string[] trainingInfo = data.Split('|');
+                            indexDoc.Training.Add(new TrainingSDOC()
+                            {
+                                Type = trainingInfo[0],
+                                Institution = trainingInfo[1],
+                                Name = trainingInfo[2]
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            LogMappingError(candidate, $"TrainingInfo = {data}", ex);
+                        }
+
+
                     }
                 }
 
@@ -841,16 +885,22 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                     string[] info = candidate.SubscriberEducation.Split(';');
                     foreach (string data in info)
                     {
-                        string[] educationInfo = data.Split('|');
-                        indexDoc.Education.Add(new EducationSDOC()
+                        try
                         {
-                            Institution = educationInfo[0],
-                            DegreeType = educationInfo[1],
-                            Degree = educationInfo[2]
-                        });
+                            string[] educationInfo = data.Split('|');
+                            indexDoc.Education.Add(new EducationSDOC()
+                            {
+                                Institution = educationInfo[0],
+                                DegreeType = educationInfo[1],
+                                Degree = educationInfo[2]
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            LogMappingError(candidate, $"EducationInfo = {data}", ex);
+                        }
                     }
                 }
-
 
                 // map job titles
                 indexDoc.Titles = new List<string>();
@@ -869,17 +919,22 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 {
                     string[] info = candidate.SubscriberWorkHistory.Split(';');
                     foreach (string data in info)
-                    {
-                        string[] workInfo = data.Split('|');
-                        indexDoc.WorkHistories.Add(new WorkHistorySDOC()
+                    {                       
+                        try
                         {
-                            CompanyName = workInfo[0],
-                            Title = workInfo[1]
-                        });
+                            string[] workInfo = data.Split('|');
+                            indexDoc.WorkHistories.Add(new WorkHistorySDOC()
+                            {
+                                CompanyName = workInfo[0],
+                                Title = workInfo[1]
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            LogMappingError(candidate, $"WorkHistory = {data}", ex);
+                        }
                     }
                 }
-
-
 
                 return indexDoc;
             }
@@ -890,6 +945,12 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             }
         }
 
+
+
+        private void LogMappingError(v_CandidateAzureSearch candidate, string info, Exception ex)
+        {
+            _logger.LogError($"CandidateService.LogMappingError: Mapping error for {candidate.SubscriberGuid} Info = {info} ", ex);
+        }
 
         #endregion
 

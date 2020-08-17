@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UpDiddyApi.Models.Views;
 using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.Candidate360;
@@ -56,7 +57,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         Task<bool> IndexCandidateBySubscriberAsync(Guid subscriberGuid, bool nonBlocking = true);
         Task<bool> IndexRemoveCandidateBySubscriberAsync(Guid subscriberGuid, bool nonBlocking = true);        
-        Task<bool> IndexAllUnindexed( bool nonBlocking = true);
+        Task<bool> IndexAllUnindexed();
+
+        Task<bool> CandidateIndexBulkByProfileAzureSearchAsync(List<v_CandidateAzureSearch> profiles);
 
         #endregion
 

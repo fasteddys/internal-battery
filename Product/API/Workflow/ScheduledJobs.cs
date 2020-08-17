@@ -2462,6 +2462,62 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
 
 
 
+        public async Task<bool> CandidateIndexUnindexedCandidates()
+        {
+            // Get the indexer batch size   
+            int CandidateIndexUnindexedProfilesBatchSize = int.Parse(_configuration["AzureSearch:CandidateIndexUnindexedProfilesBatchSize"]);
+            _syslog.LogInformation($"ScheduledJobs.CandidateIndexUnindexedCandidates: Starting with a batch size of {CandidateIndexUnindexedProfilesBatchSize}");
+
+
+            AzureIndexStatus noneStatus = _repositoryWrapper.AzureIndexStatusRepository.GetAll()
+                .Where(s => s.Name == Constants.AzureSearchIndexStatus.None)
+                .FirstOrDefault();
+
+            if (noneStatus == null)
+            {
+                _syslog.LogError($"ScheduledJobs.CandidateIndexUnindexedCandidates: Unable to locate candidate status for \"None\".");
+                return false;
+            }
+
+            List<v_CandidateAzureSearch> candidateProfiles = null;
+            try
+            {
+                candidateProfiles = _db.CandidateAzureSearch
+               .Where(p => p.AzureIndexStatusId == null || p.AzureIndexStatusId == noneStatus.AzureIndexStatusId)
+               .Take(CandidateIndexUnindexedProfilesBatchSize)
+              .ToList();
+            }
+            catch (Exception ex)
+            {
+                _syslog.LogError($"ScheduledJobs.CandidateIndexUnindexedCandidates: Error processing -> {ex.Message}");
+                return false;
+            }
+
+
+            _syslog.LogInformation($"ScheduledJobs.CandidateIndexUnindexedCandidates: Retreived {candidateProfiles.Count} G2s for processing.");
+
+            // short circuit if there is nothing to do
+            if (candidateProfiles.Count == 0)
+                return true;
+
+            // Call the candidateService to index the batch 
+            await _candidateService.CandidateIndexBulkByProfileAzureSearchAsync(candidateProfiles);
+
+            // if the number of profiles retreived = the batch size, there may be more that needs to be indexed so
+            // schedule this job to run again for another batch
+            if (candidateProfiles.Count == CandidateIndexUnindexedProfilesBatchSize)
+            {
+                _syslog.LogInformation($"ScheduledJobs.CandidateIndexUnindexedCandidates: Scheduling recursive call to index additional G2s");
+                //Getrecurse delay variable 
+                int delay = int.Parse(_configuration["AzureSearch:IndexUnidexedCandidateRecurseDelayInMinutes"]);
+                _hangfireService.Schedule<ScheduledJobs>(j => j.CandidateIndexUnindexedCandidates(), TimeSpan.FromMinutes(delay));
+            }
+
+            _syslog.LogInformation($"ScheduledJobs.CandidateIndexUnindexedCandidates Done");
+            return true;
+        }
+
+
         #endregion
 
 
