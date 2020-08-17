@@ -59,7 +59,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                 if (response.StatusCode != HttpStatusCode.OK)
                     isJobExists = false;
                 rawHtml = await response.Content.ReadAsStringAsync();
-
+                _syslog.LogInformation($"AerotekProcess.CreateJobPageFromHttpRequest - raw html: {rawHtml}");
                 // all job page data is embedded in javascript and bound to the DOM by the client. as such, it makes it impossible to parse the html
                 // and extract the job data. the below code is hacky as hell but it works. a slightly better way to do this would be to use the 
                 // Jurassic library to execute the javascript code and get the json data that way. started down that path but got stuck - come back
@@ -162,6 +162,8 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             // load the sitemap index as xml
             var sitemapIndexResult = await _client.GetAsync(_jobSite.Uri);
             string sitemapIndexAsString = await sitemapIndexResult.Content.ReadAsStringAsync();
+
+            _syslog.LogInformation($"AerotekProcess.DiscoverJobPages - sitemapIndexAsString: {sitemapIndexAsString}");
             XmlDocument sitemapIndexXml = new XmlDocument();
             sitemapIndexXml.LoadXml(sitemapIndexAsString);
 
@@ -179,6 +181,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                 var sitemapLoc = sitemap["loc"].InnerText;
                 var sitemapResult = await _client.GetAsync(sitemapLoc);
                 string sitemapAsString = await sitemapResult.Content.ReadAsStringAsync();
+                _syslog.LogInformation($"AerotekProcess.DiscoverJobPages - {sitemapAsString}");
                 XmlDocument sitemapXml = new XmlDocument();
                 sitemapXml.LoadXml(sitemapAsString);
                 // identify the urls that contain specific jobs
