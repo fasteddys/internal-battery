@@ -267,7 +267,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 CreateDate = DateTime.UtcNow,
                 CreateGuid = Guid.Empty,
                 IsDeleted = 0,
-                IsVerified = false
+                IsVerified = false,
+                IsTraitifyAssessmentsVisibleToHiringManagers = true
             });
             await _repository.SubscriberRepository.SaveAsync();
 
