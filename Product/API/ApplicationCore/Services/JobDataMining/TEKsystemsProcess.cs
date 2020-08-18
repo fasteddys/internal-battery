@@ -38,6 +38,13 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 
         private HttpClient _client = new HttpClient(new HttpClientHandler()
         {
+            Proxy = new WebProxy(
+                Address: new Uri($"http://proxy.hprox.com:10018"),
+                BypassOnLocal: false,
+                BypassList: null,
+                Credentials: new NetworkCredential(userName: "Tb8UfEygCMiBqfkDHK6HYBatCeZeRpCj", password: "ly19c7nOmVBG1LacTeHhzTvtibbW4JPW")),
+            PreAuthenticate = true,
+            UseDefaultCredentials = false,
             SslProtocols = SslProtocols.Tls12
         });
 
