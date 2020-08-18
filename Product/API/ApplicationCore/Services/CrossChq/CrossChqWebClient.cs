@@ -1,14 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using SendGrid;
-using System;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Exceptions;
-using UpDiddyApi.Models.CrossChq;
 using UpDiddyLib.Domain.Models.CrossChq;
 
 namespace UpDiddyApi.ApplicationCore.Services.CrossChq

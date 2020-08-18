@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyLib.Domain.Models;
+using StackExchange.Redis;
+
 
 namespace UpDiddyApi.Controllers.V2
 {
@@ -69,6 +71,9 @@ namespace UpDiddyApi.Controllers.V2
 
         private async Task<Guid> GetSubscriberGuidFromRedis(Guid redisKeyGuid)
         {
+            //  TODO - Implement 
+            ConnectionMultiplexer muxer = ConnectionMultiplexer.Connect("hostname:port,password=password");
+            IDatabase conn = muxer.GetDatabase();
             var subscriberId = await _distributedCache.GetStringAsync(redisKeyGuid.ToString());
 
             if (string.IsNullOrEmpty(subscriberId) || !Guid.TryParse(subscriberId, out var subscriberGuid))
