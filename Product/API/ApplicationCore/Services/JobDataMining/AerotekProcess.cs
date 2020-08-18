@@ -144,7 +144,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 
         #region Public Members
 
-        public async Task<List<JobPage>> DiscoverJobPages(List<JobPage> existingJobPages)
+        public async Task<Tuple<List<JobPage>,long?,int?>> DiscoverJobPages(List<JobPage> existingJobPages)
         {
             // populate this collection with the results of the job discovery operation
             ConcurrentBag<JobPage> discoveredJobPages = new ConcurrentBag<JobPage>();
@@ -236,7 +236,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             stopwatch.Stop();
             var elapsed = stopwatch.ElapsedMilliseconds;
 
-            return updatedJobPages;
+            return new Tuple<List<JobPage>,long?,int?>(updatedJobPages,null,null);
         }
 
         public JobPostingDto ProcessJobPage(JobPage jobPage)
