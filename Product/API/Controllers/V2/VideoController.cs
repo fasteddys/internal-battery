@@ -17,12 +17,12 @@ namespace UpDiddyApi.Controllers.V2
     public class VideoController : BaseApiController
     {
         private readonly IVideoService _videoService;
-        private readonly IConfiguration _configuration;
+        private readonly IRedisService _redis;
 
-        public VideoController(IVideoService videoService, IConfiguration configuration)
+        public VideoController(IVideoService videoService, IRedisService redis)
         {
             _videoService = videoService;
-            _configuration = configuration;
+            _redis = redis;
         }
 
         [HttpGet]
@@ -71,12 +71,7 @@ namespace UpDiddyApi.Controllers.V2
 
         private async Task<Guid> GetSubscriberGuidFromRedis(Guid redisKeyGuid)
         {
-            string subscriberId = null;
-            using (var muxer = await ConnectionMultiplexer.ConnectAsync(_configuration["redis:host"]))
-            {
-                var conn = muxer.GetDatabase();
-                subscriberId = await conn.StringGetAsync(redisKeyGuid.ToString());
-            }
+            var subscriberId = await _redis.GetStringAsync(redisKeyGuid.ToString());
 
             if (string.IsNullOrEmpty(subscriberId) || !Guid.TryParse(subscriberId, out var subscriberGuid))
             {

@@ -396,6 +396,8 @@ namespace UpDiddyApi
                 options.Configuration = Configuration.GetValue<string>("redis:host");
             });
 
+            services.AddRedisClient(Configuration.GetSection("redis"));
+
             // load file for tracking pixel as singleton to limit overhead
             services.AddSingleton<FileContentResult>(
                 new FileContentResult(
