@@ -18,6 +18,7 @@ using GeoJSON.Net.Geometry;
 using UpDiddyApi.Workflow;
 using UpDiddyApi.ApplicationCore.Services.AzureSearch;
 using UpDiddyLib.Helpers;
+using UpDiddyApi.Models.G2;
 
 namespace UpDiddyApi.ApplicationCore.Services.Candidate
 {
@@ -519,111 +520,9 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
         #endregion
 
+
+
         #region Candidate Indexing
-
-
-
-
-        /// <summary>
-        /// Index a batch of candidate profiles 
-        /// </summary>
-        /// <param name="profiles"></param>
-        /// <returns></returns>F
-        public async Task<bool> CandidateIndexBulkByProfileAzureSearchAsync(List<v_CandidateAzureSearch> profiles)
-        {
-            if (profiles == null || profiles.Count == 0)
-            {
-                _logger.LogInformation($"CandidateService:CandidateIndexBulkByProfileAzureSearchAsync There are no profiles to index in the current batch, returing false");
-                return false;
-            }
-
-            _logger.LogInformation($"CandidateService:CandidateIndexBulkByProfileAzureSearchAsync Starting with a batch of  {profiles.Count} for indexing");
-            List<CandidateSDOC> Docs = new List<CandidateSDOC>();
-            foreach (v_CandidateAzureSearch p in profiles)
-            {       
-                try
-                {
-                  CandidateSDOC indexDoc = await MapToCandidateSDOC(p);
-                  Docs.Add(indexDoc);
-                }
-                catch ( Exception ex )
-                {
-                    // mark subscriber record as bad index 
-                    _subscriberService.UpdateCandidateIndexStatus(p.SubscriberGuid, $"Indexing Error in CandidateService.CandidateIndexBulkByProfileAzureSearchAsync  Ex={ex.ToString()} ", "Error");                 
-                }
-
-
-            };
-
-            // Don't queue the hangfire job if there is nothing to do
-            if (Docs.Count == 0)
-                return true;
-
-            _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexAddOrUpdateBulk(Docs));
-            _logger.LogInformation($"CandidateService:CandidateIndexBulkByProfileAzureSearchAsync Done");
-
-            return true;
-        }
-
-
-        /// <summary>
-        /// Bulk index into azure 
-        /// </summary>
-        /// <param name="candidateList"></param>
-        /// <returns></returns>
-        public async Task<bool> CandidateIndexBulkAsync(List<CandidateSDOC> candidateList)
-        {
-            // If there is no work to do jus return true
-            if (candidateList.Count == 0)
-                return true;
-            _logger.Log(LogLevel.Information, $"CandidateService.CandidateIndexBulkAsync starting index for g2");
-            AzureIndexResult info = await _azureSearchService.AddOrUpdateCandidateBulk(candidateList);
-            await UpdateAzureStatus(info, ResolveIndexStatusMessage(info.StatusMsg), info.StatusMsg);
-            _logger.Log(LogLevel.Information, $"CandidateService.CandidateIndexBulkAsync done index for g2");
-            return true;
-        }
-
-
-
-
-
-        /// <summary>
-        /// Index the specified document into azure search 
-        /// </summary>
-        /// <param name="candidate"></param>
-        /// <returns></returns>
-        public async Task<bool> CandidateIndexAsync(CandidateSDOC candidate)
-        {
-            _logger.LogInformation($"CandidateService:CandidateIndexAsync Starting subscriber = {candidate.SubscriberGuid}  ");
-            AzureIndexResult info = await _azureSearchService.AddOrUpdateCandidate(candidate);
-            // Update subscribers azure index status 
-            await UpdateAzureStatus(info, Constants.AzureSearchIndexStatus.Indexed, info.StatusMsg);
-            _logger.LogInformation($"CandidateService:CandidateIndexAsync Done");
-            return true;
-        }
-
-
-
-
-        /// <summary>
-        /// Remove the specified document from azure search 
-        /// </summary>
-        /// <param name="candidate"></param>
-        /// <returns></returns>
-        public async Task<bool> CandidateIndexRemoveAsync(CandidateSDOC candidate)
-        {
-            _logger.LogInformation($"CandidateService:CandidateIndexRemoveAsync Starting subscriber = {candidate.SubscriberGuid}  ");
-            AzureIndexResult info = await _azureSearchService.DeleteCandidate(candidate);
-            // Update subscribers azure index status 
-            await UpdateAzureStatus(info, Constants.AzureSearchIndexStatus.Indexed, info.StatusMsg);
-
-            _logger.LogInformation($"CandidateService:CandidateIndexRemoveAsync Done");
-            return true;
-        }
-
-
-
-
 
         /// <summary>
         /// For the given subscriber, update or add their profile to the Candidate azure index 
@@ -634,39 +533,16 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         {
 
             _logger.LogInformation($"CandidateService:IndexCandidateBySubscriberAsync Starting subscriber = {subscriberGuid}  nonBlocking = {nonBlocking}");
-           
-            v_CandidateAzureSearch candidateProfile = _db.CandidateAzureSearch
-            .Where(p => p.SubscriberGuid == subscriberGuid)
-            .FirstOrDefault();
+              
+            // fire off as background job 
+            if (nonBlocking)
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexAddOrUpdate1(subscriberGuid));
+            else
+                await CandidateIndexAsync(subscriberGuid);
 
-            // make sure the user is found in the indexing view, this will not be the case if they are a hiring manager. 
-            if (candidateProfile == null)
-            {
-                _logger.LogInformation($"CandidateService:IndexCandidateBySubscriberAsync Unable to locate subscriber {subscriberGuid} in indexer view, if they are not a hiring manager this will need to be investigated.");
-                return false;
-            }
-
-
-            try
-            {
-                CandidateSDOC indexDoc = await MapToCandidateSDOC(candidateProfile);
-
-                // fire off as background job 
-                if (nonBlocking)
-                    _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexAddOrUpdate(indexDoc));
-                else
-                    await CandidateIndexAsync(indexDoc);
-
-                _logger.LogInformation($"CandidateService:IndexCandidateBySubscriberAsync Done");
-                return true;
-            }
-            catch ( Exception ex)
-            {
-                // mark subscriber record as bad index 
-                _subscriberService.UpdateCandidateIndexStatus(subscriberGuid, $"Indexing Error in CandidateService.IndexCandidateBySubscriberAsync  Ex={ex.ToString()} ", "Error");
-                return false;
-            }
-
+            _logger.LogInformation($"CandidateService:IndexCandidateBySubscriberAsync Done");
+            return true;
+       
             
         }
 
@@ -680,56 +556,101 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
         public async Task<bool> IndexRemoveCandidateBySubscriberAsync(Guid subscriberGuid, bool nonBlocking = true)
         {
-            _logger.LogInformation($"CandidateService:IndexRemoveCandidateBySubscriberAsync Starting subscriber = {subscriberGuid}  nonBlocking = {nonBlocking}");
-
-            // Get index info for subscriber
-            v_CandidateAzureSearch candidateProfile = _db.CandidateAzureSearch
-           .Where(p => p.SubscriberGuid == subscriberGuid)
-           .FirstOrDefault();
-
-            // make sure the user is found in the indexing view, this will not be the case if they are a hiring manager. 
-            if (candidateProfile == null)
+                       
+             // fire off as background job 
+             if (nonBlocking)
+                 _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexRemove(subscriberGuid));
+             else
             {
-                _logger.LogInformation($"CandidateService:IndexRemoveCandidateBySubscriberAsync Unable to locate subscriber {subscriberGuid} in indexer view for deleteion, if they are not a hiring manager this will need to be investigated.");
-                return false;
+                _logger.LogInformation($"CandidateService:IndexRemoveCandidateBySubscriberAsync Starting subscriber = {subscriberGuid}  nonBlocking = {nonBlocking}");
+
+                // Get index info for subscriber
+                v_CandidateAzureSearch candidateProfile = _db.CandidateAzureSearch
+               .Where(p => p.SubscriberGuid == subscriberGuid)
+               .FirstOrDefault();
+
+                // make sure the user is found in the indexing view, this will not be the case if they are a hiring manager. 
+                if (candidateProfile == null)
+                {
+                    _logger.LogInformation($"CandidateService:IndexRemoveCandidateBySubscriberAsync Unable to locate subscriber {subscriberGuid} in indexer view for deleteion, if they are not a hiring manager this will need to be investigated.");
+                    return false;
+                }
+                await CandidateIndexRemoveAsync(candidateProfile);
             }
+                
+             _logger.LogInformation($"CandidateService:IndexRemoveCandidateBySubscriberAsync Done");
 
-            try
-            {
-                CandidateSDOC indexDoc = await MapToCandidateSDOC(candidateProfile);
-
-                // fire off as background job 
-                if (nonBlocking)
-                    _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexRemove(indexDoc));
-                else
-                    await CandidateIndexRemoveAsync(indexDoc);
-
-                _logger.LogInformation($"CandidateService:IndexRemoveCandidateBySubscriberAsync Done");
-
-                return true;
-            }
-            catch ( Exception ex )
-            {
-                // mark subscriber record as bad index 
-                _subscriberService.UpdateCandidateIndexStatus(subscriberGuid, $"Indexing Deletion Error in CandidateService.IndexRemoveCandidateBySubscriberAsync  Ex={ex.ToString()} ", "Error");
-
-                return false;
-            }
-            
+             return true;
+                      
         }
 
-
- 
 
         /// <summary>
         /// Indexes every candidate that has an index status of unindexed         
         /// </summary>
         /// <returns></returns>
-        public async Task<bool> IndexAllUnindexed()
+        public async Task<bool> IndexAllUnindexed(bool nonBlocking = true)
         {
             
             // Kick off job to index any unindexed candidate profiles 
-            _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexUnindexedCandidates());
+            if ( nonBlocking)
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexUnindexedCandidates());
+            else
+            {
+                // Get the indexer batch size   
+                int CandidateIndexUnindexedProfilesBatchSize = int.Parse(_configuration["AzureSearch:CandidateIndexUnindexedProfilesBatchSize"]);
+                _logger.LogInformation($"CandidateService.CandidateIndexUnindexedCandidates: Starting with a batch size of {CandidateIndexUnindexedProfilesBatchSize}");
+
+
+                AzureIndexStatus noneStatus = _repositoryWrapper.AzureIndexStatusRepository.GetAll()
+                    .Where(s => s.Name == Constants.AzureSearchIndexStatus.None)
+                    .FirstOrDefault();
+
+                if (noneStatus == null)
+                {
+                    _logger.LogError($"CandidateService.CandidateIndexUnindexedCandidates: Unable to locate candidate status for \"None\".");
+                    return false;
+                }
+
+                List<v_CandidateAzureSearch> candidateProfiles = null;
+                try
+                {
+                    candidateProfiles = _db.CandidateAzureSearch
+                   .Where(p => p.AzureIndexStatusId == null || p.AzureIndexStatusId == noneStatus.AzureIndexStatusId)
+                   .Take(CandidateIndexUnindexedProfilesBatchSize)
+                  .ToList();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"CandidateService.CandidateIndexUnindexedCandidates: Error processing -> {ex.Message}");
+                    return false;
+                }
+
+
+                _logger.LogInformation($"CandidateService.CandidateIndexUnindexedCandidates: Retreived {candidateProfiles.Count} Candidates for processing.");
+
+                // short circuit if there is nothing to do
+                if (candidateProfiles.Count == 0)
+                    return true;
+
+                // Call the candidateService to index the batch 
+                await CandidateIndexBulk(candidateProfiles);
+
+                // if the number of profiles retreived = the batch size, there may be more that needs to be indexed so
+                // schedule this job to run again for another batch
+                if (candidateProfiles.Count == CandidateIndexUnindexedProfilesBatchSize)
+                {
+                    _logger.LogInformation($"CandidateService.CandidateIndexUnindexedCandidates: Scheduling recursive call to index additional Candidates");
+                    //Getrecurse delay variable 
+                    int delay = int.Parse(_configuration["AzureSearch:IndexUnidexedCandidateRecurseDelayInMinutes"]);
+                    _hangfireService.Schedule<ScheduledJobs>(j => j.CandidateIndexUnindexedCandidates(), TimeSpan.FromMinutes(delay));
+                }
+
+                _logger.LogInformation($"CandidateService.CandidateIndexUnindexedCandidates Done");
+
+            }
+            
+        
             return true;
         }
 
@@ -769,6 +690,127 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         #endregion
 
         #region private helper functions 
+
+
+ 
+
+
+
+        /// <summary>
+        /// Index a batch of candidate profiles 
+        /// </summary>
+        /// <param name="profiles"></param>
+        /// <returns></returns>F
+        private async Task<bool> CandidateIndexBulk(List<v_CandidateAzureSearch> profiles)
+        {
+            if (profiles == null || profiles.Count == 0)
+            {
+                _logger.LogInformation($"CandidateService:CandidateIndexBulk There are no profiles to index in the current batch, returing false");
+                return false;
+            }
+
+            _logger.LogInformation($"CandidateService:CandidateIndexBulk Starting with a batch of  {profiles.Count} for indexing");
+            List<CandidateSDOC> Docs = new List<CandidateSDOC>();
+            foreach (v_CandidateAzureSearch p in profiles)
+            {
+                try
+                {
+                    CandidateSDOC indexDoc = await MapToCandidateSDOC(p);
+                    Docs.Add(indexDoc);
+                }
+                catch (Exception ex)
+                {
+                    // mark subscriber record as bad index 
+                    _subscriberService.UpdateCandidateIndexStatus(p.SubscriberGuid, $"Indexing Error in CandidateService.CandidateIndexBulk  Ex={ex.ToString()} ", "Error");
+                }
+
+            };
+
+            // Don't queue the hangfire job if there is nothing to do
+            if (Docs.Count == 0)
+                return true;
+
+            _logger.LogInformation($"CandidateService:CandidateIndexBulk Indexing Docs");
+            AzureIndexResult info = await _azureSearchService.AddOrUpdateCandidateBulk(Docs);
+            _logger.LogInformation($"CandidateService:CandidateIndexBulk Updateing Doc Statuses ");
+            await UpdateAzureStatus(info, ResolveIndexStatusMessage(info.StatusMsg), info.StatusMsg);
+            _logger.LogInformation($"CandidateService:CandidateIndexBulk Done");
+
+            return true;
+        }
+
+        /// <summary>
+        /// Index the specified document into azure search 
+        /// </summary>
+        /// <param name="candidate"></param>
+        /// <returns></returns>
+        private async Task<bool> CandidateIndexAsync(Guid subscriberGuid)
+        {
+
+            try
+            {
+                v_CandidateAzureSearch candidateProfile = _db.CandidateAzureSearch
+               .Where(p => p.SubscriberGuid == subscriberGuid)
+               .FirstOrDefault();
+
+                // make sure the user is found in the indexing view, this will not be the case if they are a hiring manager. 
+                if (candidateProfile == null)
+                {
+                    _logger.LogInformation($"CandidateService:IndexCandidateBySubscriberAsync Unable to locate subscriber {subscriberGuid} in indexer view, if they are not a hiring manager this will need to be investigated.");
+                    return false;
+                }
+
+                CandidateSDOC indexDoc = await MapToCandidateSDOC(candidateProfile);
+
+                _logger.LogInformation($"CandidateService:CandidateIndexAsync Starting subscriber = {subscriberGuid}  ");
+                AzureIndexResult info = await _azureSearchService.AddOrUpdateCandidate(indexDoc);
+                // Update subscribers azure index status 
+                await UpdateAzureStatus(info, Constants.AzureSearchIndexStatus.Indexed, info.StatusMsg);
+                _logger.LogInformation($"CandidateService:CandidateIndexAsync Done");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // mark subscriber record as bad index 
+                _subscriberService.UpdateCandidateIndexStatus(subscriberGuid, $"Indexing Error in CandidateService.IndexCandidateBySubscriberAsync  Ex={ex.ToString()} ", "Error");
+                return false;
+
+            }
+
+        }
+
+
+        /// <summary>
+        /// Remove the specified document from azure search 
+        /// </summary>
+        /// <param name="candidate"></param>
+        /// <returns></returns>
+        private async Task<bool> CandidateIndexRemoveAsync(v_CandidateAzureSearch candidate)
+        {
+            try
+            {
+                _logger.LogInformation($"CandidateService:CandidateIndexRemoveAsync Starting subscriber = {candidate.SubscriberGuid}  ");
+
+                CandidateSDOC indexDoc = await MapToCandidateSDOC(candidate);
+                AzureIndexResult info = await _azureSearchService.DeleteCandidate(indexDoc);
+                // Update subscribers azure index status 
+                await UpdateAzureStatus(info, Constants.AzureSearchIndexStatus.Deleted, info.StatusMsg);
+
+                _logger.LogInformation($"CandidateService:CandidateIndexRemoveAsync Done");
+            }
+            catch (Exception ex)
+            {
+                // mark subscriber record as bad index 
+                _subscriberService.UpdateCandidateIndexStatus(candidate.SubscriberGuid, $"Indexing Deletion Error in CandidateService.IndexRemoveCandidateBySubscriberAsync  Ex={ex.ToString()} ", "Error");
+
+                return false;
+            }
+            return true;
+        }
+
+
+
+
 
         private static string ResolveIndexStatusMessage(string statusMsg)
         {

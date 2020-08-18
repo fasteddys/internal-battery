@@ -189,6 +189,9 @@ namespace UpDiddyApi.ApplicationCore.Services.Admin
             await RemoveHubSpotContact(subscriberGuid);
             RemoveFromTalentCloud(subscriberGuid);
 
+            // remove user from candidate azure index 
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexRemove(subscriberGuid));
+
             var subscriber = await _repository.SubscriberRepository
                 .GetSubscriberByGuidAsync(subscriberGuid);
 

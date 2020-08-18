@@ -289,7 +289,7 @@ namespace UpDiddyApi.Controllers.V2
         [Route("index")]
         public async Task<IActionResult> IndexAllUnindexedSubscriber()
         {
-            _candidatesService.IndexAllUnindexed();
+            _candidatesService.IndexAllUnindexed(true);
             return StatusCode(202);
         }
 

@@ -51,15 +51,14 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         #region Candidate Indexing 
 
-        Task<bool> CandidateIndexAsync(CandidateSDOC candidate);
-        Task<bool> CandidateIndexBulkAsync(List<CandidateSDOC> candidateList);
-        Task<bool> CandidateIndexRemoveAsync(CandidateSDOC candidate);
+      //  Task<bool> CandidateIndexBulkAsync(List<CandidateSDOC> candidateList);
+ 
 
         Task<bool> IndexCandidateBySubscriberAsync(Guid subscriberGuid, bool nonBlocking = true);
         Task<bool> IndexRemoveCandidateBySubscriberAsync(Guid subscriberGuid, bool nonBlocking = true);        
-        Task<bool> IndexAllUnindexed();
+        Task<bool> IndexAllUnindexed(bool nonBlocking = true);
 
-        Task<bool> CandidateIndexBulkByProfileAzureSearchAsync(List<v_CandidateAzureSearch> profiles);
+ 
 
         #endregion
 
