@@ -8,7 +8,7 @@ using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyLib.Domain.Models;
 using StackExchange.Redis;
-
+using Microsoft.Extensions.Configuration;
 
 namespace UpDiddyApi.Controllers.V2
 {
@@ -17,12 +17,12 @@ namespace UpDiddyApi.Controllers.V2
     public class VideoController : BaseApiController
     {
         private readonly IVideoService _videoService;
-        private readonly IDistributedCache _distributedCache;
+        private readonly IConfiguration _configuration;
 
-        public VideoController(IVideoService videoService, IDistributedCache distributedCache)
+        public VideoController(IVideoService videoService, IConfiguration configuration)
         {
             _videoService = videoService;
-            _distributedCache = distributedCache;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -71,10 +71,12 @@ namespace UpDiddyApi.Controllers.V2
 
         private async Task<Guid> GetSubscriberGuidFromRedis(Guid redisKeyGuid)
         {
-            //  TODO - Implement 
-            ConnectionMultiplexer muxer = ConnectionMultiplexer.Connect("hostname:port,password=password");
-            IDatabase conn = muxer.GetDatabase();
-            var subscriberId = await _distributedCache.GetStringAsync(redisKeyGuid.ToString());
+            string subscriberId = null;
+            using (var muxer = await ConnectionMultiplexer.ConnectAsync(_configuration["redis:host"]))
+            {
+                var conn = muxer.GetDatabase();
+                subscriberId = await conn.StringGetAsync(redisKeyGuid.ToString());
+            }
 
             if (string.IsNullOrEmpty(subscriberId) || !Guid.TryParse(subscriberId, out var subscriberGuid))
             {
