@@ -525,9 +525,9 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
 
         /// <summary>
-        /// Index a batch of g2 profiles 
+        /// Index a batch of candidate profiles 
         /// </summary>
-        /// <param name="g2Profiles"></param>
+        /// <param name="profiles"></param>
         /// <returns></returns>F
         public async Task<bool> CandidateIndexBulkByProfileAzureSearchAsync(List<v_CandidateAzureSearch> profiles)
         {
@@ -569,7 +569,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         /// <summary>
         /// Bulk index into azure 
         /// </summary>
-        /// <param name="g2List"></param>
+        /// <param name="candidateList"></param>
         /// <returns></returns>
         public async Task<bool> CandidateIndexBulkAsync(List<CandidateSDOC> candidateList)
         {
@@ -590,7 +590,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         /// <summary>
         /// Index the specified document into azure search 
         /// </summary>
-        /// <param name="g2"></param>
+        /// <param name="candidate"></param>
         /// <returns></returns>
         public async Task<bool> CandidateIndexAsync(CandidateSDOC candidate)
         {
@@ -608,7 +608,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         /// <summary>
         /// Remove the specified document from azure search 
         /// </summary>
-        /// <param name="g2"></param>
+        /// <param name="candidate"></param>
         /// <returns></returns>
         public async Task<bool> CandidateIndexRemoveAsync(CandidateSDOC candidate)
         {
@@ -626,7 +626,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
 
         /// <summary>
-        /// For the given subscriber, update or add their profile to the G2 azure index 
+        /// For the given subscriber, update or add their profile to the Candidate azure index 
         /// </summary>
         /// <param name="subscriberGuid"></param>
         /// <returns></returns>
@@ -671,7 +671,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         }
 
         /// <summary>
-        /// For the given subscriber, update or add their profile to the G2 azure index 
+        /// For the given subscriber, update or add their profile to the Candidate azure index 
         /// </summary>
         /// <param name="subscriberGuid"></param>
         /// <returns></returns>
@@ -682,7 +682,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         {
             _logger.LogInformation($"CandidateService:IndexRemoveCandidateBySubscriberAsync Starting subscriber = {subscriberGuid}  nonBlocking = {nonBlocking}");
 
-            // Get all non-public G2s for subscriber 
+            // Get index info for subscriber
             v_CandidateAzureSearch candidateProfile = _db.CandidateAzureSearch
            .Where(p => p.SubscriberGuid == subscriberGuid)
            .FirstOrDefault();
@@ -721,7 +721,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         public async Task<bool> IndexAllUnindexed()
         {
             
-            // Kick off job to index any unindexed g2 profiles 
+            // Kick off job to index any unindexed candidate profiles 
             _hangfireService.Enqueue<ScheduledJobs>(j => j.CandidateIndexUnindexedCandidates());
             return true;
         }
