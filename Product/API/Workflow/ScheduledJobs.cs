@@ -2423,9 +2423,9 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
         #region Candidate
 
         /// <summary>
-        /// Add or update the G2 into the azure search index 
+        /// Add or update the candidate into the azure search index 
         /// </summary>
-        /// <param name="g2"></param>
+        /// <param name="candidate"></param>
         /// <returns></returns>
         public async Task<bool> CandidateIndexAddOrUpdate(CandidateSDOC candidate)
         {
@@ -2438,9 +2438,9 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
 
 
         /// <summary>
-        /// Add or update the G2 into the azure search index 
+        /// Add or update the candidate into the azure search index 
         /// </summary>
-        /// <param name="g2"></param>
+        /// <param name="candidate"></param>
         /// <returns></returns>
         public async Task<bool> CandidateIndexRemove(CandidateSDOC candidate)
         {
@@ -2494,7 +2494,7 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
             }
 
 
-            _syslog.LogInformation($"ScheduledJobs.CandidateIndexUnindexedCandidates: Retreived {candidateProfiles.Count} G2s for processing.");
+            _syslog.LogInformation($"ScheduledJobs.CandidateIndexUnindexedCandidates: Retreived {candidateProfiles.Count} Candidates for processing.");
 
             // short circuit if there is nothing to do
             if (candidateProfiles.Count == 0)
@@ -2507,7 +2507,7 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
             // schedule this job to run again for another batch
             if (candidateProfiles.Count == CandidateIndexUnindexedProfilesBatchSize)
             {
-                _syslog.LogInformation($"ScheduledJobs.CandidateIndexUnindexedCandidates: Scheduling recursive call to index additional G2s");
+                _syslog.LogInformation($"ScheduledJobs.CandidateIndexUnindexedCandidates: Scheduling recursive call to index additional Candidates");
                 //Getrecurse delay variable 
                 int delay = int.Parse(_configuration["AzureSearch:IndexUnidexedCandidateRecurseDelayInMinutes"]);
                 _hangfireService.Schedule<ScheduledJobs>(j => j.CandidateIndexUnindexedCandidates(), TimeSpan.FromMinutes(delay));
