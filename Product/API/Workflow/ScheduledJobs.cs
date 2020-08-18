@@ -2438,7 +2438,7 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
 
 
         /// <summary>
-        /// Add or update the candidate into the azure search index 
+        /// Remove the candidate into the azure search index 
         /// </summary>
         /// <param name="candidate"></param>
         /// <returns></returns>
@@ -2451,7 +2451,10 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
         }
 
 
- 
+        /// <summary>
+        ///  Index all unindexed candidate (i.e. there AzureIndexStatusId = 1)
+        /// </summary>
+        /// <returns></returns>
 
 
         public async Task<bool> CandidateIndexUnindexedCandidates()
