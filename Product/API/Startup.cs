@@ -390,11 +390,13 @@ namespace UpDiddyApi
             //services.AddSingleton<ITelemetryProcessorFactory>(sp => new SnapshotCollectorTelemetryProcessorFactory(sp));
 
             // Add Redis session cahce
-            services.AddDistributedRedisCache(options =>
+            services.AddStackExchangeRedisCache(options =>
             {
                 options.InstanceName = Configuration.GetValue<string>("redis:name");
                 options.Configuration = Configuration.GetValue<string>("redis:host");
             });
+
+            services.AddRedisClient(Configuration.GetSection("redis"));
 
             // load file for tracking pixel as singleton to limit overhead
             services.AddSingleton<FileContentResult>(

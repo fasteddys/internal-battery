@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyLib.Domain.Models;
+using StackExchange.Redis;
+using Microsoft.Extensions.Configuration;
 
 namespace UpDiddyApi.Controllers.V2
 {
@@ -15,12 +17,12 @@ namespace UpDiddyApi.Controllers.V2
     public class VideoController : BaseApiController
     {
         private readonly IVideoService _videoService;
-        private readonly IDistributedCache _distributedCache;
+        private readonly IRedisService _redis;
 
-        public VideoController(IVideoService videoService, IDistributedCache distributedCache)
+        public VideoController(IVideoService videoService, IRedisService redis)
         {
             _videoService = videoService;
-            _distributedCache = distributedCache;
+            _redis = redis;
         }
 
         [HttpGet]
@@ -69,7 +71,7 @@ namespace UpDiddyApi.Controllers.V2
 
         private async Task<Guid> GetSubscriberGuidFromRedis(Guid redisKeyGuid)
         {
-            var subscriberId = await _distributedCache.GetStringAsync(redisKeyGuid.ToString());
+            var subscriberId = await _redis.GetStringAsync(redisKeyGuid.ToString());
 
             if (string.IsNullOrEmpty(subscriberId) || !Guid.TryParse(subscriberId, out var subscriberGuid))
             {
