@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UpDiddyApi.Models.Views;
 using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.Candidate360;
@@ -50,13 +51,14 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         #region Candidate Indexing 
 
-        Task<bool> CandidateIndexAsync(CandidateSDOC candidate);
-        Task<bool> CandidateIndexBulkAsync(List<CandidateSDOC> candidateList);
-        Task<bool> CandidateIndexRemoveAsync(CandidateSDOC candidate);
+      //  Task<bool> CandidateIndexBulkAsync(List<CandidateSDOC> candidateList);
+ 
 
         Task<bool> IndexCandidateBySubscriberAsync(Guid subscriberGuid, bool nonBlocking = true);
         Task<bool> IndexRemoveCandidateBySubscriberAsync(Guid subscriberGuid, bool nonBlocking = true);        
-        Task<bool> IndexAllUnindexed( bool nonBlocking = true);
+        Task<bool> IndexAllUnindexed(bool nonBlocking = true);
+
+ 
 
         #endregion
 

@@ -153,5 +153,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// <param name="payload">log export data from Auth0 in a batch format</param>
         /// <returns></returns>
         Task ParseAuth0Logs(dynamic payload);
+
+        Task<bool> UpdateCandidateIndexStatus(Guid subscriberGuid, string statusInfo, string statusCodeName);
+
+
     }
 }
