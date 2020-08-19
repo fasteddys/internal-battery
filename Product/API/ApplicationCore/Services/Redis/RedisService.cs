@@ -1,9 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using StackExchange.Redis;
-using System;
 using System.Threading.Tasks;
-using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 
 namespace UpDiddyApi.ApplicationCore.Services.Redis
@@ -12,40 +9,20 @@ namespace UpDiddyApi.ApplicationCore.Services.Redis
     {
         private readonly RedisOptions _options;
         private readonly IDatabase _database;
-        private readonly ILogger _logger;
 
-        public RedisService(IOptions<RedisOptions> optionsAccessor, ILogger logger)
+        public RedisService(IOptions<RedisOptions> optionsAccessor)
         {
             _options = optionsAccessor.Value;
 
             var muxer = ConnectionMultiplexer.Connect(_options.Host);
             _database = muxer.GetDatabase();
-            _logger = logger;
         }
 
         public string GetString(string key)
             => _database.StringGet(key);
 
         public async Task<string> GetStringAsync(string key)
-        {
-            try
-            {
-                if (await _database.KeyExistsAsync(key))
-                {
-                    _logger.LogInformation("Found {key} in the database", key);
-                }
-                else
-                {
-                    throw new NotFoundException($"Unable to find a value for key \"{key}\" in Redis");
-                };
-                return await _database.StringGetAsync(key);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while fetching {key} from redis", key);
-                throw;
-            }
-        }
+            => await _database.StringGetAsync(key);
 
         public void SetString(string key, string value)
             => _database.StringSet(key, value);
