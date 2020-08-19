@@ -721,7 +721,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 catch (Exception ex)
                 {
                     // mark subscriber record as bad index 
-                    _subscriberService.UpdateCandidateIndexStatus(p.SubscriberGuid, $"Indexing Error in CandidateService.CandidateIndexBulk  Ex={ex.ToString()} ", "Error");
+                    _subscriberService.UpdateCandidateIndexStatus(p.SubscriberGuid, $"Indexing Error in CandidateService.CandidateIndexBulk  Ex={ex.ToString()} ", Constants.AzureSearchIndexStatus.Error);
                 }
 
             };
@@ -759,9 +759,9 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                     _logger.LogInformation($"CandidateService:IndexCandidateBySubscriberAsync Unable to locate subscriber {subscriberGuid} in indexer view, if they are not a hiring manager this will need to be investigated.");
                     return false;
                 }
-
+                
                 CandidateSDOC indexDoc = await MapToCandidateSDOC(candidateProfile);
-
+     
                 _logger.LogInformation($"CandidateService:CandidateIndexAsync Starting subscriber = {subscriberGuid}  ");
                 AzureIndexResult info = await _azureSearchService.AddOrUpdateCandidate(indexDoc);
                 // Update subscribers azure index status 
@@ -772,7 +772,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             catch (Exception ex)
             {
                 // mark subscriber record as bad index 
-                _subscriberService.UpdateCandidateIndexStatus(subscriberGuid, $"Indexing Error in CandidateService.IndexCandidateBySubscriberAsync  Ex={ex.ToString()} ", "Error");
+                _subscriberService.UpdateCandidateIndexStatus(subscriberGuid, $"Indexing Error in CandidateService.IndexCandidateBySubscriberAsync  Ex={ex.ToString()} ", Constants.AzureSearchIndexStatus.Error);
                 return false;
 
             }
@@ -801,7 +801,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             catch (Exception ex)
             {
                 // mark subscriber record as bad index 
-                _subscriberService.UpdateCandidateIndexStatus(candidate.SubscriberGuid, $"Indexing Deletion Error in CandidateService.IndexRemoveCandidateBySubscriberAsync  Ex={ex.ToString()} ", "Error");
+                _subscriberService.UpdateCandidateIndexStatus(candidate.SubscriberGuid, $"Indexing Deletion Error in CandidateService.IndexRemoveCandidateBySubscriberAsync  Ex={ex.ToString()} ", Constants.AzureSearchIndexStatus.Error);
 
                 return false;
             }
