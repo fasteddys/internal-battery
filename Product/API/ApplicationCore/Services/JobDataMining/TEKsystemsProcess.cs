@@ -47,6 +47,8 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     SslProtocols = SslProtocols.Tls12
                 });
             this.Client.DefaultRequestHeaders.UserAgent.ParseAdd(@"Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)");
+            this.totalWebRequestsMade = 0;
+            this.totalBytesReceived = 0;
         }
 
         #region Private Members

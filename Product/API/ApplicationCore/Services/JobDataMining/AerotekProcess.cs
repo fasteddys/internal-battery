@@ -31,15 +31,29 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
         {
             var newEmploymentTypes = employmentTypeService.GetEmploymentTypes().Result;
             _employmentTypes = newEmploymentTypes.EmploymentTypes.Select(et => new EmploymentTypeDto() { EmploymentTypeGuid = et.EmploymentTypeGuid, Name = et.Name }).ToList();
-            this._client.DefaultRequestHeaders.UserAgent.ParseAdd(@"Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)");
+            var proxy = new WebProxy(
+                  Address: new Uri(config["ProxyService:Address"]),
+                  BypassOnLocal: false,
+                  BypassList: null,
+                  Credentials: new NetworkCredential(
+                      userName: config["ProxyService:Username"],
+                      password: config["ProxyService:Password"]));
+            this.Client = new HttpClient(
+                new HttpClientHandler()
+                {
+                    Proxy = proxy,
+                    PreAuthenticate = true,
+                    UseDefaultCredentials = false,
+                    SslProtocols = SslProtocols.Tls12
+                });
+            this.Client.DefaultRequestHeaders.UserAgent.ParseAdd(@"Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)");
+            this.totalWebRequestsMade = 0;
+            this.totalBytesReceived = 0;
         }
 
         #region Private Members
 
-        private HttpClient _client = new HttpClient(new HttpClientHandler()
-        {
-            SslProtocols = SslProtocols.Tls12
-        });
+        private HttpClient Client { get; set; }
 
         private async Task<JobPage> CreateJobPageFromHttpRequest(Uri jobPageUri, List<JobPage> existingJobPages)
         {
@@ -55,72 +69,76 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                 int jobPageStatusId = 1; // pending
                 bool isJobExists = true;
                 // retrieve the latest job page data
-                var response = await _client.GetAsync(uriBuilder.Uri);
-                if (response.StatusCode != HttpStatusCode.OK)
-                    isJobExists = false;
-                rawHtml = await response.Content.ReadAsStringAsync();
-
-                // all job page data is embedded in javascript and bound to the DOM by the client. as such, it makes it impossible to parse the html
-                // and extract the job data. the below code is hacky as hell but it works. a slightly better way to do this would be to use the 
-                // Jurassic library to execute the javascript code and get the json data that way. started down that path but got stuck - come back
-                // and revisit that approach if this code becomes too fragile: https://html-agility-pack.net/knowledge-base/18156795/parsing-html-to-get-script-variable-value
-                string matchStart = "phApp.ddo =";
-                string matchEnd = "};";
-                int indexStart = rawHtml.IndexOf(matchStart) + matchStart.Length;
-                int indexEnd = rawHtml.IndexOf(matchEnd, indexStart) + 1; // not using length of the indexEnd here; want to ignore the semi-colon
-                string rawJson = rawHtml.Substring(indexStart, indexEnd - indexStart);
-                JObject parsedJson = JObject.Parse(rawJson);                
-                JToken jobData = parsedJson.SelectToken("jobDetail.data.job", errorWhenNoMatch: false);
-                if (jobData == null)
-                    throw new ApplicationException($"No job detail data discovered for the following job page uri: {jobPageUri.ToString()}");
-
-
-                
-                // remove unnecessary information from jobData before storing it
-                string[] requiredTokenNames = { "jobId", "title", "postedDate", "structureData", "recruiterName", "recruiterEmail", "recruiterPhone", "ml_skills" };
-                List<JToken> tokensToDelete = new List<JToken>();
-                foreach(JToken token in jobData.Children())
+                var response = await Client.GetAsync(uriBuilder.Uri);
+                if (!response.IsSuccessStatusCode)
                 {
-                    string tokenName = ((JProperty)token).Name;
-                    if (!requiredTokenNames.Contains(tokenName))
-                        tokensToDelete.Add(token);
-                }
-                foreach(var token in tokensToDelete)
-                {
-                    token.Remove();
-                }
-
-                // check for an existing job page based on the RWS identifier
-                existingJobPage = existingJobPages.Where(jp => jp.UniqueIdentifier == jobData["jobId"].ToString()).FirstOrDefault();
-                if (existingJobPage != null)
-                {
-                    // check to see if the page content has changed since we last ran this process
-                    if (existingJobPage.RawData == jobData.ToString())
-                        jobPageStatusId = 2; // active (no action required)
-
-                    // use the existing job page
-                    existingJobPage.JobPageStatusId = jobPageStatusId;
-                    existingJobPage.Uri = jobPageUri;
-                    existingJobPage.RawData = jobData.ToString();
-                    existingJobPage.ModifyDate = DateTime.UtcNow;
-                    existingJobPage.ModifyGuid = Guid.Empty;
-                    result = existingJobPage;
+                    _syslog.LogError($"AerotekProcess.CreateJobPageFromHttpRequest - unsuccessful response. StatusCode: {response.StatusCode.ToString()}; \r\nReasonPhrase: {response.ReasonPhrase}");
                 }
                 else
                 {
-                    // create a new job page
-                    result = new JobPage()
+                    // all job page data is embedded in javascript and bound to the DOM by the client. as such, it makes it impossible to parse the html
+                    // and extract the job data. the below code is hacky as hell but it works. a slightly better way to do this would be to use the 
+                    // Jurassic library to execute the javascript code and get the json data that way. started down that path but got stuck - come back
+                    // and revisit that approach if this code becomes too fragile: https://html-agility-pack.net/knowledge-base/18156795/parsing-html-to-get-script-variable-value
+                    totalBytesReceived += response.Content.Headers.ContentLength;
+                    totalWebRequestsMade++;
+                    rawHtml = await response.Content.ReadAsStringAsync();
+                    string matchStart = "phApp.ddo =";
+                    string matchEnd = "};";
+                    int indexStart = rawHtml.IndexOf(matchStart) + matchStart.Length;
+                    int indexEnd = rawHtml.IndexOf(matchEnd, indexStart) + 1; // not using length of the indexEnd here; want to ignore the semi-colon
+                    string rawJson = rawHtml.Substring(indexStart, indexEnd - indexStart);
+                    JObject parsedJson = JObject.Parse(rawJson);
+                    JToken jobData = parsedJson.SelectToken("jobDetail.data.job", errorWhenNoMatch: false);
+                    if (jobData == null)
+                        throw new ApplicationException($"No job detail data discovered for the following job page uri: {jobPageUri.ToString()}");
+                    
+                    // remove unnecessary information from jobData before storing it
+                    string[] requiredTokenNames = { "jobId", "title", "postedDate", "structureData", "recruiterName", "recruiterEmail", "recruiterPhone", "ml_skills" };
+                    List<JToken> tokensToDelete = new List<JToken>();
+                    foreach (JToken token in jobData.Children())
                     {
-                        CreateDate = DateTime.UtcNow,
-                        CreateGuid = Guid.Empty,
-                        IsDeleted = 0,
-                        JobPageGuid = Guid.NewGuid(),
-                        JobPageStatusId = jobPageStatusId,
-                        RawData = jobData.ToString(),
-                        UniqueIdentifier = jobData["jobId"].ToString(),
-                        Uri = jobPageUri,
-                        JobSiteId = _jobSite.JobSiteId
-                    };
+                        string tokenName = ((JProperty)token).Name;
+                        if (!requiredTokenNames.Contains(tokenName))
+                            tokensToDelete.Add(token);
+                    }
+                    foreach (var token in tokensToDelete)
+                    {
+                        token.Remove();
+                    }
+
+                    // check for an existing job page based on the RWS identifier
+                    existingJobPage = existingJobPages.Where(jp => jp.UniqueIdentifier == jobData["jobId"].ToString()).FirstOrDefault();
+                    if (existingJobPage != null)
+                    {
+                        // check to see if the page content has changed since we last ran this process
+                        if (existingJobPage.RawData == jobData.ToString())
+                            jobPageStatusId = 2; // active (no action required)
+
+                        // use the existing job page
+                        existingJobPage.JobPageStatusId = jobPageStatusId;
+                        existingJobPage.Uri = jobPageUri;
+                        existingJobPage.RawData = jobData.ToString();
+                        existingJobPage.ModifyDate = DateTime.UtcNow;
+                        existingJobPage.ModifyGuid = Guid.Empty;
+                        result = existingJobPage;
+                    }
+                    else
+                    {
+                        // create a new job page
+                        result = new JobPage()
+                        {
+                            CreateDate = DateTime.UtcNow,
+                            CreateGuid = Guid.Empty,
+                            IsDeleted = 0,
+                            JobPageGuid = Guid.NewGuid(),
+                            JobPageStatusId = jobPageStatusId,
+                            RawData = jobData.ToString(),
+                            UniqueIdentifier = jobData["jobId"].ToString(),
+                            Uri = jobPageUri,
+                            JobSiteId = _jobSite.JobSiteId
+                        };
+                    }
                 }
             }
             catch (Exception e)
@@ -160,45 +178,63 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             List<Uri> sitemapJobPageUrls = new List<Uri>();
 
             // load the sitemap index as xml
-            var sitemapIndexResult = await _client.GetAsync(_jobSite.Uri);
-            string sitemapIndexAsString = await sitemapIndexResult.Content.ReadAsStringAsync();
-            XmlDocument sitemapIndexXml = new XmlDocument();
-            sitemapIndexXml.LoadXml(sitemapIndexAsString);
-
-            // add the namespace used for sitemaps
-            XmlNamespaceManager manager = new XmlNamespaceManager(sitemapIndexXml.NameTable);
-            manager.AddNamespace("s", @"http://www.sitemaps.org/schemas/sitemap/0.9");
-
-            // this regex matches specific job pages (those that contain "job" followed by a number)
-            Regex specificJobUrl = new Regex(@"/job/[0-9]+/");
-
-            // Aerotek has multiple sitemap documents for their job pages - we must make requests for each of them to discover the job page urls
-            XmlNodeList listOfSitemaps = sitemapIndexXml.SelectNodes("/s:sitemapindex/s:sitemap", manager);
-            foreach(XmlNode sitemap in listOfSitemaps)
+            var sitemapIndexResult = await Client.GetAsync(_jobSite.Uri);
+            if (!sitemapIndexResult.IsSuccessStatusCode)
             {
-                var sitemapLoc = sitemap["loc"].InnerText;
-                var sitemapResult = await _client.GetAsync(sitemapLoc);
-                string sitemapAsString = await sitemapResult.Content.ReadAsStringAsync();
-                XmlDocument sitemapXml = new XmlDocument();
-                sitemapXml.LoadXml(sitemapAsString);
-                // identify the urls that contain specific jobs
-                XmlNodeList listOfUrls = sitemapXml.SelectNodes("/s:urlset/s:url", manager);
-                foreach (XmlNode url in listOfUrls)
-                {
-                    var locText = url["loc"].InnerText;
-                    if (specificJobUrl.IsMatch(locText))
-                    {
-                        sitemapJobPageUrls.Add(new Uri(locText));
-                    }
-                }
+                _syslog.LogError($"AerotekProcess.DiscoverJobPages - unsuccessful response from sitemap index. StatusCode: {sitemapIndexResult.StatusCode.ToString()}; \r\nReasonPhrase: {sitemapIndexResult.ReasonPhrase}");
             }
-
-            // removed parallel processing with crawl delay since all job pages get parsed from the sitemap now
-            foreach (Uri jobUri in sitemapJobPageUrls)
+            else
             {
-                JobPage discoveredJobPage = await CreateJobPageFromHttpRequest(jobUri, existingJobPages);
-                if (discoveredJobPage != null)
-                    discoveredJobPages.Add(discoveredJobPage);
+                totalWebRequestsMade++;
+                totalBytesReceived += sitemapIndexResult.Content.Headers.ContentLength;                
+                string sitemapIndexAsString = await sitemapIndexResult.Content.ReadAsStringAsync();
+                XmlDocument sitemapIndexXml = new XmlDocument();
+                sitemapIndexXml.LoadXml(sitemapIndexAsString);
+
+                // add the namespace used for sitemaps
+                XmlNamespaceManager manager = new XmlNamespaceManager(sitemapIndexXml.NameTable);
+                manager.AddNamespace("s", @"http://www.sitemaps.org/schemas/sitemap/0.9");
+
+                // this regex matches specific job pages (those that contain "job" followed by a number)
+                Regex specificJobUrl = new Regex(@"/job/[0-9]+/");
+
+                // Aerotek has multiple sitemap documents for their job pages - we must make requests for each of them to discover the job page urls
+                XmlNodeList listOfSitemaps = sitemapIndexXml.SelectNodes("/s:sitemapindex/s:sitemap", manager);
+                foreach (XmlNode sitemap in listOfSitemaps)
+                {
+                    var sitemapLoc = sitemap["loc"].InnerText;
+                    var sitemapResult = await Client.GetAsync(sitemapLoc);
+                    if (!sitemapResult.IsSuccessStatusCode)
+                    {
+                        _syslog.LogError($"AerotekProcess.DiscoverJobPages - unsuccessful response from sitemap '{sitemapLoc}'. StatusCode: {sitemapIndexResult.StatusCode.ToString()}; \r\nReasonPhrase: {sitemapIndexResult.ReasonPhrase}");
+                    }
+                    else
+                    {
+                        totalWebRequestsMade++;
+                        totalBytesReceived += sitemapResult.Content.Headers.ContentLength;
+                        string sitemapAsString = await sitemapResult.Content.ReadAsStringAsync();
+                        XmlDocument sitemapXml = new XmlDocument();
+                        sitemapXml.LoadXml(sitemapAsString);
+                        // identify the urls that contain specific jobs
+                        XmlNodeList listOfUrls = sitemapXml.SelectNodes("/s:urlset/s:url", manager);
+                        foreach (XmlNode url in listOfUrls)
+                        {
+                            var locText = url["loc"].InnerText;
+                            if (specificJobUrl.IsMatch(locText))
+                            {
+                                sitemapJobPageUrls.Add(new Uri(locText));
+                            }
+                        }
+                    }                 
+                }
+
+                // removed parallel processing with crawl delay since all job pages get parsed from the sitemap now
+                foreach (Uri jobUri in sitemapJobPageUrls)
+                {
+                    JobPage discoveredJobPage = await CreateJobPageFromHttpRequest(jobUri, existingJobPages);
+                    if (discoveredJobPage != null)
+                        discoveredJobPages.Add(discoveredJobPage);
+                }
             }
 
             if (discoveredJobPages.Count() != sitemapJobPageUrls.Count)
