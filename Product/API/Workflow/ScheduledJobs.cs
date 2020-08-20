@@ -889,8 +889,13 @@ namespace UpDiddyApi.Workflow
                     int existingActiveJobPageCount = existingJobPages.Where(jp => jp.JobPageStatusId == 2).Count();
 
                     // retrieve all current job pages that are visible on the job site
-                    List<JobPage> jobPagesToProcess = await jobDataMining.DiscoverJobPages(existingJobPages.ToList());
+                    var discoverJobPagesResult = await jobDataMining.DiscoverJobPages(existingJobPages.ToList());
+                    List<JobPage> jobPagesToProcess = discoverJobPagesResult.Item1;
                     position = "DiscoverJobPagesCompleted";
+
+                    // update the number web requests made and the total number of bytes from all responses 
+                    jobDataMiningStats.TotalResponseSizeInBytes = discoverJobPagesResult.Item2;
+                    jobDataMiningStats.NumberOfWebRequestsMade = discoverJobPagesResult.Item3;                    
 
                     // set the number of pending and active jobs discovered - this will be the future state if we continue processing this job site
                     int futurePendingAndActiveJobPagesCount = jobPagesToProcess.Where(jp => jp.JobPageStatusId == 1 || jp.JobPageStatusId == 2).Count();

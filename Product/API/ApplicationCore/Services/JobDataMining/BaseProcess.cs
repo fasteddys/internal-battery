@@ -16,6 +16,8 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
         protected Guid _companyGuid = Guid.Empty;
         protected IConfiguration _configuration;
         protected IEmploymentTypeService _employmentTypeService;
+        protected long? totalBytesReceived;
+        protected int? totalWebRequestsMade;
 
         public BaseProcess(JobSite jobSite, ILogger logger, Guid companyGuid, IConfiguration configuration, IEmploymentTypeService employmentTypeService)
         {
