@@ -103,5 +103,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         ICommuteDistancesRepository CommuteDistancesRepository { get; }
         ITrainingTypesRepository TrainingTypesRepository { get; }
         ITrackingRepository TrackingRepository { get; }
+        ISubscriberVideoRepository SubscriberVideoRepository { get; }
     }
 }

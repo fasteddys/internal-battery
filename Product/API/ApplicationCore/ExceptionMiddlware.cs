@@ -81,6 +81,10 @@ public class ExceptionMiddleware
         {
             await CreateResponse(400, ex, context);
         }
+        catch (NotAuthorizedException ex)
+        {
+            await CreateResponse(401, ex, context);
+        }
         catch (Exception ex)
         {
             await CreateResponse(500, ex, context);

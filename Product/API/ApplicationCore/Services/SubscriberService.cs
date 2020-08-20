@@ -32,6 +32,8 @@ using UpDiddyApi.Helpers;
 using Newtonsoft.Json.Linq;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
+using UpDiddyLib.Domain.Models.G2;
+using UpDiddyApi.Models.G2;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -267,7 +269,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 CreateDate = DateTime.UtcNow,
                 CreateGuid = Guid.Empty,
                 IsDeleted = 0,
-                IsVerified = false
+                IsVerified = false,
+                IsTraitifyAssessmentsVisibleToHiringManagers = true
             });
             await _repository.SubscriberRepository.SaveAsync();
 
@@ -1555,5 +1558,36 @@ namespace UpDiddyApi.ApplicationCore.Services
                 _logger.LogError($"SubscriberService.ParseAuth0Logs encountered an error: '{e.Message}'.", e);
             }
         }
+
+
+
+        public async Task<bool> UpdateCandidateIndexStatus(Guid subscriberGuid, string statusInfo, string statusCodeName)
+        {
+            int statusCode = -1;
+            AzureIndexStatus indexStatus = await _repository.AzureIndexStatusRepository.GetAzureIndexStatusByName(statusCodeName);
+            if (indexStatus != null)
+                statusCode = indexStatus.AzureIndexStatusId;
+            else
+            {
+                _logger.LogError($"SubscriberService.UpdateCandidateIndexStatus Could not locate status with name of  '{statusCodeName}'.");
+                statusInfo += $" WARNING - SubscriberService.UpdateCandidateIndexStatus Could not locate status with name of  '{statusCodeName}'";
+
+            }
+
+            var Subscriber = await GetSubscriberByGuid(subscriberGuid);
+            if (Subscriber == null)
+                throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
+
+            // set status info and code then save 
+            Subscriber.AzureIndexStatusId = statusCode;
+            Subscriber.AzureSearchIndexInfo = statusInfo;
+            Subscriber.AzureIndexModifyDate = DateTime.UtcNow;
+                        
+            await _repository.SubscriberRepository.SaveAsync();
+            return true;
+        }
+
+
+
     }
 }

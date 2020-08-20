@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
@@ -10,9 +11,10 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200812183042_adding traitify to candidate 360")]
+    partial class addingtraitifytocandidate360
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3027,11 +3029,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("NumJobsUpdated");
 
-                    b.Property<int?>("NumberOfWebRequestsMade");
-
                     b.Property<DateTime>("ScrapeDate");
-
-                    b.Property<long?>("TotalResponseSizeInBytes");
 
                     b.HasKey("JobSiteScrapeStatisticId");
 
@@ -4683,8 +4681,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<bool>("IsVerified")
                         .HasColumnName("IsEmailVerifiedLegacy");
 
-                    b.Property<bool?>("IsVideoVisibleToHiringManager");
-
                     b.Property<bool?>("IsWillingToTravel");
 
                     b.Property<string>("LastName");
@@ -5251,45 +5247,6 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("TrainingTypeId");
 
                     b.ToTable("SubscriberTraining");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.SubscriberVideo", b =>
-                {
-                    b.Property<int>("SubscriberVideoId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<int>("SubscriberId");
-
-                    b.Property<Guid>("SubscriberVideoGuid");
-
-                    b.Property<string>("ThumbnailLink")
-                        .HasMaxLength(500);
-
-                    b.Property<string>("ThumbnailMimeType")
-                        .HasMaxLength(500);
-
-                    b.Property<string>("VideoLink")
-                        .HasMaxLength(500);
-
-                    b.Property<string>("VideoMimeType")
-                        .HasMaxLength(500);
-
-                    b.HasKey("SubscriberVideoId");
-
-                    b.HasIndex("SubscriberId");
-
-                    b.ToTable("SubscriberVideos");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberWorkHistory", b =>
@@ -7035,14 +6992,6 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.TrainingType", "TrainingType")
                         .WithMany()
                         .HasForeignKey("TrainingTypeId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.SubscriberVideo", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany()
-                        .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

@@ -26,7 +26,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
             _employmentTypes = newEmploymentTypes.EmploymentTypes.Select(et => new EmploymentTypeDto() { EmploymentTypeGuid = et.EmploymentTypeGuid, Name = et.Name }).ToList();
         }
 
-        public async Task<List<JobPage>> DiscoverJobPages(List<JobPage> existingJobPages)
+        public async Task<Tuple<List<JobPage>, long?, int?>> DiscoverJobPages(List<JobPage> existingJobPages)
         {
             // init code for http client and allegis group icims parser/client
             var http = new HttpClient();
@@ -110,7 +110,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
             });
             stopwatch.Stop();
             var elapsed = stopwatch.ElapsedMilliseconds;
-            return updatedJobPages.ToList();
+            return new Tuple<List<JobPage>, long?, int?>(updatedJobPages.ToList(), null, null);
         }
 
         public JobPostingDto ProcessJobPage(JobPage jobPage)

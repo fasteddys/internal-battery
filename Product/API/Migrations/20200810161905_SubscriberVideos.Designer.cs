@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
@@ -10,9 +11,10 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200810161905_SubscriberVideos")]
+    partial class SubscriberVideos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3027,11 +3029,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("NumJobsUpdated");
 
-                    b.Property<int?>("NumberOfWebRequestsMade");
-
                     b.Property<DateTime>("ScrapeDate");
-
-                    b.Property<long?>("TotalResponseSizeInBytes");
 
                     b.HasKey("JobSiteScrapeStatisticId");
 
@@ -4677,8 +4675,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<int>("IsDeleted");
 
                     b.Property<bool?>("IsFlexibleWorkScheduleRequired");
-
-                    b.Property<bool?>("IsTraitifyAssessmentsVisibleToHiringManagers");
 
                     b.Property<bool>("IsVerified")
                         .HasColumnName("IsEmailVerifiedLegacy");

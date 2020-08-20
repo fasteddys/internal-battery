@@ -111,7 +111,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ICommuteDistancesRepository _commuteDistancesRepository;
         private ITrainingTypesRepository _trainingTypesRepository;
         private ITrackingRepository _trackingRepository;
-
+        private ISubscriberVideoRepository _subscriberVideoRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
         {
@@ -1320,6 +1320,20 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 return _interviewRequestRepository;
             }
         }
+
+
+        public ISubscriberVideoRepository SubscriberVideoRepository
+        {
+            get
+            {
+                if (_subscriberVideoRepository == null)
+                {
+                    _subscriberVideoRepository = new SubscriberVideoRepository(_dbContext);
+                }
+                return _subscriberVideoRepository;
+            }
+        }
+
 
         public async Task SaveAsync()
         {
