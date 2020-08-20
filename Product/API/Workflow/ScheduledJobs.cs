@@ -2428,43 +2428,47 @@ public async Task<bool> G2IndexAddOrUpdate(G2SDOC g2)
         #region Candidate
 
         /// <summary>
-        /// Add or update the G2 into the azure search index 
+        /// Add or update the candidate into the azure search index 
         /// </summary>
-        /// <param name="g2"></param>
+        /// <param name="candidate"></param>
         /// <returns></returns>
-        public async Task<bool> CandidateIndexAddOrUpdate(CandidateSDOC candidate)
+        public async Task<bool> CandidateIndexAddOrUpdate1(Guid subscriberGuid)
         {
-            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdate starting index for candidate {candidate.SubscriberGuid}");
-            await _candidateService.CandidateIndexAsync(candidate);
-            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdate done index for candidate {candidate.SubscriberGuid}");
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdate starting index for candidate {subscriberGuid}");
+            await _candidateService.IndexCandidateBySubscriberAsync(subscriberGuid,false);
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdate done index for candidate {subscriberGuid}");
             return true;
         }
 
 
 
         /// <summary>
-        /// Add or update the G2 into the azure search index 
+        /// Remove the candidate into the azure search index 
         /// </summary>
-        /// <param name="g2"></param>
+        /// <param name="candidate"></param>
         /// <returns></returns>
-        public async Task<bool> CandidateIndexRemove(CandidateSDOC candidate)
+        public async Task<bool> CandidateIndexRemove(Guid subscriberGuid)
         {
-            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdate starting index for candidate {candidate.SubscriberGuid}");
-            await _candidateService.CandidateIndexRemoveAsync(candidate);
-            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdate done index for candidate {candidate.SubscriberGuid}");
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdate starting index for candidate {subscriberGuid}");
+            await _candidateService.IndexRemoveCandidateBySubscriberAsync(subscriberGuid,false);
+            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdate done index for candidate {subscriberGuid}");
             return true;
         }
 
 
+        /// <summary>
+        ///  Index all unindexed candidate (i.e. there AzureIndexStatusId = 1)
+        /// </summary>
+        /// <returns></returns>
 
-        public async Task<bool> CandidateIndexAddOrUpdateBulk(List<CandidateSDOC> candidateList)
-        {
-            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdateBulk starting index for candidate");
-            await _candidateService.CandidateIndexBulkAsync(candidateList);
-            _syslog.Log(LogLevel.Information, $"ScheduledJobs.CandidateIndexAddOrUpdateBulk done index for candidate");
+
+        public async Task<bool> CandidateIndexUnindexedCandidates()
+        {        
+            _syslog.LogInformation($"ScheduledJobs.CandidateIndexUnindexedCandidates: Starting");
+            _candidateService.IndexAllUnindexed(false);
+            _syslog.LogInformation($"ScheduledJobs.CandidateIndexUnindexedCandidates Done");
             return true;
         }
-
 
 
         #endregion
