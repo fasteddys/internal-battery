@@ -26,7 +26,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
     {
         private readonly List<EmploymentTypeDto> _employmentTypes;
 
-        public AerotekProcess(JobSite jobSite, ILogger logger, Guid companyGuid, IConfiguration config, IEmploymentTypeService employmentTypeService) 
+        public AerotekProcess(JobSite jobSite, ILogger logger, Guid companyGuid, IConfiguration config, IEmploymentTypeService employmentTypeService)
             : base(jobSite, logger, companyGuid, config, employmentTypeService)
         {
             var newEmploymentTypes = employmentTypeService.GetEmploymentTypes().Result;
@@ -92,7 +92,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     JToken jobData = parsedJson.SelectToken("jobDetail.data.job", errorWhenNoMatch: false);
                     if (jobData == null)
                         throw new ApplicationException($"No job detail data discovered for the following job page uri: {jobPageUri.ToString()}");
-                    
+
                     // remove unnecessary information from jobData before storing it
                     string[] requiredTokenNames = { "jobId", "title", "postedDate", "structureData", "recruiterName", "recruiterEmail", "recruiterPhone", "ml_skills" };
                     List<JToken> tokensToDelete = new List<JToken>();
@@ -162,7 +162,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 
         #region Public Members
 
-        public async Task<Tuple<List<JobPage>,long?,int?>> DiscoverJobPages(List<JobPage> existingJobPages)
+        public async Task<Tuple<List<JobPage>, long?, int?>> DiscoverJobPages(List<JobPage> existingJobPages)
         {
             // populate this collection with the results of the job discovery operation
             ConcurrentBag<JobPage> discoveredJobPages = new ConcurrentBag<JobPage>();
@@ -186,7 +186,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             else
             {
                 totalWebRequestsMade++;
-                totalBytesReceived += sitemapIndexResult.Content.Headers.ContentLength;                
+                totalBytesReceived += sitemapIndexResult.Content.Headers.ContentLength;
                 string sitemapIndexAsString = await sitemapIndexResult.Content.ReadAsStringAsync();
                 XmlDocument sitemapIndexXml = new XmlDocument();
                 sitemapIndexXml.LoadXml(sitemapIndexAsString);
@@ -225,7 +225,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                                 sitemapJobPageUrls.Add(new Uri(locText));
                             }
                         }
-                    }                 
+                    }
                 }
 
                 // removed parallel processing with crawl delay since all job pages get parsed from the sitemap now
@@ -272,7 +272,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             stopwatch.Stop();
             var elapsed = stopwatch.ElapsedMilliseconds;
 
-            return new Tuple<List<JobPage>,long?,int?>(updatedJobPages,null,null);
+            return new Tuple<List<JobPage>, long?, int?>(updatedJobPages, totalBytesReceived, totalWebRequestsMade);
         }
 
         public JobPostingDto ProcessJobPage(JobPage jobPage)

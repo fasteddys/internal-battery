@@ -79,6 +79,8 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     // and extract the job data. the below code is hacky as hell but it works. a slightly better way to do this would be to use the 
                     // Jurassic library to execute the javascript code and get the json data that way. started down that path but got stuck - come back
                     // and revisit that approach if this code becomes too fragile: https://html-agility-pack.net/knowledge-base/18156795/parsing-html-to-get-script-variable-value
+                    totalBytesReceived += response.Content.Headers.ContentLength;
+                    totalWebRequestsMade++;
                     rawHtml = await response.Content.ReadAsStringAsync();
                     string matchStart = "phApp.ddo =";
                     string matchEnd = "};";
@@ -164,6 +166,8 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             }
             else
             {
+                totalWebRequestsMade++;
+                totalBytesReceived += sitemapResult.Content.Headers.ContentLength;
                 string sitemapAsString = await sitemapResult.Content.ReadAsStringAsync();
                 XmlDocument sitemapXml = new XmlDocument();
                 sitemapXml.LoadXml(sitemapAsString);
@@ -230,7 +234,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             stopwatch.Stop();
             var elapsed = stopwatch.ElapsedMilliseconds;
 
-            return new Tuple<List<JobPage>, long?, int?>(updatedJobPages, null, null);
+            return new Tuple<List<JobPage>, long?, int?>(updatedJobPages, totalBytesReceived, totalWebRequestsMade);
         }
 
         public JobPostingDto ProcessJobPage(JobPage jobPage)
