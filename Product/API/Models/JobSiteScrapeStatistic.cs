@@ -18,6 +18,7 @@ namespace UpDiddyApi.Models
         public int NumJobsUpdated { get; set; }
         public int NumJobsErrored { get; set; }
         public long? TotalResponseSizeInBytes { get; set; }
-        public int? NumberOfWebRequestsMade { get; set; }
+        public int? SuccessfulWebRequests { get; set; }
+        public int? UnsuccessfulWebRequests { get; set; }
     }
 }

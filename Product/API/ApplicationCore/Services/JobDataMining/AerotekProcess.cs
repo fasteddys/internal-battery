@@ -47,8 +47,9 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     SslProtocols = SslProtocols.Tls12
                 });
             this.Client.DefaultRequestHeaders.UserAgent.ParseAdd(@"Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)");
-            this.totalWebRequestsMade = 0;
-            this.totalBytesReceived = 0;
+            this._totalBytesReceived = 0;
+            this._successfulWebRequests = 0;
+            this._unsuccessfulWebRequests = 0;
         }
 
         #region Private Members
@@ -69,19 +70,15 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                 int jobPageStatusId = 1; // pending
                 bool isJobExists = true;
                 // retrieve the latest job page data
-                var response = await Client.GetAsync(uriBuilder.Uri);
-                if (!response.IsSuccessStatusCode)
-                {
-                    _syslog.LogError($"AerotekProcess.CreateJobPageFromHttpRequest - unsuccessful response. StatusCode: {response.StatusCode.ToString()}; \r\nReasonPhrase: {response.ReasonPhrase}");
-                }
-                else
+                var response = await this.ProxyWebRequestWithRetry(Client, uriBuilder.Uri);
+                if (response != null)
                 {
                     // all job page data is embedded in javascript and bound to the DOM by the client. as such, it makes it impossible to parse the html
                     // and extract the job data. the below code is hacky as hell but it works. a slightly better way to do this would be to use the 
                     // Jurassic library to execute the javascript code and get the json data that way. started down that path but got stuck - come back
                     // and revisit that approach if this code becomes too fragile: https://html-agility-pack.net/knowledge-base/18156795/parsing-html-to-get-script-variable-value
-                    totalBytesReceived += response.Content.Headers.ContentLength;
-                    totalWebRequestsMade++;
+                    this._totalBytesReceived += response.Content.Headers.ContentLength;
+                    this._successfulWebRequests++;                    
                     rawHtml = await response.Content.ReadAsStringAsync();
                     string matchStart = "phApp.ddo =";
                     string matchEnd = "};";
@@ -139,6 +136,12 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                             JobSiteId = _jobSite.JobSiteId
                         };
                     }
+
+                }
+                else
+                {
+                    _syslog.LogError($"AerotekProcess.CreateJobPageFromHttpRequest - maximum retries reached for {uriBuilder.Uri.ToString()}.");
+                    this._unsuccessfulWebRequests++;
                 }
             }
             catch (Exception e)
@@ -178,7 +181,8 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             List<Uri> sitemapJobPageUrls = new List<Uri>();
 
             // load the sitemap index as xml
-            var sitemapIndexResult = await Client.GetAsync(_jobSite.Uri);
+            var sitemapIndexResult = await this.ProxyWebRequestWithRetry(Client, _jobSite.Uri);
+
             if (!sitemapIndexResult.IsSuccessStatusCode)
             {
                 _syslog.LogError($"AerotekProcess.DiscoverJobPages - unsuccessful response from sitemap index. StatusCode: {sitemapIndexResult.StatusCode.ToString()}; \r\nReasonPhrase: {sitemapIndexResult.ReasonPhrase}");
