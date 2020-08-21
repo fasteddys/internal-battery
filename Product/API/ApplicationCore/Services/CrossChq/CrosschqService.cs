@@ -230,6 +230,17 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
 
         }
 
+        public async Task<CrossChqCandidateStatusListDto> GetCrossChqStatusByResume(
+            Guid subscriberId,
+            int limit,
+            int offset,
+            string sort,
+            string orderBy,
+            CrossChqStatus? filter)
+        {
+            throw new NotImplementedException();
+        }
+
         #region private methods
         private string GetFileBase64String(Uri fileUrl)
         {
