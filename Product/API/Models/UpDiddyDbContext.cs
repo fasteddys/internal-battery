@@ -237,6 +237,8 @@ namespace UpDiddyApi.Models
         public DbSet<SubscriberLanguageProficiency> SubscriberLanguageProficiencies { get; set; }
 
         public DbSet<SubscriberVideo> SubscriberVideos { get; set; }
+
+        public DbSet<InvalidEmail> InvalidEmails { get; set; }
         #endregion
 
         #region DBQueries
