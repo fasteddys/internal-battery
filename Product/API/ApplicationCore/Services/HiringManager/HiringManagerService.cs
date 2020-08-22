@@ -1,5 +1,5 @@
-﻿
-using AutoMapper;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
@@ -210,7 +210,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 
             return skillListDto;
         }
-        
+
         public async Task UpdateHiringManager(Guid subscriberGuid, HiringManagerDto hiringManager)
         {
             _logger.LogInformation($"HiringManagerService:UpdateHiringManager  Starting for subscriber {subscriberGuid} ");
@@ -244,7 +244,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             _logger.LogInformation($"HiringManagerService:UpdateHiringManager  Done for Hiring Manager with subscriber: {subscriberGuid} ");
 
         }
-        
+
         public async Task<bool> AddHiringManager(Guid subscriberGuid, bool nonBlocking = true)
         {
             _logger.LogInformation($"HiringManagerService:AddHiringManager  Starting for subscriber {subscriberGuid} ");
@@ -281,7 +281,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 
             return true;
         }
-        
+
         public async Task<bool> _AddHiringManager(Subscriber subscriber)
         {
             _logger.LogInformation($"HiringManagerService:_AddHiringManager  Starting for subscriber {subscriber.SubscriberGuid} ");
@@ -294,5 +294,13 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 
             return true;
         }
+
+        public Task<List<string>> GetInvalidEmails()
+            => _repositoryWrapper.InvalidEmailRepository.GetAll()
+                .Where(e => e.IsDeleted == 0)
+                .Select(e => e.Value)
+                .Distinct()
+                .OrderBy(e => e)
+                .ToListAsync();
     }
 }

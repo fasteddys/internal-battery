@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
@@ -10,9 +11,10 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200820191239_InvalidEmails")]
+    partial class InvalidEmails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3001,8 +3003,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("JobSiteGuid");
 
-                    b.Property<int?>("MaxRetries");
-
                     b.Property<DateTime?>("ModifyDate");
 
                     b.Property<Guid?>("ModifyGuid");
@@ -3056,12 +3056,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<int>("NumJobsUpdated");
 
                     b.Property<DateTime>("ScrapeDate");
-
-                    b.Property<int?>("SuccessfulWebRequests");
-
-                    b.Property<long?>("TotalResponseSizeInBytes");
-
-                    b.Property<int?>("UnsuccessfulWebRequests");
 
                     b.HasKey("JobSiteScrapeStatisticId");
 
