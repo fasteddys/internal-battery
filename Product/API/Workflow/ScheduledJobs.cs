@@ -895,7 +895,8 @@ namespace UpDiddyApi.Workflow
 
                     // update the number web requests made and the total number of bytes from all responses 
                     jobDataMiningStats.TotalResponseSizeInBytes = discoverJobPagesResult.Item2;
-                    jobDataMiningStats.NumberOfWebRequestsMade = discoverJobPagesResult.Item3;                    
+                    jobDataMiningStats.SuccessfulWebRequests = discoverJobPagesResult.Item3;
+                    jobDataMiningStats.UnsuccessfulWebRequests = discoverJobPagesResult.Item4;
 
                     // set the number of pending and active jobs discovered - this will be the future state if we continue processing this job site
                     int futurePendingAndActiveJobPagesCount = jobPagesToProcess.Where(jp => jp.JobPageStatusId == 1 || jp.JobPageStatusId == 2).Count();
