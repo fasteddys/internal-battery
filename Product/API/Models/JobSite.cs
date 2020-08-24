@@ -19,5 +19,6 @@ namespace UpDiddyApi.Models
         [Column(TypeName = "decimal(3,2)")]
         public decimal? PercentageReductionThreshold { get; set; }
         public int? CrawlDelayInMilliseconds { get; set; }
+        public int? MaxRetries { get; set; }
     }
 }

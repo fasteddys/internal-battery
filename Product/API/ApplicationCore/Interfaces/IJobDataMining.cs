@@ -9,7 +9,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
 {
     public interface IJobDataMining
     {
-        Task<Tuple<List<JobPage>, long?, int?>> DiscoverJobPages(List<JobPage> existingJobPages);
+        Task<Tuple<List<JobPage>, long?, int?, int?>> DiscoverJobPages(List<JobPage> existingJobPages);
         JobPostingDto ProcessJobPage(JobPage jobPage);
     }
 }

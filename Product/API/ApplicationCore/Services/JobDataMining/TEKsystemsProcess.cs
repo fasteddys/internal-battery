@@ -46,9 +46,10 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     UseDefaultCredentials = false,
                     SslProtocols = SslProtocols.Tls12
                 });
-            this.Client.DefaultRequestHeaders.UserAgent.ParseAdd(@"Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)");
-            this.totalWebRequestsMade = 0;
-            this.totalBytesReceived = 0;
+            this.Client.DefaultRequestHeaders.UserAgent.ParseAdd(@"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36");
+            this._totalBytesReceived = 0;
+            this._successfulWebRequests = 0;
+            this._unsuccessfulWebRequests = 0;
         }
 
         #region Private Members
@@ -60,6 +61,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             JobPage result = null;
             string rawHtml;
             JObject rawData;
+            UriBuilder uriBuilder = new UriBuilder(jobPageUri);
             HtmlDocument jobHtml = new HtmlDocument();
             JobPage existingJobPage = null;
 
@@ -68,17 +70,15 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                 int jobPageStatusId = 1; // pending
                 bool isJobExists = true;
                 // retrieve the latest job page data
-                var response = await Client.GetAsync(jobPageUri);
-                if (!response.IsSuccessStatusCode)
-                {
-                    _syslog.LogError($"TEKsystemsProcess.CreateJobPageFromHttpRequest - unsuccessful response. StatusCode: {response.StatusCode.ToString()}; \r\nReasonPhrase: {response.ReasonPhrase}");
-                }
-                else
+                var response = await this.ProxyWebRequestWithRetry(Client, uriBuilder.Uri);
+                this._totalBytesReceived += response.Content.Headers.ContentLength;
+                if (response!= null)
                 {
                     // all job page data is embedded in javascript and bound to the DOM by the client. as such, it makes it impossible to parse the html
                     // and extract the job data. the below code is hacky as hell but it works. a slightly better way to do this would be to use the 
                     // Jurassic library to execute the javascript code and get the json data that way. started down that path but got stuck - come back
                     // and revisit that approach if this code becomes too fragile: https://html-agility-pack.net/knowledge-base/18156795/parsing-html-to-get-script-variable-value
+                    this._successfulWebRequests++;
                     rawHtml = await response.Content.ReadAsStringAsync();
                     string matchStart = "phApp.ddo =";
                     string matchEnd = "};";
@@ -121,6 +121,11 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                         };
                     }
                 }
+                else
+                {
+                    _syslog.LogError($"TEKsystems.CreateJobPageFromHttpRequest - maximum retries reached for {uriBuilder.Uri.ToString()}.");
+                    this._unsuccessfulWebRequests++;
+                }
             }
             catch (Exception e)
             {
@@ -142,7 +147,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 
         #region Public Members
 
-        public async Task<Tuple<List<JobPage>, long?, int?>> DiscoverJobPages(List<JobPage> existingJobPages)
+        public async Task<Tuple<List<JobPage>, long?, int?, int?>> DiscoverJobPages(List<JobPage> existingJobPages)
         {
             // populate this collection with the results of the job discovery operation
             ConcurrentBag<JobPage> discoveredJobPages = new ConcurrentBag<JobPage>();
@@ -157,13 +162,11 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             List<Uri> sitemapJobPageUrls = new List<Uri>();
 
             // load the sitemap as xml
-            var sitemapResult = await Client.GetAsync(_jobSite.Uri);
-            if (!sitemapResult.IsSuccessStatusCode)
+            var sitemapResult = await this.ProxyWebRequestWithRetry(Client, _jobSite.Uri);
+            this._totalBytesReceived += sitemapResult.Content.Headers.ContentLength;
+            if (sitemapResult!=null)
             {
-                _syslog.LogError($"TEKsystemsProcess.DiscoverJobPages - unsuccessful response. StatusCode: {sitemapResult.StatusCode.ToString()}; \r\nReasonPhrase: {sitemapResult.ReasonPhrase}");
-            }
-            else
-            {
+                this._successfulWebRequests++;
                 string sitemapAsString = await sitemapResult.Content.ReadAsStringAsync();
                 XmlDocument sitemapXml = new XmlDocument();
                 sitemapXml.LoadXml(sitemapAsString);
@@ -193,6 +196,11 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     if (discoveredJobPage != null)
                         discoveredJobPages.Add(discoveredJobPage);
                 }
+            }
+            else
+            {
+                _syslog.LogError($"TEKsystemsProcess.DiscoverJobPages - maximum retries reached for {_jobSite.Uri.ToString()}.");
+                this._unsuccessfulWebRequests++;
             }
 
             if (discoveredJobPages.Count() != sitemapJobPageUrls.Count)
@@ -230,7 +238,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             stopwatch.Stop();
             var elapsed = stopwatch.ElapsedMilliseconds;
 
-            return new Tuple<List<JobPage>, long?, int?>(updatedJobPages, null, null);
+            return new Tuple<List<JobPage>, long?, int?, int?>(updatedJobPages, this._totalBytesReceived, this._successfulWebRequests, this._unsuccessfulWebRequests);
         }
 
         public JobPostingDto ProcessJobPage(JobPage jobPage)
