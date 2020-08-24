@@ -15,5 +15,16 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             _dbContext = dbContext;
         }
+
+        public async Task<AzureIndexStatus> GetAzureIndexStatusByName(string name)
+        {
+            var status =  _dbContext.AzureIndexStatus
+                              .Where(s => s.IsDeleted == 0 && s.Name == name)
+                              .FirstOrDefault();
+            
+            return status;
+        }
+
+
     }
 }

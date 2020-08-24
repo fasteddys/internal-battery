@@ -233,8 +233,6 @@ namespace UpDiddyApi.Controllers.V2
 
         #endregion
 
-    
-
         #region Candidate Indexing Admin Operations 
 
         // Admin functions will not be made public throught the APi gateway.  They are here for dev administration of the 
@@ -319,9 +317,13 @@ namespace UpDiddyApi.Controllers.V2
 
         #endregion
 
+        #region Utility endpoints
 
+        [HttpGet("invalid-email-domains")]
+        [AllowAnonymous]
+        public async Task<ActionResult<List<string>>> GetInvalidEmails()
+            => await _hiringManagerService.GetInvalidEmails();
 
-
-
+        #endregion Utility endpoints
     }
 }

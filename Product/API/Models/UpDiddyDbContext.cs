@@ -235,6 +235,10 @@ namespace UpDiddyApi.Models
         public DbSet<TrackingEventDay> TrackingEventDay { get; set; }
 
         public DbSet<SubscriberLanguageProficiency> SubscriberLanguageProficiencies { get; set; }
+
+        public DbSet<SubscriberVideo> SubscriberVideos { get; set; }
+
+        public DbSet<InvalidEmail> InvalidEmails { get; set; }
         #endregion
 
         #region DBQueries
@@ -759,13 +763,14 @@ namespace UpDiddyApi.Models
                 .HasName("UIX_Tracking_SourceSlug")
                 .IsUnique(true);
 
-
-
             modelBuilder
                 .Query<v_CandidateAzureSearch>()
                 .ToView("v_CandidateAzureSearch", "B2B");
 
-
+            modelBuilder.Entity<SubscriberVideo>()
+                .HasOne(v => v.Subscriber)
+                .WithMany()
+                .HasForeignKey(v => v.SubscriberId);
         }
     }
 }

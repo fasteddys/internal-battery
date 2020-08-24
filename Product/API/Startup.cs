@@ -379,6 +379,7 @@ namespace UpDiddyApi
             services.AddCrossChq(Configuration.GetSection("CrossChq"));
             services.AddTransient<ICommuteDistancesService, CommuteDistancesService>();
             services.AddTransient<IAccountManagementService, AccountManagementService>();
+            services.AddTransient<IVideoService, VideoService>();
             #endregion
 
             // Configure SnapshotCollector from application settings
@@ -389,11 +390,13 @@ namespace UpDiddyApi
             //services.AddSingleton<ITelemetryProcessorFactory>(sp => new SnapshotCollectorTelemetryProcessorFactory(sp));
 
             // Add Redis session cahce
-            services.AddDistributedRedisCache(options =>
+            services.AddStackExchangeRedisCache(options =>
             {
                 options.InstanceName = Configuration.GetValue<string>("redis:name");
                 options.Configuration = Configuration.GetValue<string>("redis:host");
             });
+
+            services.AddRedisClient(Configuration.GetSection("redis"));
 
             // load file for tracking pixel as singleton to limit overhead
             services.AddSingleton<FileContentResult>(

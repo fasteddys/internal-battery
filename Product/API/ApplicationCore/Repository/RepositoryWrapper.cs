@@ -1,10 +1,10 @@
-﻿using UpDiddyApi.ApplicationCore.Interfaces.Repository;
-using UpDiddyApi.Models;
-using System.Threading.Tasks;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System.Linq;
 using System;
-using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading.Tasks;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -111,7 +111,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ICommuteDistancesRepository _commuteDistancesRepository;
         private ITrainingTypesRepository _trainingTypesRepository;
         private ITrackingRepository _trackingRepository;
-
+        private ISubscriberVideoRepository _subscriberVideoRepository;
+        private IInvalidEmailRepository _invalidEmailRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
         {
@@ -1320,6 +1321,32 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 return _interviewRequestRepository;
             }
         }
+
+
+        public ISubscriberVideoRepository SubscriberVideoRepository
+        {
+            get
+            {
+                if (_subscriberVideoRepository == null)
+                {
+                    _subscriberVideoRepository = new SubscriberVideoRepository(_dbContext);
+                }
+                return _subscriberVideoRepository;
+            }
+        }
+
+        public IInvalidEmailRepository InvalidEmailRepository
+        {
+            get
+            {
+                if (_invalidEmailRepository == null)
+                {
+                    _invalidEmailRepository = new InvalidEmailRepository(_dbContext);
+                }
+                return _invalidEmailRepository;
+            }
+        }
+
 
         public async Task SaveAsync()
         {

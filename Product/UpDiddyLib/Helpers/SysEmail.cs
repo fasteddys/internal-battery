@@ -52,7 +52,7 @@ namespace UpDiddyLib.Helpers
             return true;
         }
 
-        public async Task<bool> SendTemplatedEmailAsync(
+        public Task<bool> SendTemplatedEmailAsync(
             string email,
             string templateId,
             dynamic templateData,
@@ -64,8 +64,8 @@ namespace UpDiddyLib.Helpers
             string cc = null,
             string bcc = null)
         {
-            return await SendTemplatedEmailAsync(
-                new[] { email },
+            return SendTemplatedEmailAsync(
+                email == null? new string[0] : new[] { email },
                 templateId,
                 templateData,
                 SendGridAccount,
@@ -73,8 +73,8 @@ namespace UpDiddyLib.Helpers
                 attachments,
                 sendAt,
                 unsubscribeGroupId,
-                new[] { cc },
-                new[] { bcc });
+                cc == null ? new string[0] : new[] { cc },
+                bcc == null ? new string[0] : new[] { bcc });
         }
 
         public async Task<bool> SendTemplatedEmailAsync(

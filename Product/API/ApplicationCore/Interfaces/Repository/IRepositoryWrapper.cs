@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface IRepositoryWrapper
@@ -103,5 +104,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         ICommuteDistancesRepository CommuteDistancesRepository { get; }
         ITrainingTypesRepository TrainingTypesRepository { get; }
         ITrackingRepository TrackingRepository { get; }
+        ISubscriberVideoRepository SubscriberVideoRepository { get; }
+        IInvalidEmailRepository InvalidEmailRepository { get; }
     }
 }

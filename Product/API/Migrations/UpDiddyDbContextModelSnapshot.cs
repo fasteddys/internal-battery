@@ -2547,6 +2547,32 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("Industry");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.InvalidEmail", b =>
+                {
+                    b.Property<int>("InvalidEmailId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<Guid>("InvalidEmailGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Value")
+                        .HasMaxLength(500);
+
+                    b.HasKey("InvalidEmailId");
+
+                    b.ToTable("InvalidEmails","B2B");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.JobApplication", b =>
                 {
                     b.Property<int>("JobApplicationId")
@@ -2975,6 +3001,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("JobSiteGuid");
 
+                    b.Property<int?>("MaxRetries");
+
                     b.Property<DateTime?>("ModifyDate");
 
                     b.Property<Guid?>("ModifyGuid");
@@ -3028,6 +3056,12 @@ namespace UpDiddyApi.Migrations
                     b.Property<int>("NumJobsUpdated");
 
                     b.Property<DateTime>("ScrapeDate");
+
+                    b.Property<int?>("SuccessfulWebRequests");
+
+                    b.Property<long?>("TotalResponseSizeInBytes");
+
+                    b.Property<int?>("UnsuccessfulWebRequests");
 
                     b.HasKey("JobSiteScrapeStatisticId");
 
@@ -4674,8 +4708,12 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<bool?>("IsFlexibleWorkScheduleRequired");
 
+                    b.Property<bool?>("IsTraitifyAssessmentsVisibleToHiringManagers");
+
                     b.Property<bool>("IsVerified")
                         .HasColumnName("IsEmailVerifiedLegacy");
+
+                    b.Property<bool?>("IsVideoVisibleToHiringManager");
 
                     b.Property<bool?>("IsWillingToTravel");
 
@@ -5243,6 +5281,45 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("TrainingTypeId");
 
                     b.ToTable("SubscriberTraining");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.SubscriberVideo", b =>
+                {
+                    b.Property<int>("SubscriberVideoId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("SubscriberId");
+
+                    b.Property<Guid>("SubscriberVideoGuid");
+
+                    b.Property<string>("ThumbnailLink")
+                        .HasMaxLength(500);
+
+                    b.Property<string>("ThumbnailMimeType")
+                        .HasMaxLength(500);
+
+                    b.Property<string>("VideoLink")
+                        .HasMaxLength(500);
+
+                    b.Property<string>("VideoMimeType")
+                        .HasMaxLength(500);
+
+                    b.HasKey("SubscriberVideoId");
+
+                    b.HasIndex("SubscriberId");
+
+                    b.ToTable("SubscriberVideos");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberWorkHistory", b =>
@@ -6988,6 +7065,14 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.TrainingType", "TrainingType")
                         .WithMany()
                         .HasForeignKey("TrainingTypeId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.SubscriberVideo", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
