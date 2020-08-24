@@ -153,13 +153,14 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // send all templated emails
                 foreach (string email in EmailAddressesToSend.Keys)
                 {
+                    Guid profileGuid = default;
                     try
                     {
                         bool isExternalMessage = EmailAddressesToSend[email];
                         string templateId = isExternalMessage ?
                             _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter-External"].ToString() :
                             _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter"].ToString();
-                        var profileGuid = await GetProfileGuid(subscriber.SubscriberGuid.Value, jobPosting.Company.CompanyGuid);
+                        profileGuid = await GetProfileGuid(subscriber.SubscriberGuid.Value, jobPosting.Company.CompanyGuid);
 
                         object templateData = new
                         {
@@ -182,9 +183,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                         _syslog.Log(
                             LogLevel.Information,
                             ex,
-                            "***** JobApplicationController.SendJobApplicationEmail exception sending recruiter email for {jobApplicationGuid} on {subscriberGuid}.",
+                            "***** JobApplicationController.SendJobApplicationEmail exception sending recruiter email for {jobApplicationGuid} on {subscriberGuid}/{profileGuid}.",
                             jobApplicationGuid,
-                            subscriber.SubscriberGuid);
+                            subscriber.SubscriberGuid, profileGuid);
                     }
                 }
             }
