@@ -846,7 +846,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
         private async Task<CandidateSDOC> MapToCandidateSDOC(v_CandidateAzureSearch candidate)
         {
             char recordDelim = Convert.ToChar(30);
-            char itemDelim = Convert.ToChar(29);
+            char fieldDelim = Convert.ToChar(29);
             try
             {
                 CandidateSDOC indexDoc = _mapper.Map<CandidateSDOC>(candidate);
@@ -879,7 +879,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                     {                       
                         try
                         {
-                            string[] langInfo = languageInfo.Split(itemDelim);
+                            string[] langInfo = languageInfo.Split(fieldDelim);
                             indexDoc.Languages.Add(new LanguageSDOC()
                             {             
                                 Language = langInfo[0],
@@ -913,7 +913,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                     {                 
                         try
                         {
-                            string[] trainingInfo = data.Split(itemDelim);
+                            string[] trainingInfo = data.Split(fieldDelim);
                             indexDoc.Training.Add(new TrainingSDOC()
                             {
                                 Type = trainingInfo[0],
@@ -939,7 +939,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                     {
                         try
                         {
-                            string[] educationInfo = data.Split(itemDelim);
+                            string[] educationInfo = data.Split(fieldDelim);
                             indexDoc.Education.Add(new EducationSDOC()
                             {
                                 Institution = educationInfo[0],
@@ -974,7 +974,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                     {                       
                         try
                         {
-                            string[] workInfo = data.Split(itemDelim);
+                            string[] workInfo = data.Split(fieldDelim);
                             indexDoc.WorkHistories.Add(new WorkHistorySDOC()
                             {
                                 CompanyName = workInfo[0],
