@@ -11,6 +11,8 @@ using UpDiddyLib.Dto.User;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.Reports;
 using UpDiddyLib.Domain.AzureSearchDocuments;
+using UpDiddyLib.Domain.Models.CrossChq;
+using StackExchange.Redis;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -1258,6 +1260,42 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return new EmailStatisticsListDto { EmailStatistics = emailStatistics };
         }
 
+        public async Task<CrossChqCandidateStatusListDto> GetCrossChqStatusByResume(
+            DateTime startDate,
+            int limit,
+            int offset,
+            string sort,
+            string orderBy)
+        {
+            var startDateParam = new SqlParameter("@startDate", SqlDbType.DateTime);
+            startDateParam.Value = startDate;
 
+            var limitParam = new SqlParameter("@limit", SqlDbType.Int);
+            limitParam.Value = limit;
+
+            var offsetParam = new SqlParameter("@offset", SqlDbType.Int);
+            offsetParam.Value = offset;
+
+            var sortParam = new SqlParameter("@sort", SqlDbType.NVarChar, 50);
+            sortParam.Value = sort;
+
+            var orderByParam = new SqlParameter("@orderBy", SqlDbType.NVarChar, 50);
+            orderByParam.Value = orderBy;
+
+            var rowCountParam = new SqlParameter("@rowCount", SqlDbType.Int);
+            rowCountParam.Direction = ParameterDirection.Output;
+
+            var spParams = new object[] { startDateParam, limitParam, offsetParam, sortParam, orderByParam, rowCountParam };
+
+            var candidateStatusList = await _dbContext.CrossChqCandidateStatus
+                .FromSql<CrossChqCandidateStatusDto>("System_Get_CrossChqByResumeUploadDate @startDate, @limit, @offset, @sort, @orderBy, @rowCount OUTPUT", spParams)
+                .ToListAsync();
+
+            return new CrossChqCandidateStatusListDto
+            {
+                Entities = candidateStatusList,
+                TotalEntities = (int)rowCountParam.Value
+            };
+        }
     }
 }

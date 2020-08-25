@@ -17,6 +17,7 @@ using UpDiddyLib.Domain.Models.B2B;
 using UpDiddyApi.Models.CrossChq;
 using System.Linq;
 using UpDiddyLib.Domain.Models.Candidate360;
+using UpDiddyLib.Domain.Models.CrossChq;
 
 namespace UpDiddyApi.Models
 {
@@ -313,6 +314,7 @@ namespace UpDiddyApi.Models
         public DbQuery<EmailStatisticsDto> EmailStatistics { get; set; }
         public DbQuery<WorkHistoryDto> WorkHistories { get; set; }
         public DbQuery<v_CandidateAzureSearch> CandidateAzureSearch { get; set; }
+        public DbQuery<CrossChqCandidateStatusDto> CrossChqCandidateStatus { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

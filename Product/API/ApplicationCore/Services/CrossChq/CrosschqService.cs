@@ -231,14 +231,17 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
         }
 
         public async Task<CrossChqCandidateStatusListDto> GetCrossChqStatusByResume(
-            Guid subscriberId,
+            int numberOfDays,
             int limit,
             int offset,
             string sort,
-            string orderBy,
-            CrossChqStatus? filter)
+            string orderBy)
         {
-            throw new NotImplementedException();
+            var startDate = DateTime.UtcNow.Subtract(TimeSpan.FromDays(numberOfDays));
+
+            var candidateStatuses = await _repository.StoredProcedureRepository
+                .GetCrossChqStatusByResume(startDate, limit, offset, sort, orderBy);
+            return candidateStatuses;
         }
 
         #region private methods
