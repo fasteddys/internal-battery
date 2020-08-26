@@ -193,6 +193,13 @@ namespace UpDiddyApi.Controllers.V2
 
         #region Profiles 
 
+        [HttpGet]
+        [Authorize(Policy = "IsHiringManager")]
+        [Route("profiles/{candidateProfileGuid}/candidate")]
+        public async Task<IActionResult> GetCandidate360ProfileDetail(Guid candidateProfileGuid)
+        {
+            throw new NotImplementedException();
+        }
 
         [HttpGet]
         [Authorize(Policy = "IsHiringManager")]
