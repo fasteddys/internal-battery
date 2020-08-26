@@ -56,10 +56,10 @@ namespace UpDiddyApi.Controllers.V2
             int limit = 10,
             int offset = 0,
             string sort = "descending",
-            string orderBy = nameof(CrossChqCandidateStatusDto.ResumeUploadedDate))
+            string order = nameof(CrossChqCandidateStatusDto.ResumeUploadedDate))
         {
             var candidateStatuses = await _crosschqService
-                .GetCrossChqStatusByResume(numberOfDays, limit, offset, sort, orderBy);
+                .GetCrossChqStatusByResume(numberOfDays, limit, offset, sort, order);
 
             return candidateStatuses;
         }

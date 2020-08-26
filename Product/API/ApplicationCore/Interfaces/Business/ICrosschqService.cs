@@ -26,6 +26,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
             int limit,
             int offset,
             string sort,
-            string orderBy);
+            string order);
     }
 }
