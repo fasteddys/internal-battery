@@ -839,11 +839,14 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             return true;
         }
 
+        //todo jab put in migrtion for view change 
 
         // IMPORTANT!         
         // 1) Any colections of objects (e.g. Skills, Languages, etc.) must be hydrated with an empty list 
         private async Task<CandidateSDOC> MapToCandidateSDOC(v_CandidateAzureSearch candidate)
         {
+            char recordDelim = Convert.ToChar(30);
+            char fieldDelim = Convert.ToChar(29);
             try
             {
                 CandidateSDOC indexDoc = _mapper.Map<CandidateSDOC>(candidate);
@@ -859,7 +862,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 List<string> skillList = new List<string>();
                 if (!string.IsNullOrEmpty(candidate.Skills))
                 {
-                    string[] skillArray = candidate.Skills.Split(';');
+                    string[] skillArray = candidate.Skills.Split(recordDelim);
 
                     foreach (string skill in skillArray)
                         skillList.Add(skill);
@@ -871,12 +874,12 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 indexDoc.Languages = new List<LanguageSDOC>();
                 if (!string.IsNullOrEmpty(candidate.SubscriberLanguages))
                 {
-                    string[] languageArray = candidate.SubscriberLanguages.Split(';');
+                    string[] languageArray = candidate.SubscriberLanguages.Split(recordDelim);
                     foreach (string languageInfo in languageArray)
                     {                       
                         try
                         {
-                            string[] langInfo = languageInfo.Split('|');
+                            string[] langInfo = languageInfo.Split(fieldDelim);
                             indexDoc.Languages.Add(new LanguageSDOC()
                             {             
                                 Language = langInfo[0],
@@ -894,7 +897,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 List<string> employmentTypes = new List<string>();
                 if (!string.IsNullOrEmpty(candidate.EmploymentTypes))
                 {
-                    string[] info = candidate.EmploymentTypes.Split(';');
+                    string[] info = candidate.EmploymentTypes.Split(recordDelim);
 
                     foreach (string employmentType in info)
                         employmentTypes.Add(employmentType);
@@ -905,12 +908,12 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 indexDoc.Training = new List<TrainingSDOC>();
                 if (!string.IsNullOrEmpty(candidate.SubscriberTraining))
                 {
-                    string[] info = candidate.SubscriberTraining.Split(';');
+                    string[] info = candidate.SubscriberTraining.Split(recordDelim);
                     foreach (string data in info)
                     {                 
                         try
                         {
-                            string[] trainingInfo = data.Split('|');
+                            string[] trainingInfo = data.Split(fieldDelim);
                             indexDoc.Training.Add(new TrainingSDOC()
                             {
                                 Type = trainingInfo[0],
@@ -931,12 +934,12 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 indexDoc.Education = new List<EducationSDOC>();
                 if (!string.IsNullOrEmpty(candidate.SubscriberEducation))
                 {
-                    string[] info = candidate.SubscriberEducation.Split(';');
+                    string[] info = candidate.SubscriberEducation.Split(recordDelim);
                     foreach (string data in info)
                     {
                         try
                         {
-                            string[] educationInfo = data.Split('|');
+                            string[] educationInfo = data.Split(fieldDelim);
                             indexDoc.Education.Add(new EducationSDOC()
                             {
                                 Institution = educationInfo[0],
@@ -955,7 +958,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 indexDoc.Titles = new List<string>();
                 if (!string.IsNullOrEmpty(candidate.SubscriberTitles))
                 {
-                    string[] info = candidate.SubscriberTitles.Split(';');
+                    string[] info = candidate.SubscriberTitles.Split(recordDelim);
 
                     foreach (string title in info)
                         indexDoc.Titles.Add(title);
@@ -966,12 +969,12 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 indexDoc.WorkHistories = new List<WorkHistorySDOC>();
                 if (!string.IsNullOrEmpty(candidate.SubscriberWorkHistory))
                 {
-                    string[] info = candidate.SubscriberWorkHistory.Split(';');
+                    string[] info = candidate.SubscriberWorkHistory.Split(recordDelim);
                     foreach (string data in info)
                     {                       
                         try
                         {
-                            string[] workInfo = data.Split('|');
+                            string[] workInfo = data.Split(fieldDelim);
                             indexDoc.WorkHistories.Add(new WorkHistorySDOC()
                             {
                                 CompanyName = workInfo[0],

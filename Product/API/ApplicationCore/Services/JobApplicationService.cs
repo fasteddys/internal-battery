@@ -153,7 +153,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // send all templated emails
                 foreach (string email in EmailAddressesToSend.Keys)
                 {
-                    Guid profileGuid = default;
+                    Guid profileGuid = default(Guid);
                     try
                     {
                         bool isExternalMessage = EmailAddressesToSend[email];

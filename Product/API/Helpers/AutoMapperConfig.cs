@@ -392,6 +392,11 @@ namespace UpDiddyApi.Helpers
                 .ForMember(x => x.Industry, opt => opt.MapFrom(src => src.Industry.Name))
                 .ForMember(x => x.JobCategory, opt => opt.MapFrom(src => src.JobCategory.Name))
                 .ForMember(x => x.Skills, opt => opt.MapFrom(src => src.JobPostingSkills.Select(s => s.Skill.SkillName).ToList()))
+                .ForMember(x => x.RecruiterFirstName, opt => opt.MapFrom(src => src.Recruiter.FirstName))
+                .ForMember(x => x.RecruiterLastName, opt => opt.MapFrom(src => src.Recruiter.LastName))
+                .ForMember(x => x.RecruiterEmail, opt => opt.MapFrom(src => src.Recruiter.Email))
+                .ForMember(x => x.RecruiterPhone, opt => opt.MapFrom(src => src.Recruiter.PhoneNumber))
+
                 .ReverseMap();
 
 
