@@ -120,9 +120,15 @@ namespace UpDiddyApi.Models
         #endregion
 
         #region Connected
+
         public string ConnectedId { get; set; }
+
         public DateTime? ConnectedModifyDate { get; set; }
-        #endregion
+
+        [StringLength(500)]
+        public string ConnectedUrl { get; set; }
+
+        #endregion Connected
 
         #region Computed Columns
 
@@ -148,5 +154,12 @@ namespace UpDiddyApi.Models
         public bool? IsTraitifyAssessmentsVisibleToHiringManagers { get; set; }
 
         #endregion
+
+        public DateTime? NextCheckinDate { get; set; }
+
+        public DateTime? CurrentlyWorkingForCCExpiration { get; set; }
+
+        [StringLength(100)]
+        public string CurrentlyWorkingForCC { get; set; }
     }
 }
