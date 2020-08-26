@@ -58,6 +58,12 @@ namespace UpDiddyLib.Domain.Models
         public string JobCategory { get; set; }
 
         public string Title { get; set; }
+
+
+        public string RecruiterFirstName { get; set; }
+        public string RecruiterLastName { get; set; }
+        public string RecruiterPhone { get; set; }
+        public string RecruiterEmail { get; set; }
  
     }
 }
