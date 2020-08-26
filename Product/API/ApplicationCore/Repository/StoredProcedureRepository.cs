@@ -13,6 +13,7 @@ using UpDiddyLib.Domain.Models.Reports;
 using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyLib.Domain.Models.CrossChq;
 using StackExchange.Redis;
+using UpDiddyApi.Models.CrossChq;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -1260,12 +1261,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return new EmailStatisticsListDto { EmailStatistics = emailStatistics };
         }
 
-        public async Task<CrossChqCandidateStatusListDto> GetCrossChqStatusByResume(
+        public async Task<List<CrossChqResumeStatus>> GetCrossChqStatusByResume(
             DateTime startDate,
             int limit,
             int offset,
             string sort,
-            string orderBy)
+            string order)
         {
             var startDateParam = new SqlParameter("@startDate", SqlDbType.DateTime);
             startDateParam.Value = startDate;
@@ -1279,23 +1280,16 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var sortParam = new SqlParameter("@sort", SqlDbType.NVarChar, 50);
             sortParam.Value = sort;
 
-            var orderByParam = new SqlParameter("@orderBy", SqlDbType.NVarChar, 50);
-            orderByParam.Value = orderBy;
+            var orderParam = new SqlParameter("@order", SqlDbType.NVarChar, 50);
+            orderParam.Value = order;
 
-            var rowCountParam = new SqlParameter("@rowCount", SqlDbType.Int);
-            rowCountParam.Direction = ParameterDirection.Output;
-
-            var spParams = new object[] { startDateParam, limitParam, offsetParam, sortParam, orderByParam, rowCountParam };
+            var spParams = new object[] { startDateParam, limitParam, offsetParam, sortParam, orderParam };
 
             var candidateStatusList = await _dbContext.CrossChqCandidateStatus
-                .FromSql<CrossChqCandidateStatusDto>("System_Get_CrossChqByResumeUploadDate @startDate, @limit, @offset, @sort, @orderBy, @rowCount OUTPUT", spParams)
+                .FromSql<CrossChqResumeStatus>("System_Get_CrossChqByResumeUploadDate @startDate, @limit, @offset, @sort, @order", spParams)
                 .ToListAsync();
 
-            return new CrossChqCandidateStatusListDto
-            {
-                Entities = candidateStatusList,
-                TotalEntities = (int)rowCountParam.Value
-            };
+            return candidateStatusList;
         }
     }
 }

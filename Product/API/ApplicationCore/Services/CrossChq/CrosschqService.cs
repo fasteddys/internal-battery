@@ -235,13 +235,18 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
             int limit,
             int offset,
             string sort,
-            string orderBy)
+            string order)
         {
             var startDate = DateTime.UtcNow.Subtract(TimeSpan.FromDays(numberOfDays));
 
             var candidateStatuses = await _repository.StoredProcedureRepository
-                .GetCrossChqStatusByResume(startDate, limit, offset, sort, orderBy);
-            return candidateStatuses;
+                .GetCrossChqStatusByResume(startDate, limit, offset, sort, order);
+
+            return new CrossChqCandidateStatusListDto
+            {
+                Entities = _mapper.Map<List<CrossChqCandidateStatusDto>>(candidateStatuses),
+                TotalEntities = candidateStatuses.Select(s => s.TotalRecords).First()
+            };
         }
 
         #region private methods
@@ -278,7 +283,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
         {
             var gasOnaFire = new BadRequestException("Invalid or missing phone number");
 
-            if(string.IsNullOrEmpty(phoneNumber)) { throw gasOnaFire; }
+            if (string.IsNullOrEmpty(phoneNumber)) { throw gasOnaFire; }
 
             var digits = new Regex(@"\d")
                 .Matches(phoneNumber)

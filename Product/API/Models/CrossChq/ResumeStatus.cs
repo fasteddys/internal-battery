@@ -1,9 +1,11 @@
 ﻿using System;
 
-namespace UpDiddyLib.Domain.Models.CrossChq
+namespace UpDiddyApi.Models.CrossChq
 {
-    public class CrossChqCandidateStatusDto
+    public class CrossChqResumeStatus
     {
+        public Guid SubscriberGuid { get; set; }
+
         public Guid ProfileGuid { get; set; }
 
         public string FirstName { get; set; }
@@ -18,7 +20,7 @@ namespace UpDiddyLib.Domain.Models.CrossChq
 
         public DateTime? ResumeUploadedDate { get; set; }
 
-        public TimeSpan? ElapsedTimeToUploadResume { get; set; }
+        public int? ElapsedHoursToUploadResume { get; set; }
 
         public string CrossChqReferenceCheckType { get; set; }
 
@@ -29,9 +31,7 @@ namespace UpDiddyLib.Domain.Models.CrossChq
         public int? CrossChqPercentage { get; set; }
 
         public int? CrossChqStatus { get; set; }
-    }
 
-    public class CrossChqCandidateStatusListDto
-        : BaseListDto<CrossChqCandidateStatusDto>
-    { }
+        public int TotalRecords { get; set; }
+    }
 }

@@ -314,7 +314,7 @@ namespace UpDiddyApi.Models
         public DbQuery<EmailStatisticsDto> EmailStatistics { get; set; }
         public DbQuery<WorkHistoryDto> WorkHistories { get; set; }
         public DbQuery<v_CandidateAzureSearch> CandidateAzureSearch { get; set; }
-        public DbQuery<CrossChqCandidateStatusDto> CrossChqCandidateStatus { get; set; }
+        public DbQuery<CrossChqResumeStatus> CrossChqCandidateStatus { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
