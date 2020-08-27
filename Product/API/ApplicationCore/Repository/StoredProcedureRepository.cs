@@ -11,6 +11,9 @@ using UpDiddyLib.Dto.User;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.Reports;
 using UpDiddyLib.Domain.AzureSearchDocuments;
+using UpDiddyLib.Domain.Models.CrossChq;
+using StackExchange.Redis;
+using UpDiddyApi.Models.CrossChq;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -1258,6 +1261,35 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return new EmailStatisticsListDto { EmailStatistics = emailStatistics };
         }
 
+        public async Task<List<CrossChqResumeStatus>> GetCrossChqStatusByResume(
+            DateTime startDate,
+            int limit,
+            int offset,
+            string sort,
+            string order)
+        {
+            var startDateParam = new SqlParameter("@startDate", SqlDbType.DateTime);
+            startDateParam.Value = startDate;
 
+            var limitParam = new SqlParameter("@limit", SqlDbType.Int);
+            limitParam.Value = limit;
+
+            var offsetParam = new SqlParameter("@offset", SqlDbType.Int);
+            offsetParam.Value = offset;
+
+            var sortParam = new SqlParameter("@sort", SqlDbType.NVarChar, 50);
+            sortParam.Value = sort;
+
+            var orderParam = new SqlParameter("@order", SqlDbType.NVarChar, 50);
+            orderParam.Value = order;
+
+            var spParams = new object[] { startDateParam, limitParam, offsetParam, sortParam, orderParam };
+
+            var candidateStatusList = await _dbContext.CrossChqCandidateStatus
+                .FromSql<CrossChqResumeStatus>("System_Get_CrossChqByResumeUploadDate @startDate, @limit, @offset, @sort, @order", spParams)
+                .ToListAsync();
+
+            return candidateStatusList;
+        }
     }
 }
