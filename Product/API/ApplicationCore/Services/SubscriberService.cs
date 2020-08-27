@@ -1589,5 +1589,32 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
+        #region video
+
+
+        public async Task<string> GetVideoSAS(Guid subscriberGuid)
+        {
+           
+            
+            var Subscriber = await GetSubscriberByGuid(subscriberGuid);
+            if (Subscriber == null)
+                throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
+
+            SubscriberVideo subscriberVideo =  _repository.SubscriberVideoRepository.GetAll()
+                .Where(v => v.IsDeleted == 0 && v.SubscriberId == Subscriber.SubscriberId)
+                .FirstOrDefault();
+
+           string sas = await _cloudStorage.GetSubscriberVideoSAS(subscriberGuid);
+            
+
+
+            return sas;
+            
+        }
+
+
+        #endregion
+
+
     }
 }

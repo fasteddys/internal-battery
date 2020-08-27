@@ -839,8 +839,6 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             return true;
         }
 
-        //todo jab put in migrtion for view change 
-
         // IMPORTANT!         
         // 1) Any colections of objects (e.g. Skills, Languages, etc.) must be hydrated with an empty list 
         private async Task<CandidateSDOC> MapToCandidateSDOC(v_CandidateAzureSearch candidate)

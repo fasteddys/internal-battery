@@ -7,6 +7,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces;
+using Azure.Storage.Blobs;
+using Azure.Storage.Sas;
+using Azure.Storage;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -108,5 +111,34 @@ namespace UpDiddyApi.ApplicationCore.Services
                 return false;
             }
         }
+
+        public async Task<string> GetSubscriberVideoSAS(Guid subscriberGuid)
+        {
+    
+          //  BlobContainerClient container = new BlobContainerClient();
+
+            string containerName = "app-data/71a7156e-173f-4054-83ed-ad6127bafe87/video";
+            StorageSharedKeyCredential key = new StorageSharedKeyCredential("careercirclestaging", "88XKuYvTrulmfSJxO5F7XB/Nal2/zDv2XbRi/QT0wdgT+XpzuxWH/AAkGyFqG1RnVyDEkNhR7bDZVG8jPaxo3w==");
+
+            // Create a SAS token 
+            BlobSasBuilder sasBuilder = new BlobSasBuilder()
+            {
+                BlobContainerName = containerName,
+             //   BlobName = blobName,
+                Resource = "c",
+            };
+       
+            sasBuilder.StartsOn = DateTimeOffset.UtcNow;
+            sasBuilder.ExpiresOn = DateTimeOffset.UtcNow.AddHours(1);
+            sasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
+      
+            // Use the key to get the SAS token.
+            string sasToken = sasBuilder.ToSasQueryParameters(key).ToString();
+ 
+            // todo jab build sas here for appdata folder 
+            return sasToken;
+        }
+
+
     }
 }

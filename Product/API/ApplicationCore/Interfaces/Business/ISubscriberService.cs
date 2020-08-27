@@ -156,6 +156,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         Task<bool> UpdateCandidateIndexStatus(Guid subscriberGuid, string statusInfo, string statusCodeName);
 
+        Task<string> GetVideoSAS(Guid subscriberGuid);
+
 
     }
 }
