@@ -1263,6 +1263,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<List<CrossChqResumeStatus>> GetCrossChqStatusByResume(
             DateTime startDate,
+            bool showOnlyNonCrossChq,
             int limit,
             int offset,
             string sort,
@@ -1270,6 +1271,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             var startDateParam = new SqlParameter("@startDate", SqlDbType.DateTime);
             startDateParam.Value = startDate;
+
+            var showOnlyNonCrossChqParam = new SqlParameter("@showOnlyNonCrossChq", SqlDbType.Bit);
+            showOnlyNonCrossChqParam.Value = showOnlyNonCrossChq;
 
             var limitParam = new SqlParameter("@limit", SqlDbType.Int);
             limitParam.Value = limit;
@@ -1283,10 +1287,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var orderParam = new SqlParameter("@order", SqlDbType.NVarChar, 50);
             orderParam.Value = order;
 
-            var spParams = new object[] { startDateParam, limitParam, offsetParam, sortParam, orderParam };
+            var spParams = new object[] { startDateParam, showOnlyNonCrossChqParam, limitParam, offsetParam, sortParam, orderParam };
 
             var candidateStatusList = await _dbContext.CrossChqCandidateStatus
-                .FromSql<CrossChqResumeStatus>("System_Get_CrossChqByResumeUploadDate @startDate, @limit, @offset, @sort, @order", spParams)
+                .FromSql<CrossChqResumeStatus>("System_Get_CrossChqByResumeUploadDate @startDate, @showOnlyNonCrossChq, @limit, @offset, @sort, @order", spParams)
                 .ToListAsync();
 
             return candidateStatusList;
