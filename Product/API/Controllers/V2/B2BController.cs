@@ -195,10 +195,10 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet]
         [Authorize(Policy = "IsHiringManager")]
-        [Route("profiles/{candidateProfileGuid}/candidate")]
-        public async Task<IActionResult> GetCandidate360ProfileDetail(Guid candidateProfileGuid)
+        [Route("profiles/{profileGuid}/candidate")]
+        public async Task<IActionResult> GetCandidate360ProfileDetail(Guid profileGuid)
         {
-            throw new NotImplementedException();
+            return Ok(await _hiringManagerService.GetCandidate360Detail(profileGuid));
         }
 
         [HttpGet]

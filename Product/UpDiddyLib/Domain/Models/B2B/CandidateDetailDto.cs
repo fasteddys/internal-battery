@@ -14,11 +14,11 @@ namespace UpDiddyLib.Domain.Models.B2B
         public decimal? DesiredAnnualSalary { get; set; }
         public decimal? EstimatedHiringFee { get; set; }
         public List<string> EmploymentPreferences { get; set; }
-        public TechnicalAndProfessionalTrainingDto TechnicalAndProfessionalTraining { get; set; }
+        public List<HiringManagerTechnicalAndProfessionalTrainingDto> TechnicalAndProfessionalTraining { get; set; }
         public HiringManagerTraitifyDto Traitify { get; set; }
-        public List<LanguageDto> Languages { get; set; }
-        public List<EducationDto> FormalEducation { get; set; }
-        public List<WorkHistoryDto> WorkHistories { get; set; }
+        public List<HiringManagerLanguageDto> Languages { get; set; }
+        public List<HiringManagerFormalEducationDto> FormalEducation { get; set; }
+        public List<HiringManagerWorkHistoryDto> WorkHistories { get; set; }
         public string VolunteerOrPassionProjects { get; set; }
     }
 
@@ -29,25 +29,25 @@ namespace UpDiddyLib.Domain.Models.B2B
         public string Personality2ImageUrl { get; set; }
     }
 
-    public class TechnicalAndProfessionalTrainingDto
+    public class HiringManagerTechnicalAndProfessionalTrainingDto
     {
         public string Institution { get; set; }
         public string Concentration { get; set; }
     }
 
-    public class LanguageDto
+    public class HiringManagerLanguageDto
     {
         public string Name { get; set; }
         public string Proficiency { get; set; }
     }
 
-    public class EducationDto
+    public class HiringManagerFormalEducationDto
     {
         public string DegreeType { get; set; }
         public string Institution { get; set; }
         public string Concentration { get; set; }
     }
-    public class WorkHistoryDto
+    public class HiringManagerWorkHistoryDto
     {
         public string Position { get; set; }
         public string Company { get; set; }
