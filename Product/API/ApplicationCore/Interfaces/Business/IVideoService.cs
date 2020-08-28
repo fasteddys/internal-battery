@@ -8,11 +8,11 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     {
         Task<SubscriberVideoLinksDto> GetSubscriberVideoLink(Guid subscriberGuid);
 
-        Task SetSubscriberVideoLink(Guid subscriberGuid, SubscriberVideoLinksDto subscriberVideo);
+        Task SetSubscriberVideoLink(Guid subscriberVideoGuid, SubscriberVideoLinksDto subscriberVideo);
 
-        Task DeleteSubscriberVideoLink(Guid subscriberGuid);
+        Task DeleteSubscriberVideoLink(Guid subscriberVideoGuid, Guid subscriberGuid);
 
-        Task<bool> GetVideoIsVisibleToHiringManager(Guid subscriberGuid);
+        Task Publish(Guid subscriberVideoGuid, Guid subscriberGuid, bool isPublished);
 
         Task SetVideoIsVisibleToHiringManager(Guid subscriberGuid, bool visibility);
     }

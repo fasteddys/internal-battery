@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
@@ -23,17 +24,17 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<SubscriberVideoLinksDto> GetSubscriberVideoLink(Guid subscriberGuid)
         {
             var videoLink = await _repositoryWrapper.SubscriberVideoRepository
-                .GetExistingSubscriberVideo(subscriberGuid);
+                .GetExistingOrCreateNewSubscriberVideo(subscriberGuid);
 
             return _mapper.Map<SubscriberVideoLinksDto>(videoLink);
         }
 
-        public async Task SetSubscriberVideoLink(Guid subscriberGuid, SubscriberVideoLinksDto subscriberVideo)
+        public async Task SetSubscriberVideoLink(Guid subscriberVideoGuid, SubscriberVideoLinksDto subscriberVideo)
         {
             var videoLink = await _repositoryWrapper.SubscriberVideoRepository
-                .GetExistingOrCreateNewSubscriberVideo(subscriberGuid);
+                .GetByGuid(subscriberVideoGuid);
 
-            if (videoLink == null) { return; }
+            if (videoLink == null) { throw new NotFoundException(); }
 
             videoLink.ModifyDate = DateTime.UtcNow;
             videoLink.VideoLink = subscriberVideo.VideoLink;
@@ -44,24 +45,26 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _repositoryWrapper.SubscriberVideoRepository.SaveAsync();
         }
 
-        public async Task DeleteSubscriberVideoLink(Guid subscriberGuid)
+        public async Task DeleteSubscriberVideoLink(Guid subscriberVideoGuid, Guid subscriberGuid)
         {
             var videoLink = await _repositoryWrapper.SubscriberVideoRepository
-                .GetExistingSubscriberVideo(subscriberGuid);
+                .GetSubscriberVideo(subscriberVideoGuid, subscriberGuid);
 
-            if (videoLink == null) { return; }
+            if (videoLink == null) { throw new NotFoundException(); }
 
             _repositoryWrapper.SubscriberVideoRepository.LogicalDelete(videoLink);
             await _repositoryWrapper.SubscriberVideoRepository.SaveAsync();
         }
 
-        public async Task<bool> GetVideoIsVisibleToHiringManager(Guid subscriberGuid)
+        public async Task Publish(Guid subscriberVideoGuid, Guid subscriberGuid, bool isPublished)
         {
-            var subscriber = await _repositoryWrapper.SubscriberRepository
-                .GetByGuid(subscriberGuid);
+            var videoLink = await _repositoryWrapper.SubscriberVideoRepository
+                .GetSubscriberVideo(subscriberVideoGuid, subscriberGuid);
 
-            if (subscriber == null) { throw new NotFoundException($"No subscriber found for \"{subscriberGuid}\""); }
-            return subscriber.IsVideoVisibleToHiringManager ?? true;
+            if (videoLink == null) { throw new NotFoundException(); }
+
+            videoLink.IsPublished = isPublished;
+            await _repositoryWrapper.SubscriberVideoRepository.SaveAsync();
         }
 
         public async Task SetVideoIsVisibleToHiringManager(Guid subscriberGuid, bool visibility)
