@@ -53,13 +53,14 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<ActionResult<CrossChqCandidateStatusListDto>> GetCrossChqStatusByResume(
             int numberOfDays,
+            bool showOnlyNonCrossChq = false,
             int limit = 10,
             int offset = 0,
             string sort = "descending",
             string order = nameof(CrossChqCandidateStatusDto.ResumeUploadedDate))
         {
             var candidateStatuses = await _crosschqService
-                .GetCrossChqStatusByResume(numberOfDays, limit, offset, sort, order);
+                .GetCrossChqStatusByResume(numberOfDays, showOnlyNonCrossChq, limit, offset, sort, order);
 
             return candidateStatuses;
         }
