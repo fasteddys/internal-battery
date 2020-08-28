@@ -11,6 +11,7 @@ using UpDiddyLib.Dto.Marketing;
 using UpDiddyApi.ApplicationCore.Services.Identity;
 using UpDiddyLib.Dto.User;
 using UpDiddyLib.Domain.Models;
+using UpDiddyLib.Domain;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
@@ -156,7 +157,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         Task<bool> UpdateCandidateIndexStatus(Guid subscriberGuid, string statusInfo, string statusCodeName);
 
-        Task<string> GetVideoSAS(Guid subscriberGuid);
+        Task<string> GetVideoSAS();
+        Task<SubscriberVideoAuthDTO> GetVideoSASForSubscriber(Guid subscriberGuid);
 
 
     }

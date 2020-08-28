@@ -58,12 +58,19 @@ namespace UpDiddyApi.Controllers.V2
         [HttpGet]
         [Authorize]
         [Route("app-data/video/sas/{subscriberGuid:guid}")]
-        public async Task<IActionResult> GetJob(Guid subscriberGuid)
+        public async Task<IActionResult> GetSubscriberVideoUrlsForSubscriber(Guid subscriberGuid)
         {
+            return Ok(await _subscriberService.GetVideoSASForSubscriber(subscriberGuid));
+        }
 
 
 
-            return Ok(await _subscriberService.GetVideoSAS(subscriberGuid));
+        [HttpGet]
+        [Authorize]
+        [Route("app-data/video/sas")]
+        public async Task<IActionResult> GetSubscriberVideoUrlsForContainer(Guid subscriberGuid)
+        {
+            return Ok(await _subscriberService.GetVideoSAS());
         }
 
 

@@ -112,32 +112,82 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
-        public async Task<string> GetSubscriberVideoSAS(Guid subscriberGuid)
-        {
-    
-          //  BlobContainerClient container = new BlobContainerClient();
+ 
 
-            string containerName = "app-data/71a7156e-173f-4054-83ed-ad6127bafe87/video";
-            StorageSharedKeyCredential key = new StorageSharedKeyCredential("careercirclestaging", "88XKuYvTrulmfSJxO5F7XB/Nal2/zDv2XbRi/QT0wdgT+XpzuxWH/AAkGyFqG1RnVyDEkNhR7bDZVG8jPaxo3w==");
+
+        // todo jab  
+
+        public async Task<string> GetBlobSAS(string blobURI)
+        {
+            // TODO JAB confifify put in all app configs!!!!!!
+            string StorageAccountVideoBaseUrl = "https://careercirclestaging.blob.core.windows.net/intro-videos/";
+            string StorageAccountKey = "88XKuYvTrulmfSJxO5F7XB/Nal2/zDv2XbRi/QT0wdgT+XpzuxWH/AAkGyFqG1RnVyDEkNhR7bDZVG8jPaxo3w==";
+            string StorageAccountName = "careercirclestaging";
+            int VideoSASLifeTimeInMinutesForSubscriber = 10;
+ 
+
+            // string containerName = "intro-videos/491c799b-a0dc-4b25-9cc3-dca17f914610";
+            string blobName = Path.GetFileName(blobURI);
+            string[] uriComponents = blobURI.Replace("//",string.Empty).Split('/');
+            string containerName = uriComponents[1] + "/" + uriComponents[2];
+
+            StorageSharedKeyCredential key = new StorageSharedKeyCredential(StorageAccountName, StorageAccountKey);
+ 
 
             // Create a SAS token 
             BlobSasBuilder sasBuilder = new BlobSasBuilder()
             {
                 BlobContainerName = containerName,
-             //   BlobName = blobName,
-                Resource = "c",
+                BlobName = blobName, 
+                Resource = "b",
+                Protocol = SasProtocol.Https,
             };
-       
+
             sasBuilder.StartsOn = DateTimeOffset.UtcNow;
-            sasBuilder.ExpiresOn = DateTimeOffset.UtcNow.AddHours(1);
-            sasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
-      
+            sasBuilder.ExpiresOn = DateTimeOffset.UtcNow.AddHours(VideoSASLifeTimeInMinutesForSubscriber);
+
+  
+            sasBuilder.SetPermissions(BlobContainerSasPermissions.Read );
+            
             // Use the key to get the SAS token.
-            string sasToken = sasBuilder.ToSasQueryParameters(key).ToString();
+            string sasVideoToken = sasBuilder.ToSasQueryParameters(key).ToString();
  
-            // todo jab build sas here for appdata folder 
-            return sasToken;
+            return sasVideoToken;
         }
+
+        public async Task<string> GetContainerSAS(string ContainerName)
+        {
+            // TODO JAB confifify put in all app configs!!!!!!
+            string StorageAccountVideoBaseUrl = "https://careercirclestaging.blob.core.windows.net/intro-videos/";
+            string StorageAccountKey = "88XKuYvTrulmfSJxO5F7XB/Nal2/zDv2XbRi/QT0wdgT+XpzuxWH/AAkGyFqG1RnVyDEkNhR7bDZVG8jPaxo3w==";
+            string StorageAccountName = "careercirclestaging";
+            int VideoSASLifeTimeInMinutesForContainer = 10;
+            
+            StorageSharedKeyCredential key = new StorageSharedKeyCredential(StorageAccountName, StorageAccountKey);
+
+
+            // Create a SAS token 
+            BlobSasBuilder sasBuilder = new BlobSasBuilder()
+            {
+                BlobContainerName = ContainerName, 
+                Resource = "c",
+                Protocol = SasProtocol.Https,
+            };
+
+            sasBuilder.StartsOn = DateTimeOffset.UtcNow;
+            sasBuilder.ExpiresOn = DateTimeOffset.UtcNow.AddHours(VideoSASLifeTimeInMinutesForContainer);
+
+
+            sasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
+
+            // Use the key to get the SAS token.
+            string sasVideoToken = sasBuilder.ToSasQueryParameters(key).ToString();
+
+            return sasVideoToken;
+        }
+
+
+
 
 
     }
