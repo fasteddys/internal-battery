@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using UpDiddyApi.Models.B2B;
+using UpDiddyLib.Domain.Models.B2B;
 using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
@@ -31,5 +32,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         /// <param name="hiringManagerDto"></param>
         /// <returns></returns>
         Task UpdateHiringManager(int subscriberId, HiringManagerDto hiringManagerDto);
+
+        Task<CandidateDetailDto> GetCandidate360Detail(Guid profileGuid);
     }
 }
