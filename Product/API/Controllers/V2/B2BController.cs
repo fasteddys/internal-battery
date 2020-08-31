@@ -328,8 +328,8 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet("invalid-email-domains")]
         [AllowAnonymous]
-        public async Task<ActionResult<List<string>>> GetInvalidEmails()
-            => await _hiringManagerService.GetInvalidEmails();
+        public async Task<ActionResult<List<string>>> GetProhibitiedEmailDomains()
+            => await _hiringManagerService.GetProhibitiedEmailDomains();
 
         #endregion Utility endpoints
     }

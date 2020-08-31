@@ -4,12 +4,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UpDiddyApi.Models
 {
-    [Table("InvalidEmails", Schema = "B2B")]
-    public class InvalidEmail : BaseModel
+    [Table("ProhibitiedEmailDomains", Schema = "B2B")]
+    public class ProhibitiedEmailDomain : BaseModel
     {
-        public int InvalidEmailId { get; set; }
+        public int ProhibitiedEmailDomainId { get; set; }
 
-        public Guid InvalidEmailGuid { get; set; }
+        public Guid ProhibitiedEmailDomainGuid { get; set; }
 
         [StringLength(500)]
         public string Value { get; set; }

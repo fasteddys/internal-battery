@@ -4,9 +4,9 @@ using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
-    public class InvalidEmailRepository : UpDiddyRepositoryBase<InvalidEmail>, IInvalidEmailRepository
+    public class ProhibitiedEmailDomainRepository : UpDiddyRepositoryBase<ProhibitiedEmailDomain>, IProhibitiedEmailDomainRepository
     {
-        public InvalidEmailRepository(UpDiddyDbContext dbContext)
+        public ProhibitiedEmailDomainRepository(UpDiddyDbContext dbContext)
             : base(dbContext)
         { }
     }

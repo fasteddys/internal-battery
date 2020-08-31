@@ -63,7 +63,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager
         /// <summary>Gets a list of invalid email domains</summary>
         /// <returns>a list of invalid email domains</returns>
         /// <remarks>https://gist.github.com/adamloving/4401361</remarks>
-        Task<List<string>> GetInvalidEmails();
+        Task<List<string>> GetProhibitiedEmailDomains();
 
         Task<CandidateDetailDto> GetCandidate360Detail(Guid profileGuid);
     }

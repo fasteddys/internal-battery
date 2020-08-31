@@ -112,7 +112,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ITrainingTypesRepository _trainingTypesRepository;
         private ITrackingRepository _trackingRepository;
         private ISubscriberVideoRepository _subscriberVideoRepository;
-        private IInvalidEmailRepository _invalidEmailRepository;
+        private IProhibitiedEmailDomainRepository _prohibitiedEmailDomainRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext, IConfiguration configuration)
         {
@@ -1335,15 +1335,15 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
-        public IInvalidEmailRepository InvalidEmailRepository
+        public IProhibitiedEmailDomainRepository ProhibitiedEmailDomainRepository
         {
             get
             {
-                if (_invalidEmailRepository == null)
+                if (_prohibitiedEmailDomainRepository == null)
                 {
-                    _invalidEmailRepository = new InvalidEmailRepository(_dbContext);
+                    _prohibitiedEmailDomainRepository = new ProhibitiedEmailDomainRepository(_dbContext);
                 }
-                return _invalidEmailRepository;
+                return _prohibitiedEmailDomainRepository;
             }
         }
 
