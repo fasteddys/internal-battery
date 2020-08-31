@@ -28,7 +28,7 @@ namespace UpDiddyLib.Domain.Models.CrossChq
 
         public int? CrossChqPercentage { get; set; }
 
-        public int? CrossChqStatus { get; set; }
+        public string CrossChqStatus { get; set; }
     }
 
     public class CrossChqCandidateStatusListDto
