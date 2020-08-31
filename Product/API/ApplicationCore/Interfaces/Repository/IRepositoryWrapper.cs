@@ -105,6 +105,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         ITrainingTypesRepository TrainingTypesRepository { get; }
         ITrackingRepository TrackingRepository { get; }
         ISubscriberVideoRepository SubscriberVideoRepository { get; }
-        IInvalidEmailRepository InvalidEmailRepository { get; }
+        IProhibitiedEmailDomainRepository ProhibitiedEmailDomainRepository { get; }
     }
 }

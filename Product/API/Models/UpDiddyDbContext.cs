@@ -239,7 +239,7 @@ namespace UpDiddyApi.Models
 
         public DbSet<SubscriberVideo> SubscriberVideos { get; set; }
 
-        public DbSet<InvalidEmail> InvalidEmails { get; set; }
+        public DbSet<ProhibitiedEmailDomain> ProhibitiedEmailDomains { get; set; }
         #endregion
 
         #region DBQueries

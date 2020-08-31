@@ -301,8 +301,8 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             return true;
         }
 
-        public Task<List<string>> GetInvalidEmails()
-            => _repositoryWrapper.InvalidEmailRepository.GetAll()
+        public Task<List<string>> GetProhibitiedEmailDomains()
+            => _repositoryWrapper.ProhibitiedEmailDomainRepository.GetAll()
                 .Where(e => e.IsDeleted == 0)
                 .Select(e => e.Value)
                 .Distinct()
