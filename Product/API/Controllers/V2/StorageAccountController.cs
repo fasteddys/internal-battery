@@ -17,9 +17,10 @@ using UpDiddyApi.ApplicationCore.ActionFilter;
 using UpDiddyApi.ApplicationCore.Services;
 
 namespace UpDiddyApi.Controllers.V2
-{
-    [Route("/V2/[controller]/")]
-    [ApiController]
+
+{ 
+[Route("/V2/storage-account/")]
+ 
     public class StorageAccountController : ControllerBase
     {
 
