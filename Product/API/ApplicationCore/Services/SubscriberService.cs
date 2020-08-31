@@ -1628,6 +1628,30 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await _cloudStorage.GetVideoContainerSAS();
         }
 
+        public async Task<SubscriberVideoAuthDTO> GetVideoSasForHm(Guid subscriberGuid)
+        {
+            var subscriberVideo = await _repository.SubscriberVideoRepository.GetAll()
+                .Include(sv => sv.Subscriber)
+                .FirstOrDefaultAsync(sv =>
+                    sv.Subscriber.IsDeleted == 0 &&
+                    sv.Subscriber.SubscriberGuid == subscriberGuid &&
+                    sv.Subscriber.IsVideoVisibleToHiringManager == true &&
+                    sv.IsDeleted == 0 &&
+                    sv.IsPublished == true);
+
+            if (subscriberVideo == null) { return null; }
+
+            var videoSas = await _cloudStorage.GetBlobSAS(subscriberVideo.VideoLink);
+            var videoThumbnailSas = await _cloudStorage.GetBlobSAS(subscriberVideo.ThumbnailLink);
+
+            return new SubscriberVideoAuthDTO
+            {
+                VideoSAS = videoSas,
+                VideoThumbnailSAS = videoThumbnailSas,
+                VideoURI = $"{subscriberVideo.VideoLink}?{videoSas}",
+                VideoThumbnailURI = $"{subscriberVideo.ThumbnailLink}?{videoThumbnailSas}"
+            };
+        }
 
         #endregion
 

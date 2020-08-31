@@ -20,6 +20,8 @@ namespace UpDiddyLib.Domain.Models.B2B
         public List<HiringManagerFormalEducationDto> FormalEducation { get; set; }
         public List<HiringManagerWorkHistoryDto> WorkHistories { get; set; }
         public string VolunteerOrPassionProjects { get; set; }
+        public string IntroVideoUri { get; set; }
+        public string IntroVideoThumbnailUri { get; set; }
     }
 
     public class HiringManagerTraitifyDto

@@ -160,6 +160,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<string> GetVideoSAS();
         Task<SubscriberVideoAuthDTO> GetVideoSASForSubscriber(Guid subscriberGuid);
 
-
+        Task<SubscriberVideoAuthDTO> GetVideoSasForHm(Guid subscriberGuid);
     }
 }
