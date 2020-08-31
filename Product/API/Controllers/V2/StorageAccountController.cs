@@ -5,23 +5,18 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Models;
-using UpDiddyLib.Dto;
 using AutoMapper;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using Microsoft.Extensions.DependencyInjection;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces;
-using UpDiddyLib.Domain.Models;
-using System.Collections.Generic;
-using UpDiddyApi.ApplicationCore.ActionFilter;
-using UpDiddyApi.ApplicationCore.Services;
 
 namespace UpDiddyApi.Controllers.V2
 
-{ 
-[Route("/V2/storage-account/")]
- 
-    public class StorageAccountController : ControllerBase
+{
+    [Route("/V2/storage-account/")]
+
+    public class StorageAccountController : BaseApiController
     {
 
         private readonly UpDiddyDbContext _db = null;
@@ -29,13 +24,11 @@ namespace UpDiddyApi.Controllers.V2
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly ILogger _syslog;
         private readonly IHttpClientFactory _httpClientFactory = null;
-        private readonly int _postingTTL = 30; 
+        private readonly int _postingTTL = 30;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IServiceProvider _services;
         private readonly ICloudStorage _azureBlobStorage;
         private readonly ISubscriberService _subscriberService;
- 
-
 
         #region constructor 
 
@@ -50,30 +43,24 @@ namespace UpDiddyApi.Controllers.V2
             _repositoryWrapper = _services.GetService<IRepositoryWrapper>();
             _subscriberService = _services.GetService<ISubscriberService>();
             _azureBlobStorage = _services.GetService<ICloudStorage>();
-
         }
 
         #endregion
 
-
         [HttpGet]
         [Authorize]
-        [Route("intro-videos/sas/{subscriberGuid:guid}")]
-        public async Task<IActionResult> GetSubscriberVideoUrlsForSubscriber(Guid subscriberGuid)
+        [Route("intro-videos/sas")]
+        public async Task<IActionResult> GetSubscriberVideoUrlsForSubscriber()
         {
-            return Ok(await _subscriberService.GetVideoSASForSubscriber(subscriberGuid));
+            return Ok(await _subscriberService.GetVideoSASForSubscriber(GetSubscriberGuid()));
         }
-
-
 
         [HttpGet]
         [Authorize(Policy = "IsHiringManager")]
-        [Route("intro-videos/sas")]
+        [Route("intro-videos/sas/{subscriberGuid:guid}")]
         public async Task<IActionResult> GetSubscriberVideoUrlsForContainer(Guid subscriberGuid)
         {
             return Ok(await _subscriberService.GetVideoSAS());
         }
-
-
     }
 }
