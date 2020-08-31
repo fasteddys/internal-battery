@@ -1589,5 +1589,48 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
+        #region video
+
+
+        public async Task<SubscriberVideoAuthDTO> GetVideoSASForSubscriber(Guid subscriberGuid)
+        {
+                       
+            var Subscriber = await GetSubscriberByGuid(subscriberGuid);
+            if (Subscriber == null)
+                throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
+
+            SubscriberVideo subscriberVideo =  _repository.SubscriberVideoRepository.GetAll()
+                .Where(v => v.IsDeleted == 0 && v.SubscriberId == Subscriber.SubscriberId && v.IsPublished == true)
+                .FirstOrDefault();
+
+            if ( subscriberVideo == null )
+                throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not have a video");
+
+
+            string videoSAS = await _cloudStorage.GetBlobSAS(subscriberVideo.VideoLink);
+            string videoThumbnailSAS = await _cloudStorage.GetBlobSAS(subscriberVideo.ThumbnailLink);
+
+            SubscriberVideoAuthDTO rval = new SubscriberVideoAuthDTO()
+            {
+                VideoSAS = videoSAS,
+                VideoThumbnailSAS = videoThumbnailSAS,
+                VideoURI = subscriberVideo.VideoLink + "?" + videoSAS,
+                VideoThumbnailURI = subscriberVideo.ThumbnailLink + "?" + videoThumbnailSAS
+
+            };
+
+            return rval;
+            
+        }
+
+        public async Task<string> GetVideoSAS()
+        {                        
+            return await _cloudStorage.GetVideoContainerSAS();
+        }
+
+
+        #endregion
+
+
     }
 }

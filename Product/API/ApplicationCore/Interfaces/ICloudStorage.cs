@@ -14,5 +14,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
         Task DownloadToStreamAsync(string blobName, Stream stream);
         Task<bool> DeleteFileAsync(string blobName);
         Task<string> UploadBlobAsync(string blobName, byte[] blobArray);
+
+        Task<string> GetBlobSAS(string blobURI);
+        Task<string> GetVideoContainerSAS();
     }
 }
