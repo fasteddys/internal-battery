@@ -1600,7 +1600,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
 
             SubscriberVideo subscriberVideo =  _repository.SubscriberVideoRepository.GetAll()
-                .Where(v => v.IsDeleted == 0 && v.SubscriberId == Subscriber.SubscriberId && v.IsPublished == true)
+                .Where(v => v.IsDeleted == 0 && v.SubscriberId == Subscriber.SubscriberId)
                 .FirstOrDefault();
 
             if ( subscriberVideo == null )
