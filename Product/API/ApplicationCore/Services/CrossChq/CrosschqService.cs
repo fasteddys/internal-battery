@@ -232,6 +232,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
 
         public async Task<CrossChqCandidateStatusListDto> GetCrossChqStatusByResume(
             int numberOfDays,
+            bool showOnlyNonCrossChq,
             int limit,
             int offset,
             string sort,
@@ -240,12 +241,12 @@ namespace UpDiddyApi.ApplicationCore.Services.CrossChq
             var startDate = DateTime.UtcNow.Subtract(TimeSpan.FromDays(numberOfDays));
 
             var candidateStatuses = await _repository.StoredProcedureRepository
-                .GetCrossChqStatusByResume(startDate, limit, offset, sort, order);
+                .GetCrossChqStatusByResume(startDate, showOnlyNonCrossChq, limit, offset, sort, order);
 
             return new CrossChqCandidateStatusListDto
             {
                 Entities = _mapper.Map<List<CrossChqCandidateStatusDto>>(candidateStatuses),
-                TotalEntities = candidateStatuses.Select(s => s.TotalRecords).First()
+                TotalEntities = candidateStatuses.Select(s => s.TotalRecords).FirstOrDefault()
             };
         }
 

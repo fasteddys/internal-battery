@@ -193,6 +193,13 @@ namespace UpDiddyApi.Controllers.V2
 
         #region Profiles 
 
+        [HttpGet]
+        [Authorize(Policy = "IsHiringManager")]
+        [Route("profiles/{profileGuid}/candidate")]
+        public async Task<IActionResult> GetCandidate360ProfileDetail(Guid profileGuid)
+        {
+            return Ok(await _hiringManagerService.GetCandidate360Detail(profileGuid));
+        }
 
         [HttpGet]
         [Authorize(Policy = "IsHiringManager")]

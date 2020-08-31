@@ -23,6 +23,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         Task<CrossChqCandidateStatusListDto> GetCrossChqStatusByResume(
             int numberOfDays,
+            bool showOnlyNonCrossChq,
             int limit,
             int offset,
             string sort,

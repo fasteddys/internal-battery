@@ -96,6 +96,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 
         Task<List<CrossChqResumeStatus>> GetCrossChqStatusByResume(
                     DateTime startDate,
+                    bool showOnlyNonCrossChq,
                     int limit,
                     int offset,
                     string sort,

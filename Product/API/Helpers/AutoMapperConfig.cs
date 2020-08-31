@@ -1229,7 +1229,12 @@ namespace UpDiddyApi.Helpers
 
             CreateMap<SubscriberVideo, SubscriberVideoLinksDto>()
                 .ForMember(dest => dest.IsVisibleToHiringManager, opt => opt.MapFrom(src => src.Subscriber.IsVideoVisibleToHiringManager))
-                .ReverseMap();
+                .ForMember(dest => dest.Status, opt => opt.ResolveUsing(src =>
+                {
+                    if (string.IsNullOrEmpty(src.VideoLink)) { return SubscriberVideoStatus.None; }
+                    if (src.IsPublished) { return SubscriberVideoStatus.published; }
+                    return SubscriberVideoStatus.Created;
+                }));
 
             CreateMap<Models.CrossChq.CrossChqResumeStatus, CrossChqCandidateStatusDto>()
                 .ForMember(dest => dest.ElapsedTimeToUploadResume, opt => opt.ResolveUsing(src => src.ElapsedHoursToUploadResume == null ? null as TimeSpan? : TimeSpan.FromHours(src.ElapsedHoursToUploadResume.Value)))

@@ -14,6 +14,7 @@ using UpDiddyApi.ApplicationCore.Services.Identity;
 using UpDiddyApi.ApplicationCore.Services.Identity.Interfaces;
 using UpDiddyApi.Models;
 using UpDiddyLib.Domain.Models;
+using UpDiddyLib.Domain.Models.B2B;
 using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Services.HiringManager
@@ -280,6 +281,11 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             _logger.LogInformation($"HiringManagerService:AddHiringManager  Done for subscriber {subscriberGuid} ");
 
             return true;
+        }
+
+        public async Task<CandidateDetailDto> GetCandidate360Detail(Guid profileGuid)
+        {
+            return await _repositoryWrapper.HiringManagerRepository.GetCandidate360Detail(profileGuid);
         }
 
         public async Task<bool> _AddHiringManager(Subscriber subscriber)

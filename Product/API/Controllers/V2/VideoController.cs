@@ -37,27 +37,29 @@ namespace UpDiddyApi.Controllers.V2
         [HttpPost("{redisKeyGuid}")]
         public async Task<IActionResult> SetSubscriberVideoLink(Guid redisKeyGuid, [FromBody] SubscriberVideoLinksDto subscriberVideo)
         {
-            var subscriberGuid = await GetSubscriberGuidFromRedis(redisKeyGuid);
-            await _videoService.SetSubscriberVideoLink(subscriberGuid, subscriberVideo);
+            var subscriberVideoGuid = await GetSubscriberVideoGuidFromRedis(redisKeyGuid);
+            await _videoService.SetSubscriberVideoLink(subscriberVideoGuid, subscriberVideo);
             return StatusCode((int)HttpStatusCode.Created);
         }
 
-        [HttpDelete]
+        [HttpDelete("{subscriberVideoGuid}")]
         [Authorize]
-        public async Task<IActionResult> DeleteSubscriberVideoLink()
+        public async Task<IActionResult> DeleteSubscriberVideoLink(Guid subscriberVideoGuid)
         {
             var subscriberGuid = GetSubscriberGuid();
-            await _videoService.DeleteSubscriberVideoLink(subscriberGuid);
+
+            await _videoService.DeleteSubscriberVideoLink(subscriberVideoGuid, subscriberGuid);
             return NoContent();
         }
 
-        [HttpGet("hm-visibility")]
+        [HttpPut("publish/{subscriberVideoGuid}")]
         [Authorize]
-        public async Task<ActionResult<bool>> GetVideoIsVisibleToHiringManager()
+        public async Task<IActionResult> TogglePublish(Guid subscriberVideoGuid)
         {
             var subscriberGuid = GetSubscriberGuid();
-            var isVisibleToHiringManager = await _videoService.GetVideoIsVisibleToHiringManager(subscriberGuid);
-            return isVisibleToHiringManager;
+
+            await _videoService.Publish(subscriberVideoGuid, subscriberGuid, true);
+            return NoContent();
         }
 
         [HttpPut("hm-visibility")]
@@ -69,16 +71,16 @@ namespace UpDiddyApi.Controllers.V2
             return NoContent();
         }
 
-        private async Task<Guid> GetSubscriberGuidFromRedis(Guid redisKeyGuid)
+        private async Task<Guid> GetSubscriberVideoGuidFromRedis(Guid redisKeyGuid)
         {
-            var subscriberId = await _redis.GetStringAsync(redisKeyGuid.ToString());
+            var subscriberVideoId = await _redis.GetStringAsync(redisKeyGuid.ToString());
 
-            if (string.IsNullOrEmpty(subscriberId) || !Guid.TryParse(subscriberId, out var subscriberGuid))
+            if (string.IsNullOrEmpty(subscriberVideoId) || !Guid.TryParse(subscriberVideoId, out var subscriberVideoGuid))
             {
                 throw new NotAuthorizedException();
             }
 
-            return subscriberGuid;
+            return subscriberVideoGuid;
         }
     }
 }
