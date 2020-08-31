@@ -30,7 +30,7 @@ namespace UpDiddyApi.Models.CrossChq
 
         public int? CrossChqPercentage { get; set; }
 
-        public int? CrossChqStatus { get; set; }
+        public string CrossChqStatus { get; set; }
 
         public int TotalRecords { get; set; }
     }
