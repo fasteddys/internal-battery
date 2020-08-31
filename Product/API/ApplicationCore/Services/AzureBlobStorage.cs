@@ -10,6 +10,7 @@ using UpDiddyApi.ApplicationCore.Interfaces;
 using Azure.Storage.Blobs;
 using Azure.Storage.Sas;
 using Azure.Storage;
+ 
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -20,6 +21,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         private string _containerName;
         private string _assetContainer;
         private string _appDataContainer;
+        private IConfiguration _configuration;
+ 
 
         public AzureBlobStorage(IConfiguration config)
         {
@@ -31,6 +34,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new Exception("Unable to parse StorageAccount:ConnectionString");
 
             _client = _account.CreateCloudBlobClient();
+            _configuration = config; 
         }
 
         public async Task<Stream> GetStreamAsync(string blobName)
@@ -113,20 +117,12 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
  
-
-
-        // todo jab  
-
         public async Task<string> GetBlobSAS(string blobURI)
         {
-            // TODO JAB confifify put in all app configs!!!!!!
-            string StorageAccountVideoBaseUrl = "https://careercirclestaging.blob.core.windows.net/intro-videos/";
-            string StorageAccountKey = "88XKuYvTrulmfSJxO5F7XB/Nal2/zDv2XbRi/QT0wdgT+XpzuxWH/AAkGyFqG1RnVyDEkNhR7bDZVG8jPaxo3w==";
-            string StorageAccountName = "careercirclestaging";
-            int VideoSASLifeTimeInMinutesForSubscriber = 10;
- 
+            string StorageAccountKey = _configuration["StorageAccount:StorageAccountKey"];
+            string StorageAccountName = _configuration["StorageAccount:StorageAccountName"];
+            int VideoSASLifeTimeInMinutesForSubscriber = int.Parse(_configuration["StorageAccount:VideoSASLifeTimeInMinutesForSubscriber"]);
 
-            // string containerName = "intro-videos/491c799b-a0dc-4b25-9cc3-dca17f914610";
             string blobName = Path.GetFileName(blobURI);
             string[] uriComponents = blobURI.Replace("//",string.Empty).Split('/');
             string containerName = uriComponents[1] + "/" + uriComponents[2];
@@ -144,9 +140,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             };
 
             sasBuilder.StartsOn = DateTimeOffset.UtcNow;
-            sasBuilder.ExpiresOn = DateTimeOffset.UtcNow.AddHours(VideoSASLifeTimeInMinutesForSubscriber);
-
-  
+            sasBuilder.ExpiresOn = DateTimeOffset.UtcNow.AddHours(VideoSASLifeTimeInMinutesForSubscriber);  
             sasBuilder.SetPermissions(BlobContainerSasPermissions.Read );
             
             // Use the key to get the SAS token.
@@ -155,21 +149,19 @@ namespace UpDiddyApi.ApplicationCore.Services
             return sasVideoToken;
         }
 
-        public async Task<string> GetContainerSAS(string ContainerName)
-        {
-            // TODO JAB confifify put in all app configs!!!!!!
-            string StorageAccountVideoBaseUrl = "https://careercirclestaging.blob.core.windows.net/intro-videos/";
-            string StorageAccountKey = "88XKuYvTrulmfSJxO5F7XB/Nal2/zDv2XbRi/QT0wdgT+XpzuxWH/AAkGyFqG1RnVyDEkNhR7bDZVG8jPaxo3w==";
-            string StorageAccountName = "careercirclestaging";
-            int VideoSASLifeTimeInMinutesForContainer = 10;
-            
-            StorageSharedKeyCredential key = new StorageSharedKeyCredential(StorageAccountName, StorageAccountKey);
+        public async Task<string> GetVideoContainerSAS()
+        {            
+            string VideoContainer = _configuration["StorageAccount:VideoContainer"];
+            string StorageAccountKey = _configuration["StorageAccount:StorageAccountKey"];
+            string StorageAccountName = _configuration["StorageAccount:StorageAccountName"];
+            int VideoSASLifeTimeInMinutesForContainer = int.Parse(_configuration["StorageAccount:VideoSASLifeTimeInMinutesForContainer"]);
 
+            StorageSharedKeyCredential key = new StorageSharedKeyCredential(StorageAccountName, StorageAccountKey);
 
             // Create a SAS token 
             BlobSasBuilder sasBuilder = new BlobSasBuilder()
             {
-                BlobContainerName = ContainerName, 
+                BlobContainerName = VideoContainer, 
                 Resource = "c",
                 Protocol = SasProtocol.Https,
             };

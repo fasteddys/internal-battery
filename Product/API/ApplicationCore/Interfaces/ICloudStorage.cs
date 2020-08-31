@@ -16,6 +16,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
         Task<string> UploadBlobAsync(string blobName, byte[] blobArray);
 
         Task<string> GetBlobSAS(string blobURI);
-        Task<string> GetContainerSAS(string containerName);
+        Task<string> GetVideoContainerSAS();
     }
 }

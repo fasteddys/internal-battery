@@ -1594,8 +1594,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<SubscriberVideoAuthDTO> GetVideoSASForSubscriber(Guid subscriberGuid)
         {
-           
-            
+                       
             var Subscriber = await GetSubscriberByGuid(subscriberGuid);
             if (Subscriber == null)
                 throw new NotFoundException($"SubscriberGuid {subscriberGuid} does not exist exist");
@@ -1625,13 +1624,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
         public async Task<string> GetVideoSAS()
-        {
-
-
-           
-            // todo jab find a away to get this 
-            return await _cloudStorage.GetContainerSAS("intro-videos");
-
+        {                        
+            return await _cloudStorage.GetVideoContainerSAS();
         }
 
 
