@@ -57,8 +57,8 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet]
         [Authorize(Policy = "IsHiringManager")]
-        [Route("intro-videos/sas/{subscriberGuid:guid}")]
-        public async Task<IActionResult> GetSubscriberVideoUrlsForContainer(Guid subscriberGuid)
+        [Route("intro-videos/sas")]
+        public async Task<IActionResult> GetSubscriberVideoUrlsForContainer()
         {
             return Ok(await _subscriberService.GetVideoSAS());
         }

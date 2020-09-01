@@ -25,12 +25,11 @@ namespace UpDiddyApi.Controllers.V2
             _redis = redis;
         }
 
-        [HttpGet]
-        [Authorize]
-        public async Task<ActionResult<SubscriberVideoLinksDto>> GetSubscriberVideoLink()
+        [HttpGet("{isPreview:bool}")]
+        public async Task<ActionResult<SubscriberVideoLinksDto>> GetSubscriberVideoLink(bool isPreview)
         {
             var subscriberGuid = GetSubscriberGuid();
-            var videoLink = await _videoService.GetSubscriberVideoLink(subscriberGuid);
+            var videoLink = await _videoService.GetSubscriberVideoLink(subscriberGuid, isPreview);
             return videoLink;
         }
 

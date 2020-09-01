@@ -20,7 +20,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
         public Task<SubscriberVideo> GetSubscriberVideo(Guid subscriberVideoGuid, Guid subscriberGuid)
-            => GetAll()
+            => GetAllWithTracking()
                 .Include(svr => svr.Subscriber)
                 .SingleOrDefaultAsync(svr =>
                     svr.Subscriber.IsDeleted == 0 &&
