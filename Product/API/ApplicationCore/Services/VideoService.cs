@@ -33,7 +33,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var videoLink = await _repositoryWrapper.SubscriberVideoRepository
                 .GetExistingOrCreateNewSubscriberVideo(subscriberGuid);
             var dto = _mapper.Map<SubscriberVideoLinksDto>(videoLink);
-            if (!String.IsNullOrEmpty(dto.VideoLink) && String.IsNullOrEmpty(dto.ThumbnailLink) && dto.VideoLink.Length > 0 && dto.ThumbnailLink.Length > 0)
+            if (!String.IsNullOrEmpty(dto.VideoLink) && !String.IsNullOrEmpty(dto.ThumbnailLink))
             {
                 if (isPreview)
                 {
