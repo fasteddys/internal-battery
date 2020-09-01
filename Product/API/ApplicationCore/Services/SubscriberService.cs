@@ -1628,13 +1628,15 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await _cloudStorage.GetVideoContainerSAS();
         }
 
-        public async Task<SubscriberVideoAuthDTO> GetVideoSasForHiringManager(Guid subscriberGuid)
+        public async Task<SubscriberVideoAuthDTO> GetVideoSasForHiringManager(Guid profileGuid)
         {
+            var profile = await _repository.ProfileRepository.GetByGuid(profileGuid);
+
             var subscriberVideo = await _repository.SubscriberVideoRepository.GetAll()
                 .Include(sv => sv.Subscriber)
                 .FirstOrDefaultAsync(sv =>
                     sv.Subscriber.IsDeleted == 0 &&
-                    sv.Subscriber.SubscriberGuid == subscriberGuid &&
+                    sv.SubscriberId == profile.SubscriberId &&
                     sv.Subscriber.IsVideoVisibleToHiringManager == true &&
                     sv.IsDeleted == 0 &&
                     sv.IsPublished == true);
