@@ -1628,7 +1628,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await _cloudStorage.GetVideoContainerSAS();
         }
 
-        public async Task<SubscriberVideoAuthDTO> GetVideoSasForHm(Guid subscriberGuid)
+        public async Task<SubscriberVideoAuthDTO> GetVideoSasForHiringManager(Guid subscriberGuid)
         {
             var subscriberVideo = await _repository.SubscriberVideoRepository.GetAll()
                 .Include(sv => sv.Subscriber)

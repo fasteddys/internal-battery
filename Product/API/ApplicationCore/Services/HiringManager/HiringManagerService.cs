@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Services.Identity;
@@ -28,8 +29,17 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
         private readonly ILogger _logger;
         private readonly IHangfireService _hangfireService;
         private readonly IHubSpotService _hubspotService;
+        private readonly ISubscriberService _subscriberService;
 
-        public HiringManagerService(IConfiguration configuration, IRepositoryWrapper repositoryWrapper, IMapper mapper, IUserService userService, ILogger<HiringManagerService> logger, IHangfireService hangfireService, IHubSpotService hubspotService)
+        public HiringManagerService(
+            IConfiguration configuration,
+            IRepositoryWrapper repositoryWrapper,
+            IMapper mapper,
+            IUserService userService,
+            ILogger<HiringManagerService> logger,
+            IHangfireService hangfireService,
+            IHubSpotService hubspotService,
+            ISubscriberService subscriberService)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
@@ -38,6 +48,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             _logger = logger;
             _hangfireService = hangfireService;
             _hubspotService = hubspotService;
+            _subscriberService = subscriberService;
         }
 
         public async Task<HiringManagerDto> GetHiringManagerBySubscriberGuid(Guid subscriberGuid)
@@ -285,7 +296,19 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 
         public async Task<CandidateDetailDto> GetCandidate360Detail(Guid profileGuid)
         {
-            return await _repositoryWrapper.HiringManagerRepository.GetCandidate360Detail(profileGuid);
+            var candidateDetailDto =  await _repositoryWrapper.HiringManagerRepository
+                .GetCandidate360Detail(profileGuid);
+
+            var subscriberVideo = await _subscriberService
+                .GetVideoSasForHiringManager(profileGuid);
+
+            if (subscriberVideo != null)
+            {
+                candidateDetailDto.IntroVideoUri = subscriberVideo.VideoURI;
+                candidateDetailDto.IntroVideoThumbnailUri = subscriberVideo.VideoThumbnailURI;
+            }
+
+            return candidateDetailDto;
         }
 
         public async Task<bool> _AddHiringManager(Subscriber subscriber)

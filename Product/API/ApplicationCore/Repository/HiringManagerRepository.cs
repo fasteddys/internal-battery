@@ -17,12 +17,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
     public class HiringManagerRepository : UpDiddyRepositoryBase<HiringManager>, IHiringManagerRepository
     {
         private readonly UpDiddyDbContext _dbContext;
-        private readonly ISubscriberService _subscriberService;
 
-        public HiringManagerRepository(UpDiddyDbContext dbContext, ISubscriberService subscriberService) : base(dbContext)
+        public HiringManagerRepository(UpDiddyDbContext dbContext) : base(dbContext)
         {
             _dbContext = dbContext;
-            _subscriberService = subscriberService;
         }
 
         public async Task<HiringManager> GetHiringManagerBySubscriberId(int SubscriberId)
@@ -177,9 +175,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 })
                 .ToList();
 
-            var subscriberVideo = await _subscriberService
-                .GetVideoSasForHm(profile.Subscriber.SubscriberGuid.Value);
-
             CandidateDetailDto candidateDetailDto = new CandidateDetailDto()
             {
                 ProfileGuid = profile.ProfileGuid,
@@ -195,9 +190,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 TechnicalAndProfessionalTraining = technicalAndProfessionalTraining,
                 Traitify = traitify,
                 VolunteerOrPassionProjects = profile.Subscriber.PassionProjectsDescription,
-                WorkHistories = workHistories,
-                IntroVideoUri = subscriberVideo?.VideoURI,
-                IntroVideoThumbnailUri = subscriberVideo?.VideoThumbnailURI
+                WorkHistories = workHistories
             };
 
             return candidateDetailDto;
