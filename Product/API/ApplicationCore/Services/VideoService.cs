@@ -33,17 +33,17 @@ namespace UpDiddyApi.ApplicationCore.Services
             var videoLink = await _repositoryWrapper.SubscriberVideoRepository
                 .GetExistingOrCreateNewSubscriberVideo(subscriberGuid);
             var dto = _mapper.Map<SubscriberVideoLinksDto>(videoLink);
-            if (dto.VideoLink.Length > 0 && dto.ThumbnailLink.Length > 0)
+            if (!String.IsNullOrEmpty(dto.VideoLink) && String.IsNullOrEmpty(dto.ThumbnailLink) && dto.VideoLink.Length > 0 && dto.ThumbnailLink.Length > 0)
             {
-                if(isPreview)
+                if (isPreview)
                 {
-                    dto.VideoLink.Replace("/video.","/video_preview.");
-                    dto.ThumbnailLink.Replace("/thumbnail.","/thumbnail_preview.");
+                    dto.VideoLink = dto.VideoLink.Replace("/video.", "/video_preview.");
+                    dto.ThumbnailLink = dto.ThumbnailLink.Replace("/thumbnail.", "/thumbnail_preview.");
                 }
-              string videoSAS  = await _cloudStorage.GetBlobSAS(dto.VideoLink);
-              string thumbnailSAS = await _cloudStorage.GetBlobSAS(dto.ThumbnailLink);
-              dto.VideoLink = dto.VideoLink + "?" + videoSAS;
-              dto.ThumbnailLink = dto.ThumbnailLink + "?" + thumbnailSAS;
+                string videoSAS = await _cloudStorage.GetBlobSAS(dto.VideoLink);
+                string thumbnailSAS = await _cloudStorage.GetBlobSAS(dto.ThumbnailLink);
+                dto.VideoLink = dto.VideoLink + "?" + videoSAS;
+                dto.ThumbnailLink = dto.ThumbnailLink + "?" + thumbnailSAS;
             }
             return dto;
         }
@@ -77,12 +77,16 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task Publish(Guid subscriberVideoGuid, Guid subscriberGuid, bool isPublished)
         {
-            var videoLink = await _repositoryWrapper.SubscriberVideoRepository
+            var subscriberVideo = await _repositoryWrapper.SubscriberVideoRepository
                 .GetSubscriberVideo(subscriberVideoGuid, subscriberGuid);
 
-            if (videoLink == null) { throw new NotFoundException(); }
+            if (subscriberVideo == null) { throw new NotFoundException(); }
 
-            videoLink.IsPublished = isPublished;
+            subscriberVideo.IsPublished = isPublished;
+            string previewVideoFilePath = subscriberVideo.VideoLink.Replace("/video.", "/video_preview.");
+            string previewThumbnailFilePath = subscriberVideo.ThumbnailLink.Replace("/thumbnail.", "/thumbnail_preview.");
+            await _cloudStorage.RenameFileAsync(previewVideoFilePath, subscriberVideo.VideoLink, true);
+            await _cloudStorage.RenameFileAsync(previewThumbnailFilePath, subscriberVideo.ThumbnailLink, true);
             await _repositoryWrapper.SubscriberVideoRepository.SaveAsync();
         }
 

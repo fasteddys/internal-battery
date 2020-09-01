@@ -10,7 +10,7 @@ using UpDiddyApi.ApplicationCore.Interfaces;
 using Azure.Storage.Blobs;
 using Azure.Storage.Sas;
 using Azure.Storage;
- 
+
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -22,7 +22,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private string _assetContainer;
         private string _appDataContainer;
         private IConfiguration _configuration;
- 
+
 
         public AzureBlobStorage(IConfiguration config)
         {
@@ -34,17 +34,17 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new Exception("Unable to parse StorageAccount:ConnectionString");
 
             _client = _account.CreateCloudBlobClient();
-            _configuration = config; 
+            _configuration = config;
         }
 
         public async Task<Stream> GetStreamAsync(string blobName)
-        {         
+        {
             return await GetBlob(blobName).OpenReadAsync();
-                
+
         }
 
         public async Task<Stream> OpenReadAsync(string blobName)
-        {    
+        {
             return await GetBlob(blobName).OpenReadAsync();
         }
 
@@ -109,14 +109,41 @@ namespace UpDiddyApi.ApplicationCore.Services
                 await blob.DeleteAsync();
                 return true;
 
-            } catch(Exception)
+            }
+            catch (Exception)
             {
-                // todo: log
                 return false;
             }
         }
 
- 
+        public async Task<bool> RenameFileAsync(string oldFilePath, string newFilePath, bool overWrite)
+        {
+            string oldBlobName = Path.GetFileName(oldFilePath);
+            string newBlobName = Path.GetFileName(newFilePath);
+            string[] oldFileUriComponent = oldFilePath.Replace("//", string.Empty).Split('/');
+            string[] newFileUriComponent = newFilePath.Replace("//", string.Empty).Split('/');
+            string oldFileBlob =  oldFileUriComponent[2] + "/" + oldBlobName;
+            string newFileBlob =  newFileUriComponent[2] + "/" + newBlobName;
+
+            CloudBlobContainer cloudBlobContainer = _client.GetContainerReference(oldFileUriComponent[1]);
+            await cloudBlobContainer.CreateIfNotExistsAsync();
+
+            CloudBlockBlob blob = cloudBlobContainer.GetBlockBlobReference(oldFileBlob);
+            CloudBlockBlob blobCopy = cloudBlobContainer.GetBlockBlobReference(newFileBlob);
+
+            if (await blob.ExistsAsync())
+            {
+                if (await blobCopy.ExistsAsync() && overWrite)
+                {
+                    await blobCopy.DeleteIfExistsAsync();
+                }
+                await blobCopy.StartCopyAsync(blob);
+                await blob.DeleteIfExistsAsync();
+            }
+            return true;
+        }
+
+
         public async Task<string> GetBlobSAS(string blobURI)
         {
             string StorageAccountKey = _configuration["StorageAccount:StorageAccountKey"];
@@ -124,33 +151,33 @@ namespace UpDiddyApi.ApplicationCore.Services
             int VideoSASLifeTimeInMinutesForSubscriber = int.Parse(_configuration["StorageAccount:VideoSASLifeTimeInMinutesForSubscriber"]);
 
             string blobName = Path.GetFileName(blobURI);
-            string[] uriComponents = blobURI.Replace("//",string.Empty).Split('/');
+            string[] uriComponents = blobURI.Replace("//", string.Empty).Split('/');
             string containerName = uriComponents[1] + "/" + uriComponents[2];
 
             StorageSharedKeyCredential key = new StorageSharedKeyCredential(StorageAccountName, StorageAccountKey);
- 
+
 
             // Create a SAS token 
             BlobSasBuilder sasBuilder = new BlobSasBuilder()
             {
                 BlobContainerName = containerName,
-                BlobName = blobName, 
+                BlobName = blobName,
                 Resource = "b",
                 Protocol = SasProtocol.Https,
             };
 
             sasBuilder.StartsOn = DateTimeOffset.UtcNow;
-            sasBuilder.ExpiresOn = DateTimeOffset.UtcNow.AddHours(VideoSASLifeTimeInMinutesForSubscriber);  
-            sasBuilder.SetPermissions(BlobContainerSasPermissions.Read );
-            
+            sasBuilder.ExpiresOn = DateTimeOffset.UtcNow.AddHours(VideoSASLifeTimeInMinutesForSubscriber);
+            sasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
+
             // Use the key to get the SAS token.
             string sasVideoToken = sasBuilder.ToSasQueryParameters(key).ToString();
- 
+
             return sasVideoToken;
         }
 
         public async Task<string> GetVideoContainerSAS()
-        {            
+        {
             string VideoContainer = _configuration["StorageAccount:VideoContainer"];
             string StorageAccountKey = _configuration["StorageAccount:StorageAccountKey"];
             string StorageAccountName = _configuration["StorageAccount:StorageAccountName"];
@@ -161,7 +188,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             // Create a SAS token 
             BlobSasBuilder sasBuilder = new BlobSasBuilder()
             {
-                BlobContainerName = VideoContainer, 
+                BlobContainerName = VideoContainer,
                 Resource = "c",
                 Protocol = SasProtocol.Https,
             };
