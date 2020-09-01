@@ -26,6 +26,7 @@ namespace UpDiddyApi.Controllers.V2
         }
 
         [HttpGet("{isPreview:bool}")]
+        [Authorize]
         public async Task<ActionResult<SubscriberVideoLinksDto>> GetSubscriberVideoLink(bool isPreview)
         {
             var subscriberGuid = GetSubscriberGuid();
