@@ -6,7 +6,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface IVideoService
     {
-        Task<SubscriberVideoLinksDto> GetSubscriberVideoLink(Guid subscriberGuid);
+        Task<SubscriberVideoLinksDto> GetSubscriberVideoLink(Guid subscriberGuid, bool isPreview);
 
         Task SetSubscriberVideoLink(Guid subscriberVideoGuid, SubscriberVideoLinksDto subscriberVideo);
 

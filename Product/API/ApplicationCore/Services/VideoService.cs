@@ -7,6 +7,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyLib.Domain.Models;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -15,18 +16,36 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IMapper _mapper;
 
-        public VideoService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
+        private ICloudStorage _cloudStorage { get; set; }
+
+
+        public VideoService(IRepositoryWrapper repositoryWrapper, ICloudStorage cloudStorage,
+        IMapper mapper)
         {
+
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
+            _cloudStorage = cloudStorage;
         }
 
-        public async Task<SubscriberVideoLinksDto> GetSubscriberVideoLink(Guid subscriberGuid)
+        public async Task<SubscriberVideoLinksDto> GetSubscriberVideoLink(Guid subscriberGuid, bool isPreview)
         {
             var videoLink = await _repositoryWrapper.SubscriberVideoRepository
                 .GetExistingOrCreateNewSubscriberVideo(subscriberGuid);
-
-            return _mapper.Map<SubscriberVideoLinksDto>(videoLink);
+            var dto = _mapper.Map<SubscriberVideoLinksDto>(videoLink);
+            if (dto.VideoLink.Length > 0 && dto.ThumbnailLink.Length > 0)
+            {
+                if(isPreview)
+                {
+                    dto.VideoLink.Replace("/video.","/video_preview.");
+                    dto.ThumbnailLink.Replace("/thumbnail.","/thumbnail_preview.");
+                }
+              string videoSAS  = await _cloudStorage.GetBlobSAS(dto.VideoLink);
+              string thumbnailSAS = await _cloudStorage.GetBlobSAS(dto.ThumbnailLink);
+              dto.VideoLink = dto.VideoLink + "?" + videoSAS;
+              dto.ThumbnailLink = dto.ThumbnailLink + "?" + thumbnailSAS;
+            }
+            return dto;
         }
 
         public async Task SetSubscriberVideoLink(Guid subscriberVideoGuid, SubscriberVideoLinksDto subscriberVideo)
