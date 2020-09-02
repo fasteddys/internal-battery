@@ -289,7 +289,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             var profile = await _repositoryWrapper.ProfileRepository.GetAll()
                 .Include(p => p.Subscriber)
-                .SingleOrDefaultAsync(
+                .FirstOrDefaultAsync(
                     p => p.IsDeleted == 0 &&
                     p.Subscriber.IsDeleted == 0 &&
                     p.Subscriber.SubscriberGuid == subscriberGuid);
