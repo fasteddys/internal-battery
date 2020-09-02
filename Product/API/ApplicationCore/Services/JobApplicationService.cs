@@ -160,7 +160,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                         string templateId = isExternalMessage ?
                             _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter-External"].ToString() :
                             _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter"].ToString();
-                        profileGuid = await GetProfileGuid(subscriber.SubscriberGuid.Value, jobPosting.Company.CompanyGuid);
+                        profileGuid = await GetProfileGuid(subscriber.SubscriberGuid.Value);
 
                         object templateData = new
                         {
@@ -285,13 +285,16 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await _repositoryWrapper.JobApplication.HasSubscriberAppliedToJobPosting(subscriberGuid, jobPostingGuid);
         }
 
-        private async Task<Guid> GetProfileGuid(Guid subscriberGuid, Guid companyGuid)
+        private async Task<Guid> GetProfileGuid(Guid subscriberGuid)
         {
             var profile = await _repositoryWrapper.ProfileRepository.GetAll()
                 .Include(p => p.Subscriber)
-                .Include(p => p.Company)
-                .SingleOrDefaultAsync(p => p.IsDeleted == 0 && p.Subscriber.IsDeleted == 0 && p.Subscriber.SubscriberGuid == subscriberGuid && p.Company.CompanyGuid == companyGuid);
-            if (profile == null) { throw new NotFoundException($"Could not find a profile for subscriber \"{subscriberGuid}\", company \"{companyGuid}\""); }
+                .FirstOrDefaultAsync(
+                    p => p.IsDeleted == 0 &&
+                    p.Subscriber.IsDeleted == 0 &&
+                    p.Subscriber.SubscriberGuid == subscriberGuid);
+
+            if (profile == null) { throw new NotFoundException($"Could not find a profile for subscriber \"{subscriberGuid}\""); }
 
             return profile.ProfileGuid;
         }
