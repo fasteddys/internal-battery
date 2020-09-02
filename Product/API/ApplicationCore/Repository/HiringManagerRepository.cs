@@ -168,7 +168,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 .Select(swh => new HiringManagerWorkHistoryDto()
                 {
                     Company = swh.Company != null ? swh.Company.CompanyName : null,
-                    Description = swh.JobDescription,
+                    Description = System.Net.WebUtility.HtmlDecode(swh.JobDescription),
                     Position = swh.Title,
                     StartDate = swh.StartDate.HasValue ? swh.StartDate.Value.ToString("MM/yy") : null,
                     EndDate = swh.EndDate.HasValue ? swh.EndDate.Value.ToString("MM/yy") : null
