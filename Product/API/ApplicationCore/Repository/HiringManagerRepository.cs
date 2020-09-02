@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
@@ -113,7 +114,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             .Where(st => st.IsDeleted == 0 && st.Subscriber.IsDeleted == 0 && st.SubscriberId == profile.SubscriberId)
             .Include(st => st.Subscriber)
             .Include(st => st.TrainingType)
-            .Select(st => new HiringManagerTechnicalAndProfessionalTrainingDto() { Concentration = st.TrainingName, Institution = st.TrainingInstitution })
+            .Select(st => new HiringManagerTechnicalAndProfessionalTrainingDto() { Concentration = WebUtility.HtmlDecode(st.TrainingName), Institution = WebUtility.HtmlDecode(st.TrainingInstitution) })
             .ToList();
 
             var formalEducation = _dbContext.SubscriberEducationHistory
@@ -124,9 +125,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 .Include(seh => seh.EducationalDegreeType.EducationalDegreeTypeCategory)
                 .Select(seh => new HiringManagerFormalEducationDto()
                 {
-                    Concentration = seh.EducationalDegree != null ? seh.EducationalDegree.Degree : null,
+                    Concentration = seh.EducationalDegree != null ? WebUtility.HtmlDecode(seh.EducationalDegree.Degree) : null,
                     DegreeType = seh.EducationalDegreeType != null ? seh.EducationalDegreeType.EducationalDegreeTypeCategory.Name + " - " + seh.EducationalDegreeType.DegreeType : null,
-                    Institution = seh.EducationalInstitution != null ? seh.EducationalInstitution.Name : null
+                    Institution = seh.EducationalInstitution != null ? WebUtility.HtmlDecode(seh.EducationalInstitution.Name) : null
                 })
                 .ToList();
 
@@ -167,9 +168,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 .OrderByDescending(swh => swh.EndDate).ThenByDescending(swh => swh.CreateDate)
                 .Select(swh => new HiringManagerWorkHistoryDto()
                 {
-                    Company = swh.Company != null ? swh.Company.CompanyName : null,
-                    Description = System.Net.WebUtility.HtmlDecode(swh.JobDescription),
-                    Position = swh.Title,
+                    Company = swh.Company != null ? WebUtility.HtmlDecode(swh.Company.CompanyName) : null,
+                    Description = WebUtility.HtmlDecode(swh.JobDescription),
+                    Position = WebUtility.HtmlDecode(swh.Title),
                     StartDate = swh.StartDate.HasValue ? swh.StartDate.Value.ToString("MM/yy") : null,
                     EndDate = swh.EndDate.HasValue ? swh.EndDate.Value.ToString("MM/yy") : null
                 })
@@ -178,9 +179,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
             CandidateDetailDto candidateDetailDto = new CandidateDetailDto()
             {
                 ProfileGuid = profile.ProfileGuid,
-                FirstName = profile.Subscriber.FirstName,
-                JobTitle = profile.Subscriber.Title,
-                Location = location,
+                FirstName = WebUtility.HtmlDecode(profile.Subscriber.FirstName),
+                JobTitle = WebUtility.HtmlDecode(profile.Subscriber.Title),
+                Location = WebUtility.HtmlDecode(location),
                 Skills = skills,
                 DesiredAnnualSalary = desiredAnnualSalary,
                 EstimatedHiringFee = estimatedHiringFee,
@@ -189,7 +190,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 Languages = languages,
                 TechnicalAndProfessionalTraining = technicalAndProfessionalTraining,
                 Traitify = traitify,
-                VolunteerOrPassionProjects = profile.Subscriber.PassionProjectsDescription,
+                VolunteerOrPassionProjects = WebUtility.HtmlDecode(profile.Subscriber.PassionProjectsDescription),
                 WorkHistories = workHistories
             };
 
