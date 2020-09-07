@@ -5,17 +5,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
-
 namespace UpDiddyApi.Models.Views
 {
     [NotMapped]
     public class v_CandidateAzureSearch
     {
-
-
-
-
-
         public string AvatarUrl { get; set; }
         public Guid? PartnerGuid { get; set; }
         public DateTime? CreateDate { get; set; }
@@ -48,7 +42,26 @@ namespace UpDiddyApi.Models.Views
         public string SubscriberWorkHistory { get; set; }
 
         public int? AzureIndexStatusId { get; set; }
- 
 
+        public string CoverLetter { get; set; }
+
+        public double? DesiredRate { get; set; }
+
+        public DateTime? LastContacted { get; set; }
+
+        // Need help with these three!
+        //public string Personality1ImageUrl { get; set; }
+
+        //public string Personality2ImageUrl { get; set; }
+
+        //public string PersonalityBlendName { get; set; }
+
+        public string VideoLink { get; set; }
+
+        public string VideoMimeType { get; set; }
+
+        public string ThumbnailLink { get; set; }
+
+        public string ThumbnailMimeType { get; set; }
     }
 }
