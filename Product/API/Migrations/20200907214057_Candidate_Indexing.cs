@@ -25,198 +25,302 @@ SELECT * FROM [B2B].[v_CandidateAzureSearch]
 */
 ALTER VIEW [B2B].[v_CandidateAzureSearch]
 AS
-        WITH subscriberWorkHistoryWithRownum AS (
+    WITH
+        subscriberWorkHistoryWithRownum
+        AS
+        (
             -- returns all subscriber work history with compensation data if it is hourly
-            SELECT swh.SubscriberId, swh.StartDate, swh.Title, swh.Compensation, ct.CompensationTypeName, ISNULL(swh.ModifyDate, swh.CreateDate) ModifyDate, ROW_NUMBER() OVER(PARTITION BY swh.SubscriberId ORDER BY swh.StartDate DESC) rownum
+            SELECT
+                swh.SubscriberId,
+                swh.StartDate,
+                swh.Title,
+                swh.Compensation,
+                ct.CompensationTypeName,
+                ISNULL(swh.ModifyDate, swh.CreateDate) ModifyDate,
+                ROW_NUMBER() OVER(PARTITION BY swh.SubscriberId ORDER BY swh.StartDate DESC) rownum
             FROM SubscriberWorkHistory swh
-            LEFT JOIN CompensationType ct ON swh.CompensationTypeId = ct.CompensationTypeId
+                LEFT JOIN CompensationType ct ON swh.CompensationTypeId = ct.CompensationTypeId
             WHERE swh.IsDeleted = 0
-        ), mostRecentSubscriberWorkHistory AS (
+        ),
+        mostRecentSubscriberWorkHistory
+        AS
+        (
             -- uses the previous CTE to find the most recent work history record to use for title and compensation in subscriber curated data
-            SELECT SubscriberId, Title, Compensation, CompensationTypeName, ModifyDate
+            SELECT
+                SubscriberId,
+                Title,
+                Compensation,
+                CompensationTypeName,
+                ModifyDate
             FROM subscriberWorkHistoryWithRownum
             WHERE rownum = 1
-        ), subscriberSkills AS (
-                   
-            SELECT s.SubscriberId, STRING_AGG(CAST(sk.SkillName AS NVARCHAR(MAX)), char(30)) Skills, dbo.fn_GreatestDate(MAX(s.CreateDate), MAX(ss.ModifyDate), default, default, default) ModifyDate
+        ),
+        subscriberSkills
+        AS
+        (
+            SELECT
+                s.SubscriberId,
+                STRING_AGG(CAST(sk.SkillName AS NVARCHAR(MAX)), char(30)) Skills,
+                dbo.fn_GreatestDate(MAX(s.CreateDate), MAX(ss.ModifyDate), default, default, default) ModifyDate
             FROM Subscriber s
-            LEFT JOIN SubscriberSkill ss ON s.SubscriberId = ss.SubscriberId
-            LEFT JOIN dbo.Skill sk ON ss.SkillId = sk.SkillId
-            WHERE s.IsDeleted = 0 and sk.IsDeleted = 0 and ss.IsDeleted = 0
-            GROUP BY s.SubscriberId
-            		
-        ), 
-            subscriberLanguages AS (			
-            SELECT s.SubscriberId, STRING_AGG(CAST(l.LanguageName AS NVARCHAR(MAX)) + char(29) + pl.ProficiencyLevelName, char(30)) SubscriberLanguages, dbo.fn_GreatestDate(MAX(s.CreateDate), MAX(slp.ModifyDate), default, default, default) ModifyDate
-            FROM Subscriber s
-            LEFT JOIN SubscriberLanguageProficiencies slp ON s.SubscriberId = slp.SubscriberId
-            LEFT JOIN ProficiencyLevels pl ON slp.ProficiencyLevelId = pl.ProficiencyLevelId
-            LEFT JOIN Languages l on slp.LanguageId = l.LanguageId
-            WHERE s.IsDeleted = 0 and slp.IsDeleted = 0 and pl.IsDeleted = 0 and l.IsDeleted = 0
-            GROUP BY s.SubscriberId			 
-            ), 
-            subscriberEmploymentType AS (
-            	
-            SELECT s.SubscriberId, STRING_AGG(et.Name, char(30)) EmploymentTypes
-            FROM Subscriber s
-            LEFT JOIN SubscriberEmploymentTypes e ON s.SubscriberId = e.SubscriberId
-            LEFT JOIN dbo.EmploymentType et ON e.EmploymentTypeId = et.EmploymentTypeId
-            WHERE s.IsDeleted = 0 and e.IsDeleted = 0 and et.IsDeleted = 0
-            GROUP BY s.SubscriberId
-            			 
-            ),
-            subscriberTrainings AS (
-            	
-            	SELECT s.SubscriberId, STRING_AGG( tt.Name + char(29) + st.TrainingInstitution + char(29) + st.TrainingName, char(30)) SubscriberTraining
-            FROM Subscriber s
-            LEFT JOIN SubscriberTraining st ON s.SubscriberId = st.SubscriberId
-            LEFT JOIN TrainingType tt ON st.TrainingTypeId = tt.TrainingTypeId 
-            WHERE s.IsDeleted = 0 and st.IsDeleted = 0 and tt.IsDeleted = 0 
-            GROUP BY s.SubscriberId	
-            			 
-            ),
-            subscriberEducation AS (
-            	 
-            SELECT s.SubscriberId, STRING_AGG(ISNULL(ei.Name,'') + char(29) +  ISNULL(edt.DegreeType,'') + char(29) + ISNULL(ed.Degree,'')  , char(30)) SubscriberEducation
-            FROM Subscriber s
-            LEFT JOIN  SubscriberEducationHistory seh ON s.SubscriberId = seh.SubscriberId
-            LEFt JOIN EducationalInstitution ei ON seh.EducationalInstitutionId = ei.EducationalInstitutionId
-            LEFT JOIN EducationalDegree ed on seh.EducationalDegreeId = ed.EducationalDegreeId
-            LEFT JOIN EducationalDegreeType edt ON seh.EducationalDegreeTypeId = edt.EducationalDegreeTypeId
-            WHERE s.IsDeleted = 0 and seh.IsDeleted = 0 
-            GROUP BY s.SubscriberId	
-            			 
-            ),
-            subscriberTitle AS (
-            	 
-            SELECT x.SubscriberId, STRING_AGG(ISNULL(x.Title,'') , char(30)) SubscriberTitles From
-            (SELECT s.subscriberId,swh.Title
-            FROM Subscriber s
-            LEFT JOIN  SubscriberWorkHistory swh ON s.SubscriberId = swh.SubscriberId    
-            WHERE s.IsDeleted = 0 and swh.IsDeleted = 0 and swh.Title IS NOT NULL
-            UNION SELECT subscriberid,title FROM Subscriber WHERE title  IS NOT NULL) X
-            GROUP BY x.SubscriberId
-            			 
-            )	 	 	
-            ,
-            subscriberWorkHistories AS (
-            	
-            SELECT s.SubscriberId, STRING_AGG(ISNULL(c.CompanyName,'') + char(29) +  ISNULL(swh.Title,'')   , char(30)) SubscriberWorkHistory
-            FROM Subscriber s
-            LEFT JOIN  SubscriberWorkHistory swh ON s.SubscriberId = swh.SubscriberId    
-            LEFT JOIN  Company c on swh.CompanyId = c.CompanyId
-            WHERE s.IsDeleted = 0 and swh.IsDeleted = 0 
-            GROUP BY s.SubscriberId	 
-            			 
-            ),
-            profileCommentsWithRowNumber
-            AS
-            (
-                SELECT
-                    p.SubscriberId,
-                    c.CreateDate ContactDate,
-                    ROW_NUMBER() OVER (PARTITION BY p.SubscriberId ORDER BY c.CreateDate DESC) rownum,
-                    p.CreateDate
-                FROM G2.Profiles p LEFT JOIN G2.ProfileComments c ON p.ProfileId = c.ProfileId
-                WHERE p.IsDeleted = 0 AND c.IsDeleted = 0
-            ),
-            mostRecentProfileComment
-            AS
-            (
-                SELECT
-                    SubscriberId,
-                    ISNULL(ContactDate, CreateDate) ContactDate
-                FROM profileCommentsWithRowNumber
-                WHERE rownum = 1
-            ),
-            introVideosWithRowNumber
-            AS
-            (
-                SELECT
-                    v.VideoLink,
-                    v.VideoMimeType,
-                    v.ThumbnailLink,
-                    v.ThumbnailMimeType,
-                    ROW_NUMBER() OVER (PARTITION BY v.SubscriberId ORDER BY v.CreateDate DESC) rownum,
-                    v.SubscriberId
-                FROM SubscriberVideos v
-                WHERE v.IsDeleted = 0 AND v.IsPublished = 1
-            ),
-            mostRecentIntroVideo
-            AS
-            (
-                SELECT
-                    SubscriberId,
-                    VideoLink,
-                    VideoMimeType,
-                    ThumbnailLink,
-                    ThumbnailMimeType
-                FROM introVideosWithRowNumber
-                WHERE rownum = 1
-            )
-
-            	 
-            	         
-            SELECT 
-            		s.CreateDate
-            	, s.SubscriberId
-            	, s.SubscriberGuid
-            	, CASE WHEN LEN(s.FirstName) > 0 THEN s.FirstName ELSE NULL END FirstName, CASE WHEN LEN(s.LastName) > 0 THEN s.LastName ELSE NULL END LastName
-            	, s.Email
-            	, CASE WHEN LEN(PhoneNumber) > 0 THEN PhoneNumber ELSE NULL END PhoneNumber
-            	, CASE WHEN LEN([Address]) > 0 THEN [Address] ELSE NULL END StreetAddress, CASE WHEN LEN(City) > 0 THEN City ELSE NULL END City
-            	, t.Code [State], CASE WHEN LEN(PostalCode) > 0 THEN PostalCode ELSE NULL END Postal
-            	, mrswh.Title
-            	, CASE WHEN s.CurrentSalary is not null 
-        			    THEN CAST(s.CurrentSalary as float ) 
-        				ELSE CASE WHEN s.CurrentRate is NOT NULL 
-        					THEN  CAST(s.CurrentRate * 40 * 52  as float ) 
-        					ELSE 0 
-        					END 
-        			END  CurrentRate 
-            	, ss.Skills 
-                , dbo.fn_GetGeographyCoordinate((SELECT TOP 1 CityId FROM dbo.City c INNER JOIN dbo.[State] t ON c.StateId = t.StateId WHERE c.[Name] = s.City AND t.StateId = s.StateId)
-            	, s.StateId, (SELECT TOP 1 PostalId FROM dbo.Postal WHERE Code = s.PostalCode)) [Location]
-            	, s.ModifyDate
-            	, s.AvatarUrl
-            	, ssd.PartnerGuid as PartnerGuid
-            	, sl.SubscriberLanguages
-            	, cd.DistanceRange as CommuteDistance
-            	,s.IsWillingToTravel
-            	,s.IsFlexibleWorkScheduleRequired
-            	,et.EmploymentTypes
-            	,st.SubscriberTraining
-            	,se.SubscriberEducation
-            	,stl.SubscriberTitles
-            	,swh.SubscriberWorkHistory
-            	,s.AzureIndexStatusId
-                , CASE WHEN LEN(s.CoverLetter) > 140
-                      THEN LEFT(s.CoverLetter, 140) + '...'
-                      ELSE s.CoverLetter
-                  END CoverLetter
-                , s.DesiredRate
-                , c.ContactDate LastContacted
-                , v.VideoLink
-                , v.VideoMimeType
-                , v.ThumbnailLink
-                , v.ThumbnailMimeType
-            FROM Subscriber s	
-            LEFT JOIN [State] t ON s.StateId = t.StateId
-            LEFT JOIN mostRecentSubscriberWorkHistory mrswh ON s.SubscriberId = mrswh.SubscriberId
-            LEFT JOIN subscriberSkills ss ON s.SubscriberId = ss.SubscriberId 
-            LEFT JOIN v_SubscriberSourceDetails ssd on ssd.SubscriberId = s.SubscriberId and ssd.GroupRank = 1 and ssd.PartnerRank = 1
-            LEFT JOIN B2B.HiringManagers hm ON s.SubscriberId = hm.SubscriberId
-            LEFT JOIN subscriberLanguages sl on s.SubscriberId = sl.SubscriberId
-            LEFT JOIN CommuteDistance cd on cd.CommuteDistanceId = s.CommuteDistanceId
-            LEFT JOIN subscriberEmploymentType et ON s.SubscriberId = et.SubscriberId 
-            LEFT JOIN subscriberTrainings st ON s.SubscriberId = st.SubscriberId 
-            LEFT JOIN subscriberEducation se ON s.SubscriberId = se.SubscriberId 
-            LEFT JOIN subscriberTitle stl ON s.SubscriberId = stl.SubscriberId 
-            LEFT JOIN subscriberWorkHistories swh  ON s.SubscriberId = swh.SubscriberId
-            LEFT JOIN mostRecentProfileComment c ON s.SubscriberId = c.SubscriberId
-            LEFT JOIN mostRecentIntroVideo v ON s.SubscriberId = v.SubscriberId AND s.IsVideoVisibleToHiringManager = 1
+                LEFT JOIN SubscriberSkill ss ON s.SubscriberId = ss.SubscriberId
+                LEFT JOIN dbo.Skill sk ON ss.SkillId = sk.SkillId
             WHERE s.IsDeleted = 0
-            AND hm.HiringManagerId IS NULL')");
+                AND sk.IsDeleted = 0
+                AND ss.IsDeleted = 0
+            GROUP BY s.SubscriberId
+        ),
+        subscriberLanguages
+        AS
+        (
+            SELECT
+                s.SubscriberId,
+                STRING_AGG(CAST(l.LanguageName AS NVARCHAR(MAX)) + char(29) + pl.ProficiencyLevelName, char(30)) SubscriberLanguages,
+                dbo.fn_GreatestDate(MAX(s.CreateDate), MAX(slp.ModifyDate), default, default, default) ModifyDate
+            FROM Subscriber s
+                LEFT JOIN SubscriberLanguageProficiencies slp ON s.SubscriberId = slp.SubscriberId
+                LEFT JOIN ProficiencyLevels pl ON slp.ProficiencyLevelId = pl.ProficiencyLevelId
+                LEFT JOIN Languages l on slp.LanguageId = l.LanguageId
+            WHERE s.IsDeleted = 0
+                AND slp.IsDeleted = 0
+                AND pl.IsDeleted = 0
+                AND l.IsDeleted = 0
+            GROUP BY s.SubscriberId
+        ),
+        subscriberEmploymentType
+        AS
+        (
+            SELECT
+                s.SubscriberId,
+                STRING_AGG(et.Name, char(30)) EmploymentTypes
+            FROM Subscriber s
+                LEFT JOIN SubscriberEmploymentTypes e ON s.SubscriberId = e.SubscriberId
+                LEFT JOIN dbo.EmploymentType et ON e.EmploymentTypeId = et.EmploymentTypeId
+            WHERE s.IsDeleted = 0
+                AND e.IsDeleted = 0
+                AND et.IsDeleted = 0
+            GROUP BY s.SubscriberId
+        ),
+        subscriberTrainings
+        AS
+        (
+            SELECT
+                s.SubscriberId,
+                STRING_AGG( tt.Name + char(29) + st.TrainingInstitution + char(29) + st.TrainingName, char(30)) SubscriberTraining
+            FROM Subscriber s
+                LEFT JOIN SubscriberTraining st ON s.SubscriberId = st.SubscriberId
+                LEFT JOIN TrainingType tt ON st.TrainingTypeId = tt.TrainingTypeId 
+            WHERE s.IsDeleted = 0
+                AND st.IsDeleted = 0
+                AND tt.IsDeleted = 0 
+            GROUP BY s.SubscriberId
+        ),
+        subscriberEducation
+        AS
+        (
+            SELECT
+                s.SubscriberId,
+                STRING_AGG(ISNULL(ei.Name,'''') + char(29) +  ISNULL(edt.DegreeType,'''') + char(29) + ISNULL(ed.Degree,'''')  , char(30)) SubscriberEducation
+            FROM Subscriber s
+                LEFT JOIN SubscriberEducationHistory seh ON s.SubscriberId = seh.SubscriberId
+                LEFt JOIN EducationalInstitution ei ON seh.EducationalInstitutionId = ei.EducationalInstitutionId
+                LEFT JOIN EducationalDegree ed ON seh.EducationalDegreeId = ed.EducationalDegreeId
+                LEFT JOIN EducationalDegreeType edt ON seh.EducationalDegreeTypeId = edt.EducationalDegreeTypeId
+            WHERE s.IsDeleted = 0
+                AND seh.IsDeleted = 0 
+            GROUP BY s.SubscriberId
+        ),
+        subscriberTitle
+        AS
+        (
+            SELECT
+                x.SubscriberId,
+                STRING_AGG(ISNULL(x.Title,'''') , char(30)) SubscriberTitles
+            FROM
+            (
+                SELECT
+                    s.subscriberId,
+                    swh.Title
+                FROM Subscriber s
+                    LEFT JOIN  SubscriberWorkHistory swh ON s.SubscriberId = swh.SubscriberId    
+                WHERE s.IsDeleted = 0
+                    AND swh.IsDeleted = 0
+                    AND swh.Title IS NOT NULL
+                UNION SELECT
+                    subscriberid,
+                    title
+                FROM Subscriber
+                WHERE title IS NOT NULL
+            ) X
+            GROUP BY x.SubscriberId
+        ),
+        subscriberWorkHistories
+        AS
+        (
+            SELECT
+                s.SubscriberId,
+                STRING_AGG(ISNULL(c.CompanyName,'''') + char(29) + ISNULL(swh.Title,''''), char(30)) SubscriberWorkHistory
+            FROM Subscriber s
+                LEFT JOIN  SubscriberWorkHistory swh ON s.SubscriberId = swh.SubscriberId
+                LEFT JOIN  Company c ON swh.CompanyId = c.CompanyId
+            WHERE s.IsDeleted = 0
+                AND swh.IsDeleted = 0 
+            GROUP BY s.SubscriberId
+        ),
+        profileCommentsWithRowNumber
+        AS
+        (
+            SELECT
+                p.SubscriberId,
+                c.CreateDate ContactDate,
+                ROW_NUMBER() OVER (PARTITION BY p.SubscriberId ORDER BY c.CreateDate DESC) rownum,
+                p.CreateDate
+            FROM G2.Profiles p LEFT JOIN G2.ProfileComments c ON p.ProfileId = c.ProfileId
+            WHERE p.IsDeleted = 0 AND c.IsDeleted = 0
+        ),
+        mostRecentProfileComment
+        AS
+        (
+            SELECT
+                SubscriberId,
+                ISNULL(ContactDate, CreateDate) ContactDate
+            FROM profileCommentsWithRowNumber
+            WHERE rownum = 1
+        ),
+        introVideosWithRowNumber
+        AS
+        (
+            SELECT
+                v.VideoLink,
+                v.VideoMimeType,
+                v.ThumbnailLink,
+                v.ThumbnailMimeType,
+                ROW_NUMBER() OVER (PARTITION BY v.SubscriberId ORDER BY v.CreateDate DESC) rownum,
+                v.SubscriberId
+            FROM SubscriberVideos v
+            WHERE v.IsDeleted = 0 AND v.IsPublished = 1
+        ),
+        mostRecentIntroVideo
+        AS
+        (
+            SELECT
+                SubscriberId,
+                VideoLink,
+                VideoMimeType,
+                ThumbnailLink,
+                ThumbnailMimeType
+            FROM introVideosWithRowNumber
+            WHERE rownum = 1
+        ),
+        traitifyWithRowNumber
+        AS
+        (
+            SELECT
+                t.SubscriberId,
+                t.ResultData,
+                ROW_NUMBER() OVER (PARTITION BY t.SubscriberId ORDER BY t.CreateDate DESC) rownum
+            FROM dbo.Traitify t
+            WHERE t.IsDeleted = 0 AND t.ResultData IS NOT NULL
+        ),
+        mostRecentTraitify
+        AS
+        (
+            SELECT
+                SubscriberId,
+                REPLACE(JSON_VALUE(ResultData, ''$.personality_blend.name''), ''/'', CHAR(30)) PersonalityBlendName,
+                JSON_VALUE(ResultData, ''$.personality_blend.personality_type_1.badge.image_small'') Personality1ImageUrl,
+                JSON_VALUE(ResultData, ''$.personality_blend.personality_type_2.badge.image_small'') Personality2ImageUrl
+            FROM traitifyWithRowNumber
+            WHERE rownum = 1
+        )
+    SELECT
+        s.CreateDate
+        , s.SubscriberId
+        , s.SubscriberGuid
+        , CASE WHEN LEN(s.FirstName) > 0 THEN s.FirstName ELSE NULL END FirstName
+        , CASE WHEN LEN(s.LastName) > 0 THEN s.LastName ELSE NULL END LastName
+        , s.Email
+        , CASE WHEN LEN(PhoneNumber) > 0 THEN PhoneNumber ELSE NULL END PhoneNumber
+        , CASE WHEN LEN([Address]) > 0 THEN [Address] ELSE NULL END StreetAddress
+        , CASE WHEN LEN(City) > 0 THEN City ELSE NULL END City
+        , t.Code [State]
+        , CASE WHEN LEN(PostalCode) > 0 THEN PostalCode ELSE NULL END Postal
+        , mrswh.Title
+        , CASE WHEN s.CurrentSalary IS NOT NULL
+            THEN CAST(s.CurrentSalary AS FLOAT)
+            ELSE CASE WHEN s.CurrentRate IS NOT NULL
+                THEN  CAST(s.CurrentRate * 40 * 52 AS FLOAT)
+                ELSE 0
+            END
+        END CurrentRate
+        , ss.Skills
+        , dbo.fn_GetGeographyCoordinate(
+            (
+                SELECT TOP 1
+                    CityId
+                FROM dbo.City c
+                    INNER JOIN dbo.[State] t ON c.StateId = t.StateId
+                WHERE c.[Name] = s.City
+                    AND t.StateId = s.StateId
+            )
+            , s.StateId
+            , (
+                SELECT TOP 1
+                    PostalId
+                FROM dbo.Postal
+                WHERE Code = s.PostalCode
+            )
+        ) [Location]
+        , s.ModifyDate
+        , s.AvatarUrl
+        , ssd.PartnerGuid AS PartnerGuid
+        , sl.SubscriberLanguages
+        , cd.DistanceRange AS CommuteDistance
+        , s.IsWillingToTravel
+        , s.IsFlexibleWorkScheduleRequired
+        , et.EmploymentTypes
+        , st.SubscriberTraining
+        , se.SubscriberEducation
+        , stl.SubscriberTitles
+        , swh.SubscriberWorkHistory
+        , s.AzureIndexStatusId
+        , CASE WHEN LEN(s.CoverLetter) > 140
+            THEN LEFT(s.CoverLetter, 140) + ''...''
+            ELSE s.CoverLetter
+          END CoverLetter
+        , CASE WHEN s.DesiredSalary IS NOT NULL
+            THEN CAST(s.DesiredSalary AS FLOAT)
+            ELSE CASE WHEN s.DesiredRate IS NOT NULL
+                THEN  CAST(s.DesiredRate * 40 * 52 AS FLOAT)
+                ELSE 0
+            END
+          END DesiredRate
+        , c.ContactDate LastContactDate
+        , v.VideoLink
+        , v.VideoMimeType
+        , v.ThumbnailLink AS ThumbnailImageUrl
+        , v.ThumbnailMimeType
+        , tr.PersonalityBlendName
+        , tr.Personality1ImageUrl
+        , tr.Personality2ImageUrl
+    FROM Subscriber s	
+        LEFT JOIN [State] t ON s.StateId = t.StateId
+        LEFT JOIN mostRecentSubscriberWorkHistory mrswh ON s.SubscriberId = mrswh.SubscriberId
+        LEFT JOIN subscriberSkills ss ON s.SubscriberId = ss.SubscriberId 
+        LEFT JOIN v_SubscriberSourceDetails ssd on ssd.SubscriberId = s.SubscriberId and ssd.GroupRank = 1 and ssd.PartnerRank = 1
+        LEFT JOIN B2B.HiringManagers hm ON s.SubscriberId = hm.SubscriberId
+        LEFT JOIN subscriberLanguages sl on s.SubscriberId = sl.SubscriberId
+        LEFT JOIN CommuteDistance cd on cd.CommuteDistanceId = s.CommuteDistanceId
+        LEFT JOIN subscriberEmploymentType et ON s.SubscriberId = et.SubscriberId 
+        LEFT JOIN subscriberTrainings st ON s.SubscriberId = st.SubscriberId 
+        LEFT JOIN subscriberEducation se ON s.SubscriberId = se.SubscriberId 
+        LEFT JOIN subscriberTitle stl ON s.SubscriberId = stl.SubscriberId 
+        LEFT JOIN subscriberWorkHistories swh  ON s.SubscriberId = swh.SubscriberId
+        LEFT JOIN mostRecentProfileComment c ON s.SubscriberId = c.SubscriberId
+        LEFT JOIN mostRecentIntroVideo v ON s.SubscriberId = v.SubscriberId AND s.IsVideoVisibleToHiringManager = 1
+        LEFT JOIN mostRecentTraitify tr ON s.SubscriberId = tr.SubscriberId
+    WHERE s.IsDeleted = 0
+    AND hm.HiringManagerId IS NULL')");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
