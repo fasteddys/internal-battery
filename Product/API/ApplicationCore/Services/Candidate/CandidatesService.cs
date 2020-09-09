@@ -715,7 +715,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             {
                 try
                 {
-                    CandidateSDOC indexDoc = await MapToCandidateSDOC(p);
+                    CandidateSDOC indexDoc = MapToCandidateSDOC(p);
                     Docs.Add(indexDoc);
                 }
                 catch (Exception ex)
@@ -760,7 +760,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                     return false;
                 }
                 
-                CandidateSDOC indexDoc = await MapToCandidateSDOC(candidateProfile);
+                CandidateSDOC indexDoc = MapToCandidateSDOC(candidateProfile);
      
                 _logger.LogInformation($"CandidateService:CandidateIndexAsync Starting subscriber = {subscriberGuid}  ");
                 AzureIndexResult info = await _azureSearchService.AddOrUpdateCandidate(indexDoc);
@@ -791,7 +791,7 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             {
                 _logger.LogInformation($"CandidateService:CandidateIndexRemoveAsync Starting subscriber = {candidate.SubscriberGuid}  ");
 
-                CandidateSDOC indexDoc = await MapToCandidateSDOC(candidate);
+                CandidateSDOC indexDoc = MapToCandidateSDOC(candidate);
                 AzureIndexResult info = await _azureSearchService.DeleteCandidate(indexDoc);
                 // Update subscribers azure index status 
                 await UpdateAzureStatus(info, Constants.AzureSearchIndexStatus.Deleted, info.StatusMsg);
@@ -841,152 +841,11 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
 
         // IMPORTANT!          
         // 1) Any colections of objects (e.g. Skills, Languages, etc.) must be hydrated with an empty list 
-        private async Task<CandidateSDOC> MapToCandidateSDOC(v_CandidateAzureSearch candidate)
+        private CandidateSDOC MapToCandidateSDOC(v_CandidateAzureSearch candidate)
         {
-            char recordDelim = Convert.ToChar(30);
-            char fieldDelim = Convert.ToChar(29);
             try
             {
-                CandidateSDOC indexDoc = _mapper.Map<CandidateSDOC>(candidate);
-                // manually map the location.  todo find a way for automapper to do this 
-                if (candidate.Location != null)
-                {
-                    Double lat = (double)candidate.Location.Lat;
-                    Double lng = (double)candidate.Location.Long;
-                    Position p = new Position(lat, lng);
-                    indexDoc.Location = new Point(p);
-                }
-                // map skills to list 
-                List<string> skillList = new List<string>();
-                if (!string.IsNullOrEmpty(candidate.Skills))
-                {
-                    string[] skillArray = candidate.Skills.Split(recordDelim);
-
-                    foreach (string skill in skillArray)
-                        skillList.Add(skill);
-
-                }
-                indexDoc.Skills = skillList;
-
-                // map  languages 
-                indexDoc.Languages = new List<LanguageSDOC>();
-                if (!string.IsNullOrEmpty(candidate.SubscriberLanguages))
-                {
-                    string[] languageArray = candidate.SubscriberLanguages.Split(recordDelim);
-                    foreach (string languageInfo in languageArray)
-                    {                       
-                        try
-                        {
-                            string[] langInfo = languageInfo.Split(fieldDelim);
-                            indexDoc.Languages.Add(new LanguageSDOC()
-                            {             
-                                Language = langInfo[0],
-                                Proficiency = langInfo[1]
-                            });
-                        }
-                        catch ( Exception ex )
-                        {
-                            LogMappingError(candidate, $"LanguageInfo = {languageInfo}", ex);
-                        }                 
-                    }
-                }
-
-                // map employment types to list 
-                List<string> employmentTypes = new List<string>();
-                if (!string.IsNullOrEmpty(candidate.EmploymentTypes))
-                {
-                    string[] info = candidate.EmploymentTypes.Split(recordDelim);
-
-                    foreach (string employmentType in info)
-                        employmentTypes.Add(employmentType);
-                }
-                indexDoc.EmploymentTypes = employmentTypes;
-
-                // map trainings 
-                indexDoc.Training = new List<TrainingSDOC>();
-                if (!string.IsNullOrEmpty(candidate.SubscriberTraining))
-                {
-                    string[] info = candidate.SubscriberTraining.Split(recordDelim);
-                    foreach (string data in info)
-                    {                 
-                        try
-                        {
-                            string[] trainingInfo = data.Split(fieldDelim);
-                            indexDoc.Training.Add(new TrainingSDOC()
-                            {
-                                Type = trainingInfo[0],
-                                Institution = trainingInfo[1],
-                                Name = trainingInfo[2]
-                            });
-                        }
-                        catch (Exception ex)
-                        {
-                            LogMappingError(candidate, $"TrainingInfo = {data}", ex);
-                        }
-
-
-                    }
-                }
-
-                // map Education 
-                indexDoc.Education = new List<EducationSDOC>();
-                if (!string.IsNullOrEmpty(candidate.SubscriberEducation))
-                {
-                    string[] info = candidate.SubscriberEducation.Split(recordDelim);
-                    foreach (string data in info)
-                    {
-                        try
-                        {
-                            string[] educationInfo = data.Split(fieldDelim);
-                            indexDoc.Education.Add(new EducationSDOC()
-                            {
-                                Institution = educationInfo[0],
-                                DegreeType = educationInfo[1],
-                                Degree = educationInfo[2]
-                            });
-                        }
-                        catch (Exception ex)
-                        {
-                            LogMappingError(candidate, $"EducationInfo = {data}", ex);
-                        }
-                    }
-                }
-
-                // map job titles
-                indexDoc.Titles = new List<string>();
-                if (!string.IsNullOrEmpty(candidate.SubscriberTitles))
-                {
-                    string[] info = candidate.SubscriberTitles.Split(recordDelim);
-
-                    foreach (string title in info)
-                        indexDoc.Titles.Add(title);
-
-                }
-
-                // map work histories
-                indexDoc.WorkHistories = new List<WorkHistorySDOC>();
-                if (!string.IsNullOrEmpty(candidate.SubscriberWorkHistory))
-                {
-                    string[] info = candidate.SubscriberWorkHistory.Split(recordDelim);
-                    foreach (string data in info)
-                    {                       
-                        try
-                        {
-                            string[] workInfo = data.Split(fieldDelim);
-                            indexDoc.WorkHistories.Add(new WorkHistorySDOC()
-                            {
-                                CompanyName = workInfo[0],
-                                Title = workInfo[1]
-                            });
-                        }
-                        catch (Exception ex)
-                        {
-                            LogMappingError(candidate, $"WorkHistory = {data}", ex);
-                        }
-                    }
-                }
-
-                return indexDoc;
+                return _mapper.Map<CandidateSDOC>(candidate);
             }
             catch (Exception ex)
             {

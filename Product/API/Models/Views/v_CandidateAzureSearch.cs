@@ -68,6 +68,8 @@ namespace UpDiddyApi.Models.Views
 
         public string StreetAddress { get; set; }
 
+        public Guid SubscriberGuid { get; set; }
+
         public string ThumbnailImageUrl { get; set; }
 
         public string Title { get; set; }

@@ -136,6 +136,7 @@ AS
         , ss.Skills 
         , t.Code [State]
         , CASE WHEN LEN([Address]) > 0 THEN [Address] ELSE NULL END StreetAddress
+        , s.SubscriberGuid
         , sv.ThumbnailLink ThumbnailImageUrl
         , s.Title   
         , st.SubscriberTraining Training
