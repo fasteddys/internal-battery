@@ -114,7 +114,7 @@ AS
         , s.CreateDate
         , CASE WHEN s.CurrentSalary IS NOT NULL THEN CAST(s.CurrentSalary AS FLOAT) ELSE (CASE WHEN s.CurrentRate IS NOT NULL THEN CAST(s.CurrentRate * 40 * 52 AS FLOAT) ELSE 0 END) END CurrentRate
         , CASE WHEN s.DesiredSalary IS NOT NULL THEN CAST(s.DesiredSalary AS FLOAT) ELSE (CASE WHEN s.DesiredRate IS NOT NULL THEN CAST(s.DesiredRate * 40 * 52 AS FLOAT) ELSE 0 END) END DesiredRate
-        , se.SubscriberEducation
+        , se.SubscriberEducation Education
         , s.Email
         , et.EmploymentTypes
         , CASE WHEN LEN(s.CoverLetter) > 140 THEN LEFT(s.CoverLetter, 140) + ''...'' ELSE s.CoverLetter END ExperienceSummary
