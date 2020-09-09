@@ -305,6 +305,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 _logger.LogDebug("CandidatesService:CreateLanguageProficiency: Creating Candidate 360 languages and proficiencies for subscriber {subscriber}", subscriberGuid);
 
                 var languageProficiencyGuid = await _repositoryWrapper.SubscriberRepository.CreateSubscriberLanguageProficiency(languageProficiency, subscriberGuid);
+                // update candidate index
+                await IndexCandidateBySubscriberAsync(subscriberGuid);
 
                 _logger.LogDebug("CandidatesService:CreateLanguageProficiency: Created Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", languageProficiencyGuid, subscriberGuid);
 
@@ -346,6 +348,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
                 _logger.LogDebug("CandidatesService:DeleteLanguageProficiency: Deleting Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", subscriberGuid);
 
                 await _repositoryWrapper.SubscriberRepository.DeleteSubscriberLanguageProficiency(languageProficiencyGuid, subscriberGuid);
+                // update candidate index
+                await IndexCandidateBySubscriberAsync(subscriberGuid);
 
                 _logger.LogDebug("CandidatesService:DeleteLanguageProficiency: Updated Candidate 360 language and proficiency {languageProficiency} for subscriber {subscriber}", subscriberGuid);
             }
@@ -385,6 +389,9 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             subscriber.DesiredRate = compensationPreferences.DesiredRate;
             subscriber.DesiredSalary = compensationPreferences.DesiredSalary;
             await _repositoryWrapper.SubscriberRepository.SaveAsync();
+
+            // update candidate index
+            await IndexCandidateBySubscriberAsync(subscriberGuid);
         }
 
         #endregion CompensationPreferences
@@ -679,6 +686,8 @@ namespace UpDiddyApi.ApplicationCore.Services.Candidate
             try
             {
                 await _repositoryWrapper.SubscriberRepository.UpdateCandidateWorkHistory(subscriberGuid, request);
+                // update candidate index
+                await IndexCandidateBySubscriberAsync(subscriberGuid);
             }
             catch (Exception e)
             {
