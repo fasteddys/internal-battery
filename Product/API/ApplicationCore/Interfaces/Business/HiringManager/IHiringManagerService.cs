@@ -66,6 +66,11 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager
         Task<List<string>> GetProhibitiedEmailDomains();
 
         Task<CandidateDetailDto> GetCandidate360Detail(Guid profileGuid);
+
+        #region CandidateSearch
+
+        Task<HiringManagerCandidateSearchDto> CandidateSearchByHiringManagerAsync(Guid subscriberGuid, CandidateSearchQueryDto searchDto);
+        #endregion
     }
 }
 

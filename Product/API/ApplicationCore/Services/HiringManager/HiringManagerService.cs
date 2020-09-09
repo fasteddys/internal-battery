@@ -311,6 +311,13 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             return candidateDetailDto;
         }
 
+        #region Candidate Search
+        public Task<HiringManagerCandidateSearchDto> CandidateSearchByHiringManagerAsync(Guid subscriberGuid, CandidateSearchQueryDto searchDto)
+        {
+            return null;
+        }
+        #endregion
+
         public async Task<bool> _AddHiringManager(Subscriber subscriber)
         {
             _logger.LogInformation($"HiringManagerService:_AddHiringManager  Starting for subscriber {subscriber.SubscriberGuid} ");
