@@ -165,7 +165,7 @@ AS
             migrationBuilder.Sql(@"EXEC('/*
 <remarks>
 2020.07.38 - JAB - Created
-2020.09-10 - Joey Herrington - Indexing is not keyed by Profile Guid, not Subscriber Guid
+2020.09-10 - Joey Herrington - Indexing is now keyed by Profile Guid, not Subscriber Guid
 </remarks>
 <description>
 Performs a bulk update for azure status information for the specfied set of subscribers
