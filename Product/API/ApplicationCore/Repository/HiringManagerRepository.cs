@@ -103,7 +103,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 };
                 var subscriberSources = await _dbContext.SubscriberSourcesDetails.FromSql<SubscriberSourceDto>("System_Get_SubscriberSources @SubscriberId", spParams).ToListAsync();
                 if (subscriberSources.Any(ss => ss.PartnerName == "Merit America" || ss.PartnerName == "Coursera"))
-                    estimatedHiringFee = 0.0M;
+                    estimatedHiringFee = -1.0M;
             }
 
             var employmentPreferences = new List<string>();
