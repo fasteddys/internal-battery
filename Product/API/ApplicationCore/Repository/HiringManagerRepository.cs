@@ -128,7 +128,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
             .Where(st => st.IsDeleted == 0 && st.Subscriber.IsDeleted == 0 && st.SubscriberId == profile.SubscriberId && !(string.IsNullOrWhiteSpace(st.TrainingInstitution) && string.IsNullOrWhiteSpace(st.TrainingName)))
             .Include(st => st.Subscriber)
             .Include(st => st.TrainingType)
-            .Select(st => new HiringManagerTechnicalAndProfessionalTrainingDto() { Concentration = usTI.ToTitleCase(WebUtility.HtmlDecode(st.TrainingName)), Institution = usTI.ToTitleCase(WebUtility.HtmlDecode(st.TrainingInstitution)) })
+            .Select(st => new HiringManagerTechnicalAndProfessionalTrainingDto()
+            {
+                Concentration = st.TrainingName != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(st.TrainingName)) : null,
+                Institution = st.TrainingInstitution != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(st.TrainingInstitution)) : null
+            })
             .ToList();
 
             var formalEducation = _dbContext.SubscriberEducationHistory
@@ -139,9 +143,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 .Include(seh => seh.EducationalDegreeType.EducationalDegreeTypeCategory)
                 .Select(seh => new HiringManagerFormalEducationDto()
                 {
-                    Concentration = seh.EducationalDegree != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(seh.EducationalDegree.Degree)) : null,
+                    Concentration = seh.EducationalDegree != null && seh.EducationalDegree.Degree != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(seh.EducationalDegree.Degree)) : null,
                     DegreeType = seh.EducationalDegreeType != null ? seh.EducationalDegreeType.EducationalDegreeTypeCategory.Name + " - " + seh.EducationalDegreeType.DegreeType : null,
-                    Institution = seh.EducationalInstitution != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(seh.EducationalInstitution.Name)) : null
+                    Institution = seh.EducationalInstitution != null && seh.EducationalInstitution.Name != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(seh.EducationalInstitution.Name)) : null
                 })
                 .ToList();
 
@@ -182,9 +186,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 .OrderByDescending(swh => swh.EndDate).ThenByDescending(swh => swh.CreateDate)
                 .Select(swh => new HiringManagerWorkHistoryDto()
                 {
-                    Company = swh.Company != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(swh.Company.CompanyName)) : null,
+                    Company = swh.Company != null && swh.Company.CompanyName != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(swh.Company.CompanyName)) : null,
                     Description = WebUtility.HtmlDecode(swh.JobDescription),
-                    Position = usTI.ToTitleCase(WebUtility.HtmlDecode(swh.Title)),
+                    Position = swh.Title != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(swh.Title)) : null,
                     StartDate = swh.StartDate.HasValue ? swh.StartDate.Value.ToString("MM/yy") : null,
                     EndDate = swh.EndDate.HasValue ? swh.EndDate.Value.ToString("MM/yy") : null
                 })
@@ -193,9 +197,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
             CandidateDetailDto candidateDetailDto = new CandidateDetailDto()
             {
                 ProfileGuid = profile.ProfileGuid,
-                FirstName = usTI.ToTitleCase(WebUtility.HtmlDecode(profile.Subscriber.FirstName)),
-                JobTitle = usTI.ToTitleCase(WebUtility.HtmlDecode(profile.Subscriber.Title)),
-                Location = usTI.ToTitleCase(WebUtility.HtmlDecode(location)),
+                FirstName = profile.Subscriber.FirstName != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(profile.Subscriber.FirstName)) : null,
+                JobTitle = profile.Subscriber.Title != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(profile.Subscriber.Title)) : null,
+                Location = location != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(location)) : null,
                 Skills = skills,
                 DesiredAnnualSalary = desiredAnnualSalary,
                 EstimatedHiringFee = estimatedHiringFee,
