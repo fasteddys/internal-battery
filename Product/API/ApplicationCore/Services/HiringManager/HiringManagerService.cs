@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
+using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Azure.Search;
+using Microsoft.Azure.Search.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +20,7 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.B2B;
 using UpDiddyLib.Dto;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 {
@@ -314,6 +318,54 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
         #region Candidate Search
         public Task<HiringManagerCandidateSearchDto> CandidateSearchByHiringManagerAsync(Guid subscriberGuid, CandidateSearchQueryDto searchDto)
         {
+            _logger.LogInformation($"HiringManagerService:CandidateSearchByHiringManagerAsync  Starting for subscriber {subscriberGuid} ");
+            if(subscriberGuid.Equals(Guid.Empty))
+                throw new FailedValidationException($"HiringManagerService:CandidateSearchByHiringManagerAsync subscriber guid cannot be empty({subscriberGuid})");
+            if(searchDto == null)
+                throw new FailedValidationException($"HiringManagerService:CandidateSearchByHiringManagerAsync searchDto cannot be null");
+
+            try
+            {
+                // validate the the user provides a city if they also provided a radius
+                if ((searchDto.CityGuid == null || searchDto.CityGuid == Guid.Empty) && searchDto.Radius != 0)
+                    throw new FailedValidationException("A city guid must be provided if a radius is specifed");
+
+                // All hiring managers are to use the default CC search company
+                string CCCompanySearchGuid = _configuration["AzureSearch:CCCompanySearchGuid"];
+                List<Guid> companyGuids = new List<Guid>()
+                {
+                    Guid.Parse(CCCompanySearchGuid)
+                };
+
+
+
+                // handle case of non geo search 
+                if (searchDto.CityGuid == null || searchDto.CityGuid == Guid.Empty)
+                {
+                    var searchResults = await _HiringMangerSearchAsync(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, 0, 0, 0, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
+                    // Obfucscate the results 
+                    //Obfuscate(results);
+                    return searchResults;
+                }
+
+
+                // pick a random postal code for the city to get the last and long 
+                Postal postal = _repository.PostalRepository.GetAll()
+                    .Include(c => c.City)
+                    .Where(p => p.City.CityGuid == cityGuid && p.IsDeleted == 0)
+                    .FirstOrDefault();
+
+                // validate that the city has a postal code 
+                if (postal == null)
+                    throw new NotFoundException($"A city with an Guid of {cityGuid} cannot be found.");
+
+                var searchResults = await _PerformAzureSearch();
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError($"HiringManagerService:CandidateSearchByHiringManagerAsync  Error: {ex.ToString()} ");
+            }
+            _logger.LogInformation($"HiringManagerService:CandidateSearchByHiringManagerAsync  Done");
             return null;
         }
         #endregion
@@ -338,5 +390,169 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 .Distinct()
                 .OrderBy(e => e)
                 .ToListAsync();
+
+        private async Task<HiringManagerCandidateSearchDto> _PerformAzureSearch(List<string> searchFields, List<Guid> companyGuids, CandidateSearchQueryDto searchDto, double lat = 0, double lng = 0)
+        {
+
+            try
+            {
+                _logger.LogInformation($"HiringManagerService:_PerformAzureSearch: starting searchField ={searchFields} sort={searchDto.Sort} order={searchDto.Order} keyword={searchDto.Keyword} limit = {searchDto.Limit} radius={searchDto.Radius}");
+                if (companyGuids == null || companyGuids.Count == 0)
+                    throw new FailedValidationException("HiringManagerService:_PerformAzureSearch: Recruiter is not associated with the CareerCircle search company");
+
+                DateTime startSearch = DateTime.Now;
+                HiringManagerCandidateSearchDto searchResults = new HiringManagerCandidateSearchDto();
+
+                string searchServiceName = _configuration["AzureSearch:SearchServiceName"];
+                string adminApiKey = _configuration["AzureSearch:SearchServiceQueryApiKey"];
+                string g2IndexName = "careercircle-candidate-vivek"; //_configuration["AzureSearch:G2IndexName"];_configuration["AzureSearch:HMCandidateSearch"]
+
+                // map descending to azure search sort syntax of "asc" or "desc"  default is ascending so only map descending 
+                string orderBy = searchDto.Sort;
+                if (searchDto.Order == "descending")
+                    orderBy = orderBy + " desc";
+                List<String> orderByList = new List<string>();
+                orderByList.Add(orderBy);
+
+                SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(adminApiKey));
+                ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(g2IndexName);
+
+                SearchParameters parameters;
+                DocumentSearchResult<G2InfoDto> results;
+
+                parameters =
+                    new SearchParameters()
+                    {
+                        Top = searchDto.Limit,
+                        Skip = searchDto.Offset,
+                        OrderBy = orderByList,
+                        IncludeTotalResultCount = true,
+                        // Add facets
+                        Facets = new List<String>() { "IsResumeUploaded", "HasVideoInterview", "Skill", "WorkPreference", "Roles", "Personalities" },
+                    };
+
+                // add search field if one is specified 
+                //if (searchFields != null)
+                //{
+                //    parameters.SearchFields = searchFields;
+                //}
+
+                //filters
+                if (searchDto.IsResumeUploaded.HasValue)
+                    parameters.Filter += $" and IsResumeUploaded eq " + (searchDto.IsResumeUploaded.Value ? "true" : "false");
+
+                if (searchDto.HasVideoInterview.HasValue)
+                    parameters.Filter += $" and HasVideoInterview eq " + (searchDto.HasVideoInterview.Value ? "true" : "false");
+
+                if (searchDto.SalaryUb.HasValue && searchDto.SalaryLb.HasValue)
+                    parameters.Filter += $" and IsResumeUploaded eq " + (searchDto.IsResumeUploaded.Value ? "true" : "false");
+
+
+                //search skills
+                if (searchDto.Skill != null && searchDto.Skill.Count > 0)
+                {
+                    var skillsFilterExpression = searchDto.Skill.Select(s => $"skill eq '{s}'").ToList();
+                    var skillsFilterString = string.Join(" or ", skillsFilterExpression);
+                    parameters.Filter += $" and Skills/any(skill: {skillsFilterString})";
+                }
+
+                //search WorkPreference
+                if (searchDto.WorkPreference != null && searchDto.WorkPreference.Count > 0)
+                {
+                    var workPreferenceFilterExpression = searchDto.Skill.Select(s => $"workpreference eq '{s}'").ToList();
+                    var workPreferenceFilterString = string.Join(" or ", workPreferenceFilterExpression);
+                    parameters.Filter += $" and WorkPreferences/any(workpreference: {workPreferenceFilterString})";
+                }
+
+                //search Role preference - ???? do we need a Role property in the Index 
+                // or should we drill into the WorkHistories collection for Title property
+                if (searchDto.Role != null && searchDto.Role.Count > 0)
+                {
+                    var roleFilterExpression = searchDto.Skill.Select(s => $"role eq '{s}'").ToList();
+                    var roleFilterString = string.Join(" or ", roleFilterExpression);
+                    parameters.Filter += $" and Roles/any(role: {roleFilterString})";
+                }
+
+                //search Personality
+                if (searchDto.Personality != null && searchDto.Personality.Count > 0)
+                {
+                    var personalitiesFilterExpression = searchDto.Skill.Select(s => $"personality eq '{s}'").ToList();
+                    var personalitiesFilterString = string.Join(" or ", personalitiesFilterExpression);
+                    parameters.Filter += $" and Personalities/any(personality: {personalitiesFilterString})";
+                }
+
+                //search Training - ???? is this same as certification
+                if (searchDto.Certification != null && searchDto.Certification.Count > 0)
+                {
+                    var workPreferenceFilterExpression = searchDto.Skill.Select(s => $"training eq '{s}'").ToList();
+                    var workPreferenceFilterString = string.Join(" or ", workPreferenceFilterExpression);
+                    parameters.Filter += $" and WorkPreferences/any(training: {workPreferenceFilterString})";
+                }
+
+
+                double radiusKm = 0;
+                // check to see if radius is in play
+                if (searchDto.Radius > 0)
+                {
+
+                    radiusKm = searchDto.Radius * 1.60934;
+                    if (lat == 0)
+                        throw new FailedValidationException("Latitude must be specified for radius searching");
+
+                    if (lng == 0)
+                        throw new FailedValidationException("Longitude must be specified for radius searching");
+
+                    // start this clause with "and" since the companyfilter MUST be specified above 
+                    parameters.Filter += $" and geo.distance(Location, geography'POINT({lng} {lat})') le {radiusKm}";
+                }
+                else if (searchDto.Radius == 0 && lat != 0 && lng != 0)
+                {
+                    // In the case of searching for a single city with no radius, set the default radius to 1 mile since most larger
+                    // cities have more than one postal records, each of which contains varying lat/lng data
+                    radiusKm = 1 * 1.60934; ;
+                    parameters.Filter += $" and geo.distance(Location, geography'POINT({lng} {lat})') le {radiusKm}";
+
+                }
+                _logger.LogInformation($"HiringManagerService:_PerformAzureSearch: filter = {parameters.Filter} ");
+
+                // double quote email to ensure direct hit         
+                var keyword = Utils.EscapeQuoteEmailsInString(searchDto.Keyword);
+                _logger.LogInformation($"HiringManagerService:_PerformAzureSearch: escaped keyword = {keyword} ");
+
+                results = indexClient.Documents.Search<G2InfoDto>(keyword, parameters);
+
+
+                //Map results
+                DateTime startMap = DateTime.Now;
+                var G2s = results?.Results?
+                    .Select(s => (G2InfoDto)s.Document)
+                    .ToList();
+
+                searchResults.TotalHits = results.Count.Value;
+                searchResults.PageSize = searchDto.Limit;
+                searchResults.NumPages = searchResults.PageSize != 0 ? (int)Math.Ceiling((double)searchResults.TotalHits / searchResults.PageSize) : 0;
+                //searchResults.SubscriberCount = searchResults.G2s.Count;
+                searchResults.PageNum = (searchDto.Offset / searchDto.Limit) + 1;
+
+                DateTime stopMap = DateTime.Now;
+                // calculate search timing metrics 
+                TimeSpan intervalTotalSearch = stopMap - startSearch;
+                TimeSpan intervalSearchTime = startMap - startSearch;
+                TimeSpan intervalMapTime = stopMap - startMap;
+
+                // assign search metrics to search results 
+                searchResults.SearchTimeInMilliseconds = intervalTotalSearch.TotalMilliseconds;
+                searchResults.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
+                searchResults.SearchMappingTimeInTicks = intervalMapTime.Ticks;
+
+                return searchResults;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"HiringManagerService:_PerformAzureSearch: error = {ex.ToString()}");
+                throw ex;
+            }
+        }
+
     }
 }

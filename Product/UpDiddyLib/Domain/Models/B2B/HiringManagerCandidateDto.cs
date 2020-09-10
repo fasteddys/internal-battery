@@ -30,6 +30,6 @@ namespace UpDiddyLib.Domain.Models.B2B
 
         public string ExperienceSummary { get; set; }
 
-        public DateTime? lastContactDate { get; set; }
+        public DateTime? LastContactDate { get; set; }
     }
 }

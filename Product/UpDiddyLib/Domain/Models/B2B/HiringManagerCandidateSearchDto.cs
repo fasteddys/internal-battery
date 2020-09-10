@@ -7,15 +7,15 @@ namespace UpDiddyLib.Domain.Models.B2B
     public class HiringManagerCandidateSearchDto
     {
         public int PageSize { get; set; }
-        public int PageNumber { get; set; }
+        public int PageNum { get; set; }
 
-        public int NumberOfPages { get; set; }
+        public int NumPages { get; set; }
 
         public int CandidateCount { get; set; }
 
-        public int TotalHits { get; set; }
+        public long TotalHits { get; set; }
 
-        public decimal SearchTimeInMilliseconds { get; set; }
+        public double SearchTimeInMilliseconds { get; set; }
 
         public long SearchQueryTimeInTicks { get; set; }
 
@@ -28,9 +28,9 @@ namespace UpDiddyLib.Domain.Models.B2B
         public ICollection<HiringManagerCandidateDto> Candidates { get; set; }
 
         #region Primary Search
-        Guid cityGuid { get; set; }
-        string keyword { get; set; }
-        int radius { get; set; }
+        Guid CityGuid { get; set; }
+        string Keyword { get; set; }
+        int Radius { get; set; }
 
         #endregion
 

@@ -338,8 +338,6 @@ namespace UpDiddyApi.Controllers.V2
         [Authorize(Policy = "IsHiringManager")]
         [Route("candidates/query")]
         public async Task<IActionResult> SearchG2([FromQuery] CandidateSearchQueryDto searchDto)
-        // Guid cityGuid, int limit = 10, int offset = 0, string sort = "ModifyDate", string order = "descending", string keyword = "*", Guid? sourcePartnerGuid = null, int radius = 0, bool? isWillingToRelocate = null, 
-        // bool? isWillingToTravel = null, bool? isActiveJobSeeker = null, bool? isCurrentlyEmployed = null, bool? isWillingToWorkProBono = null
         {
             var rVal = await _hiringManagerService.CandidateSearchByHiringManagerAsync(GetSubscriberGuid(), searchDto);
             return Ok(rVal);
