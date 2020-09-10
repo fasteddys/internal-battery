@@ -25,7 +25,7 @@ SELECT * FROM [B2B].[v_CandidateAzureSearch]
 */
 ALTER VIEW [B2B].[v_CandidateAzureSearch]
 AS
-    ;WITH subscriberSkills AS (
+    WITH subscriberSkills AS (
         SELECT s.SubscriberId, STRING_AGG(CAST(sk.SkillName AS NVARCHAR(MAX)), CHAR(30)) Skills
         FROM dbo.Subscriber s
         INNER JOIN dbo.SubscriberSkill ss ON s.SubscriberId = ss.SubscriberId
@@ -116,7 +116,6 @@ AS
         , CASE WHEN s.DesiredSalary IS NOT NULL THEN CAST(s.DesiredSalary AS FLOAT) ELSE (CASE WHEN s.DesiredRate IS NOT NULL THEN CAST(s.DesiredRate * 40 * 52 AS FLOAT) ELSE 0 END) END DesiredRate
         , se.SubscriberEducation Education
         , s.Email
-        , et.EmploymentTypes
         , CASE WHEN LEN(s.CoverLetter) > 140 THEN LEFT(s.CoverLetter, 140) + ''...'' ELSE s.CoverLetter END ExperienceSummary
         , CASE WHEN LEN(s.FirstName) > 0 THEN s.FirstName ELSE NULL END FirstName
         , CAST(CASE WHEN r.SubscriberId IS NOT NULL THEN 1 ELSE 0 END AS BIT) IsResumeUploaded
@@ -148,7 +147,7 @@ AS
         INNER JOIN dbo.Company c ON p.CompanyId = c.CompanyId AND c.CompanyName = ''CareerCircle''
         LEFT JOIN [State] t ON s.StateId = t.StateId
         LEFT JOIN subscriberSkills ss ON s.SubscriberId = ss.SubscriberId 
-        LEFT JOIN B2B.HiringManagers hm ON s.SubscriberId = hm.SubscriberId
+        LEFT JOIN B2B.HiringManagers hm ON s.SubscriberId = hm.SubscriberId AND hm.IsDeleted = 0
         LEFT JOIN subscriberLanguages sl on s.SubscriberId = sl.SubscriberId
         LEFT JOIN CommuteDistance cd on cd.CommuteDistanceId = s.CommuteDistanceId
         LEFT JOIN subscriberEmploymentTypes et ON s.SubscriberId = et.SubscriberId 

@@ -28,8 +28,6 @@ namespace UpDiddyApi.Models.Views
 
         public string Email { get; set; }
 
-        public string EmploymentTypes { get; set; }
-
         public string ExperienceSummary { get; set; }
 
         public string FirstName { get; set; }

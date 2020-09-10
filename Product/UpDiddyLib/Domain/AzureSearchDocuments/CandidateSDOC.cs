@@ -26,8 +26,6 @@ namespace UpDiddyLib.Domain.AzureSearchDocuments
 
         public string Email { get; set; }
 
-        public List<string> EmploymentTypes { get; set; }
-
         public string ExperienceSummary { get; set; }
 
         public string FirstName { get; set; }

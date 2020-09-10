@@ -849,9 +849,6 @@ namespace UpDiddyApi.Helpers
                         Degree = record[2]
                     })
                     .ToList() ?? new List<EducationSDOC>()))
-                .ForMember(dest => dest.EmploymentTypes, opt => opt.ResolveUsing(src => src.EmploymentTypes
-                    ?.Split(recordDelim)
-                    .ToList() ?? new List<string>()))
                 .ForMember(dest => dest.Languages, opt => opt.ResolveUsing(src => src.Languages
                     ?.Split(recordDelim)
                     .Select(record => record.Split(fieldDelim))
@@ -891,6 +888,9 @@ namespace UpDiddyApi.Helpers
                         Title = record[1]
                     })
                     .ToList() ?? new List<WorkHistorySDOC>()))
+                .ForMember(dest => dest.WorkPreferences, opt => opt.ResolveUsing(src => src.WorkPreferences
+                    ?.Split(recordDelim)
+                    .ToList() ?? new List<string>()))
                 .ReverseMap();
 
             CreateMap<Models.G2.Profile, ProfileDto>()
