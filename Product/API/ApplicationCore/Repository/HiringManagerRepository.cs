@@ -93,7 +93,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             decimal? estimatedHiringFee = null;
             if (desiredAnnualSalary.HasValue)
             {
-                estimatedHiringFee = desiredAnnualSalary * 0.2M;
+                estimatedHiringFee = desiredAnnualSalary * 0.1M;
             }
 
             if (estimatedHiringFee > 0.0M)
