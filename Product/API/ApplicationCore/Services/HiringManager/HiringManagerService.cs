@@ -21,6 +21,7 @@ using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.B2B;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
+using UpDiddyLib.Domain.AzureSearchDocuments;
 
 namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 {
@@ -316,7 +317,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
         }
 
         #region Candidate Search
-        public Task<HiringManagerCandidateSearchDto> CandidateSearchByHiringManagerAsync(Guid subscriberGuid, CandidateSearchQueryDto searchDto)
+        public async Task<HiringManagerCandidateSearchDto> CandidateSearchByHiringManagerAsync(Guid subscriberGuid, CandidateSearchQueryDto searchDto)
         {
             _logger.LogInformation($"HiringManagerService:CandidateSearchByHiringManagerAsync  Starting for subscriber {subscriberGuid} ");
             if(subscriberGuid.Equals(Guid.Empty))
@@ -337,12 +338,12 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                     Guid.Parse(CCCompanySearchGuid)
                 };
 
-
+                HiringManagerCandidateSearchDto searchResults = null;
 
                 // handle case of non geo search 
                 if (searchDto.CityGuid == null || searchDto.CityGuid == Guid.Empty)
                 {
-                    var searchResults = await _HiringMangerSearchAsync(companyGuids, limit, offset, sort, order, keyword, sourcePartnerGuid, 0, 0, 0, isWillingToRelocate, isWillingToTravel, isActiveJobSeeker, isCurrentlyEmployed, isWillingToWorkProBono);
+                    searchResults = await _PerformAzureSearch(searchDto);
                     // Obfucscate the results 
                     //Obfuscate(results);
                     return searchResults;
@@ -350,16 +351,16 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 
 
                 // pick a random postal code for the city to get the last and long 
-                Postal postal = _repository.PostalRepository.GetAll()
+                Postal postal = _repositoryWrapper.PostalRepository.GetAll()
                     .Include(c => c.City)
-                    .Where(p => p.City.CityGuid == cityGuid && p.IsDeleted == 0)
+                    .Where(p => p.City.CityGuid == searchDto.CityGuid && p.IsDeleted == 0)
                     .FirstOrDefault();
 
                 // validate that the city has a postal code 
                 if (postal == null)
-                    throw new NotFoundException($"A city with an Guid of {cityGuid} cannot be found.");
+                    throw new NotFoundException($"A city with an Guid of {searchDto.CityGuid} cannot be found.");
 
-                var searchResults = await _PerformAzureSearch();
+                searchResults = await _PerformAzureSearch(searchDto, (double)postal.Latitude, (double)postal.Longitude);
             }
             catch(Exception ex)
             {
@@ -391,21 +392,21 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 .OrderBy(e => e)
                 .ToListAsync();
 
-        private async Task<HiringManagerCandidateSearchDto> _PerformAzureSearch(List<string> searchFields, List<Guid> companyGuids, CandidateSearchQueryDto searchDto, double lat = 0, double lng = 0)
+        private async Task<HiringManagerCandidateSearchDto> _PerformAzureSearch(CandidateSearchQueryDto searchDto, double lat = 0, double lng = 0)
         {
 
             try
             {
-                _logger.LogInformation($"HiringManagerService:_PerformAzureSearch: starting searchField ={searchFields} sort={searchDto.Sort} order={searchDto.Order} keyword={searchDto.Keyword} limit = {searchDto.Limit} radius={searchDto.Radius}");
-                if (companyGuids == null || companyGuids.Count == 0)
-                    throw new FailedValidationException("HiringManagerService:_PerformAzureSearch: Recruiter is not associated with the CareerCircle search company");
+               // _logger.LogInformation($"HiringManagerService:_PerformAzureSearch: starting searchField ={searchFields} sort={searchDto.Sort} order={searchDto.Order} keyword={searchDto.Keyword} limit = {searchDto.Limit} radius={searchDto.Radius}");
+               // if (companyGuids == null || companyGuids.Count == 0)
+                   // throw new FailedValidationException("HiringManagerService:_PerformAzureSearch: Recruiter is not associated with the CareerCircle search company");
 
                 DateTime startSearch = DateTime.Now;
                 HiringManagerCandidateSearchDto searchResults = new HiringManagerCandidateSearchDto();
 
                 string searchServiceName = _configuration["AzureSearch:SearchServiceName"];
                 string adminApiKey = _configuration["AzureSearch:SearchServiceQueryApiKey"];
-                string g2IndexName = "careercircle-candidate-vivek"; //_configuration["AzureSearch:G2IndexName"];_configuration["AzureSearch:HMCandidateSearch"]
+                string g2IndexName = _configuration["AzureSearch:CandidateIndexName"];
 
                 // map descending to azure search sort syntax of "asc" or "desc"  default is ascending so only map descending 
                 string orderBy = searchDto.Sort;
@@ -418,7 +419,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(g2IndexName);
 
                 SearchParameters parameters;
-                DocumentSearchResult<G2InfoDto> results;
+                DocumentSearchResult<CandidateSDOC> results;
 
                 parameters =
                     new SearchParameters()
@@ -444,9 +445,11 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 if (searchDto.HasVideoInterview.HasValue)
                     parameters.Filter += $" and HasVideoInterview eq " + (searchDto.HasVideoInterview.Value ? "true" : "false");
 
-                if (searchDto.SalaryUb.HasValue && searchDto.SalaryLb.HasValue)
-                    parameters.Filter += $" and IsResumeUploaded eq " + (searchDto.IsResumeUploaded.Value ? "true" : "false");
+                if (searchDto.SalaryUb.HasValue)
+                    parameters.Filter += $" and DesiredRate le {searchDto.SalaryUb.Value}";
 
+                if(searchDto.SalaryLb.HasValue)
+                    parameters.Filter += $" and DesiredRate ge {searchDto.SalaryLb.Value}";
 
                 //search skills
                 if (searchDto.Skill != null && searchDto.Skill.Count > 0)
@@ -464,13 +467,12 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                     parameters.Filter += $" and WorkPreferences/any(workpreference: {workPreferenceFilterString})";
                 }
 
-                //search Role preference - ???? do we need a Role property in the Index 
-                // or should we drill into the WorkHistories collection for Title property
+                //search Role from Title index property
                 if (searchDto.Role != null && searchDto.Role.Count > 0)
                 {
-                    var roleFilterExpression = searchDto.Skill.Select(s => $"role eq '{s}'").ToList();
+                    var roleFilterExpression = searchDto.Skill.Select(s => $"Title eq '{s}'").ToList();
                     var roleFilterString = string.Join(" or ", roleFilterExpression);
-                    parameters.Filter += $" and Roles/any(role: {roleFilterString})";
+                    parameters.Filter += $" and ({roleFilterString})";
                 }
 
                 //search Personality
@@ -481,12 +483,12 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                     parameters.Filter += $" and Personalities/any(personality: {personalitiesFilterString})";
                 }
 
-                //search Training - ???? is this same as certification
+                //search index property Training is this same as Certification
                 if (searchDto.Certification != null && searchDto.Certification.Count > 0)
                 {
-                    var workPreferenceFilterExpression = searchDto.Skill.Select(s => $"training eq '{s}'").ToList();
-                    var workPreferenceFilterString = string.Join(" or ", workPreferenceFilterExpression);
-                    parameters.Filter += $" and WorkPreferences/any(training: {workPreferenceFilterString})";
+                    var certificationFilterExpression = searchDto.Skill.Select(s => $"trainingname/Name eq '{s}'").ToList();
+                    var certificationFilterString = string.Join(" or ", certificationFilterExpression);
+                    parameters.Filter += $" and Training/any(trainingname: {certificationFilterString})";
                 }
 
 
@@ -519,13 +521,13 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 var keyword = Utils.EscapeQuoteEmailsInString(searchDto.Keyword);
                 _logger.LogInformation($"HiringManagerService:_PerformAzureSearch: escaped keyword = {keyword} ");
 
-                results = indexClient.Documents.Search<G2InfoDto>(keyword, parameters);
+                results = indexClient.Documents.Search<CandidateSDOC>(keyword, parameters);
 
 
                 //Map results
                 DateTime startMap = DateTime.Now;
                 var G2s = results?.Results?
-                    .Select(s => (G2InfoDto)s.Document)
+                    .Select(s => (CandidateSDOC)s.Document)
                     .ToList();
 
                 searchResults.TotalHits = results.Count.Value;
