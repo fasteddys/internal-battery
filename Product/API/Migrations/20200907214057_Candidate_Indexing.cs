@@ -118,6 +118,7 @@ AS
         , s.Email
         , CASE WHEN LEN(s.CoverLetter) > 140 THEN LEFT(s.CoverLetter, 140) + ''...'' ELSE s.CoverLetter END ExperienceSummary
         , CASE WHEN LEN(s.FirstName) > 0 THEN s.FirstName ELSE NULL END FirstName
+        , CASE WHEN sv.VideoLink IS NOT NULL THEN 1 ELSE 0 END HasVideoInterview,
         , CAST(CASE WHEN r.SubscriberId IS NOT NULL THEN 1 ELSE 0 END AS BIT) IsResumeUploaded
         , sl.SubscriberLanguages Languages
         , ct.CertificationDate LastCertifiedDate
