@@ -429,7 +429,8 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                         OrderBy = orderByList,
                         IncludeTotalResultCount = true,
                         // Add facets
-                        Facets = new List<String>() { "IsResumeUploaded", "HasVideoInterview", "Skill", "WorkPreference", "Roles", "Personalities" },
+                        Facets = new List<String>() { "IsResumeUploaded", "Title", "Skills", "WorkPreferences", "Personalities", "VideoUrl" },
+                        //HasVideoInterview (does not exist), "Training" (facetable = false)
                     };
 
                 // add search field if one is specified 
@@ -438,12 +439,44 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 //    parameters.SearchFields = searchFields;
                 //}
 
+                //(first name AND title) AND (at least one skill OR at least one work preference OR desired rate OR at least one training OR at least one language OR at least one education OR experience summary)
+                // base filter
+                // eliminates records with certain missing data 
+                parameters.Filter = $"FirstName ne null and Tile ne null and (Skills/any() or WorkPreferences/any() or DesiredRate ne null or Training/any() or Languages/any() or ExperienceSummary ne null or Education/any())";
+
                 //filters
+                double radiusKm = 0;
+                // check to see if radius is in play
+                if (searchDto.Radius > 0)
+                {
+
+                    radiusKm = searchDto.Radius * 1.60934;
+                    if (lat == 0)
+                        throw new FailedValidationException("Latitude must be specified for radius searching");
+
+                    if (lng == 0)
+                        throw new FailedValidationException("Longitude must be specified for radius searching");
+
+                    // start this clause with "and" since the companyfilter MUST be specified above 
+                    parameters.Filter += $" and geo.distance(Location, geography'POINT({lng} {lat})') le {radiusKm}";
+                }
+                else if (searchDto.Radius == 0 && lat != 0 && lng != 0)
+                {
+                    // In the case of searching for a single city with no radius, set the default radius to 1 mile since most larger
+                    // cities have more than one postal records, each of which contains varying lat/lng data
+                    radiusKm = 1 * 1.60934; ;
+                    parameters.Filter += $" and geo.distance(Location, geography'POINT({lng} {lat})') le {radiusKm}";
+
+                }
+
+                //facets
                 if (searchDto.IsResumeUploaded.HasValue)
                     parameters.Filter += $" and IsResumeUploaded eq " + (searchDto.IsResumeUploaded.Value ? "true" : "false");
 
-                if (searchDto.HasVideoInterview.HasValue)
-                    parameters.Filter += $" and HasVideoInterview eq " + (searchDto.HasVideoInterview.Value ? "true" : "false");
+                if (searchDto.HasVideoInterview.HasValue) {
+                    var filterVal = searchDto.HasVideoInterview.Value ? "ne null" : "eq null";
+                    parameters.Filter += $" and VideoUrl {filterVal}";
+                }
 
                 if (searchDto.SalaryUb.HasValue)
                     parameters.Filter += $" and DesiredRate le {searchDto.SalaryUb.Value}";
@@ -492,29 +525,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 }
 
 
-                double radiusKm = 0;
-                // check to see if radius is in play
-                if (searchDto.Radius > 0)
-                {
 
-                    radiusKm = searchDto.Radius * 1.60934;
-                    if (lat == 0)
-                        throw new FailedValidationException("Latitude must be specified for radius searching");
-
-                    if (lng == 0)
-                        throw new FailedValidationException("Longitude must be specified for radius searching");
-
-                    // start this clause with "and" since the companyfilter MUST be specified above 
-                    parameters.Filter += $" and geo.distance(Location, geography'POINT({lng} {lat})') le {radiusKm}";
-                }
-                else if (searchDto.Radius == 0 && lat != 0 && lng != 0)
-                {
-                    // In the case of searching for a single city with no radius, set the default radius to 1 mile since most larger
-                    // cities have more than one postal records, each of which contains varying lat/lng data
-                    radiusKm = 1 * 1.60934; ;
-                    parameters.Filter += $" and geo.distance(Location, geography'POINT({lng} {lat})') le {radiusKm}";
-
-                }
                 _logger.LogInformation($"HiringManagerService:_PerformAzureSearch: filter = {parameters.Filter} ");
 
                 // double quote email to ensure direct hit         
@@ -522,7 +533,6 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 _logger.LogInformation($"HiringManagerService:_PerformAzureSearch: escaped keyword = {keyword} ");
 
                 results = indexClient.Documents.Search<CandidateSDOC>(keyword, parameters);
-
 
                 //Map results
                 DateTime startMap = DateTime.Now;
