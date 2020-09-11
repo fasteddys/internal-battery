@@ -22,6 +22,7 @@ using UpDiddyLib.Domain.Models.B2B;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 using UpDiddyLib.Domain.AzureSearchDocuments;
+using UpDiddyApi.ApplicationCore.Services.JobDataMining;
 
 namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 {
@@ -564,22 +565,52 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                     switch (facet.Key)
                     {
                         case "IsResumeUploaded":
-                            
+                            foreach (var val in facet.Value)
+                            {
+                                searchResults.Facets.Resume.Add(new FacetResultDto { Count = val.Count, Value = val.Value.ToString()});
+                            }
                             break;
                         case "Title":
+                            foreach (var val in facet.Value)
+                            {
+                                searchResults.Facets.RolePreferences.Add(new FacetResultWithQueryDto { Count = val.Count, Value = val.Value.ToString(), Query = "" });
+                            }
                             break;
                         case "Skills":
+                            foreach (var val in facet.Value)
+                            {
+                                searchResults.Facets.Skills.Add(new FacetResultWithQueryDto { Count = val.Count, Value = val.Value.ToString(), Query = "" });
+                            }
                             break;
                         case "WorkPreferences":
+                            foreach (var val in facet.Value)
+                            {
+                                searchResults.Facets.WorkPreferences.Add(new FacetResultWithQueryDto { Count = val.Count, Value = val.Value.ToString(), Query = "" });
+                            }
                             break;
                         case "Personalities":
+                            foreach (var val in facet.Value)
+                            {
+                                searchResults.Facets.Personality.Add(new FacetResultWithQueryDto { Count = val.Count, Value = val.Value.ToString(), Query = "" });
+                            }
                             break;
                         case "DesiredRate":
+                            foreach (var val in facet.Value)
+                            {
+                                searchResults.Facets.Salary.Add(new FacetResultDto { Count = val.Count, Value = val.Value.ToString()});
+                            }
                             break;
                         case "Training":
-                            searchResults.Facets.Certifications.Add(new FacetResultDto {Count = facet.Value,  })
+                            foreach(var val in facet.Value)
+                            {
+                                searchResults.Facets.Certifications.Add(new FacetResultWithQueryDto { Count = val.Count, Value = val.Value.ToString(), Query = "" });
+                            }
                             break;
                         case "VideoUrl":
+                            foreach (var val in facet.Value)
+                            {
+                                searchResults.Facets.Video.Add(new FacetResultDto { Count = val.Count, Value = val.Value.ToString()});
+                            }
                             break;
                     }
                     

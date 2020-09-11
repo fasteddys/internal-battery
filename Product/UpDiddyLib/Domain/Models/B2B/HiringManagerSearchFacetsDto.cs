@@ -19,7 +19,7 @@ namespace UpDiddyLib.Domain.Models.B2B
 
     public class FacetResultWithQueryDto
     {
-        public int Count { get; set; }
+        public long? Count { get; set; }
         public string Value { get; set; }
         public string Query { get; set; }
 
@@ -27,7 +27,7 @@ namespace UpDiddyLib.Domain.Models.B2B
 
     public class FacetResultDto
     {
-        public int Count { get; set; }
+        public long? Count { get; set; }
         public string Value { get; set; }
     }
 }

@@ -23,7 +23,7 @@ namespace UpDiddyLib.Domain.Models.B2B
 
         public string SaasToken { get; set; }
 
-        public HiringManagerSearchFacetsDto Facets { get; set; }
+        public HiringManagerSearchFacetsDto Facets { get; set; } = new HiringManagerSearchFacetsDto();
 
         public ICollection<HiringManagerCandidateDto> Candidates { get; set; } = new List<HiringManagerCandidateDto>();
 
