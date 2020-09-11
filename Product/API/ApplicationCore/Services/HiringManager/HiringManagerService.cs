@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
@@ -563,7 +564,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 {
                     searchResults.SASToken = sasTokenValue;
                 }
-                searchResults.SASToken = await _subscriberService.GetVideoSAS();
+
                 candidates.ForEach(candidate => {
                     searchResults.Candidates.Add(new HiringManagerCandidateDto { 
                         FirstName = candidate.Candidate.FirstName,
@@ -592,7 +593,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                                     Count = val.Count, 
                                     Value = val.Value.ToString(),
                                     IsSelected = searchDto.IsResumeUploaded.HasValue,
-                                    Query = $"{rawQuery}&IsResumeUploaded={val.Value.ToString()}"
+                                    Query = $"{rawQuery}&IsResumeUploaded={HttpUtility.UrlEncode(val.Value.ToString())}"
                                 });
                             }
                             break;
@@ -602,7 +603,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                                 searchResults.Facets.RolePreferences.Add(new FacetResultWithQueryDto { 
                                     Count = val.Count, 
                                     Value = val.Value.ToString(), 
-                                    Query = $"{rawQuery}&RolePreference={val.Value.ToString()}",
+                                    Query = $"{rawQuery}&RolePreference={HttpUtility.UrlEncode(val.Value.ToString())}",
                                     IsSelected = searchDto.Role != null && searchDto.Role.Count > 0
                                 });
                             }
@@ -613,7 +614,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                                 searchResults.Facets.Skills.Add(new FacetResultWithQueryDto { 
                                     Count = val.Count, 
                                     Value = val.Value.ToString(), 
-                                    Query = $"{rawQuery}&Skill={val.Value.ToString()}",
+                                    Query =$"{rawQuery}&Skill={ HttpUtility.UrlEncode(val.Value.ToString())}",
                                     IsSelected = searchDto.Skill != null && searchDto.Skill.Count > 0
                                 });
                             }
@@ -624,7 +625,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                                 searchResults.Facets.WorkPreferences.Add(new FacetResultWithQueryDto { 
                                     Count = val.Count, 
                                     Value = val.Value.ToString(), 
-                                    Query = $"{rawQuery}&WorkPreference={val.Value.ToString()}",
+                                    Query = $"{rawQuery}&WorkPreference={ HttpUtility.UrlEncode(val.Value.ToString())}",
                                     IsSelected = searchDto.WorkPreference != null && searchDto.WorkPreference.Count > 0
                                 });
                             }
@@ -635,7 +636,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                                 searchResults.Facets.Personality.Add(new FacetResultWithQueryDto { 
                                     Count = val.Count, 
                                     Value = val.Value.ToString(), 
-                                    Query = $"{rawQuery}&Personality={val.Value.ToString()}",
+                                    Query = $"{rawQuery}&Personality={ HttpUtility.UrlEncode(val.Value.ToString())}",
                                     IsSelected = searchDto.Personality != null && searchDto.Personality.Count > 0
                                 });
                             }
@@ -657,7 +658,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                                 searchResults.Facets.Certifications.Add(new FacetResultWithQueryDto { 
                                     Count = val.Count, 
                                     Value = val.Value.ToString(), 
-                                    Query = $"{rawQuery}&Certification={val.Value.ToString()}",
+                                    Query = $"{rawQuery}&Certification={HttpUtility.UrlEncode(val.Value.ToString())}",
                                     IsSelected = searchDto.Certification != null && searchDto.Certification.Count > 0
                                 });
                             }
@@ -670,14 +671,14 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                                 Count = hasVideoUrlCount,
                                 Value = "true",
                                 IsSelected = searchDto.HasVideoInterview.HasValue,
-                                Query = $"{rawQuery}&HasVideoInterview=true",
+                                Query = $"{rawQuery}&HasVideoInterview={ HttpUtility.UrlEncode("true")}",
                             });
                             searchResults.Facets.Video.Add(new FacetResultWithQueryDto
                             {
                                 Count = facet.Value.Count - hasVideoUrlCount,
                                 Value = "false",
                                 IsSelected = searchDto.HasVideoInterview.HasValue,
-                                Query = $"{rawQuery}&HasVideoInterview=false",
+                                Query = $"{rawQuery}&HasVideoInterview={ HttpUtility.UrlEncode("false")}",
                             });
 
                             break;
