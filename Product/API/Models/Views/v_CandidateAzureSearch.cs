@@ -32,6 +32,8 @@ namespace UpDiddyApi.Models.Views
 
         public string FirstName { get; set; }
 
+        public bool? HasVideoInterview { get; set; }
+
         public bool? IsResumeUploaded { get; set; }
 
         public string Languages { get; set; }

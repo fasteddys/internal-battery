@@ -30,6 +30,8 @@ namespace UpDiddyLib.Domain.AzureSearchDocuments
 
         public string FirstName { get; set; }
 
+        public bool? HasVideoInterview { get; set; }
+
         public bool? IsResumeUploaded { get; set; }
 
         public List<LanguageSDOC> Languages { get; set; }
