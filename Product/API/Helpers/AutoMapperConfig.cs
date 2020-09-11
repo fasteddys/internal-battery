@@ -868,6 +868,7 @@ namespace UpDiddyApi.Helpers
                     .ToList() ?? new List<string>()))
                 .ForMember(dest => dest.Skills, opt => opt.ResolveUsing(src => src.Skills
                     ?.Split(recordDelim)
+                    .Select(record => record.Trim()) // TODO: SQL RTRIM(SkillName) doesn't appear to work for some reason
                     .ToList() ?? new List<string>()))
                 .ForMember(dest => dest.Training, opt => opt.ResolveUsing(src => src.Training
                     ?.Split(recordDelim)
