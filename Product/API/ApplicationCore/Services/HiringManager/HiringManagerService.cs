@@ -23,6 +23,7 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyApi.ApplicationCore.Services.JobDataMining;
+using Microsoft.Extensions.Azure;
 
 namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 {
@@ -36,6 +37,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
         private readonly IHangfireService _hangfireService;
         private readonly IHubSpotService _hubspotService;
         private readonly ISubscriberService _subscriberService;
+        private readonly IMemoryCacheService _cache;
 
         public HiringManagerService(
             IConfiguration configuration,
@@ -45,7 +47,8 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             ILogger<HiringManagerService> logger,
             IHangfireService hangfireService,
             IHubSpotService hubspotService,
-            ISubscriberService subscriberService)
+            ISubscriberService subscriberService,
+            IMemoryCacheService cache)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
@@ -55,6 +58,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             _hangfireService = hangfireService;
             _hubspotService = hubspotService;
             _subscriberService = subscriberService;
+            _cache = cache;
         }
 
         public async Task<HiringManagerDto> GetHiringManagerBySubscriberGuid(Guid subscriberGuid)
@@ -318,7 +322,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
         }
 
         #region Candidate Search
-        public async Task<HiringManagerCandidateSearchDto> CandidateSearchByHiringManagerAsync(Guid subscriberGuid, CandidateSearchQueryDto searchDto)
+        public async Task<HiringManagerCandidateSearchDto> CandidateSearchByHiringManagerAsync(Guid subscriberGuid, CandidateSearchQueryDto searchDto, string rawQuery)
         {
             _logger.LogInformation($"HiringManagerService:CandidateSearchByHiringManagerAsync  Starting for subscriber {subscriberGuid} ");
             if(subscriberGuid.Equals(Guid.Empty))
@@ -344,7 +348,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 // handle case of non geo search 
                 if (searchDto.CityGuid == null || searchDto.CityGuid == Guid.Empty)
                 {
-                    searchResults = await _PerformAzureSearch(searchDto);
+                    searchResults = await _PerformAzureSearch(searchDto, rawQuery);
                     // Obfucscate the results 
                     //Obfuscate(results);
                     return searchResults;
@@ -361,7 +365,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 if (postal == null)
                     throw new NotFoundException($"A city with an Guid of {searchDto.CityGuid} cannot be found.");
 
-                searchResults = await _PerformAzureSearch(searchDto, (double)postal.Latitude, (double)postal.Longitude);
+                searchResults = await _PerformAzureSearch(searchDto, rawQuery,(double)postal.Latitude, (double)postal.Longitude);
             }
             catch(Exception ex)
             {
@@ -393,7 +397,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 .OrderBy(e => e)
                 .ToListAsync();
 
-        private async Task<HiringManagerCandidateSearchDto> _PerformAzureSearch(CandidateSearchQueryDto searchDto, double lat = 0, double lng = 0)
+        private async Task<HiringManagerCandidateSearchDto> _PerformAzureSearch(CandidateSearchQueryDto searchDto, string rawQuery, double lat = 0, double lng = 0)
         {
 
             try
@@ -430,8 +434,8 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                         OrderBy = orderByList,
                         IncludeTotalResultCount = true,
                         // Add facets
-                        Facets = new List<String>() { "IsResumeUploaded", "Title", "Skills", "WorkPreferences", "Personalities", "DesiredRate" },
-                        //HasVideoInterview (does not exist use VideoUrl to derive value), "Training" (marked facetable = false), "VideoUrl" (marked facetable = false)
+                        Facets = new List<String>() { "IsResumeUploaded", "Title", "Skills", "WorkPreferences", "Personalities", "DesiredRate", "HasVideoInterview", "Training/Name" },
+                        //HasVideoInterview (does not exist use VideoUrl to derive value), "Training" (marked facetable = false)
                     };
 
                 // add search field if one is specified 
@@ -471,12 +475,13 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 }
 
                 //facets
-                if (searchDto.IsResumeUploaded.HasValue)
-                    parameters.Filter += $" and IsResumeUploaded eq " + (searchDto.IsResumeUploaded.Value ? "true" : "false");
+                //if false get everything
+                if (searchDto.IsResumeUploaded.HasValue && searchDto.IsResumeUploaded.Value)
+                    parameters.Filter += $" and IsResumeUploaded eq true";
 
-                if (searchDto.HasVideoInterview.HasValue) {
-                    var filterVal = searchDto.HasVideoInterview.Value ? "ne null" : "eq null";
-                    parameters.Filter += $" and VideoUrl {filterVal}";
+                //if false get everything
+                if (searchDto.HasVideoInterview.HasValue && searchDto.HasVideoInterview.Value) {
+                    parameters.Filter += $" and HasVideoInterview eq true";
                 }
 
                 if (searchDto.SalaryUb.HasValue)
@@ -537,26 +542,42 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 
                 //Map results
                 DateTime startMap = DateTime.Now;
-                var G2s = results?.Results?
+                var candidates = results?.Results?
                     .Select(s => new { Candidate = (CandidateSDOC)s.Document, Score = s.Score })
                     .ToList();
 
-                //searchResults.SaasToken = ???
-                G2s.ForEach(g2 => {
+                //Have SAS token cache expiration 5 mins less than the SASToken expriation datetime
+                //This will let us avoid token expiration failures.
+                const string SASTokenKey = "SASToken";
+                
+                string sasTokenValue = (string)_cache.GetCacheValue(SASTokenKey);
+                if (String.IsNullOrWhiteSpace(sasTokenValue))
+                {
+                    var newSASToken = await _subscriberService.GetVideoSAS();
+                    searchResults.SASToken = newSASToken;
+                    _cache.SetCacheValue<string>(SASTokenKey, 
+                        newSASToken, 
+                        TTLInMinutes: int.Parse(_configuration["StorageAccount:VideoSASLifeTimeInMinutesForContainer"]) - 5);
+                }
+                else
+                {
+                    searchResults.SASToken = sasTokenValue;
+                }
+                searchResults.SASToken = await _subscriberService.GetVideoSAS();
+                candidates.ForEach(candidate => {
                     searchResults.Candidates.Add(new HiringManagerCandidateDto { 
-                        FirstName = g2.Candidate.FirstName,
-                        ExperienceSummary = g2.Candidate.ExperienceSummary,
-                        SearchScore = g2.Score,
-                        ProfileGuid = g2.Candidate.ProfileGuid ?? Guid.Empty, //???
-                        PersonalityBlendName = g2.Candidate.PersonalityBlendName,
-                        Personality1ImageUrl = g2.Candidate.Personality1ImageUrl,
-                        Personality2ImageUrl = g2.Candidate.Personality2ImageUrl,
-                        VideoUrl = g2.Candidate.VideoUrl,
-                        ThumbnailImageUrl = g2.Candidate.ThumbnailImageUrl,
-                        Title = g2.Candidate.Title,
-                        //Skills = g2.Skills //?? should we join string list to string
-                        LastContactDate = g2.Candidate.LastContactDate,
-
+                        FirstName = candidate.Candidate.FirstName,
+                        ExperienceSummary = candidate.Candidate.ExperienceSummary,
+                        SearchScore = candidate.Score,
+                        ProfileGuid = candidate.Candidate.ProfileGuid ?? Guid.Empty, 
+                        PersonalityBlendName = candidate.Candidate.PersonalityBlendName,
+                        Personality1ImageUrl = candidate.Candidate.Personality1ImageUrl,
+                        Personality2ImageUrl = candidate.Candidate.Personality2ImageUrl,
+                        VideoUrl = candidate.Candidate.VideoUrl,
+                        ThumbnailImageUrl = candidate.Candidate.ThumbnailImageUrl,
+                        Title = candidate.Candidate.Title,
+                        Skills = candidate.Candidate.Skills, 
+                        LastContactDate = candidate.Candidate.LastContactDate
                     });
                 });
 
@@ -567,50 +588,98 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                         case "IsResumeUploaded":
                             foreach (var val in facet.Value)
                             {
-                                searchResults.Facets.Resume.Add(new FacetResultDto { Count = val.Count, Value = val.Value.ToString()});
+                                searchResults.Facets.Resume.Add(new FacetResultWithQueryDto { 
+                                    Count = val.Count, 
+                                    Value = val.Value.ToString(),
+                                    IsSelected = searchDto.IsResumeUploaded.HasValue,
+                                    Query = $"{rawQuery}&IsResumeUploaded={val.Value.ToString()}"
+                                });
                             }
                             break;
                         case "Title":
                             foreach (var val in facet.Value)
                             {
-                                searchResults.Facets.RolePreferences.Add(new FacetResultWithQueryDto { Count = val.Count, Value = val.Value.ToString(), Query = "" });
+                                searchResults.Facets.RolePreferences.Add(new FacetResultWithQueryDto { 
+                                    Count = val.Count, 
+                                    Value = val.Value.ToString(), 
+                                    Query = $"{rawQuery}&RolePreference={val.Value.ToString()}",
+                                    IsSelected = searchDto.Role != null && searchDto.Role.Count > 0
+                                });
                             }
                             break;
                         case "Skills":
                             foreach (var val in facet.Value)
                             {
-                                searchResults.Facets.Skills.Add(new FacetResultWithQueryDto { Count = val.Count, Value = val.Value.ToString(), Query = "" });
+                                searchResults.Facets.Skills.Add(new FacetResultWithQueryDto { 
+                                    Count = val.Count, 
+                                    Value = val.Value.ToString(), 
+                                    Query = $"{rawQuery}&Skill={val.Value.ToString()}",
+                                    IsSelected = searchDto.Skill != null && searchDto.Skill.Count > 0
+                                });
                             }
                             break;
                         case "WorkPreferences":
                             foreach (var val in facet.Value)
                             {
-                                searchResults.Facets.WorkPreferences.Add(new FacetResultWithQueryDto { Count = val.Count, Value = val.Value.ToString(), Query = "" });
+                                searchResults.Facets.WorkPreferences.Add(new FacetResultWithQueryDto { 
+                                    Count = val.Count, 
+                                    Value = val.Value.ToString(), 
+                                    Query = $"{rawQuery}&WorkPreference={val.Value.ToString()}",
+                                    IsSelected = searchDto.WorkPreference != null && searchDto.WorkPreference.Count > 0
+                                });
                             }
                             break;
                         case "Personalities":
                             foreach (var val in facet.Value)
                             {
-                                searchResults.Facets.Personality.Add(new FacetResultWithQueryDto { Count = val.Count, Value = val.Value.ToString(), Query = "" });
+                                searchResults.Facets.Personality.Add(new FacetResultWithQueryDto { 
+                                    Count = val.Count, 
+                                    Value = val.Value.ToString(), 
+                                    Query = $"{rawQuery}&Personality={val.Value.ToString()}",
+                                    IsSelected = searchDto.Personality != null && searchDto.Personality.Count > 0
+                                });
                             }
                             break;
                         case "DesiredRate":
                             foreach (var val in facet.Value)
                             {
-                                searchResults.Facets.Salary.Add(new FacetResultDto { Count = val.Count, Value = val.Value.ToString()});
+                                searchResults.Facets.Salary.Add(new SalaryFacetResultDto { 
+                                    Count = val.Count, 
+                                    Value = val.Value != null ? Int32.Parse(val.Value.ToString()) : (int?)null,
+                                    IsLbSelected = searchDto.SalaryLb.HasValue,
+                                    IsUbSelected = searchDto.SalaryUb.HasValue
+                                });
                             }
                             break;
                         case "Training":
                             foreach(var val in facet.Value)
                             {
-                                searchResults.Facets.Certifications.Add(new FacetResultWithQueryDto { Count = val.Count, Value = val.Value.ToString(), Query = "" });
+                                searchResults.Facets.Certifications.Add(new FacetResultWithQueryDto { 
+                                    Count = val.Count, 
+                                    Value = val.Value.ToString(), 
+                                    Query = $"{rawQuery}&Certification={val.Value.ToString()}",
+                                    IsSelected = searchDto.Certification != null && searchDto.Certification.Count > 0
+                                });
                             }
                             break;
-                        case "VideoUrl":
-                            foreach (var val in facet.Value)
+                        case "HasVideoInterview":
+
+                            var hasVideoUrlCount = facet.Value.Where(v => !String.IsNullOrWhiteSpace(v.Value.ToString())).ToList().Count;
+                            searchResults.Facets.Video.Add(new FacetResultWithQueryDto
                             {
-                                searchResults.Facets.Video.Add(new FacetResultDto { Count = val.Count, Value = val.Value.ToString()});
-                            }
+                                Count = hasVideoUrlCount,
+                                Value = "true",
+                                IsSelected = searchDto.HasVideoInterview.HasValue,
+                                Query = $"{rawQuery}&HasVideoInterview=true",
+                            });
+                            searchResults.Facets.Video.Add(new FacetResultWithQueryDto
+                            {
+                                Count = facet.Value.Count - hasVideoUrlCount,
+                                Value = "false",
+                                IsSelected = searchDto.HasVideoInterview.HasValue,
+                                Query = $"{rawQuery}&HasVideoInterview=false",
+                            });
+
                             break;
                     }
                     
@@ -618,7 +687,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 searchResults.TotalHits = results.Count.Value;
                 searchResults.PageSize = searchDto.Limit;
                 searchResults.NumPages = searchResults.PageSize != 0 ? (int)Math.Ceiling((double)searchResults.TotalHits / searchResults.PageSize) : 0;
-                searchResults.CandidateCount = G2s.Count;
+                searchResults.CandidateCount = candidates.Count;
                 searchResults.PageNum = (searchDto.Offset / searchDto.Limit) + 1;
 
                 DateTime stopMap = DateTime.Now;
@@ -641,5 +710,30 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             }
         }
 
+        //private string GetQueryString(CandidateSearchQueryDto searchDto)
+        //{
+        //    string baseQuery = $"?keyword={searchDto.Keyword}&cityGuid={searchDto.CityGuid}&radius={searchDto.Radius}&limit={searchDto.Limit}&offset={searchDto.Offset}&sort={searchDto.Sort}&order={searchDto.Order}";
+        //    string facetedQuery = $"";
+
+        //    return baseQuery + facetedQuery;
+        //}
+
+        //private bool IsSalaryWithinRange(int? upperLimit, int? lowerLimit, int value)
+        //{
+        //    if(upperLimit.HasValue && lowerLimit.HasValue)
+        //    {
+        //        return (upperLimit.Value >= value || lowerLimit.Value <= value);
+        //    }
+        //    else if (upperLimit.HasValue)
+        //    {
+        //        return upperLimit.Value >= value;
+        //    }
+        //    else if(lowerLimit.HasValue)
+        //    {
+        //        return lowerLimit.Value >= value;
+        //    }
+
+        //    return false;
+        //}
     }
 }

@@ -26,7 +26,7 @@ namespace UpDiddyLib.Domain.Models.B2B
 
         public string Title { get; set; }
 
-        public string Skills { get; set; }
+        public ICollection<string> Skills { get; set; } = new List<string>();
 
         public string ExperienceSummary { get; set; }
 

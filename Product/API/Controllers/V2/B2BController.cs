@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -337,9 +338,11 @@ namespace UpDiddyApi.Controllers.V2
         [HttpGet]
         [Authorize(Policy = "IsHiringManager")]
         [Route("candidates/query")]
-        public async Task<IActionResult> SearchG2([FromQuery] CandidateSearchQueryDto searchDto)
+        public async Task<IActionResult> SearchCandidate([FromQuery] CandidateSearchQueryDto searchDto)
         {
-            var rVal = await _hiringManagerService.CandidateSearchByHiringManagerAsync(GetSubscriberGuid(), searchDto);
+            var rawQuery = HttpContext.Request.QueryString.Value;
+
+            var rVal = await _hiringManagerService.CandidateSearchByHiringManagerAsync(GetSubscriberGuid(), searchDto, rawQuery);
             return Ok(rVal);
         }
         #endregion

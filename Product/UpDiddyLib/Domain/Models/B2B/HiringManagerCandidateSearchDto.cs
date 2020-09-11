@@ -21,7 +21,7 @@ namespace UpDiddyLib.Domain.Models.B2B
 
         public long SearchMappingTimeInTicks { get; set; }
 
-        public string SaasToken { get; set; }
+        public string SASToken { get; set; }
 
         public HiringManagerSearchFacetsDto Facets { get; set; } = new HiringManagerSearchFacetsDto();
 

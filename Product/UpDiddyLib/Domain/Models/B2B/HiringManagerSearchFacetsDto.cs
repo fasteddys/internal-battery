@@ -12,9 +12,9 @@ namespace UpDiddyLib.Domain.Models.B2B
         public ICollection<FacetResultWithQueryDto> Certifications { get; set; } = new List<FacetResultWithQueryDto>();
         public ICollection<FacetResultWithQueryDto> Personality { get; set; } = new List<FacetResultWithQueryDto>();
         public ICollection<FacetResultWithQueryDto> RolePreferences { get; set; } = new List<FacetResultWithQueryDto>();
-        public ICollection<FacetResultDto> Salary { get; set; } = new List<FacetResultDto>();
-        public ICollection<FacetResultDto> Resume { get; set; } = new List<FacetResultDto>();
-        public ICollection<FacetResultDto> Video { get; set; } = new List<FacetResultDto>();
+        public ICollection<SalaryFacetResultDto> Salary { get; set; } = new List<SalaryFacetResultDto>();
+        public ICollection<FacetResultWithQueryDto> Resume { get; set; } = new List<FacetResultWithQueryDto>();
+        public ICollection<FacetResultWithQueryDto> Video { get; set; } = new List<FacetResultWithQueryDto>();
     }
 
     public class FacetResultWithQueryDto
@@ -22,12 +22,15 @@ namespace UpDiddyLib.Domain.Models.B2B
         public long? Count { get; set; }
         public string Value { get; set; }
         public string Query { get; set; }
+        public bool IsSelected { get; set; }
 
     }
 
-    public class FacetResultDto
+    public class SalaryFacetResultDto
     {
         public long? Count { get; set; }
-        public string Value { get; set; }
+        public int? Value { get; set; }
+        public bool IsUbSelected { get; set; }
+        public bool IsLbSelected { get; set; }
     }
 }

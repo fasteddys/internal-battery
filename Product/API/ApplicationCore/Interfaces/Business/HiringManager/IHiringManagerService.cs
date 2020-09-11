@@ -69,7 +69,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager
 
         #region CandidateSearch
 
-        Task<HiringManagerCandidateSearchDto> CandidateSearchByHiringManagerAsync(Guid subscriberGuid, CandidateSearchQueryDto searchDto);
+        Task<HiringManagerCandidateSearchDto> CandidateSearchByHiringManagerAsync(Guid subscriberGuid, CandidateSearchQueryDto searchDto, string rawQuery);
         #endregion
     }
 }
