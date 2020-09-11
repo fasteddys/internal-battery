@@ -209,7 +209,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 TechnicalAndProfessionalTraining = technicalAndProfessionalTraining,
                 Traitify = traitify,
                 VolunteerOrPassionProjects = WebUtility.HtmlDecode(profile.Subscriber.PassionProjectsDescription),
-                WorkHistories = workHistories
+                WorkHistories = workHistories,
+                ExperienceSummary = WebUtility.HtmlDecode(profile.Subscriber.CoverLetter)
             };
 
             return candidateDetailDto;

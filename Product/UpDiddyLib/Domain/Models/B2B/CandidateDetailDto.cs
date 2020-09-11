@@ -22,6 +22,7 @@ namespace UpDiddyLib.Domain.Models.B2B
         public string VolunteerOrPassionProjects { get; set; }
         public string IntroVideoUri { get; set; }
         public string IntroVideoThumbnailUri { get; set; }
+        public string ExperienceSummary { get; set; }
     }
 
     public class HiringManagerTraitifyDto
