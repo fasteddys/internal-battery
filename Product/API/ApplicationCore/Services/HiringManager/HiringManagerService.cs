@@ -429,8 +429,8 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                         OrderBy = orderByList,
                         IncludeTotalResultCount = true,
                         // Add facets
-                        Facets = new List<String>() { "IsResumeUploaded", "Title", "Skills", "WorkPreferences", "Personalities", "VideoUrl" },
-                        //HasVideoInterview (does not exist), "Training" (facetable = false)
+                        Facets = new List<String>() { "IsResumeUploaded", "Title", "Skills", "WorkPreferences", "Personalities", "DesiredRate" },
+                        //HasVideoInterview (does not exist use VideoUrl to derive value), "Training" (marked facetable = false), "VideoUrl" (marked facetable = false)
                     };
 
                 // add search field if one is specified 
@@ -442,7 +442,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 //(first name AND title) AND (at least one skill OR at least one work preference OR desired rate OR at least one training OR at least one language OR at least one education OR experience summary)
                 // base filter
                 // eliminates records with certain missing data 
-                parameters.Filter = $"FirstName ne null and Tile ne null and (Skills/any() or WorkPreferences/any() or DesiredRate ne null or Training/any() or Languages/any() or ExperienceSummary ne null or Education/any())";
+                parameters.Filter = $"FirstName ne null and Title ne null and (Skills/any() or WorkPreferences/any() or DesiredRate ne null or Training/any() or Languages/any() or ExperienceSummary ne null or Education/any())";
 
                 //filters
                 double radiusKm = 0;
@@ -537,13 +537,57 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 //Map results
                 DateTime startMap = DateTime.Now;
                 var G2s = results?.Results?
-                    .Select(s => (CandidateSDOC)s.Document)
+                    .Select(s => new { Candidate = (CandidateSDOC)s.Document, Score = s.Score })
                     .ToList();
 
+                //searchResults.SaasToken = ???
+                G2s.ForEach(g2 => {
+                    searchResults.Candidates.Add(new HiringManagerCandidateDto { 
+                        FirstName = g2.Candidate.FirstName,
+                        ExperienceSummary = g2.Candidate.ExperienceSummary,
+                        SearchScore = g2.Score,
+                        ProfileGuid = g2.Candidate.ProfileGuid ?? Guid.Empty, //???
+                        PersonalityBlendName = g2.Candidate.PersonalityBlendName,
+                        Personality1ImageUrl = g2.Candidate.Personality1ImageUrl,
+                        Personality2ImageUrl = g2.Candidate.Personality2ImageUrl,
+                        VideoUrl = g2.Candidate.VideoUrl,
+                        ThumbnailImageUrl = g2.Candidate.ThumbnailImageUrl,
+                        Title = g2.Candidate.Title,
+                        //Skills = g2.Skills //?? should we join string list to string
+                        LastContactDate = g2.Candidate.LastContactDate,
+
+                    });
+                });
+
+                foreach(var facet in results.Facets)
+                {
+                    switch (facet.Key)
+                    {
+                        case "IsResumeUploaded":
+                            
+                            break;
+                        case "Title":
+                            break;
+                        case "Skills":
+                            break;
+                        case "WorkPreferences":
+                            break;
+                        case "Personalities":
+                            break;
+                        case "DesiredRate":
+                            break;
+                        case "Training":
+                            searchResults.Facets.Certifications.Add(new FacetResultDto {Count = facet.Value,  })
+                            break;
+                        case "VideoUrl":
+                            break;
+                    }
+                    
+                }
                 searchResults.TotalHits = results.Count.Value;
                 searchResults.PageSize = searchDto.Limit;
                 searchResults.NumPages = searchResults.PageSize != 0 ? (int)Math.Ceiling((double)searchResults.TotalHits / searchResults.PageSize) : 0;
-                //searchResults.SubscriberCount = searchResults.G2s.Count;
+                searchResults.CandidateCount = G2s.Count;
                 searchResults.PageNum = (searchDto.Offset / searchDto.Limit) + 1;
 
                 DateTime stopMap = DateTime.Now;

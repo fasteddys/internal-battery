@@ -16,13 +16,13 @@ namespace UpDiddyLib.Domain.Models.B2B
 
         public string PersonalityBlendName { get; set; }
 
-        public Uri Personality1ImageUrl { get; set; }
+        public string Personality1ImageUrl { get; set; }
 
-        public Uri Personality2ImageUrl { get; set; }
+        public string Personality2ImageUrl { get; set; }
 
-        public Uri VideoUrl { get; set; }
+        public string VideoUrl { get; set; }
 
-        public Uri ThumbnailImageUrl { get; set; }
+        public string ThumbnailImageUrl { get; set; }
 
         public string Title { get; set; }
 
