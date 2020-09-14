@@ -2,6 +2,8 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -48,6 +50,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<CandidateDetailDto> GetCandidate360Detail(Guid profileGuid)
         {
+            TextInfo usTI = new CultureInfo("en-US", false).TextInfo;
+
             var profile = _dbContext.Profile
                 .Include(p => p.Subscriber).ThenInclude(s => s.State)
                 .Where(p => p.IsDeleted == 0 && p.ProfileGuid == profileGuid)
@@ -59,7 +63,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var skills = _dbContext.SubscriberSkill
                 .Include(ss => ss.Skill)
                 .Where(ss => ss.IsDeleted == 0 && ss.SubscriberId == profile.SubscriberId)
-                .Select(ss => ss.Skill.SkillName)
+                .Select(ss => usTI.ToTitleCase(ss.Skill.SkillName))
                 .ToList();
 
             string location = null;
@@ -89,7 +93,17 @@ namespace UpDiddyApi.ApplicationCore.Repository
             decimal? estimatedHiringFee = null;
             if (desiredAnnualSalary.HasValue)
             {
-                estimatedHiringFee = desiredAnnualSalary * 0.2M;
+                estimatedHiringFee = desiredAnnualSalary * 0.1M;
+            }
+
+            if (estimatedHiringFee > 0.0M)
+            {
+                var spParams = new object[] {
+                   new SqlParameter("@Subscriberid", profile.SubscriberId)
+                };
+                var subscriberSources = await _dbContext.SubscriberSourcesDetails.FromSql<SubscriberSourceDto>("System_Get_SubscriberSources @SubscriberId", spParams).ToListAsync();
+                if (subscriberSources.Any(ss => ss.PartnerName == "Merit America" || ss.PartnerName == "Coursera"))
+                    estimatedHiringFee = -1.0M;
             }
 
             var employmentPreferences = new List<string>();
@@ -111,23 +125,27 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 employmentPreferences.Add("Flex");
 
             var technicalAndProfessionalTraining = _dbContext.SubscriberTraining
-            .Where(st => st.IsDeleted == 0 && st.Subscriber.IsDeleted == 0 && st.SubscriberId == profile.SubscriberId)
+            .Where(st => st.IsDeleted == 0 && st.Subscriber.IsDeleted == 0 && st.SubscriberId == profile.SubscriberId && !(string.IsNullOrWhiteSpace(st.TrainingInstitution) && string.IsNullOrWhiteSpace(st.TrainingName)))
             .Include(st => st.Subscriber)
             .Include(st => st.TrainingType)
-            .Select(st => new HiringManagerTechnicalAndProfessionalTrainingDto() { Concentration = WebUtility.HtmlDecode(st.TrainingName), Institution = WebUtility.HtmlDecode(st.TrainingInstitution) })
+            .Select(st => new HiringManagerTechnicalAndProfessionalTrainingDto()
+            {
+                Concentration = st.TrainingName != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(st.TrainingName)) : null,
+                Institution = st.TrainingInstitution != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(st.TrainingInstitution)) : null
+            })
             .ToList();
 
             var formalEducation = _dbContext.SubscriberEducationHistory
-                .Where(seh => seh.SubscriberId == profile.SubscriberId && seh.IsDeleted == 0)
+                .Where(seh => seh.SubscriberId == profile.SubscriberId && seh.IsDeleted == 0 && !(string.IsNullOrWhiteSpace(seh.EducationalDegree.Degree) && string.IsNullOrWhiteSpace(seh.EducationalInstitution.Name)))
                 .Include(seh => seh.EducationalDegree)
                 .Include(seh => seh.EducationalInstitution)
                 .Include(seh => seh.EducationalDegreeType)
                 .Include(seh => seh.EducationalDegreeType.EducationalDegreeTypeCategory)
                 .Select(seh => new HiringManagerFormalEducationDto()
                 {
-                    Concentration = seh.EducationalDegree != null ? WebUtility.HtmlDecode(seh.EducationalDegree.Degree) : null,
+                    Concentration = seh.EducationalDegree != null && seh.EducationalDegree.Degree != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(seh.EducationalDegree.Degree)) : null,
                     DegreeType = seh.EducationalDegreeType != null ? seh.EducationalDegreeType.EducationalDegreeTypeCategory.Name + " - " + seh.EducationalDegreeType.DegreeType : null,
-                    Institution = seh.EducationalInstitution != null ? WebUtility.HtmlDecode(seh.EducationalInstitution.Name) : null
+                    Institution = seh.EducationalInstitution != null && seh.EducationalInstitution.Name != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(seh.EducationalInstitution.Name)) : null
                 })
                 .ToList();
 
@@ -164,13 +182,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             var workHistories = _dbContext.SubscriberWorkHistory
                 .Include(swh => swh.Company)
-                .Where(swh => swh.IsDeleted == 0 && swh.SubscriberId == profile.SubscriberId)
+                .Where(swh => swh.IsDeleted == 0 && swh.SubscriberId == profile.SubscriberId && (swh.StartDate.HasValue || swh.EndDate.HasValue || !string.IsNullOrWhiteSpace(swh.JobDescription) || !string.IsNullOrWhiteSpace(swh.Title) || (swh.Company != null && !string.IsNullOrWhiteSpace(swh.Company.CompanyName))))
                 .OrderByDescending(swh => swh.EndDate).ThenByDescending(swh => swh.CreateDate)
                 .Select(swh => new HiringManagerWorkHistoryDto()
                 {
-                    Company = swh.Company != null ? WebUtility.HtmlDecode(swh.Company.CompanyName) : null,
+                    Company = swh.Company != null && swh.Company.CompanyName != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(swh.Company.CompanyName)) : null,
                     Description = WebUtility.HtmlDecode(swh.JobDescription),
-                    Position = WebUtility.HtmlDecode(swh.Title),
+                    Position = swh.Title != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(swh.Title)) : null,
                     StartDate = swh.StartDate.HasValue ? swh.StartDate.Value.ToString("MM/yy") : null,
                     EndDate = swh.EndDate.HasValue ? swh.EndDate.Value.ToString("MM/yy") : null
                 })
@@ -179,9 +197,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
             CandidateDetailDto candidateDetailDto = new CandidateDetailDto()
             {
                 ProfileGuid = profile.ProfileGuid,
-                FirstName = WebUtility.HtmlDecode(profile.Subscriber.FirstName),
-                JobTitle = WebUtility.HtmlDecode(profile.Subscriber.Title),
-                Location = WebUtility.HtmlDecode(location),
+                FirstName = profile.Subscriber.FirstName != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(profile.Subscriber.FirstName)) : null,
+                JobTitle = profile.Subscriber.Title != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(profile.Subscriber.Title)) : null,
+                Location = location != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(location)) : null,
                 Skills = skills,
                 DesiredAnnualSalary = desiredAnnualSalary,
                 EstimatedHiringFee = estimatedHiringFee,
@@ -191,7 +209,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 TechnicalAndProfessionalTraining = technicalAndProfessionalTraining,
                 Traitify = traitify,
                 VolunteerOrPassionProjects = WebUtility.HtmlDecode(profile.Subscriber.PassionProjectsDescription),
-                WorkHistories = workHistories
+                WorkHistories = workHistories,
+                ExperienceSummary = WebUtility.HtmlDecode(profile.Subscriber.CoverLetter)
             };
 
             return candidateDetailDto;
