@@ -25,6 +25,7 @@ using UpDiddyLib.Helpers;
 using UpDiddyLib.Domain.AzureSearchDocuments;
 using UpDiddyApi.ApplicationCore.Services.JobDataMining;
 using Microsoft.Extensions.Azure;
+using Newtonsoft.Json;
 
 namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 {
@@ -403,9 +404,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
 
             try
             {
-               // _logger.LogInformation($"HiringManagerService:_PerformAzureSearch: starting searchField ={searchFields} sort={searchDto.Sort} order={searchDto.Order} keyword={searchDto.Keyword} limit = {searchDto.Limit} radius={searchDto.Radius}");
-               // if (companyGuids == null || companyGuids.Count == 0)
-                   // throw new FailedValidationException("HiringManagerService:_PerformAzureSearch: Recruiter is not associated with the CareerCircle search company");
+               _logger.LogInformation($"HiringManagerService:_PerformAzureSearch: starting searchDto = {JsonConvert.SerializeObject(searchDto)} lng = {lng} lat={lat}");
 
                 DateTime startSearch = DateTime.Now;
                 HiringManagerCandidateSearchDto searchResults = new HiringManagerCandidateSearchDto();
@@ -436,7 +435,6 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                         IncludeTotalResultCount = true,
                         // Add facets
                         Facets = new List<String>() { "IsResumeUploaded", "Title", "Skills", "WorkPreferences", "Personalities", "DesiredRate", "HasVideoInterview", "Training/Name" },
-                        //HasVideoInterview (does not exist use VideoUrl to derive value), "Training" (marked facetable = false)
                     };
 
                 // base filter
