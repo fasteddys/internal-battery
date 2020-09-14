@@ -439,13 +439,6 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                         //HasVideoInterview (does not exist use VideoUrl to derive value), "Training" (marked facetable = false)
                     };
 
-                // add search field if one is specified 
-                //if (searchFields != null)
-                //{
-                //    parameters.SearchFields = searchFields;
-                //}
-
-                //(first name AND title) AND (at least one skill OR at least one work preference OR desired rate OR at least one training OR at least one language OR at least one education OR experience summary)
                 // base filter
                 // eliminates records with certain missing data 
                 parameters.Filter = $"FirstName ne null and Title ne null and (Skills/any() or WorkPreferences/any() or DesiredRate ne null or Training/any() or Languages/any() or ExperienceSummary ne null or Education/any())";
@@ -530,8 +523,6 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                     var certificationFilterString = string.Join(" or ", certificationFilterExpression);
                     parameters.Filter += $" and Training/any(trainingname: {certificationFilterString})";
                 }
-
-
 
                 _logger.LogInformation($"HiringManagerService:_PerformAzureSearch: filter = {parameters.Filter} ");
 
@@ -711,30 +702,5 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
             }
         }
 
-        //private string GetQueryString(CandidateSearchQueryDto searchDto)
-        //{
-        //    string baseQuery = $"?keyword={searchDto.Keyword}&cityGuid={searchDto.CityGuid}&radius={searchDto.Radius}&limit={searchDto.Limit}&offset={searchDto.Offset}&sort={searchDto.Sort}&order={searchDto.Order}";
-        //    string facetedQuery = $"";
-
-        //    return baseQuery + facetedQuery;
-        //}
-
-        //private bool IsSalaryWithinRange(int? upperLimit, int? lowerLimit, int value)
-        //{
-        //    if(upperLimit.HasValue && lowerLimit.HasValue)
-        //    {
-        //        return (upperLimit.Value >= value || lowerLimit.Value <= value);
-        //    }
-        //    else if (upperLimit.HasValue)
-        //    {
-        //        return upperLimit.Value >= value;
-        //    }
-        //    else if(lowerLimit.HasValue)
-        //    {
-        //        return lowerLimit.Value >= value;
-        //    }
-
-        //    return false;
-        //}
     }
 }
