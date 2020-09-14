@@ -593,7 +593,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                                 searchResults.Facets.RolePreferences.Add(new FacetResultWithQueryDto { 
                                     Count = val.Count, 
                                     Value = val.Value.ToString(), 
-                                    Query = $"{facetedRawQuery}RolePreference={HttpUtility.UrlEncode(val.Value.ToString())}",
+                                    Query = $"{facetedRawQuery}Role={HttpUtility.UrlEncode(val.Value.ToString())}",
                                     IsSelected = searchDto.Role != null && searchDto.Role.Count > 0 && searchDto.Role.Contains(val.Value.ToString())
                                 });
                             }
