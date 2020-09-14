@@ -118,7 +118,7 @@ AS
         , s.Email
         , CASE WHEN LEN(s.CoverLetter) > 140 THEN LEFT(s.CoverLetter, 140) + ''...'' ELSE s.CoverLetter END ExperienceSummary
         , CASE WHEN LEN(s.FirstName) > 0 THEN s.FirstName ELSE NULL END FirstName
-        , CASE WHEN sv.VideoLink IS NOT NULL THEN 1 ELSE 0 END HasVideoInterview,
+        , CASE WHEN sv.VideoLink IS NOT NULL THEN 1 ELSE 0 END HasVideoInterview
         , CAST(CASE WHEN r.SubscriberId IS NOT NULL THEN 1 ELSE 0 END AS BIT) IsResumeUploaded
         , sl.SubscriberLanguages Languages
         , ct.CertificationDate LastCertifiedDate
@@ -378,7 +378,7 @@ INSERT INTO @ProfileGuidsList VALUES (''3D5D8DB9-D65E-4E41-A589-2F1F0D5D7396'',2
 EXEC [dbo].[System_Update_AzureCandidateStatus] @ProfileGuids = @ProfileGuidsList, @Status = ''Indexed'', @IndexStatusInfo = ''Index on 03/12/2034:12:00''
 </example>
 */
-CREATE PROCEDURE [B2B].[System_Update_AzureCandidateStatus] (
+ALTER PROCEDURE [B2B].[System_Update_AzureCandidateStatus] (
 	@ProfileIndexStatuses dbo.AzureIndexStatus READONLY,
     @StatusName Varchar(MAX),
     @IndexStatusInfo VarChar(Max) 
