@@ -692,6 +692,11 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 searchResults.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
                 searchResults.SearchMappingTimeInTicks = intervalMapTime.Ticks;
 
+                //set base query
+                searchResults.Radius = searchDto.Radius;
+                searchResults.Keyword = searchDto.Keyword;
+                searchResults.CityGuid = searchDto.CityGuid;
+
                 return searchResults;
             }
             catch (Exception ex)

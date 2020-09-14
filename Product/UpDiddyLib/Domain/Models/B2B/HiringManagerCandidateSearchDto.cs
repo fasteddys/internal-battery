@@ -28,9 +28,9 @@ namespace UpDiddyLib.Domain.Models.B2B
         public ICollection<HiringManagerCandidateDto> Candidates { get; set; } = new List<HiringManagerCandidateDto>();
 
         #region Primary Search
-        Guid CityGuid { get; set; }
-        string Keyword { get; set; }
-        int Radius { get; set; }
+        public Guid CityGuid { get; set; }
+        public string Keyword { get; set; }
+        public int Radius { get; set; }
 
         #endregion
 
