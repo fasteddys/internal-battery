@@ -493,7 +493,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 //search WorkPreference
                 if (searchDto.WorkPreference != null && searchDto.WorkPreference.Count > 0)
                 {
-                    var workPreferenceFilterExpression = searchDto.Skill.Select(s => $"workpreference eq '{s}'").ToList();
+                    var workPreferenceFilterExpression = searchDto.WorkPreference.Select(s => $"workpreference eq '{s}'").ToList();
                     var workPreferenceFilterString = string.Join(" or ", workPreferenceFilterExpression);
                     parameters.Filter += $" and WorkPreferences/any(workpreference: {workPreferenceFilterString})";
                 }
@@ -501,7 +501,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 //search Role from Title index property
                 if (searchDto.Role != null && searchDto.Role.Count > 0)
                 {
-                    var roleFilterExpression = searchDto.Skill.Select(s => $"Title eq '{s}'").ToList();
+                    var roleFilterExpression = searchDto.Role.Select(s => $"Title eq '{s}'").ToList();
                     var roleFilterString = string.Join(" or ", roleFilterExpression);
                     parameters.Filter += $" and ({roleFilterString})";
                 }
@@ -509,7 +509,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 //search Personality
                 if (searchDto.Personality != null && searchDto.Personality.Count > 0)
                 {
-                    var personalitiesFilterExpression = searchDto.Skill.Select(s => $"personality eq '{s}'").ToList();
+                    var personalitiesFilterExpression = searchDto.Personality.Select(s => $"personality eq '{s}'").ToList();
                     var personalitiesFilterString = string.Join(" or ", personalitiesFilterExpression);
                     parameters.Filter += $" and Personalities/any(personality: {personalitiesFilterString})";
                 }
@@ -517,7 +517,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 //search index property Training is this same as Certification
                 if (searchDto.Certification != null && searchDto.Certification.Count > 0)
                 {
-                    var certificationFilterExpression = searchDto.Skill.Select(s => $"trainingname/Name eq '{s}'").ToList();
+                    var certificationFilterExpression = searchDto.Certification.Select(s => $"trainingname/Name eq '{s}'").ToList();
                     var certificationFilterString = string.Join(" or ", certificationFilterExpression);
                     parameters.Filter += $" and Training/any(trainingname: {certificationFilterString})";
                 }
