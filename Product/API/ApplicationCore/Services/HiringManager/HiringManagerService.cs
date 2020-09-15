@@ -660,14 +660,14 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                             {
                                 Count = hasVideoUrlCount,
                                 Value = "true",
-                                IsSelected = searchDto.HasVideoInterview.HasValue,
+                                IsSelected = searchDto.HasVideoInterview ?? false,
                                 Query = $"{facetedRawQuery}HasVideoInterview={ HttpUtility.UrlEncode("true")}",
                             });
                             searchResults.Facets.Video.Add(new FacetResultWithQueryDto
                             {
                                 Count = facet.Value.Count - hasVideoUrlCount,
                                 Value = "false",
-                                IsSelected = searchDto.HasVideoInterview.HasValue,
+                                IsSelected = searchDto.HasVideoInterview ?? false,
                                 Query = $"{facetedRawQuery}HasVideoInterview={ HttpUtility.UrlEncode("false")}",
                             });
 
