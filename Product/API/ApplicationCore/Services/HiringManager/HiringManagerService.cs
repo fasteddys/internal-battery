@@ -667,7 +667,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                             {
                                 Count = facet.Value.Count - hasVideoUrlCount,
                                 Value = "false",
-                                IsSelected = searchDto.HasVideoInterview ?? false,
+                                IsSelected = !searchDto.HasVideoInterview ?? false,
                                 Query = $"{facetedRawQuery}HasVideoInterview={ HttpUtility.UrlEncode("false")}",
                             });
 
