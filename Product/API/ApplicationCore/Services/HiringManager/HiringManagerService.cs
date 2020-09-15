@@ -351,8 +351,6 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                 if (searchDto.CityGuid == null || searchDto.CityGuid == Guid.Empty)
                 {
                     searchResults = await _PerformAzureSearch(searchDto, rawQuery);
-                    // Obfucscate the results 
-                    //Obfuscate(results);
                     return searchResults;
                 }
 
@@ -655,21 +653,16 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                             break;
                         case "HasVideoInterview":
 
-                            var hasVideoUrlCount = facet.Value.Where(v => !String.IsNullOrWhiteSpace(v.Value.ToString())).ToList().Count;
-                            searchResults.Facets.Video.Add(new FacetResultWithQueryDto
+                            foreach (var val in facet.Value)
                             {
-                                Count = hasVideoUrlCount,
-                                Value = "true",
-                                IsSelected = searchDto.HasVideoInterview ?? false,
-                                Query = $"{facetedRawQuery}HasVideoInterview={ HttpUtility.UrlEncode("true")}",
-                            });
-                            searchResults.Facets.Video.Add(new FacetResultWithQueryDto
-                            {
-                                Count = facet.Value.Count - hasVideoUrlCount,
-                                Value = "false",
-                                IsSelected = !searchDto.HasVideoInterview ?? false,
-                                Query = $"{facetedRawQuery}HasVideoInterview={ HttpUtility.UrlEncode("false")}",
-                            });
+                                searchResults.Facets.Video.Add(new FacetResultWithQueryDto
+                                {
+                                    Count = val.Count,
+                                    Value = val.Value.ToString(),
+                                    Query = $"{facetedRawQuery}HasVideoInterview={HttpUtility.UrlEncode(val.Value.ToString())}",
+                                    IsSelected = searchDto.HasVideoInterview.HasValue && searchDto.HasVideoInterview.Value.ToString().Equals(val.Value.ToString())
+                                });
+                            }
 
                             break;
                     }
