@@ -167,7 +167,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             };
 
             sasBuilder.StartsOn = DateTimeOffset.UtcNow;
-            sasBuilder.ExpiresOn = DateTimeOffset.UtcNow.AddHours(VideoSASLifeTimeInMinutesForSubscriber);
+            sasBuilder.ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(VideoSASLifeTimeInMinutesForSubscriber);
             sasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
 
             // Use the key to get the SAS token.
@@ -194,7 +194,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             };
 
             sasBuilder.StartsOn = DateTimeOffset.UtcNow;
-            sasBuilder.ExpiresOn = DateTimeOffset.UtcNow.AddHours(VideoSASLifeTimeInMinutesForContainer);
+            sasBuilder.ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(VideoSASLifeTimeInMinutesForContainer);
 
 
             sasBuilder.SetPermissions(BlobContainerSasPermissions.Read);

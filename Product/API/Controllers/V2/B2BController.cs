@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -332,5 +333,18 @@ namespace UpDiddyApi.Controllers.V2
             => await _hiringManagerService.GetProhibitiedEmailDomains();
 
         #endregion Utility endpoints
+
+        #region Candidate Search
+        [HttpGet]
+        [Authorize(Policy = "IsHiringManager")]
+        [Route("candidates/query")]
+        public async Task<IActionResult> SearchCandidate([FromQuery] CandidateSearchQueryDto searchDto)
+        {
+            var rawQuery = HttpContext.Request.QueryString.Value;
+
+            var rVal = await _hiringManagerService.CandidateSearchByHiringManagerAsync(GetSubscriberGuid(), searchDto, rawQuery);
+            return Ok(rVal);
+        }
+        #endregion
     }
 }
