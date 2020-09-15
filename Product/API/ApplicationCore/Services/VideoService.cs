@@ -14,13 +14,16 @@ namespace UpDiddyApi.ApplicationCore.Services
     public class VideoService : IVideoService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
+        private readonly ICandidatesService _candidatesService;
         private readonly IMapper _mapper;
 
         private ICloudStorage _cloudStorage { get; set; }
 
-
-        public VideoService(IRepositoryWrapper repositoryWrapper, ICloudStorage cloudStorage,
-        IMapper mapper)
+        public VideoService(
+            IRepositoryWrapper repositoryWrapper,
+            ICloudStorage cloudStorage,
+            ICandidatesService _candidatesService,
+            IMapper mapper)
         {
 
             _repositoryWrapper = repositoryWrapper;
@@ -62,6 +65,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             videoLink.ThumbnailMimeType = subscriberVideo.ThumbnailMimeType;
 
             await _repositoryWrapper.SubscriberVideoRepository.SaveAsync();
+
+            if (videoLink.Subscriber?.SubscriberGuid != null) // ... which should be 100% of the time
+            {
+                _candidatesService.IndexCandidateBySubscriberAsync(videoLink.Subscriber.SubscriberGuid.Value);
+            }
         }
 
         public async Task DeleteSubscriberVideoLink(Guid subscriberVideoGuid, Guid subscriberGuid)
@@ -73,6 +81,8 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             _repositoryWrapper.SubscriberVideoRepository.LogicalDelete(videoLink);
             await _repositoryWrapper.SubscriberVideoRepository.SaveAsync();
+
+            _candidatesService.IndexCandidateBySubscriberAsync(subscriberGuid);
         }
 
         public async Task Publish(Guid subscriberVideoGuid, Guid subscriberGuid, bool isPublished)
@@ -88,6 +98,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _cloudStorage.RenameFileAsync(previewVideoFilePath, subscriberVideo.VideoLink, true);
             await _cloudStorage.RenameFileAsync(previewThumbnailFilePath, subscriberVideo.ThumbnailLink, true);
             await _repositoryWrapper.SubscriberVideoRepository.SaveAsync();
+
+            _candidatesService.IndexCandidateBySubscriberAsync(subscriberGuid);
         }
 
         public async Task SetVideoIsVisibleToHiringManager(Guid subscriberGuid, bool visibility)
@@ -100,6 +112,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             subscriber.IsVideoVisibleToHiringManager = visibility;
             subscriber.ModifyDate = DateTime.UtcNow;
             await _repositoryWrapper.SubscriberRepository.SaveAsync();
+
+            _candidatesService.IndexCandidateBySubscriberAsync(subscriberGuid);
         }
     }
 }
