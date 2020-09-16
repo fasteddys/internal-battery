@@ -10,7 +10,7 @@ using UpDiddyApi.ApplicationCore.Interfaces;
 using Azure.Storage.Blobs;
 using Azure.Storage.Sas;
 using Azure.Storage;
-
+using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -22,9 +22,9 @@ namespace UpDiddyApi.ApplicationCore.Services
         private string _assetContainer;
         private string _appDataContainer;
         private IConfiguration _configuration;
+        private readonly ILogger _logger;
 
-
-        public AzureBlobStorage(IConfiguration config)
+        public AzureBlobStorage(IConfiguration config, ILogger<AzureBlobStorage> logger)
         {
             string storageConnectionString = config["StorageAccount:ConnectionString"];
             _containerName = config["StorageAccount:DefaultContainer"];
@@ -35,6 +35,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             _client = _account.CreateCloudBlobClient();
             _configuration = config;
+            _logger = logger;
         }
 
         public async Task<Stream> GetStreamAsync(string blobName)
@@ -118,29 +119,38 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<bool> RenameFileAsync(string oldFilePath, string newFilePath, bool overWrite)
         {
-            string oldBlobName = Path.GetFileName(oldFilePath);
-            string newBlobName = Path.GetFileName(newFilePath);
-            string[] oldFileUriComponent = oldFilePath.Replace("//", string.Empty).Split('/');
-            string[] newFileUriComponent = newFilePath.Replace("//", string.Empty).Split('/');
-            string oldFileBlob =  oldFileUriComponent[2] + "/" + oldBlobName;
-            string newFileBlob =  newFileUriComponent[2] + "/" + newBlobName;
-
-            CloudBlobContainer cloudBlobContainer = _client.GetContainerReference(oldFileUriComponent[1]);
-            await cloudBlobContainer.CreateIfNotExistsAsync();
-
-            CloudBlockBlob blob = cloudBlobContainer.GetBlockBlobReference(oldFileBlob);
-            CloudBlockBlob blobCopy = cloudBlobContainer.GetBlockBlobReference(newFileBlob);
-
-            if (await blob.ExistsAsync())
+            bool result = false;
+            try
             {
-                if (await blobCopy.ExistsAsync() && overWrite)
+                string oldBlobName = Path.GetFileName(oldFilePath);
+                string newBlobName = Path.GetFileName(newFilePath);
+                string[] oldFileUriComponent = oldFilePath.Replace("//", string.Empty).Split('/');
+                string[] newFileUriComponent = newFilePath.Replace("//", string.Empty).Split('/');
+                string oldFileBlob = oldFileUriComponent[2] + "/" + oldBlobName;
+                string newFileBlob = newFileUriComponent[2] + "/" + newBlobName;
+
+                CloudBlobContainer cloudBlobContainer = _client.GetContainerReference(oldFileUriComponent[1]);
+                await cloudBlobContainer.CreateIfNotExistsAsync();
+
+                CloudBlockBlob blob = cloudBlobContainer.GetBlockBlobReference(oldFileBlob);
+                CloudBlockBlob blobCopy = cloudBlobContainer.GetBlockBlobReference(newFileBlob);
+
+                if (await blob.ExistsAsync())
                 {
-                    await blobCopy.DeleteIfExistsAsync();
+                    if (await blobCopy.ExistsAsync() && overWrite)
+                    {
+                        await blobCopy.DeleteIfExistsAsync();
+                    }
+                    await blobCopy.StartCopyAsync(blob);
+                    await blob.DeleteIfExistsAsync();
                 }
-                await blobCopy.StartCopyAsync(blob);
-                await blob.DeleteIfExistsAsync();
+                result = true;
             }
-            return true;
+            catch(Exception e)
+            {
+                _logger.LogError($"An exception occurred in AzureBlobStorage.RenameFileAsync; message: {e.Message}, stack trace: {e.StackTrace}");
+            }
+            return result;
         }
 
 
