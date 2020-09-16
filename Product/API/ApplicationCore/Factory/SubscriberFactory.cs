@@ -193,7 +193,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         }
 
 
-
+        [Obsolete("This method has been replaced by /v2/profiles/avatar")]
         public static bool UpdateAvatar(IRepositoryWrapper repositoryWrapper, IConfiguration config, IFormFile avatarFile, Guid subscriberGuid, ref string msg)
         {
 
@@ -223,7 +223,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         }
 
 
-        [Obsolete()]
+        [Obsolete("This method is no longer used")]
         public static bool ImportLinkedInAvatar(IRepositoryWrapper repositoryWrapper, IConfiguration config, string responseJSon, Guid subscriberGuid, ref string msg)
         {
             JObject o = JObject.Parse(responseJSon);
