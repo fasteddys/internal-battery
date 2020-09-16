@@ -22,10 +22,10 @@ namespace UpDiddyApi.ApplicationCore.Services
         public VideoService(
             IRepositoryWrapper repositoryWrapper,
             ICloudStorage cloudStorage,
-            ICandidatesService _candidatesService,
+            ICandidatesService candidatesService,
             IMapper mapper)
         {
-
+            _candidatesService = candidatesService;
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
             _cloudStorage = cloudStorage;
@@ -68,7 +68,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             if (videoLink.Subscriber?.SubscriberGuid != null) // ... which should be 100% of the time
             {
-                _candidatesService.IndexCandidateBySubscriberAsync(videoLink.Subscriber.SubscriberGuid.Value);
+                await _candidatesService.IndexCandidateBySubscriberAsync(videoLink.Subscriber.SubscriberGuid.Value);
             }
         }
 
@@ -82,7 +82,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _repositoryWrapper.SubscriberVideoRepository.LogicalDelete(videoLink);
             await _repositoryWrapper.SubscriberVideoRepository.SaveAsync();
 
-            _candidatesService.IndexCandidateBySubscriberAsync(subscriberGuid);
+            await _candidatesService.IndexCandidateBySubscriberAsync(subscriberGuid);
         }
 
         public async Task Publish(Guid subscriberVideoGuid, Guid subscriberGuid, bool isPublished)
@@ -99,7 +99,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _cloudStorage.RenameFileAsync(previewThumbnailFilePath, subscriberVideo.ThumbnailLink, true);
             await _repositoryWrapper.SubscriberVideoRepository.SaveAsync();
 
-            _candidatesService.IndexCandidateBySubscriberAsync(subscriberGuid);
+            await _candidatesService.IndexCandidateBySubscriberAsync(subscriberGuid);
         }
 
         public async Task SetVideoIsVisibleToHiringManager(Guid subscriberGuid, bool visibility)
@@ -113,7 +113,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             subscriber.ModifyDate = DateTime.UtcNow;
             await _repositoryWrapper.SubscriberRepository.SaveAsync();
 
-            _candidatesService.IndexCandidateBySubscriberAsync(subscriberGuid);
+            await _candidatesService.IndexCandidateBySubscriberAsync(subscriberGuid);
         }
     }
 }
