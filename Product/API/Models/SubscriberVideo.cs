@@ -24,5 +24,7 @@ namespace UpDiddyApi.Models
 
         [StringLength(500)]
         public string ThumbnailMimeType { get; set; }
+
+        public bool IsPublished { get; internal set; }
     }
 }

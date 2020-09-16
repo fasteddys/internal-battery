@@ -1,12 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
-
+using UpDiddyApi.ApplicationCore.Exceptions;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyApi.Models.B2B;
+using UpDiddyLib.Domain.Models.B2B;
 using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Repository
@@ -24,7 +30,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             var hiringManager = await _dbContext.HiringManager.Where(hm => hm.SubscriberId == SubscriberId && hm.IsDeleted == 0)
                 .Include(hm => hm.Company).ThenInclude(c => c.Industry)
-                .Include(hm => hm.Subscriber).ThenInclude(s => s.State)                
+                .Include(hm => hm.Subscriber).ThenInclude(s => s.State)
                 .FirstOrDefaultAsync();
 
             return hiringManager;
@@ -40,6 +46,174 @@ namespace UpDiddyApi.ApplicationCore.Repository
             });
 
             await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<CandidateDetailDto> GetCandidate360Detail(Guid profileGuid)
+        {
+            TextInfo usTI = new CultureInfo("en-US", false).TextInfo;
+
+            var profile = _dbContext.Profile
+                .Include(p => p.Subscriber).ThenInclude(s => s.State)
+                .Where(p => p.IsDeleted == 0 && p.ProfileGuid == profileGuid)
+                .FirstOrDefault();
+
+            if (profile == null || profile.Subscriber == null)
+                throw new NotFoundException($"Profile not found: {profileGuid}");
+
+            var skills = _dbContext.SubscriberSkill
+                .Include(ss => ss.Skill)
+                .Where(ss => ss.IsDeleted == 0 && ss.SubscriberId == profile.SubscriberId)
+                .Select(ss => usTI.ToTitleCase(ss.Skill.SkillName))
+                .ToList();
+
+            string location = null;
+            if (profile.Subscriber.City != null && profile.Subscriber.State != null)
+            {
+                location = $"{profile.Subscriber.City}, {profile.Subscriber.State.Code}";
+            }
+            else if (profile.Subscriber.City != null)
+            {
+                location = profile.Subscriber.City;
+            }
+            else if (profile.Subscriber.State != null)
+            {
+                location = profile.Subscriber.State.Name;
+            }
+
+            decimal? desiredAnnualSalary = null;
+            if (profile.Subscriber.DesiredSalary.HasValue)
+            {
+                desiredAnnualSalary = profile.Subscriber.DesiredSalary.Value;
+            }
+            else if (profile.Subscriber.DesiredRate.HasValue)
+            {
+                desiredAnnualSalary = profile.Subscriber.DesiredRate.Value * 40 * 52;
+            }
+
+            decimal? estimatedHiringFee = null;
+            if (desiredAnnualSalary.HasValue)
+            {
+                estimatedHiringFee = desiredAnnualSalary * 0.1M;
+            }
+
+            if (estimatedHiringFee > 0.0M)
+            {
+                var spParams = new object[] {
+                   new SqlParameter("@Subscriberid", profile.SubscriberId)
+                };
+                var subscriberSources = await _dbContext.SubscriberSourcesDetails.FromSql<SubscriberSourceDto>("System_Get_SubscriberSources @SubscriberId", spParams).ToListAsync();
+                if (subscriberSources.Any(ss => ss.PartnerName == "Merit America" || ss.PartnerName == "Coursera"))
+                    estimatedHiringFee = -1.0M;
+            }
+
+            var employmentPreferences = new List<string>();
+            var subscriberEmploymentTypes = _dbContext.SubscriberEmploymentTypes
+                .Include(set => set.EmploymentType)
+                .Where(set => set.IsDeleted == 0 && set.SubscriberId == profile.SubscriberId)
+                .Select(set => set.EmploymentType.Name)
+                .ToList();
+            if (subscriberEmploymentTypes != null)
+                employmentPreferences.AddRange(subscriberEmploymentTypes);
+            if (profile.Subscriber.IsWillingToTravel.HasValue)
+            {
+                if (profile.Subscriber.IsWillingToTravel.Value)
+                    employmentPreferences.Add("Will Travel");
+                else
+                    employmentPreferences.Add("On-site");
+            }
+            if (profile.Subscriber.IsFlexibleWorkScheduleRequired.HasValue && profile.Subscriber.IsFlexibleWorkScheduleRequired.Value)
+                employmentPreferences.Add("Flex");
+
+            var technicalAndProfessionalTraining = _dbContext.SubscriberTraining
+            .Where(st => st.IsDeleted == 0 && st.Subscriber.IsDeleted == 0 && st.SubscriberId == profile.SubscriberId && !(string.IsNullOrWhiteSpace(st.TrainingInstitution) && string.IsNullOrWhiteSpace(st.TrainingName)))
+            .Include(st => st.Subscriber)
+            .Include(st => st.TrainingType)
+            .Select(st => new HiringManagerTechnicalAndProfessionalTrainingDto()
+            {
+                Concentration = st.TrainingName != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(st.TrainingName)) : null,
+                Institution = st.TrainingInstitution != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(st.TrainingInstitution)) : null
+            })
+            .ToList();
+
+            var formalEducation = _dbContext.SubscriberEducationHistory
+                .Where(seh => seh.SubscriberId == profile.SubscriberId && seh.IsDeleted == 0 && !(string.IsNullOrWhiteSpace(seh.EducationalDegree.Degree) && string.IsNullOrWhiteSpace(seh.EducationalInstitution.Name)))
+                .Include(seh => seh.EducationalDegree)
+                .Include(seh => seh.EducationalInstitution)
+                .Include(seh => seh.EducationalDegreeType)
+                .Include(seh => seh.EducationalDegreeType.EducationalDegreeTypeCategory)
+                .Select(seh => new HiringManagerFormalEducationDto()
+                {
+                    Concentration = seh.EducationalDegree != null && seh.EducationalDegree.Degree != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(seh.EducationalDegree.Degree)) : null,
+                    DegreeType = seh.EducationalDegreeType != null ? seh.EducationalDegreeType.EducationalDegreeTypeCategory.Name + " - " + seh.EducationalDegreeType.DegreeType : null,
+                    Institution = seh.EducationalInstitution != null && seh.EducationalInstitution.Name != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(seh.EducationalInstitution.Name)) : null
+                })
+                .ToList();
+
+            var languages = _dbContext.SubscriberLanguageProficiencies
+                .Include(slp => slp.Language)
+                .Include(slp => slp.ProficiencyLevel)
+                .Where(slp => slp.IsDeleted == 0 && slp.SubscriberId == profile.SubscriberId)
+                .Select(slp => new HiringManagerLanguageDto() { Name = slp.Language.LanguageName, Proficiency = slp.ProficiencyLevel.ProficiencyLevelName })
+                .ToList();
+
+            HiringManagerTraitifyDto traitify = null;
+            if (profile.Subscriber.IsTraitifyAssessmentsVisibleToHiringManagers.HasValue && profile.Subscriber.IsTraitifyAssessmentsVisibleToHiringManagers.Value)
+            {
+                var rawTraitify = _dbContext.Traitify
+                    .Where(t => t.SubscriberId == profile.SubscriberId && t.IsDeleted == 0 && !string.IsNullOrWhiteSpace(t.ResultData))
+                    .OrderByDescending(t => t.CreateDate)
+                    .FirstOrDefault();
+                if (rawTraitify != null)
+                {
+                    var personalityBlendName = JObject.Parse(rawTraitify.ResultData).SelectToken("personality_blend.name");
+                    var personalityBlendImage1 = JObject.Parse(rawTraitify.ResultData).SelectToken("personality_blend.personality_type_1.badge.image_small");
+                    var personalityBlendImage2 = JObject.Parse(rawTraitify.ResultData).SelectToken("personality_blend.personality_type_2.badge.image_small");
+                    if (personalityBlendName != null && personalityBlendImage1 != null && personalityBlendImage2 != null)
+                    {
+                        traitify = new HiringManagerTraitifyDto()
+                        {
+                            PersonalityBlendName = personalityBlendName.Value<string>(),
+                            Personality1ImageUrl = personalityBlendImage1.Value<string>(),
+                            Personality2ImageUrl = personalityBlendImage2.Value<string>()
+                        };
+                    }
+                }
+            }
+
+            var workHistories = _dbContext.SubscriberWorkHistory
+                .Include(swh => swh.Company)
+                .Where(swh => swh.IsDeleted == 0 && swh.SubscriberId == profile.SubscriberId && (swh.StartDate.HasValue || swh.EndDate.HasValue || !string.IsNullOrWhiteSpace(swh.JobDescription) || !string.IsNullOrWhiteSpace(swh.Title) || (swh.Company != null && !string.IsNullOrWhiteSpace(swh.Company.CompanyName))))
+                .OrderByDescending(swh => swh.EndDate).ThenByDescending(swh => swh.CreateDate)
+                .Select(swh => new HiringManagerWorkHistoryDto()
+                {
+                    Company = swh.Company != null && swh.Company.CompanyName != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(swh.Company.CompanyName)) : null,
+                    Description = WebUtility.HtmlDecode(swh.JobDescription),
+                    Position = swh.Title != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(swh.Title)) : null,
+                    StartDate = swh.StartDate.HasValue ? swh.StartDate.Value.ToString("MM/yy") : null,
+                    EndDate = swh.EndDate.HasValue ? swh.EndDate.Value.ToString("MM/yy") : null
+                })
+                .ToList();
+
+            CandidateDetailDto candidateDetailDto = new CandidateDetailDto()
+            {
+                ProfileGuid = profile.ProfileGuid,
+                FirstName = profile.Subscriber.FirstName != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(profile.Subscriber.FirstName)) : null,
+                JobTitle = profile.Subscriber.Title != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(profile.Subscriber.Title)) : null,
+                Location = location != null ? usTI.ToTitleCase(WebUtility.HtmlDecode(location)) : null,
+                Skills = skills,
+                DesiredAnnualSalary = desiredAnnualSalary,
+                EstimatedHiringFee = estimatedHiringFee,
+                EmploymentPreferences = employmentPreferences,
+                FormalEducation = formalEducation,
+                Languages = languages,
+                TechnicalAndProfessionalTraining = technicalAndProfessionalTraining,
+                Traitify = traitify,
+                VolunteerOrPassionProjects = WebUtility.HtmlDecode(profile.Subscriber.PassionProjectsDescription),
+                WorkHistories = workHistories,
+                ExperienceSummary = WebUtility.HtmlDecode(profile.Subscriber.CoverLetter)
+            };
+
+            return candidateDetailDto;
         }
 
         public async Task UpdateHiringManager(int subscriberId, HiringManagerDto hiringManagerDto)

@@ -1,11 +1,11 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 
 namespace UpDiddyLib.Domain.Models
 {
     public class SubscriberVideoLinksDto
     {
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public Guid SubscriberVideoGuid { get; set; }
 
         public string VideoLink { get; set; }
@@ -16,7 +16,16 @@ namespace UpDiddyLib.Domain.Models
 
         public string ThumbnailMimeType { get; set; }
 
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonConverter(typeof(StringEnumConverter))]
+        public SubscriberVideoStatus Status { get; set; }
+
         public bool? IsVisibleToHiringManager { get; set; }
+    }
+
+    public enum SubscriberVideoStatus
+    {
+        None = 0,
+        Created,
+        published
     }
 }

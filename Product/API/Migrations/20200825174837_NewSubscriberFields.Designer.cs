@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.SqlServer.Types;
 using UpDiddyApi.Models;
@@ -10,9 +11,10 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200825174837_NewSubscriberFields")]
+    partial class NewSubscriberFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3787,32 +3789,6 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("ProficiencyLevels");
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.ProhibitiedEmailDomain", b =>
-                {
-                    b.Property<int>("ProhibitiedEmailDomainId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<Guid>("ProhibitiedEmailDomainGuid");
-
-                    b.Property<string>("Value")
-                        .HasMaxLength(500);
-
-                    b.HasKey("ProhibitiedEmailDomainId");
-
-                    b.ToTable("ProhibitiedEmailDomains","B2B");
-                });
-
             modelBuilder.Entity("UpDiddyApi.Models.PromoCode", b =>
                 {
                     b.Property<int>("PromoCodeId")
@@ -5330,8 +5306,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<Guid>("CreateGuid");
 
                     b.Property<int>("IsDeleted");
-
-                    b.Property<bool>("IsPublished");
 
                     b.Property<DateTime?>("ModifyDate");
 

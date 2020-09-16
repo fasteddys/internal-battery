@@ -19,14 +19,21 @@ namespace UpDiddyApi.ApplicationCore.Repository
             _dbContext = dbContext;
         }
 
-        public async Task<SubscriberVideo> GetExistingSubscriberVideo(Guid subscriberGuid)
-            => await GetAll()
-                .Include(v => v.Subscriber)
-                .SingleOrDefaultAsync(v => v.IsDeleted == 0 && v.Subscriber.IsDeleted == 0 && v.Subscriber.SubscriberGuid == subscriberGuid);
+        public Task<SubscriberVideo> GetSubscriberVideo(Guid subscriberVideoGuid, Guid subscriberGuid)
+            => GetAllWithTracking()
+                .Include(svr => svr.Subscriber)
+                .SingleOrDefaultAsync(svr =>
+                    svr.Subscriber.IsDeleted == 0 &&
+                    svr.Subscriber.SubscriberGuid == subscriberGuid &&
+                    svr.IsDeleted == 0 &&
+                    svr.SubscriberVideoGuid == subscriberVideoGuid);
+
 
         public async Task<SubscriberVideo> GetExistingOrCreateNewSubscriberVideo(Guid subscriberGuid)
         {
-            var subscriberVideo = await GetExistingSubscriberVideo(subscriberGuid);
+            var subscriberVideo = await GetAll()
+                .Include(v => v.Subscriber)
+                .SingleOrDefaultAsync(v => v.IsDeleted == 0 && v.Subscriber.IsDeleted == 0 && v.Subscriber.SubscriberGuid == subscriberGuid);
 
             if (subscriberVideo != null) { return subscriberVideo; }
 

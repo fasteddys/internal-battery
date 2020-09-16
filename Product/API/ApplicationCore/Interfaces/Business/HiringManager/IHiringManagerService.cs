@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UpDiddyLib.Domain.Models;
+using UpDiddyLib.Domain.Models.B2B;
 using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager
@@ -62,7 +63,14 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business.HiringManager
         /// <summary>Gets a list of invalid email domains</summary>
         /// <returns>a list of invalid email domains</returns>
         /// <remarks>https://gist.github.com/adamloving/4401361</remarks>
-        Task<List<string>> GetInvalidEmails();
+        Task<List<string>> GetProhibitiedEmailDomains();
+
+        Task<CandidateDetailDto> GetCandidate360Detail(Guid profileGuid);
+
+        #region CandidateSearch
+
+        Task<HiringManagerCandidateSearchDto> CandidateSearchByHiringManagerAsync(Guid subscriberGuid, CandidateSearchQueryDto searchDto, string rawQuery);
+        #endregion
     }
 }
 
