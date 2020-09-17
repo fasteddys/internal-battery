@@ -9,6 +9,7 @@ namespace UpDiddyApi.Migrations
 			migrationBuilder.Sql(@"EXEC('/*
 <remarks>
 	2020.08.26 - Joey Herrington - Created
+	2020.09.17 - Vivek Dutta - Updated to return Initiated Crosschq Status.
 </remarks>
 <description>
 	Get''s a list of CrossChq statuses by resume upload date
@@ -22,7 +23,7 @@ namespace UpDiddyApi.Migrations
 		@order = ''descending'';
 </example>
 */
-CREATE PROCEDURE [dbo].[System_Get_CrossChqByResumeUploadDate] (
+ALTER PROCEDURE [dbo].[System_Get_CrossChqByResumeUploadDate] (
 	@startDate DATETIME,
 	@limit INT,
 	@offset INT,
@@ -141,7 +142,7 @@ END')");
 		@order = ''descending'';
 </example>
 */
-CREATE PROCEDURE [dbo].[System_Get_CrossChqByResumeUploadDate] (
+ALTER PROCEDURE [dbo].[System_Get_CrossChqByResumeUploadDate] (
 	@startDate DATETIME,
 	@limit INT,
 	@offset INT,
