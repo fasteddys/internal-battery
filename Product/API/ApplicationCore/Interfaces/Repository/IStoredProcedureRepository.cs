@@ -7,6 +7,8 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Domain.Models;
 using UpDiddyLib.Domain.Models.Reports;
 using UpDiddyLib.Domain.AzureSearchDocuments;
+using UpDiddyLib.Domain.Models.CrossChq;
+using UpDiddyApi.Models.CrossChq;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
@@ -91,5 +93,13 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 
 
         Task<EmailStatisticsListDto> GetEmailStatistics(string emailAddress, TimeSpan duration);
-    }
+
+        Task<List<CrossChqResumeStatus>> GetCrossChqStatusByResume(
+                    DateTime startDate,
+                    bool showOnlyNonCrossChq,
+                    int limit,
+                    int offset,
+                    string sort,
+                    string order);
+        }
 }

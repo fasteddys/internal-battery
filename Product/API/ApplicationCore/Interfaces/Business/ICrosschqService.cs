@@ -20,5 +20,13 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<List<ReferenceStatusDto>> RetrieveReferenceStatus(Guid profileGuid);
 
         Task<ReferenceCheckReportDto> GetReferenceCheckReportPdf(Guid referenceCheckGuid, string reportType);
+
+        Task<CrossChqCandidateStatusListDto> GetCrossChqStatusByResume(
+            int numberOfDays,
+            bool showOnlyNonCrossChq,
+            int limit,
+            int offset,
+            string sort,
+            string order);
     }
 }

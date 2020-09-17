@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -193,6 +194,13 @@ namespace UpDiddyApi.Controllers.V2
 
         #region Profiles 
 
+        [HttpGet]
+        [Authorize(Policy = "IsHiringManager")]
+        [Route("profiles/{profileGuid}/candidate")]
+        public async Task<IActionResult> GetCandidate360ProfileDetail(Guid profileGuid)
+        {
+            return Ok(await _hiringManagerService.GetCandidate360Detail(profileGuid));
+        }
 
         [HttpGet]
         [Authorize(Policy = "IsHiringManager")]
@@ -321,9 +329,22 @@ namespace UpDiddyApi.Controllers.V2
 
         [HttpGet("invalid-email-domains")]
         [AllowAnonymous]
-        public async Task<ActionResult<List<string>>> GetInvalidEmails()
-            => await _hiringManagerService.GetInvalidEmails();
+        public async Task<ActionResult<List<string>>> GetProhibitiedEmailDomains()
+            => await _hiringManagerService.GetProhibitiedEmailDomains();
 
         #endregion Utility endpoints
+
+        #region Candidate Search
+        [HttpGet]
+        [Authorize(Policy = "IsHiringManager")]
+        [Route("candidates/query")]
+        public async Task<IActionResult> SearchCandidate([FromQuery] CandidateSearchQueryDto searchDto)
+        {
+            var rawQuery = HttpContext.Request.QueryString.Value;
+
+            var rVal = await _hiringManagerService.CandidateSearchByHiringManagerAsync(GetSubscriberGuid(), searchDto, rawQuery);
+            return Ok(rVal);
+        }
+        #endregion
     }
 }

@@ -25,6 +25,7 @@ using UpDiddyLib.Domain.Models.G2;
 using UpDiddyLib.Domain.Models.B2B;
 using UpDiddyLib.Domain.Models.Candidate360;
 using Newtonsoft.Json.Linq;
+using GeoJSON.Net.Geometry;
 
 namespace UpDiddyApi.Helpers
 {
@@ -43,6 +44,9 @@ namespace UpDiddyApi.Helpers
     {
         public ApiProfile()
         {
+            char recordDelim = Convert.ToChar(30);
+            char fieldDelim = Convert.ToChar(29);
+
             CreateMap<User, CreateUserDto>()
                 .ForMember(cud => cud.FirstName, u => u.Ignore())
                 .ForMember(cud => cud.JobReferralCode, u => u.Ignore())
@@ -392,6 +396,11 @@ namespace UpDiddyApi.Helpers
                 .ForMember(x => x.Industry, opt => opt.MapFrom(src => src.Industry.Name))
                 .ForMember(x => x.JobCategory, opt => opt.MapFrom(src => src.JobCategory.Name))
                 .ForMember(x => x.Skills, opt => opt.MapFrom(src => src.JobPostingSkills.Select(s => s.Skill.SkillName).ToList()))
+                .ForMember(x => x.RecruiterFirstName, opt => opt.MapFrom(src => src.Recruiter.FirstName))
+                .ForMember(x => x.RecruiterLastName, opt => opt.MapFrom(src => src.Recruiter.LastName))
+                .ForMember(x => x.RecruiterEmail, opt => opt.MapFrom(src => src.Recruiter.Email))
+                .ForMember(x => x.RecruiterPhone, opt => opt.MapFrom(src => src.Recruiter.PhoneNumber))
+
                 .ReverseMap();
 
 
@@ -829,7 +838,60 @@ namespace UpDiddyApi.Helpers
               .ReverseMap();
 
             CreateMap<v_CandidateAzureSearch, CandidateSDOC>()
-                .ForMember(x => x.Location, opt => opt.Ignore())
+                .ForMember(dest => dest.SearchAction, opt => opt.Ignore())
+                .ForMember(dest => dest.Education, opt => opt.ResolveUsing(src => src.Education
+                    ?.Split(recordDelim)
+                    .Select(record => record.Split(fieldDelim))
+                    .Select(record => new EducationSDOC
+                    {
+                        Institution = record[0],
+                        DegreeType = record[1],
+                        Degree = record[2]
+                    })
+                    .ToList() ?? new List<EducationSDOC>()))
+                .ForMember(dest => dest.Languages, opt => opt.ResolveUsing(src => src.Languages
+                    ?.Split(recordDelim)
+                    .Select(record => record.Split(fieldDelim))
+                    .Select(record => new LanguageSDOC
+                    {
+                        Language = record[0],
+                        Proficiency = record[1]
+                    })
+                    .ToList() ?? new List<LanguageSDOC>()))
+                .ForMember(dest => dest.Location, opt => opt.ResolveUsing(src => src.Location == null
+                    ? null as Point
+                    : new Point(new Position(
+                        (double)src.Location.Lat,
+                        (double)src.Location.Long))))
+                .ForMember(dest => dest.Personalities, opt => opt.ResolveUsing(src => src.Personalities
+                    ?.Split(recordDelim)
+                    .ToList() ?? new List<string>()))
+                .ForMember(dest => dest.Skills, opt => opt.ResolveUsing(src => src.Skills
+                    ?.Split(recordDelim)
+                    .Select(record => record.Trim()) // TODO: SQL RTRIM(SkillName) doesn't appear to work for some reason
+                    .ToList() ?? new List<string>()))
+                .ForMember(dest => dest.Training, opt => opt.ResolveUsing(src => src.Training
+                    ?.Split(recordDelim)
+                    .Select(record => record.Split(fieldDelim))
+                    .Select(record => new TrainingSDOC
+                    {
+                        Type = record[0],
+                        Institution = record[1],
+                        Name = record[2]
+                    })
+                    .ToList() ?? new List<TrainingSDOC>()))
+                .ForMember(dest => dest.WorkHistories, opt => opt.ResolveUsing(src => src.WorkHistories
+                    ?.Split(recordDelim)
+                    .Select(record => record.Split(fieldDelim))
+                    .Select(record => new WorkHistorySDOC
+                    {
+                        CompanyName = record[0],
+                        Title = record[1]
+                    })
+                    .ToList() ?? new List<WorkHistorySDOC>()))
+                .ForMember(dest => dest.WorkPreferences, opt => opt.ResolveUsing(src => src.WorkPreferences
+                    ?.Split(recordDelim)
+                    .ToList() ?? new List<string>()))
                 .ReverseMap();
 
             CreateMap<Models.G2.Profile, ProfileDto>()
@@ -1224,7 +1286,17 @@ namespace UpDiddyApi.Helpers
 
             CreateMap<SubscriberVideo, SubscriberVideoLinksDto>()
                 .ForMember(dest => dest.IsVisibleToHiringManager, opt => opt.MapFrom(src => src.Subscriber.IsVideoVisibleToHiringManager))
+                .ForMember(dest => dest.Status, opt => opt.ResolveUsing(src =>
+                {
+                    if (string.IsNullOrEmpty(src.VideoLink)) { return SubscriberVideoStatus.None; }
+                    if (src.IsPublished) { return SubscriberVideoStatus.published; }
+                    return SubscriberVideoStatus.Created;
+                }));
+
+            CreateMap<Models.CrossChq.CrossChqResumeStatus, CrossChqCandidateStatusDto>()
+                .ForMember(dest => dest.ElapsedTimeToUploadResume, opt => opt.ResolveUsing(src => src.ElapsedHoursToUploadResume == null ? null as TimeSpan? : TimeSpan.FromHours(src.ElapsedHoursToUploadResume.Value)))
                 .ReverseMap();
+
         }
     }
 }

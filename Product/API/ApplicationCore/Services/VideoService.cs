@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Exceptions;
@@ -6,34 +7,56 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyLib.Domain.Models;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class VideoService : IVideoService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
+        private readonly ICandidatesService _candidatesService;
         private readonly IMapper _mapper;
 
-        public VideoService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
+        private ICloudStorage _cloudStorage { get; set; }
+
+        public VideoService(
+            IRepositoryWrapper repositoryWrapper,
+            ICloudStorage cloudStorage,
+            ICandidatesService candidatesService,
+            IMapper mapper)
         {
+            _candidatesService = candidatesService;
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
+            _cloudStorage = cloudStorage;
         }
 
-        public async Task<SubscriberVideoLinksDto> GetSubscriberVideoLink(Guid subscriberGuid)
-        {
-            var videoLink = await _repositoryWrapper.SubscriberVideoRepository
-                .GetExistingSubscriberVideo(subscriberGuid);
-
-            return _mapper.Map<SubscriberVideoLinksDto>(videoLink);
-        }
-
-        public async Task SetSubscriberVideoLink(Guid subscriberGuid, SubscriberVideoLinksDto subscriberVideo)
+        public async Task<SubscriberVideoLinksDto> GetSubscriberVideoLink(Guid subscriberGuid, bool isPreview)
         {
             var videoLink = await _repositoryWrapper.SubscriberVideoRepository
                 .GetExistingOrCreateNewSubscriberVideo(subscriberGuid);
+            var dto = _mapper.Map<SubscriberVideoLinksDto>(videoLink);
+            if (!String.IsNullOrEmpty(dto.VideoLink) && !String.IsNullOrEmpty(dto.ThumbnailLink))
+            {
+                if (isPreview)
+                {
+                    dto.VideoLink = dto.VideoLink.Replace("/video.", "/video_preview.");
+                    dto.ThumbnailLink = dto.ThumbnailLink.Replace("/thumbnail.", "/thumbnail_preview.");
+                }
+                string videoSAS = await _cloudStorage.GetBlobSAS(dto.VideoLink);
+                string thumbnailSAS = await _cloudStorage.GetBlobSAS(dto.ThumbnailLink);
+                dto.VideoLink = dto.VideoLink + "?" + videoSAS;
+                dto.ThumbnailLink = dto.ThumbnailLink + "?" + thumbnailSAS;
+            }
+            return dto;
+        }
 
-            if (videoLink == null) { return; }
+        public async Task SetSubscriberVideoLink(Guid subscriberVideoGuid, SubscriberVideoLinksDto subscriberVideo)
+        {
+            var videoLink = await _repositoryWrapper.SubscriberVideoRepository
+                .GetByGuid(subscriberVideoGuid);
+
+            if (videoLink == null) { throw new NotFoundException(); }
 
             videoLink.ModifyDate = DateTime.UtcNow;
             videoLink.VideoLink = subscriberVideo.VideoLink;
@@ -42,26 +65,41 @@ namespace UpDiddyApi.ApplicationCore.Services
             videoLink.ThumbnailMimeType = subscriberVideo.ThumbnailMimeType;
 
             await _repositoryWrapper.SubscriberVideoRepository.SaveAsync();
+
+            if (videoLink.Subscriber?.SubscriberGuid != null) // ... which should be 100% of the time
+            {
+                await _candidatesService.IndexCandidateBySubscriberAsync(videoLink.Subscriber.SubscriberGuid.Value);
+            }
         }
 
-        public async Task DeleteSubscriberVideoLink(Guid subscriberGuid)
+        public async Task DeleteSubscriberVideoLink(Guid subscriberVideoGuid, Guid subscriberGuid)
         {
             var videoLink = await _repositoryWrapper.SubscriberVideoRepository
-                .GetExistingSubscriberVideo(subscriberGuid);
+                .GetSubscriberVideo(subscriberVideoGuid, subscriberGuid);
 
-            if (videoLink == null) { return; }
+            if (videoLink == null) { throw new NotFoundException(); }
 
             _repositoryWrapper.SubscriberVideoRepository.LogicalDelete(videoLink);
             await _repositoryWrapper.SubscriberVideoRepository.SaveAsync();
+
+            await _candidatesService.IndexCandidateBySubscriberAsync(subscriberGuid);
         }
 
-        public async Task<bool> GetVideoIsVisibleToHiringManager(Guid subscriberGuid)
+        public async Task Publish(Guid subscriberVideoGuid, Guid subscriberGuid, bool isPublished)
         {
-            var subscriber = await _repositoryWrapper.SubscriberRepository
-                .GetByGuid(subscriberGuid);
+            var subscriberVideo = await _repositoryWrapper.SubscriberVideoRepository
+                .GetSubscriberVideo(subscriberVideoGuid, subscriberGuid);
 
-            if (subscriber == null) { throw new NotFoundException($"No subscriber found for \"{subscriberGuid}\""); }
-            return subscriber.IsVideoVisibleToHiringManager ?? true;
+            if (subscriberVideo == null) { throw new NotFoundException(); }
+
+            subscriberVideo.IsPublished = isPublished;
+            string previewVideoFilePath = subscriberVideo.VideoLink.Replace("/video.", "/video_preview.");
+            string previewThumbnailFilePath = subscriberVideo.ThumbnailLink.Replace("/thumbnail.", "/thumbnail_preview.");
+            await _cloudStorage.RenameFileAsync(previewVideoFilePath, subscriberVideo.VideoLink, true);
+            await _cloudStorage.RenameFileAsync(previewThumbnailFilePath, subscriberVideo.ThumbnailLink, true);
+            await _repositoryWrapper.SubscriberVideoRepository.SaveAsync();
+
+            await _candidatesService.IndexCandidateBySubscriberAsync(subscriberGuid);
         }
 
         public async Task SetVideoIsVisibleToHiringManager(Guid subscriberGuid, bool visibility)
@@ -74,6 +112,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             subscriber.IsVideoVisibleToHiringManager = visibility;
             subscriber.ModifyDate = DateTime.UtcNow;
             await _repositoryWrapper.SubscriberRepository.SaveAsync();
+
+            await _candidatesService.IndexCandidateBySubscriberAsync(subscriberGuid);
         }
     }
 }

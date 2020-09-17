@@ -193,7 +193,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         }
 
 
-
+        [Obsolete("This method has been replaced by /v2/profiles/avatar")]
         public static bool UpdateAvatar(IRepositoryWrapper repositoryWrapper, IConfiguration config, IFormFile avatarFile, Guid subscriberGuid, ref string msg)
         {
 
@@ -211,8 +211,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 avatarFile.CopyTo(ms);
                 imageBytes = ms.ToArray();
             }
-
-            AzureBlobStorage abs = new AzureBlobStorage(config);
+            // this won't work but that's okay because this method is no longer used (marking as obsolete)
+            AzureBlobStorage abs = new AzureBlobStorage(config,null);
             string blobFilePath = subscriberGuid + config["CareerCircle:AvatarName"];
             abs.UploadBlobAsync(blobFilePath, imageBytes).Wait();
             subscriber.AvatarUrl = blobFilePath;
@@ -223,7 +223,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         }
 
 
-
+        [Obsolete("This method is no longer used")]
         public static bool ImportLinkedInAvatar(IRepositoryWrapper repositoryWrapper, IConfiguration config, string responseJSon, Guid subscriberGuid, ref string msg)
         {
             JObject o = JObject.Parse(responseJSon);
@@ -241,7 +241,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
             byte[] imageBytes = new byte[MaxAvatarFileSize];
             if (Utils.GetImageAsBlob(imageUrl, MaxAvatarFileSize, ref imageBytes))
             {
-                AzureBlobStorage abs = new AzureBlobStorage(config);
+                // this won't work but that's okay because this method is no longer used (marking as obsolete)
+                AzureBlobStorage abs = new AzureBlobStorage(config, null);
                 string blobFilePath = subscriberGuid + config["CareerCircle:LinkedInAvatarName"];
                 abs.UploadBlobAsync(blobFilePath, imageBytes).Wait();
                 subscriber.LinkedInAvatarUrl = blobFilePath;

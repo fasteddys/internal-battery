@@ -153,22 +153,40 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // send all templated emails
                 foreach (string email in EmailAddressesToSend.Keys)
                 {
-                    bool isExternalMessage = EmailAddressesToSend[email];
-                    string templateId = isExternalMessage ? _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter-External"].ToString() : _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter"].ToString();
-                    object templateData = new
+                    Guid profileGuid = default(Guid);
+                    try
                     {
-                        ApplicantName = applicationDto.FirstName + " " + applicationDto.LastName,
-                        ApplicantFirstName = applicationDto.FirstName,
-                        ApplicantLastName = applicationDto.LastName,
-                        ApplicantEmail = subscriber.Email,
-                        JobTitle = jobPosting.Title,
-                        ApplicantUrl = _configuration["CareerCircle:ViewTalentUrl"] + subscriber.SubscriberGuid.ToString(),
-                        JobUrl = _configuration["CareerCircle:ViewJobPostingUrl"] + jobPosting.JobPostingGuid.ToString(),
-                        Subject = isExternalMessage ? $"{jobPosting.Company.CompanyName} job applicant via CareerCircle" : "Applicant Alert",
-                        RecruiterGuid = jobPosting.Recruiter.RecruiterGuid,
-                        JobApplicationGuid = jobApplicationGuid
-                    };
-                    _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(email, templateId, templateData, Constants.SendGridAccount.Transactional, null, attachments, null, null, null, null));
+                        bool isExternalMessage = EmailAddressesToSend[email];
+                        string templateId = isExternalMessage ?
+                            _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter-External"].ToString() :
+                            _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter"].ToString();
+                        profileGuid = await GetProfileGuid(subscriber.SubscriberGuid.Value);
+
+                        object templateData = new
+                        {
+                            ApplicantName = applicationDto.FirstName + " " + applicationDto.LastName,
+                            ApplicantFirstName = applicationDto.FirstName,
+                            ApplicantLastName = applicationDto.LastName,
+                            ApplicantEmail = subscriber.Email,
+                            JobTitle = jobPosting.Title,
+                            ApplicantUrl = _configuration["CareerCircle:ViewTalentUrl"] + profileGuid.ToString(),
+                            JobUrl = _configuration["CareerCircle:ViewJobPostingUrl"] + jobPosting.JobPostingGuid.ToString(),
+                            Subject = isExternalMessage ? $"{jobPosting.Company.CompanyName} job applicant via CareerCircle" : "Applicant Alert",
+                            RecruiterGuid = jobPosting.Recruiter.RecruiterGuid,
+                            JobApplicationGuid = jobApplicationGuid
+                        };
+                        _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(email, templateId, templateData, Constants.SendGridAccount.Transactional, null, attachments, null, null, null, null));
+
+                    }
+                    catch (Exception ex)
+                    {
+                        _syslog.Log(
+                            LogLevel.Information,
+                            ex,
+                            "***** JobApplicationController.SendJobApplicationEmail exception sending recruiter email for {jobApplicationGuid} on {subscriberGuid}/{profileGuid}.",
+                            jobApplicationGuid,
+                            subscriber.SubscriberGuid, profileGuid);
+                    }
                 }
             }
             catch (Exception e)
@@ -267,7 +285,19 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await _repositoryWrapper.JobApplication.HasSubscriberAppliedToJobPosting(subscriberGuid, jobPostingGuid);
         }
 
+        private async Task<Guid> GetProfileGuid(Guid subscriberGuid)
+        {
+            var profile = await _repositoryWrapper.ProfileRepository.GetAll()
+                .Include(p => p.Subscriber)
+                .FirstOrDefaultAsync(
+                    p => p.IsDeleted == 0 &&
+                    p.Subscriber.IsDeleted == 0 &&
+                    p.Subscriber.SubscriberGuid == subscriberGuid);
 
+            if (profile == null) { throw new NotFoundException($"Could not find a profile for subscriber \"{subscriberGuid}\""); }
+
+            return profile.ProfileGuid;
+        }
 
 
         #endregion

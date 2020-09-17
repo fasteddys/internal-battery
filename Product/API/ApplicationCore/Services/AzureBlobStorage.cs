@@ -7,6 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces;
+using Azure.Storage.Blobs;
+using Azure.Storage.Sas;
+using Azure.Storage;
+using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -17,8 +21,10 @@ namespace UpDiddyApi.ApplicationCore.Services
         private string _containerName;
         private string _assetContainer;
         private string _appDataContainer;
+        private IConfiguration _configuration;
+        private readonly ILogger _logger;
 
-        public AzureBlobStorage(IConfiguration config)
+        public AzureBlobStorage(IConfiguration config, ILogger<AzureBlobStorage> logger)
         {
             string storageConnectionString = config["StorageAccount:ConnectionString"];
             _containerName = config["StorageAccount:DefaultContainer"];
@@ -28,16 +34,18 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw new Exception("Unable to parse StorageAccount:ConnectionString");
 
             _client = _account.CreateCloudBlobClient();
+            _configuration = config;
+            _logger = logger;
         }
 
         public async Task<Stream> GetStreamAsync(string blobName)
-        {         
+        {
             return await GetBlob(blobName).OpenReadAsync();
-                
+
         }
 
         public async Task<Stream> OpenReadAsync(string blobName)
-        {    
+        {
             return await GetBlob(blobName).OpenReadAsync();
         }
 
@@ -102,11 +110,114 @@ namespace UpDiddyApi.ApplicationCore.Services
                 await blob.DeleteAsync();
                 return true;
 
-            } catch(Exception)
+            }
+            catch (Exception)
             {
-                // todo: log
                 return false;
             }
         }
+
+        public async Task<bool> RenameFileAsync(string oldFilePath, string newFilePath, bool overWrite)
+        {
+            bool result = false;
+            try
+            {
+                string oldBlobName = Path.GetFileName(oldFilePath);
+                string newBlobName = Path.GetFileName(newFilePath);
+                string[] oldFileUriComponent = oldFilePath.Replace("//", string.Empty).Split('/');
+                string[] newFileUriComponent = newFilePath.Replace("//", string.Empty).Split('/');
+                string oldFileBlob = oldFileUriComponent[2] + "/" + oldBlobName;
+                string newFileBlob = newFileUriComponent[2] + "/" + newBlobName;
+
+                CloudBlobContainer cloudBlobContainer = _client.GetContainerReference(oldFileUriComponent[1]);
+                await cloudBlobContainer.CreateIfNotExistsAsync();
+
+                CloudBlockBlob blob = cloudBlobContainer.GetBlockBlobReference(oldFileBlob);
+                CloudBlockBlob blobCopy = cloudBlobContainer.GetBlockBlobReference(newFileBlob);
+
+                if (await blob.ExistsAsync())
+                {
+                    if (await blobCopy.ExistsAsync() && overWrite)
+                    {
+                        await blobCopy.DeleteIfExistsAsync();
+                    }
+                    await blobCopy.StartCopyAsync(blob);
+                    await blob.DeleteIfExistsAsync();
+                }
+                result = true;
+            }
+            catch(Exception e)
+            {
+                _logger.LogError($"An exception occurred in AzureBlobStorage.RenameFileAsync; message: {e.Message}, stack trace: {e.StackTrace}");
+            }
+            return result;
+        }
+
+
+        public async Task<string> GetBlobSAS(string blobURI)
+        {
+            string StorageAccountKey = _configuration["StorageAccount:StorageAccountKey"];
+            string StorageAccountName = _configuration["StorageAccount:StorageAccountName"];
+            int VideoSASLifeTimeInMinutesForSubscriber = int.Parse(_configuration["StorageAccount:VideoSASLifeTimeInMinutesForSubscriber"]);
+
+            string blobName = Path.GetFileName(blobURI);
+            string[] uriComponents = blobURI.Replace("//", string.Empty).Split('/');
+            string containerName = uriComponents[1] + "/" + uriComponents[2];
+
+            StorageSharedKeyCredential key = new StorageSharedKeyCredential(StorageAccountName, StorageAccountKey);
+
+
+            // Create a SAS token 
+            BlobSasBuilder sasBuilder = new BlobSasBuilder()
+            {
+                BlobContainerName = containerName,
+                BlobName = blobName,
+                Resource = "b",
+                Protocol = SasProtocol.Https,
+            };
+
+            sasBuilder.StartsOn = DateTimeOffset.UtcNow;
+            sasBuilder.ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(VideoSASLifeTimeInMinutesForSubscriber);
+            sasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
+
+            // Use the key to get the SAS token.
+            string sasVideoToken = sasBuilder.ToSasQueryParameters(key).ToString();
+
+            return sasVideoToken;
+        }
+
+        public async Task<string> GetVideoContainerSAS()
+        {
+            string VideoContainer = _configuration["StorageAccount:VideoContainer"];
+            string StorageAccountKey = _configuration["StorageAccount:StorageAccountKey"];
+            string StorageAccountName = _configuration["StorageAccount:StorageAccountName"];
+            int VideoSASLifeTimeInMinutesForContainer = int.Parse(_configuration["StorageAccount:VideoSASLifeTimeInMinutesForContainer"]);
+
+            StorageSharedKeyCredential key = new StorageSharedKeyCredential(StorageAccountName, StorageAccountKey);
+
+            // Create a SAS token 
+            BlobSasBuilder sasBuilder = new BlobSasBuilder()
+            {
+                BlobContainerName = VideoContainer,
+                Resource = "c",
+                Protocol = SasProtocol.Https,
+            };
+
+            sasBuilder.StartsOn = DateTimeOffset.UtcNow;
+            sasBuilder.ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(VideoSASLifeTimeInMinutesForContainer);
+
+
+            sasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
+
+            // Use the key to get the SAS token.
+            string sasVideoToken = sasBuilder.ToSasQueryParameters(key).ToString();
+
+            return sasVideoToken;
+        }
+
+
+
+
+
     }
 }

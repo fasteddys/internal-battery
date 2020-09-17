@@ -8,6 +8,8 @@ using UpDiddyApi.Models;
 using AutoMapper;
 using UpDiddyApi.ApplicationCore.Exceptions;
 using UpDiddyLib.Domain.Models;
+using UpDiddyApi.ApplicationCore.Interfaces;
+
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class AvatarService : IAvatarService
@@ -15,12 +17,14 @@ namespace UpDiddyApi.ApplicationCore.Services
         private IConfiguration _configuration { get; set; }
         private IRepositoryWrapper _repository { get; set; }
         private readonly IMapper _mapper;
+        private readonly ICloudStorage _cloudStorage;
 
-        public AvatarService(IConfiguration configuration, IRepositoryWrapper repository, IMapper mapper)
+        public AvatarService(IConfiguration configuration, IRepositoryWrapper repository, IMapper mapper, ICloudStorage cloudStorage)
         {
             _configuration = configuration;
             _repository = repository;
             _mapper = mapper;
+            _cloudStorage = cloudStorage;
         }
 
         public async Task<string> GetAvatar(Guid subscriberGuid)
@@ -55,10 +59,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             var bytes = Convert.FromBase64String(fileDto.Base64EncodedData);
             int MaxAvatarFileSize = int.Parse(_configuration["CareerCircle:MaxAvatarFileSize"]);
             if (bytes.Length > MaxAvatarFileSize)
-                throw new FileSizeExceedsLimit($"Avatar file cannot exceeds size limit of {MaxAvatarFileSize}");
-            AzureBlobStorage abs = new AzureBlobStorage(_configuration);
+                throw new FileSizeExceedsLimit($"Avatar file cannot exceeds size limit of {MaxAvatarFileSize}");            
             string blobFilePath = subscriberGuid + _configuration["CareerCircle:AvatarName"];
-            await abs.UploadBlobAsync(blobFilePath, bytes);
+            await _cloudStorage.UploadBlobAsync(blobFilePath, bytes);
             subscriber.AvatarUrl = _configuration["StorageAccount:AssetBaseUrl"]  +  blobFilePath;
             subscriber.ModifyDate = DateTime.UtcNow;
             await _repository.SaveAsync();
