@@ -40,7 +40,7 @@ BEGIN
 			rc.RecruiterId,
 			CASE WHEN rcs.[Status] IS NOT NULL THEN rcs.CreateDate ELSE rc.CreateDate END AS StatusDate,
 			CASE WHEN rcs.[Status] IS NOT NULL THEN rcs.Progress ELSE 0 END AS Progress,
-			CASE WHEN rcs.[Status] IS NOT NULL THEN rcs.[Status] ELSE 'Initiated' END AS [Status]
+			CASE WHEN rcs.[Status] IS NOT NULL THEN rcs.[Status] ELSE ''Initiated'' END AS [Status]
 		FROM G2.ReferenceCheck rc
 			LEFT JOIN G2.ReferenceCheckStatus rcs ON rc.ReferenceCheckId = rcs.ReferenceCheckId
 			LEFT JOIN (
