@@ -9,6 +9,7 @@ namespace UpDiddyApi.Migrations
 			migrationBuilder.Sql(@"EXEC('/*
 <remarks>
 	2020.08.26 - Joey Herrington - Created
+	2020.08.27 - Joey Herrington - Added filter to hide candidates who already started a crossChq request
 	2020.09.17 - Vivek Dutta - Updated to return Initiated Crosschq Status.
 </remarks>
 <description>
@@ -17,6 +18,7 @@ namespace UpDiddyApi.Migrations
 <example>
 	EXEC dbo.System_Get_CrossChqByResumeUploadDate
 		@startDate = ''2018-01-01'',
+		@showOnlyNonCrossChq = 0,
 		@limit = 100,
 		@offset = 0,
 		@sort = ''CrossChqPercentage'',
@@ -25,6 +27,7 @@ namespace UpDiddyApi.Migrations
 */
 ALTER PROCEDURE [dbo].[System_Get_CrossChqByResumeUploadDate] (
 	@startDate DATETIME,
+	@showOnlyNonCrossChq BIT,
 	@limit INT,
 	@offset INT,
 	@sort NVARCHAR(100),
@@ -41,7 +44,7 @@ BEGIN
 			rc.RecruiterId,
 			CASE WHEN rcs.[Status] IS NOT NULL THEN rcs.CreateDate ELSE rc.CreateDate END AS StatusDate,
 			CASE WHEN rcs.[Status] IS NOT NULL THEN rcs.Progress ELSE 0 END AS Progress,
-			CASE WHEN rcs.[Status] IS NOT NULL THEN rcs.[Status] ELSE ''Initiated'' END AS [Status]
+			CASE WHEN rcs.[Status] IS NOT NULL THEN rcs.[Status] ELSE ''initiated'' END AS [Status]
 		FROM G2.ReferenceCheck rc
 			LEFT JOIN G2.ReferenceCheckStatus rcs ON rc.ReferenceCheckId = rcs.ReferenceCheckId
 			LEFT JOIN (
@@ -73,6 +76,7 @@ BEGIN
 			LEFT JOIN CandidateReferenceCheck crc ON p.ProfileId = crc.ProfileId
 		WHERE
 			p.IsDeleted = 0
+			AND (@showOnlyNonCrossChq = 0 OR crc.ReferenceCheckType IS NULL)
 			AND s.IsDeleted = 0
 			AND s.CreateDate > @startDate
 	)
@@ -121,7 +125,6 @@ BEGIN
 	OFFSET @offset ROWS
 	FETCH FIRST @limit ROWS ONLY;
 END')");
-
 		}
 
 		protected override void Down(MigrationBuilder migrationBuilder)
@@ -129,6 +132,7 @@ END')");
 			migrationBuilder.Sql(@"EXEC('/*
 <remarks>
 	2020.08.26 - Joey Herrington - Created
+	2020.08.27 - Joey Herrington - Added filter to hide candidates who already started a crossChq request
 </remarks>
 <description>
 	Get''s a list of CrossChq statuses by resume upload date
@@ -136,6 +140,7 @@ END')");
 <example>
 	EXEC dbo.System_Get_CrossChqByResumeUploadDate
 		@startDate = ''2018-01-01'',
+		@showOnlyNonCrossChq = 0,
 		@limit = 100,
 		@offset = 0,
 		@sort = ''CrossChqPercentage'',
@@ -144,6 +149,7 @@ END')");
 */
 ALTER PROCEDURE [dbo].[System_Get_CrossChqByResumeUploadDate] (
 	@startDate DATETIME,
+	@showOnlyNonCrossChq BIT,
 	@limit INT,
 	@offset INT,
 	@sort NVARCHAR(100),
@@ -192,6 +198,7 @@ BEGIN
 			LEFT JOIN CandidateReferenceCheck crc ON p.ProfileId = crc.ProfileId
 		WHERE
 			p.IsDeleted = 0
+			AND (@showOnlyNonCrossChq = 0 OR crc.ReferenceCheckType IS NULL)
 			AND s.IsDeleted = 0
 			AND s.CreateDate > @startDate
 	)
@@ -240,7 +247,6 @@ BEGIN
 	OFFSET @offset ROWS
 	FETCH FIRST @limit ROWS ONLY;
 END')");
-
 
 		}
 	}
