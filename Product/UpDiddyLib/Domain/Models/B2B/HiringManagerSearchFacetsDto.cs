@@ -32,5 +32,6 @@ namespace UpDiddyLib.Domain.Models.B2B
         public int? Value { get; set; }
         public bool IsUbSelected { get; set; }
         public bool IsLbSelected { get; set; }
+        public string Query { get; set; }
     }
 }
