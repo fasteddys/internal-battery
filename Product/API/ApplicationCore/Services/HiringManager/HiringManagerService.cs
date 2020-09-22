@@ -612,6 +612,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                             {
                                 searchResults.Facets.Salary.Add(new SalaryFacetResultDto
                                 {
+                                    Query = (String.IsNullOrWhiteSpace(rawQuery) || rawQuery.Trim() == "?") ? null : rawQuery,
                                     Count = val.Count,
                                     Value = val.Value != null ? Int32.Parse(val.Value.ToString()) : (int?)null,
                                     IsLbSelected = searchDto.SalaryLb.HasValue,
