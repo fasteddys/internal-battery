@@ -604,7 +604,7 @@ namespace UpDiddyApi.ApplicationCore.Services.HiringManager
                         case "Personalities":
                             foreach (var val in facet.Value)
                             {
-                                searchResults.Facets.Personality.Add(CreateSearchResultFacet(rawQuery, val, "Personalities", searchDto.Personality != null && searchDto.Personality.Count > 0 && searchDto.Personality.Contains(val.Value.ToString())));
+                                searchResults.Facets.Personality.Add(CreateSearchResultFacet(rawQuery, val, "Personality", searchDto.Personality != null && searchDto.Personality.Count > 0 && searchDto.Personality.Contains(val.Value.ToString())));
                             }
                             break;
                         case "DesiredRate":
