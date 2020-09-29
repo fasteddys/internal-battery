@@ -18,7 +18,7 @@ variables:
 trigger:
   branches:
     include:
-      - staging
+      - dev
   paths:
     include:
       - Product/UpDiddyLib/*
@@ -58,11 +58,11 @@ steps:
 
 # Publish test results for devops to be able to display
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/test/publish-test-results?view=azure-devops&tabs=yaml
-#- task: PublishTestResults@2
-#  inputs: 
-#   testRunner: VSTest
-#   testResultsFiles: '**/*.trx' 
-#   searchFolder: '$(Agent.TempDirectory)'
+- task: PublishTestResults@2
+  inputs: 
+    testRunner: VSTest
+    testResultsFiles: '**/*.trx' 
+    searchFolder: '$(Agent.TempDirectory)'
 
 # package up all dlls and compiled code
 - script: |
@@ -75,8 +75,8 @@ steps:
 - task: AzureKeyVault@1
   inputs:
     azureSubscription: Digital BT (933642d7-459a-499f-acc7-0d9a14ecf604)
-    keyVaultName: CareerCircleStaging
-  displayName: Acquire ConnectionString for Staging Database from Staging KV
+    keyVaultName: CareerCircleDev
+  displayName: Acquire ConnectionString
 
 # generate sql migrations script (idempotent) as part of build and to be used for automated release (staging)
 # https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/#generate-sql-scripts
@@ -91,4 +91,4 @@ steps:
 - task: PublishBuildArtifacts@1
   displayName: Publish Artifacts
   inputs:
-    artifactName: 'apiStaging'
+    artifactName: 'api'

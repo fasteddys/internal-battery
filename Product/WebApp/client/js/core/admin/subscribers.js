@@ -14,7 +14,7 @@
         callback: function (result) {
             if (result) {
                 $.ajax({
-                    url: "talent/subscriber/" + subscriberGuid + "/" + cloudIdentifier,
+                    url: url + "/" + subscriberGuid + "/" + cloudIdentifier,
                     method: "DELETE",
                     success: function (data, textStatus, jqXHR) {
                         if (textStatus === "success") {

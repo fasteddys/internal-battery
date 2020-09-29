@@ -18,7 +18,7 @@ variables:
 trigger:
   branches:
     include:
-      - staging
+      - dev
   paths:
     include:
       - Product/UpDiddyLib/*
@@ -106,4 +106,4 @@ steps:
 - task: PublishBuildArtifacts@1
   displayName: Publish Artifacts
   inputs:
-    artifactName: 'webappStaging'
+    artifactName: 'webapp'

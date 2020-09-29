@@ -1,0 +1,24 @@
+commit 9281dfa156ef17b248b01012448fe5f144b72253
+Author:     Vivek Dutta <vdutta@allegisgrroup.com>
+AuthorDate: Wed Sep 9 01:34:43 2020 -0400
+Commit:     Vivek Dutta <vdutta@allegisgrroup.com>
+CommitDate: Wed Sep 9 01:34:43 2020 -0400
+
+    HM search definations
+
+commit d5c26181f642d932566544157ca34ebfabb0bf2e
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Tue Sep 8 16:37:19 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Tue Sep 8 16:37:19 2020 -0400
+
+    #2780 Updated query (still a work in progress)
+
+commit 93cd8c414b674916b7792f1c22b859c57eee967c
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Mon Sep 7 18:02:27 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Mon Sep 7 18:02:27 2020 -0400
+
+    #2780 Added fields to candidate indexing view
+

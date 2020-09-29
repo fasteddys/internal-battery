@@ -1,0 +1,788 @@
+commit 8bc8b5f59de598f4aea0b02b98f30108066adae0
+Author:     Vivek Dutta <vdutta@allegisgrroup.com>
+AuthorDate: Thu Sep 10 08:53:25 2020 -0400
+Commit:     Vivek Dutta <vdutta@allegisgrroup.com>
+CommitDate: Thu Sep 10 08:53:25 2020 -0400
+
+    More changes to azure query - not complete
+
+commit ad0b6fd33a66e46b2088776b908cdd37f59317cf
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Wed Sep 9 16:49:56 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Wed Sep 9 16:49:56 2020 -0400
+
+    #2780 Added indexing to missing changes
+
+commit ea02075c8a06c3ceabb9416ec082ff127328aa11
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Wed Sep 9 16:17:20 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Wed Sep 9 16:17:20 2020 -0400
+
+    #2780 Added Automapper profile for candidate SDOC
+
+commit ed44abd301af27faa75f9668968778ed8c3593c3
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Wed Sep 9 14:58:25 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Wed Sep 9 14:58:25 2020 -0400
+
+    #2780 Updated CandidateSDOC and query entity to match index.  (broken:  mapping logic still needs to be worked on...)
+
+commit 00b6ad1fd8f2e6c10bb67504acbf7cc880dde858
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Wed Sep 9 11:53:24 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Wed Sep 9 11:55:33 2020 -0400
+
+    #2780 Completed SQL Query update
+
+commit 9281dfa156ef17b248b01012448fe5f144b72253
+Author:     Vivek Dutta <vdutta@allegisgrroup.com>
+AuthorDate: Wed Sep 9 01:34:43 2020 -0400
+Commit:     Vivek Dutta <vdutta@allegisgrroup.com>
+CommitDate: Wed Sep 9 01:34:43 2020 -0400
+
+    HM search definations
+
+commit d5c26181f642d932566544157ca34ebfabb0bf2e
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Tue Sep 8 16:37:19 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Tue Sep 8 16:37:19 2020 -0400
+
+    #2780 Updated query (still a work in progress)
+
+commit 93cd8c414b674916b7792f1c22b859c57eee967c
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Mon Sep 7 18:02:27 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Mon Sep 7 18:02:27 2020 -0400
+
+    #2780 Added fields to candidate indexing view
+
+commit 275fbf8c7c7925a97346571f23f75f4c7d8e8596
+Merge: 1e3796aef ec2e71cfc
+Author:     Joseph Herrington <joharrington@allegisgroup.com>
+AuthorDate: Wed Sep 2 15:03:39 2020 +0000
+Commit:     Joseph Herrington <joharrington@allegisgroup.com>
+CommitDate: Wed Sep 2 15:03:39 2020 +0000
+
+    Merged PR 1338: #2626 Remove company filter from profileGuid retrieval
+    
+    #2626 Remove company filter from profileGuid retrieval
+    
+    Related work items: #2626
+
+commit ec2e71cfcfd98ef856e896c616325317c9e20a7c
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Wed Sep 2 10:59:24 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Wed Sep 2 10:59:24 2020 -0400
+
+    #2626 changing to "FirstOrDefault" in the odd chance there's more than one profile per subscriber.
+
+commit 0eafa00db4791ddd2b07aade7f1593edab7e09ab
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Wed Sep 2 10:56:35 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Wed Sep 2 10:56:35 2020 -0400
+
+    #2626 Remove company filter from profileGuid retrieval
+
+commit 1e3796aef3951358d1c148c64afb9a6dcb2b5cdf
+Author:     William Koenig <wikoenig@populusgroup.com>
+AuthorDate: Wed Sep 2 14:31:18 2020 +0000
+Commit:     William Koenig <wikoenig@populusgroup.com>
+CommitDate: Wed Sep 2 14:31:18 2020 +0000
+
+    Merged PR 1337: html decode job descriptions for hiring manager view
+    
+    html decode job descriptions for hiring manager view
+    
+    Related work items: #3154
+
+commit 5bbf9aadb4dedd8b560b2570766c8668406d8d01
+Author:     Bill Koenig <wikoenig@allegisgroup.com>
+AuthorDate: Wed Sep 2 09:56:21 2020 -0400
+Commit:     Bill Koenig <wikoenig@allegisgroup.com>
+CommitDate: Wed Sep 2 09:56:21 2020 -0400
+
+    applied html decoding logic to all free-form string inputs from candidate 360 for the hiring manager detail view
+
+commit 5ac61c58c02985ac035351fdaad607d32eef4e29
+Author:     Bill Koenig <wikoenig@allegisgroup.com>
+AuthorDate: Wed Sep 2 08:53:02 2020 -0400
+Commit:     Bill Koenig <wikoenig@allegisgroup.com>
+CommitDate: Wed Sep 2 08:53:02 2020 -0400
+
+    html decode job descriptions for hiring manager view
+
+commit 69f2d93f0e714c711d982582266b26b5ed260eb4
+Author:     Guin, Jyoti <jguin@allegisgroup.com>
+AuthorDate: Tue Sep 1 15:36:37 2020 -0400
+Commit:     Guin, Jyoti <jguin@allegisgroup.com>
+CommitDate: Tue Sep 1 15:36:37 2020 -0400
+
+    issue with GetSubscriberVideo logic
+
+commit 293cf0143107339b0a7214ff7156d3cb4f8c7aeb
+Author:     Guin, Jyoti <jguin@allegisgroup.com>
+AuthorDate: Tue Sep 1 15:25:46 2020 -0400
+Commit:     Guin, Jyoti <jguin@allegisgroup.com>
+CommitDate: Tue Sep 1 15:25:46 2020 -0400
+
+    forgot to put back authorize header after it was removed for testing
+
+commit 1802644a07a5a10b2a5f900a6e1c26c0b11e19d7
+Merge: 8173d69ea 00121c936
+Author:     Jyoti Guin <jguin@allegisgroup.com>
+AuthorDate: Tue Sep 1 19:03:54 2020 +0000
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Tue Sep 1 19:03:54 2020 +0000
+
+    Merged PR 1332: SubscriberVideo endpoints update
+    
+    Updated the subscriberVideo endpoints so that the GET method now takes in isPreview param which returns the SASS encoded URL to the preview video.  Also updated the publish endpoint so that it replaces the preview video with the live video
+    
+    Related work items: #3151
+
+commit 00121c9368f3a048f0940b0ffb3490eef3644ba9
+Author:     Guin, Jyoti <jguin@allegisgroup.com>
+AuthorDate: Tue Sep 1 14:57:05 2020 -0400
+Commit:     Guin, Jyoti <jguin@allegisgroup.com>
+CommitDate: Tue Sep 1 14:57:05 2020 -0400
+
+    checking in wip
+
+commit 8173d69ea956bec7ec8d88c23bd046d8281fa376
+Merge: eb04c9b7a f296206ee
+Author:     Joseph Herrington <joharrington@allegisgroup.com>
+AuthorDate: Tue Sep 1 17:09:19 2020 +0000
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Tue Sep 1 17:09:19 2020 +0000
+
+    Merged PR 1330: #3136 Grabbing video record based on profileGuid
+    
+    #3136 Grabbing video record based on profileGuid
+    
+    Related work items: #3136
+
+commit f296206eeffb085e1ddaad2eec57eb1198d6feec
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Tue Sep 1 12:56:55 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Tue Sep 1 12:56:55 2020 -0400
+
+    #3136 Grabbing video record based on profileGuid
+
+commit b6b2af601232af16bba44facebe3f29e5add69c8
+Author:     Guin, Jyoti <jguin@allegisgroup.com>
+AuthorDate: Tue Sep 1 10:49:59 2020 -0400
+Commit:     Guin, Jyoti <jguin@allegisgroup.com>
+CommitDate: Tue Sep 1 10:49:59 2020 -0400
+
+    checking in progress
+
+commit eb04c9b7acaaa54ee3d7cc7d1761a06885f7c34e
+Merge: 78f1d37a0 64e3fcce2
+Author:     Joseph Herrington <joharrington@allegisgroup.com>
+AuthorDate: Tue Sep 1 12:44:02 2020 +0000
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Tue Sep 1 12:44:02 2020 +0000
+
+    Merged PR 1328: #3136 Added video support to the B2B API endpoint
+    
+    #3136 Added video support to the B2B API endpoint
+    
+    Related work items: #3136
+
+commit 64e3fcce2546b63c8fc31ebccfd6b71fd928dbe7
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Tue Sep 1 08:39:27 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Tue Sep 1 08:39:27 2020 -0400
+
+    #3136, rename HM; Move video logic to hiringManager service
+
+commit 78f1d37a004dfa3ca9fe7aa20cf5807eb3696cda
+Author:     Guin, Jyoti <jguin@allegisgroup.com>
+AuthorDate: Mon Aug 31 18:15:02 2020 -0400
+Commit:     Guin, Jyoti <jguin@allegisgroup.com>
+CommitDate: Mon Aug 31 18:15:02 2020 -0400
+
+    modifying storage account endpoint so subscriberGuid is aquiired from jwt instead of paramter or subscriber
+
+commit ca1f54e06c4c02e4bf64c20294615d347a886d97
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Mon Aug 31 17:03:50 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Mon Aug 31 17:03:50 2020 -0400
+
+    #3136 Added video support to the B2B API endpoint
+
+commit ce54f8ba0906dc846e46b823835417f676dc4d71
+Merge: 662bb5546 d37fae5f2
+Author:     Brazil, Jim <jibrazil@populusgroup.com>
+AuthorDate: Mon Aug 31 16:49:55 2020 +0000
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Mon Aug 31 16:49:55 2020 +0000
+
+    Merged PR 1327: Fixed bug of requiring ispublished = true
+    
+    fixed bug of requiring ispublished = true
+    
+    Related work items: #3132
+
+commit d37fae5f2d2debc15e9e295a27c3b086512afba9
+Author:     Brazil, Jim <jibrazil@populusgroup.com>
+AuthorDate: Mon Aug 31 12:48:24 2020 -0400
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Mon Aug 31 12:48:24 2020 -0400
+
+    fixed bug of requiring ispublished = true
+
+commit 662bb5546c99810ab955f4bcc6709c52cb706b35
+Merge: dac99c58e 2bc991c23
+Author:     Joseph Herrington <joharrington@allegisgroup.com>
+AuthorDate: Mon Aug 31 16:40:26 2020 +0000
+Commit:     Joseph Herrington <joharrington@allegisgroup.com>
+CommitDate: Mon Aug 31 16:40:26 2020 +0000
+
+    Merged PR 1326: #3081 One of the fields had a bad type
+    
+    #3081 One of the fields had a bad type
+    
+    Related work items: #3081
+
+commit 2bc991c230258fc664d66932d9668ee7c7326ff1
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Mon Aug 31 12:39:22 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Mon Aug 31 12:39:22 2020 -0400
+
+    #3081 One of the fields had a bad type
+
+commit dac99c58e0dc8a1bb8661a9c3276e2eaf8c1bd65
+Merge: 40654b032 890f85fad
+Author:     Joseph Herrington <joharrington@allegisgroup.com>
+AuthorDate: Mon Aug 31 16:14:19 2020 +0000
+Commit:     Brent Ferree <brferree@allegisgroup.com>
+CommitDate: Mon Aug 31 16:14:19 2020 +0000
+
+    Merged PR 1325: #3146 Renamed InvalidEmails table to something better descriptive
+    
+    #3146 Renamed InvalidEmails table to something better descriptive
+    @<Brent Ferree>, let me know if this works for you!
+    
+    Related work items: #3146
+
+commit 890f85fad27be76a3766c25f876111712f6d1fdc
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Mon Aug 31 12:06:39 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Mon Aug 31 12:06:39 2020 -0400
+
+    #3146 Renamed InvalidEmails table to something better descriptive
+
+commit 40654b03296a6a5052f5bf3dbd244250a54e58d4
+Merge: e7eb448c4 718228fd4
+Author:     Brazil, Jim <jibrazil@populusgroup.com>
+AuthorDate: Mon Aug 31 15:37:47 2020 +0000
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Mon Aug 31 15:37:47 2020 +0000
+
+    Merged PR 1324: Route fix for storage container
+    
+    Modified the storagecontainer controller to listen at storage-container to align with the api gateway standards.
+    
+    Related work items: #3132
+
+commit 718228fd406ae3673f0b029aed07ab488c5d01f3
+Author:     Brazil, Jim <jibrazil@populusgroup.com>
+AuthorDate: Mon Aug 31 11:35:57 2020 -0400
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Mon Aug 31 11:35:57 2020 -0400
+
+    fixed route to align with gateway
+
+commit e7eb448c4411de0a14d89f9e738a4d62eba7da33
+Merge: 8dfb1925c 42a5d9f84
+Author:     Brazil, Jim <jibrazil@populusgroup.com>
+AuthorDate: Mon Aug 31 14:22:24 2020 +0000
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Mon Aug 31 14:22:24 2020 +0000
+
+    Merged PR 1323: StorageAccount controller
+    
+    This PR implements a new storage account controller that will
+    
+    1) Return a SAS token for subscribers to allow access to their videos
+    2) Return a SAS token to hiring managers that will allow access to any blob in the intro-videos container
+    
+    Related work items: #3132
+
+commit 42a5d9f84b48ca2aa124379f6c852c844d33b71a
+Author:     Brazil, Jim <jibrazil@populusgroup.com>
+AuthorDate: Mon Aug 31 10:02:07 2020 -0400
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Mon Aug 31 10:02:07 2020 -0400
+
+    remove zombie comment
+
+commit 168da6b12609d14182a6a4292ce36a022961dddf
+Author:     Brazil, Jim <jibrazil@populusgroup.com>
+AuthorDate: Mon Aug 31 09:54:11 2020 -0400
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Mon Aug 31 09:54:11 2020 -0400
+
+    Removed appsettings
+
+commit ccefad03015ad90112b403b19c31f1f5546ab369
+Author:     Brazil, Jim <jibrazil@populusgroup.com>
+AuthorDate: Mon Aug 31 09:26:55 2020 -0400
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Mon Aug 31 09:26:55 2020 -0400
+
+    Added support for video IsPublished flag
+
+commit 95a9104474baedb0dab1f4ca21310ce8e515124f
+Merge: 00ce52264 8dfb1925c
+Author:     Brazil, Jim <jibrazil@populusgroup.com>
+AuthorDate: Mon Aug 31 09:11:59 2020 -0400
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Mon Aug 31 09:11:59 2020 -0400
+
+    Merge branch 'dev' of https://allegisdigital.visualstudio.com/UpDiddy/_git/UpDiddy into task3132a
+
+commit 8dfb1925c6b22a497df1f95acb4390d9d3e6392d
+Merge: f7df6e814 f268fb023
+Author:     Joseph Herrington <joharrington@allegisgroup.com>
+AuthorDate: Mon Aug 31 13:04:49 2020 +0000
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Mon Aug 31 13:04:49 2020 +0000
+
+    Merged PR 1322: #3131 Updated DTO, Entites, and controller endpoints for video API support
+    
+    #3131 Updated DTO, Entites, and controller endpoints for video API support
+    
+    Related work items: #3131
+
+commit 00ce52264e57cfae8e1c655a5f2bf6704969b548
+Author:     Brazil, Jim <jibrazil@populusgroup.com>
+AuthorDate: Mon Aug 31 08:10:47 2020 -0400
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Mon Aug 31 08:10:47 2020 -0400
+
+    added route permissions and app settings
+
+commit c831c35ffed4525be20fe70e734cbb1692c692a6
+Author:     Brazil, Jim <jibrazil@populusgroup.com>
+AuthorDate: Mon Aug 31 08:03:57 2020 -0400
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Mon Aug 31 08:03:57 2020 -0400
+
+    cleaned up routes for sas video sas tokens
+
+commit 1b0fec1438fa1e7e9101fcec468f544fe595b337
+Author:     Brazil, Jim <jibrazil@populusgroup.com>
+AuthorDate: Mon Aug 31 07:02:31 2020 -0400
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Mon Aug 31 07:02:31 2020 -0400
+
+    SAS work complete ready for PR
+
+commit c59ae59916705c3d62287eab5a7498528ee5050d
+Author:     Brazil, Jim <jibrazil@populusgroup.com>
+AuthorDate: Fri Aug 28 17:12:28 2020 -0400
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Fri Aug 28 17:12:28 2020 -0400
+
+    082820
+
+commit f268fb023d867b92034ff44f084ea5d2fb8c186c
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Fri Aug 28 16:20:44 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Fri Aug 28 16:20:44 2020 -0400
+
+    #3131 Updated DTO, Entites, and controller endpoints for video API support
+
+commit f7df6e8145528f218e38aebe30278026d88b63c4
+Author:     William Koenig <wikoenig@populusgroup.com>
+AuthorDate: Fri Aug 28 14:37:12 2020 +0000
+Commit:     William Koenig <wikoenig@populusgroup.com>
+CommitDate: Fri Aug 28 14:37:12 2020 +0000
+
+    Merged PR 1315: Back-end work for anonymized candidate 360 hiring manager view
+    
+    Related work items: #3086
+
+commit 3e28520c99bc23cb7ae3438816ffec4f36efce23
+Author:     Joseph Herrington <joharrington@allegisgroup.com>
+AuthorDate: Fri Aug 28 11:47:19 2020 +0000
+Commit:     William Koenig <wikoenig@populusgroup.com>
+CommitDate: Fri Aug 28 11:47:19 2020 +0000
+
+    Merged PR 1316: #2653 Added filter to hide candidates who already started a crossChq request
+    
+    #2653 Added filter to hide candidates who already started a crossChq request
+    
+    Related work items: #2653
+
+commit dbd557adbe5bc41a7c3d47e18d6c48c38345854d
+Author:     Brazil, Jim <jibrazil@populusgroup.com>
+AuthorDate: Thu Aug 27 18:41:03 2020 -0400
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Thu Aug 27 18:41:03 2020 -0400
+
+    082720
+
+commit 5e0cb00737407ce426021114b5ac0b59b8b8bd58
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Thu Aug 27 16:54:02 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Thu Aug 27 16:54:02 2020 -0400
+
+    #2653 Added filter to hide candidates who already started a crossChq request
+
+commit a065642b29d1d9a5f12d8818883a648e2712f7b9
+Author:     Bill Koenig <wikoenig@allegisgroup.com>
+AuthorDate: Thu Aug 27 15:00:52 2020 -0400
+Commit:     Bill Koenig <wikoenig@allegisgroup.com>
+CommitDate: Thu Aug 27 15:00:52 2020 -0400
+
+    completed new endpoint for hiring managers which contains anonymized candidate 360 data
+
+commit ffb719c0b43220883ff03b3cca0dd2aa7401368d
+Author:     Joseph Herrington <joharrington@allegisgroup.com>
+AuthorDate: Thu Aug 27 12:45:12 2020 +0000
+Commit:     William Koenig <wikoenig@populusgroup.com>
+CommitDate: Thu Aug 27 12:45:12 2020 +0000
+
+    Merged PR 1313: Implemented CrossCheckResume API
+    
+    Implemented CrossCheckResume API
+    
+    Related work items: #2653, #3081
+
+commit f5e3d3d8ee1e1824022227c4d2667d3601e285e3
+Author:     Bill Koenig <wikoenig@allegisgroup.com>
+AuthorDate: Wed Aug 26 16:35:49 2020 -0400
+Commit:     Bill Koenig <wikoenig@allegisgroup.com>
+CommitDate: Wed Aug 26 16:35:49 2020 -0400
+
+    work in progress for hiring manager detail api endpoint to support new candidate 360 data
+
+commit 2ac7e5ede38875fc6108d5ec758336362384332e
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Wed Aug 26 16:23:33 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Wed Aug 26 16:23:33 2020 -0400
+
+    #3081 #2653 Renamed one of the querystring params for consistency
+
+commit 2c61b063a66f6a031ed8d7386cbb2670212cab6b
+Merge: df8f57b8d dd7f4cc7e
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Wed Aug 26 16:14:27 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Wed Aug 26 16:14:27 2020 -0400
+
+    Merge branch 'dev' into task/3081
+
+commit dd7f4cc7e5b73a3417377bac504b552e9f5c7b06
+Merge: f8c17b34b dc4c2e9c4
+Author:     Joseph Herrington <joharrington@allegisgroup.com>
+AuthorDate: Wed Aug 26 20:08:51 2020 +0000
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Wed Aug 26 20:08:51 2020 +0000
+
+    Merged PR 1306: #3120 #2653 Added Subscriber EntityFields for Brent
+    
+    #3120 #2653 Added Subscriber EntityFields for Brent
+    
+    Related work items: #2653, #3120
+
+commit df8f57b8d15ffe4ab632e394eb4e13aa7a61b053
+Merge: c838199da f8c17b34b
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Wed Aug 26 15:49:36 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Wed Aug 26 15:49:36 2020 -0400
+
+    Merge branch 'dev' into task/3081
+
+commit c838199daccccd07dcb843db8eb0a445d45a61ab
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Wed Aug 26 15:36:47 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Wed Aug 26 15:36:47 2020 -0400
+
+    #3081 #2653 Completed implementation of CrossCheck resume API endpoint
+
+commit f8c17b34b9796bf4bc3e8a3c3d3f82bd700ddc66
+Author:     Brazil, Jim <jibrazil@populusgroup.com>
+AuthorDate: Wed Aug 26 14:50:17 2020 +0000
+Commit:     William Koenig <wikoenig@populusgroup.com>
+CommitDate: Wed Aug 26 14:50:17 2020 +0000
+
+    Merged PR 1311: Adding Recruiter Info to Job Search Detail
+    
+    This PR add the following information to the Job details payload
+    
+    RecruiterFirstName
+    RecruiterLastName
+    RecruiterEmail
+    RecruiterPhone
+    
+    Related work items: #3114
+
+commit 0e7916e15c06f0696dc40b74e6b03722cdf50279
+Author:     Brazil, Jim <jibrazil@populusgroup.com>
+AuthorDate: Wed Aug 26 14:49:44 2020 +0000
+Commit:     William Koenig <wikoenig@populusgroup.com>
+CommitDate: Wed Aug 26 14:49:44 2020 +0000
+
+    Merged PR 1305: switched to non-printable delims
+    
+    Modified View and indexing code to use non-printable characters as delimiters to avoid indexing errors when candidate data contains semicolons
+    
+    Related work items: #3117
+
+commit 2cc484c552488ff58480f047100282337db124a6
+Author:     Brazil, Jim <jibrazil@populusgroup.com>
+AuthorDate: Wed Aug 26 10:19:45 2020 -0400
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Wed Aug 26 10:19:45 2020 -0400
+
+    adding recruiter info to job details
+
+commit fc3a93808d084e3a99abfc67c805a1c87600e75f
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Tue Aug 25 17:49:31 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Tue Aug 25 17:49:31 2020 -0400
+
+    #3081 #2653 Implemented API EXCEPT for sproc
+
+commit de5fb7d24104963ff080c410d42d285370a75d37
+Author:     Joseph Herrington <joharrington@allegisgroup.com>
+AuthorDate: Tue Aug 25 20:22:21 2020 +0000
+Commit:     Joseph Herrington <joharrington@allegisgroup.com>
+CommitDate: Tue Aug 25 20:22:21 2020 +0000
+
+    default keyword without providing the type was throwing a compiler error because we're using an older compiler
+
+commit 940acb8ec6f3dd859ba610d983de294ae62c690f
+Merge: 856056afc cf1eafe6c
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Tue Aug 25 14:04:11 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Tue Aug 25 14:04:11 2020 -0400
+
+    Merge branch 'dev' into task/3081
+
+commit dc4c2e9c4ce337f1ddc572cb2da28c36fc4e0f95
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Tue Aug 25 13:50:36 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Tue Aug 25 13:50:36 2020 -0400
+
+    #3120 #2653 Added Subscriber EntityFields for Brent
+
+commit 8a64d8449ab0828c0e1b9e1a7d191b82e62296d6
+Author:     Brazil, Jim <jibrazil@populusgroup.com>
+AuthorDate: Tue Aug 25 11:19:43 2020 -0400
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Tue Aug 25 11:19:43 2020 -0400
+
+    changed variable name
+
+commit 7168829b06a4c8fa844f8b4abec8f7b1db1b4447
+Author:     Brazil, Jim <jibrazil@populusgroup.com>
+AuthorDate: Tue Aug 25 11:15:04 2020 -0400
+Commit:     Brazil, Jim <jibrazil@populusgroup.com>
+CommitDate: Tue Aug 25 11:15:04 2020 -0400
+
+    switched to non-printable delims
+
+commit cf1eafe6c3054038815bda236816c62b601f987d
+Author:     Joseph Herrington <joharrington@allegisgroup.com>
+AuthorDate: Tue Aug 25 13:18:15 2020 +0000
+Commit:     William Koenig <wikoenig@populusgroup.com>
+CommitDate: Tue Aug 25 13:18:15 2020 +0000
+
+    Merged PR 1297: #3079 #2626 Profile Guid in job applicant link
+    
+    Yes, I tested this locally!
+    
+    Related work items: #2626, #3079
+
+commit 9f13dc8002f3e37aee521967bd44f64e3ec62348
+Merge: a17d3221c e70f7704c
+Author:     Bill Koenig <wikoenig@allegisgroup.com>
+AuthorDate: Mon Aug 24 13:43:36 2020 -0400
+Commit:     Bill Koenig <wikoenig@allegisgroup.com>
+CommitDate: Mon Aug 24 13:43:36 2020 -0400
+
+    Merge branch 'staging'
+
+commit 732550a00cd7d290ed97de359edb439f137e6662
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Mon Aug 24 10:15:46 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Mon Aug 24 10:15:46 2020 -0400
+
+    #3079 #2626 PR review
+
+commit 776c168b495c0c6090d3305257eaddeb44e65b54
+Merge: fffb0a970 2f8c32956
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Mon Aug 24 10:13:08 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Mon Aug 24 10:13:08 2020 -0400
+
+    Merge branch 'dev' into task/3079
+
+commit e70f7704c061ea2ce61de80ae7800549d265a593
+Author:     William Koenig <wikoenig@populusgroup.com>
+AuthorDate: Sat Aug 22 15:48:44 2020 +0000
+Commit:     William Koenig <wikoenig@populusgroup.com>
+CommitDate: Sat Aug 22 15:48:44 2020 +0000
+
+    Merged PR 1300: Job scrape changes & new endpoint for invalid domains
+    
+    Need to get this into staging so I can run the job scrape in the staging environment before Monday
+    
+    Related work items: #2983, #3089, #3097
+
+commit 2f8c32956a7cf27d7aadf41f271a8c2a5cc94bb7
+Author:     William Koenig <wikoenig@populusgroup.com>
+AuthorDate: Sat Aug 22 15:47:18 2020 +0000
+Commit:     William Koenig <wikoenig@populusgroup.com>
+CommitDate: Sat Aug 22 15:47:18 2020 +0000
+
+    Merged PR 1298: Job Scrape - additional changes
+    
+    - Added retry logic for failed web responses that are due to IP bans from the job site or transient errors related to using residential IPs with the rotating proxy service
+    - Added additional tracking to the database to differentiate between successful and unsuccessful requests; this will give us greater visibility into how the process is working as we tweak configuration settings in our proxy service
+    
+    Related work items: #3097
+
+commit 362d4644fee64f18968d23e53ae449130fe6f14f
+Author:     Bill Koenig <wikoenig@allegisgroup.com>
+AuthorDate: Sat Aug 22 11:43:20 2020 -0400
+Commit:     Bill Koenig <wikoenig@allegisgroup.com>
+CommitDate: Sat Aug 22 11:43:20 2020 -0400
+
+    completed and verified retry logic & additional logging for job scrape with proxy
+
+commit 856056afc14395248e0684aec51bbfd9dc634b38
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Fri Aug 21 16:33:33 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Fri Aug 21 16:33:33 2020 -0400
+
+    #3081 added crossChq status DTO and unimplemented API endpoint
+
+commit 6ef1eb4dd5690ddd04998c813824f9a1d1ac0806
+Author:     Bill Koenig <wikoenig@allegisgroup.com>
+AuthorDate: Fri Aug 21 16:08:13 2020 -0400
+Commit:     Bill Koenig <wikoenig@allegisgroup.com>
+CommitDate: Fri Aug 21 16:08:13 2020 -0400
+
+    work in progress for job scrape retry logic
+
+commit 2ac1b4f9407b6973df4ccd21cfe31c888bf93a38
+Author:     Joseph Herrington <joharrington@allegisgroup.com>
+AuthorDate: Fri Aug 21 18:06:37 2020 +0000
+Commit:     William Koenig <wikoenig@populusgroup.com>
+CommitDate: Fri Aug 21 18:06:37 2020 +0000
+
+    Merged PR 1294: #3089 Added endpoint to return a list of invalid email domains
+    
+    #3089 Added endpoint to return a list of invalid email domains
+    
+    Related work items: #2983, #3089
+
+commit fffb0a97018cb3e4a8ccb57328d9dfdc47c5eee0
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Fri Aug 21 10:21:10 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Fri Aug 21 10:21:10 2020 -0400
+
+    #3079 #2626 Profile Guid in job applicant link
+
+commit 51a425098d3f3caf5d5e73672a04f237c004e224
+Merge: fb10a392e ce4dcaedc
+Author:     Bill Koenig <wikoenig@allegisgroup.com>
+AuthorDate: Fri Aug 21 09:16:42 2020 -0400
+Commit:     Bill Koenig <wikoenig@allegisgroup.com>
+CommitDate: Fri Aug 21 09:16:42 2020 -0400
+
+    merging dev-> staging manually; the PR UI in Azure was including changes that have already been applied to staging
+
+commit ce4dcaedce782c2579936696525979bc8926e967
+Author:     William Koenig <wikoenig@populusgroup.com>
+AuthorDate: Fri Aug 21 12:53:08 2020 +0000
+Commit:     William Koenig <wikoenig@populusgroup.com>
+CommitDate: Fri Aug 21 12:53:08 2020 +0000
+
+    Merged PR 1295: added proxy metrics for aerotek and tek job scrape
+    
+    added proxy metrics for aerotek and tek job scrape
+    
+    Related work items: #3068
+
+commit 1280194b7c2a371b85890ae8b61bf74f7600ca5a
+Author:     Bill Koenig <wikoenig@allegisgroup.com>
+AuthorDate: Fri Aug 21 08:39:56 2020 -0400
+Commit:     Bill Koenig <wikoenig@allegisgroup.com>
+CommitDate: Fri Aug 21 08:39:56 2020 -0400
+
+    added proxy metrics for aerotek and tek job scrape
+
+commit fb10a392e4d17dd0fa10426951b3e039ec457cac
+Author:     William Koenig <wikoenig@populusgroup.com>
+AuthorDate: Thu Aug 20 20:25:44 2020 +0000
+Commit:     William Koenig <wikoenig@populusgroup.com>
+CommitDate: Thu Aug 20 20:25:44 2020 +0000
+
+    Merged PR 1293: Merging dev into staging
+    
+    The primary purpose of this PR is to get the proxy changes for the job data mining process into the staging environment. That said, this PR includes a lot of other changes from the most recent sprint
+    
+    Related work items: #2973, #2994, #2997, #3009, #3013, #3028, #3032, #3033, #3034, #3057, #3065, #3067, #3068, #3069, #3075
+
+commit 04030ae74af66109b1774617c7476126664b600e
+Merge: 176320ab2 58f00e52f
+Author:     William Koenig <wikoenig@populusgroup.com>
+AuthorDate: Thu Aug 20 19:52:17 2020 +0000
+Commit:     Brent Ferree <brferree@allegisgroup.com>
+CommitDate: Thu Aug 20 19:52:17 2020 +0000
+
+    Merged PR 1292: Job Data Mining Updates
+    
+    Added rotating proxy service to job data mining service. Includes additional database logging to track the number of requests for each job site scrape operation as well as the total number of bytes passed through the proxy service. Includes additional instrumentation to troubleshoot proxy errors.
+    
+    Related work items: #3068, #3075
+
+commit b2cfb7aa40ebd77263ba0217421e6ca8a98eba88
+Author:     Joey Herrington <joharrington@allegisgroup.com>
+AuthorDate: Thu Aug 20 14:57:05 2020 -0400
+Commit:     Joey Herrington <joharrington@allegisgroup.com>
+CommitDate: Thu Aug 20 16:50:53 2020 -0400
+
+    #3089 Added endpoint to return a list of invalid email domains
+
+commit 58f00e52f9521ce4aa0b1df15d3e18f45a47aa10
+Merge: 1f0ffcf9b 176320ab2
+Author:     Bill Koenig <wikoenig@allegisgroup.com>
+AuthorDate: Thu Aug 20 14:54:27 2020 -0400
+Commit:     Bill Koenig <wikoenig@allegisgroup.com>
+CommitDate: Thu Aug 20 14:54:27 2020 -0400
+
+    Merge branch 'dev' into task/3068
+
